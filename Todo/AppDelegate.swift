@@ -79,7 +79,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
 
             try database = CBLManager.sharedInstance().openDatabaseNamed(dbname, withOptions: options)
             if newKey != nil {
-                try database.changeEncryptionKey(key)
+                try database.changeEncryptionKey(newKey)
             }
             startConflictLiveQuery()
     }
@@ -163,7 +163,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
                     return ("Migrate", UIAlertActionStyle.Default)
                 },
                 withCancelConfig: { () -> (title: String, style: UIAlertActionStyle) in
-                    return ("Delete", UIAlertActionStyle.Cancel)
+                    return ("Delete", UIAlertActionStyle.Destructive)
                 },
                 onOk: { (oldPassword) -> Void in
                     self.processLogin(controller, withUsername: username,
