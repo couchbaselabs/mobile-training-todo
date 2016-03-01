@@ -27,8 +27,8 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
 
         if docChangeObserver == nil {
             docChangeObserver = NSNotificationCenter.defaultCenter().addObserverForName(
-                kCBLDocumentChangeNotification, object: task, queue: nil) { (note) -> Void in
-                    if let change = note.userInfo!["change"] as? CBLDatabaseChange {
+                kCBLDocumentChangeNotification, object: task, queue: nil) { note in
+                    if let change = note.userInfo?["change"] as? CBLDatabaseChange {
                         if change.source == nil || !change.isCurrentRevision {
                             return
                         }
@@ -61,7 +61,7 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
     
     @IBAction func editAction(sender: AnyObject) {
         Ui.showImageActionSheet(onController: self, withImagePickerDelegate: self,
-            onDelete: { () -> Void in
+            onDelete: {
                 self.deleteImage()
             }
         )

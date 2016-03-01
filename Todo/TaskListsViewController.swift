@@ -74,9 +74,9 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
     override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?,
         change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
             if object as? NSObject == listsLiveQuery {
-                reloadTaskLists(listsLiveQuery.rows)
+                reloadTaskLists()
             } else if object as? NSObject == incompTasksCountsLiveQuery {
-                reloadIncompleteTasksCounts(incompTasksCountsLiveQuery.rows)
+                reloadIncompleteTasksCounts()
             }
     }
 
@@ -90,10 +90,10 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
         cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
             let cell = tableView.dequeueReusableCellWithIdentifier("TaskListCell") as UITableViewCell!
             
-            let doc = listRows![indexPath.row].document!
-            cell.textLabel?.text = doc["name"] as? String
+            let row = listRows![indexPath.row] as CBLQueryRow
+            cell.textLabel?.text = row.key as? String
             
-            let incompleteCount = incompTasksCounts?[doc.documentID] ?? 0
+            let incompleteCount = incompTasksCounts?[row.documentID!] ?? 0
             cell.detailTextLabel?.text = incompleteCount > 0 ? "\(incompleteCount)" : ""
             
             return cell
@@ -122,7 +122,7 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
                     onController: self,
                     withTitle: "Edit List",
                     withMessage:  nil,
-                    withTextFieldConfig: { (textField) -> Void in
+                    withTextFieldConfig: { textField in
                         textField.placeholder = "List name"
                         textField.text = doc["name"] as? String
                         textField.autocapitalizationType = .Words
@@ -141,10 +141,14 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
     
     func updateSearchResultsForSearchController(searchController: UISearchController) {
         let text = searchController.searchBar.text ?? ""
-        let active = !text.isEmpty
-        listsLiveQuery.startKey = active ? text : nil
+        if !text.isEmpty {
+            listsLiveQuery.startKey = text
+            listsLiveQuery.prefixMatchLevel = 1
+        } else {
+            listsLiveQuery.startKey = nil
+            listsLiveQuery.prefixMatchLevel = 0
+        }
         listsLiveQuery.endKey = listsLiveQuery.startKey
-        listsLiveQuery.prefixMatchLevel = active ? 1 : 0
         listsLiveQuery.queryOptionsChanged()
     }
     
@@ -154,11 +158,11 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
             onController: self,
             withTitle: "New Task List",
             withMessage:  nil,
-            withTextFieldConfig: { (textField) -> Void in
+            withTextFieldConfig: { textField in
                 textField.placeholder = "List name"
                 textField.autocapitalizationType = .Words
             },
-            onOk: { (name) -> Void in
+            onOk: { name in
                 self.createTaskList(name)
             }
         )
@@ -174,11 +178,10 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
     func setupViewAndQuery() {
         let listsView = database.viewNamed("list/listsByName")
         if listsView.mapBlock == nil {
-            listsView.setMapBlock({ (doc, emit) -> Void in
-                if let type: String = doc["type"] as? String where type == "task-list" {
-                    if let name = doc["name"] {
+            listsView.setMapBlock({ (doc, emit) in
+                if let type: String = doc["type"] as? String, name = doc["name"]
+                    where type == "task-list" {
                         emit(name, nil)
-                    }
                 }
             }, version: "1.0")
         }
@@ -189,17 +192,14 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
         
         let incompTasksCountView = database.viewNamed("list/incompleteTasksCount")
         if incompTasksCountView.mapBlock == nil {
-            incompTasksCountView.setMapBlock({ (doc, emit) -> Void in
+            incompTasksCountView.setMapBlock({ (doc, emit) in
                 if let type: String = doc["type"] as? String where type == "task" {
-                    if let list = doc["taskList"] as? [String: AnyObject] {
-                        if let listId = list["id"] {
-                            if !(doc["complete"] as? Bool ?? false) {
-                                emit(listId, nil)
-                            }
-                        }
+                    if let list = doc["taskList"] as? [String: AnyObject], listId = list["id"],
+                        complete = doc["complete"] as? Bool where !complete {
+                            emit(listId, nil)
                     }
                 }
-            }, reduceBlock: { (keys, values, reredeuce) -> AnyObject in
+            }, reduceBlock: { (keys, values, reredeuce) in
                 return values.count
             }, version: "1.0")
         }
@@ -210,14 +210,15 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
         incompTasksCountsLiveQuery.start()
     }
 
-    func reloadTaskLists(queryEnum: CBLQueryEnumerator?) {
-        listRows = queryEnum?.allObjects as? [CBLQueryRow] ?? nil
+    func reloadTaskLists() {
+        listRows = listsLiveQuery.rows?.allObjects as? [CBLQueryRow] ?? nil
         tableView.reloadData()
     }
     
-    func reloadIncompleteTasksCounts(queryEnum: CBLQueryEnumerator?) {
+    func reloadIncompleteTasksCounts() {
         var counts : [String : Int] = [:]
-        while let row = queryEnum?.nextRow() {
+        let rows = incompTasksCountsLiveQuery.rows;
+        while let row = rows?.nextRow() {
             if let listId = row.key as? String, count = row.value as? Int {
                 counts[listId] = count
             }
@@ -227,7 +228,7 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
     }
 
     func createTaskList(name: String) {
-        let properties: Dictionary<String, AnyObject> = [
+        let properties = [
             "type": "task-list",
             "name": name,
             "owner": username
@@ -250,7 +251,7 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
     
     func updateTaskList(list: CBLDocument, withName name: String) {
         do {
-            try list.update { (newRev) -> Bool in
+            try list.update { newRev in
                 newRev["name"] = name
                 return true
             }

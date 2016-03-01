@@ -35,7 +35,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
             login()
         } else {
             do {
-                try startSession(withUsername: "todo")
+                try startSession(username: "todo")
             } catch let error as NSError {
                 NSLog("Cannot start a session: %@", error)
                 return false
@@ -57,15 +57,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
     
     // MARK: - Session
     
-    func startSession(withUsername username:String, withPassword password:String? = nil,
+    func startSession(username username:String, withPassword password:String? = nil,
         withNewPassword newPassword:String? = nil) throws {
-            try openDatabase(withUsername: username, withKey: password, withNewKey: newPassword)
+            try openDatabase(username: username, withKey: password, withNewKey: newPassword)
             Session.username = username
             startReplication(withUsername: username, andPassword: newPassword ?? password)
             showApp()
     }
     
-    func openDatabase(withUsername username:String, withKey key:String?,
+    func openDatabase(username username:String, withKey key:String?,
         withNewKey newKey:String?) throws {
             let dbname = username
             let options = CBLDatabaseOptions()
@@ -132,7 +132,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
     func processLogin(controller: UIViewController, withUsername username: String,
         withPassword password: String, withNewPassword newPassword: String? = nil) {
             do {
-                try startSession(withUsername: username, withPassword: password,
+                try startSession(username: username, withPassword: password,
                     withNewPassword: newPassword)
             } catch let error as NSError {
                 if error.code == 401 {
@@ -150,33 +150,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
 
     func handleEncryptionError(controller: UIViewController, withUsername username: String,
         withPassword password: String) {
-            Ui.showTextInputDialog(
+            Ui.showEncryptionErrorDialog(
                 onController: controller,
-                withTitle: "Password Changed",
-                withMessage: "Please enter your old password to migrate your database.",
-                withTextFieldConfig: { (textField) -> Void in
-                    textField.placeholder = "old password"
-                    textField.secureTextEntry = true
-                    textField.autocapitalizationType = .None
-                },
-                withOkConfig: { () -> (title: String, style: UIAlertActionStyle) in
-                    return ("Migrate", UIAlertActionStyle.Default)
-                },
-                withCancelConfig: { () -> (title: String, style: UIAlertActionStyle) in
-                    return ("Delete", UIAlertActionStyle.Destructive)
-                },
-                onOk: { (oldPassword) -> Void in
+                onMigrateAction: { oldPassword in
                     self.processLogin(controller, withUsername: username,
-                        withPassword: oldPassword, withNewPassword: password)},
-                onCancel: { () -> Void in
-                    // Force delete the database:
-                    let dir = NSURL(fileURLWithPath: CBLManager.sharedInstance().directory)
-                    let dbFile = dir.URLByAppendingPathComponent("\(username).cblite2")
-                    do {
-                        try NSFileManager.defaultManager().removeItemAtURL(dbFile)
-                    } catch let err as NSError {
-                        NSLog("Error when deleting the database file: %@", err)
-                    }
+                        withPassword: oldPassword, withNewPassword: password)
+                },
+                onDeleteAction: {
+                    // Delete database:
+                    self.deleteDatabase(username)
                     // login:
                     self.processLogin(controller, withUsername: username,
                         withPassword: password)
@@ -184,10 +166,24 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
             )
     }
 
+    func deleteDatabase(dbName: String) {
+        // Delete the database by using file manager. Currently CBL doesn't have
+        // an API to delete an encrypted database so we remove the database
+        // file manually as a workaround.
+        let dir = NSURL(fileURLWithPath: CBLManager.sharedInstance().directory)
+        let dbFile = dir.URLByAppendingPathComponent("\(dbName).cblite2")
+        do {
+            try NSFileManager.defaultManager().removeItemAtURL(dbFile)
+        } catch let err as NSError {
+            NSLog("Error when deleting the database file: %@", err)
+        }
+
+    }
+
     // MARK: - Replication
 
-    func startReplication(withUsername username:String!, andPassword password:String? = "") {
-        if !kSyncEnabled {
+    func startReplication(withUsername username:String, andPassword password:String? = "") {
+        guard kSyncEnabled else {
             return
         }
 
@@ -200,7 +196,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
             // https://github.com/couchbase/couchbase-lite-ios/issues/1124
             let cred = NSString(format: "%@:%@", username, password!)
             let credData = cred.dataUsingEncoding(NSUTF8StringEncoding)!
-            let credBase64 = credData.base64EncodedStringWithOptions(.Encoding64CharacterLineLength)
+            let credBase64 = credData.base64EncodedStringWithOptions([])
             headers = ["Authorization": "Basic \(credBase64)"]
         }
         
@@ -215,6 +211,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
 
         puller = database.createPullReplication(kSyncGatewayUrl)
         puller.continuous = true
+        puller.customProperties = ["websocket": false]
         puller.authenticator = authenticator
         puller.headers = headers
 
@@ -226,7 +223,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
     }
     
     func stopReplication() {
-        if !kSyncEnabled {
+        guard kSyncEnabled else {
             return
         }
 
@@ -240,12 +237,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
     }
     
     func replicationProgress(notification: NSNotification) {
-        if (pusher.status == .Active || puller.status == .Active) {
-            UIApplication.sharedApplication().networkActivityIndicatorVisible = true
-        } else {
-            UIApplication.sharedApplication().networkActivityIndicatorVisible = false
-        }
-        
+        UIApplication.sharedApplication().networkActivityIndicatorVisible =
+            (pusher.status == .Active || puller.status == .Active)
+
         let error = pusher.lastError ?? puller.lastError
         if (error != syncError) {
             syncError = error
@@ -253,11 +247,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
                 NSLog("Replication Error: %@", error!)
                 if errorCode == 401 {
                     Ui.showMessageDialog(
-                        onController: self.window!.rootViewController,
+                        onController: self.window!.rootViewController!,
                         withTitle: "Authentication Error",
                         withMessage:"Your username or password is not correct.",
                         withError: nil,
-                        onClose: { () -> Void in
+                        onClose: {
                             self.logout()
                     })
                 }
@@ -270,7 +264,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
     override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?,
         change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
             if object as? NSObject == conflictsLiveQuery {
-                resolveConflicts(conflictsLiveQuery!.rows)
+                resolveConflicts()
             }
     }
 
@@ -287,34 +281,34 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         conflictsLiveQuery = nil
     }
 
-    func resolveConflicts(queryEnum: CBLQueryEnumerator?) {
-        guard let rows = queryEnum else {
-            return
-        }
-
-        for row in rows {
-            if let revs = row.conflictingRevisions! where revs.count > 1 {
-                resolveConflicts(revisions: row.conflictingRevisions)
+    func resolveConflicts() {
+        let rows = conflictsLiveQuery?.rows
+        while let row = rows?.nextRow() {
+            if let revs = row.conflictingRevisions where revs.count > 1 {
+                resolveConflicts(revisions: revs)
             }
         }
     }
 
-    func resolveConflicts(revisions revs: [CBLRevision]!) {
+    func resolveConflicts(revisions revs: [CBLRevision]) {
         let defaultWinning = revs[0]
-        let type = defaultWinning["type"] as? String
-        if type == "task-list" || type == "task-list-user" {
+        let type = (defaultWinning["type"] as? String) ?? ""
+        switch type {
+        case "task-list", "task-list.user":
             let props = defaultWinning.userProperties
             let image = defaultWinning.attachmentNamed("image")
             resolveConflicts(revisions: revs, withProps: props, andImage: image)
-        } else if type == "task" {
+        case "task":
             let merged = nWayMergeConflicts(revs)
             resolveConflicts(revisions: revs, withProps: merged.props, andImage: merged.image)
+        default:
+            break
         }
     }
 
-    func resolveConflicts(revisions revs: [CBLRevision]!, withProps props: [String: AnyObject]?,
+    func resolveConflicts(revisions revs: [CBLRevision], withProps props: [String: AnyObject]?,
         andImage image: CBLAttachment?) {
-            database.inTransaction { () -> Bool in
+            database.inTransaction {
                 var i = 0
                 for rev in revs as! [CBLSavedRevision] {
                     let newRev = rev.createRevision()
@@ -334,24 +328,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
                         NSLog("Cannot resolve conflicts with error: %@", error)
                         return false
                     }
-                    i++
+                    i += 1
                 }
                 return true
             }
     }
 
-    func nWayMergeConflicts(revs: [CBLRevision]!) ->
+    func nWayMergeConflicts(revs: [CBLRevision]) ->
         (props: [String: AnyObject]!, image: CBLAttachment?) {
-            let parent = findCommonParent(revs)
-            if parent == nil || parent!.isDeletion {
+            guard let parent = findCommonParent(revs) else {
                 let defaultWinning = revs[0]
                 let props = defaultWinning.userProperties
                 let image = defaultWinning.attachmentNamed("image")
                 return (props, image)
             }
 
-            var mergedProps = parent!.userProperties!
-            var mergedImage = parent!.attachmentNamed("image")
+            var mergedProps = parent.userProperties ?? [:]
+            var mergedImage = parent.attachmentNamed("image")
             var gotTask = false, gotComplete = false, gotImage = false
             for rev in revs {
                 if let props = rev.userProperties {
@@ -388,7 +381,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
             return (mergedProps, mergedImage)
     }
 
-    func findCommonParent(revisions: [CBLRevision]!) -> CBLRevision? {
+    func findCommonParent(revisions: [CBLRevision]) -> CBLRevision? {
         var minHistoryCount = 0
         var histories : [[CBLRevision]] = []
         for rev in revisions {
@@ -398,9 +391,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
                 minHistoryCount > 0 ? min(minHistoryCount, history.count) : history.count
         }
 
+        if minHistoryCount == 0 {
+            return nil
+        }
+
         var commonParent : CBLRevision? = nil
-        var i: Int
-        for i = 0; i < minHistoryCount; i++ {
+        for i in 0...minHistoryCount {
             var rev: CBLRevision? = nil
             for history in histories {
                 if rev == nil {
@@ -414,6 +410,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
                 break
             }
             commonParent = rev
+        }
+
+        if let deleted = commonParent?.isDeletion where deleted {
+            commonParent = nil
         }
         return commonParent
     }

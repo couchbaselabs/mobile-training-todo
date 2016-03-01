@@ -76,7 +76,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?,
         change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
             if object as? NSObject == tasksLiveQuery {
-                reloadTasks(tasksLiveQuery.rows)
+                reloadTasks()
             }
     }
     
@@ -167,12 +167,12 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
                     onController: self,
                     withTitle: "Edit Task",
                     withMessage:  nil,
-                    withTextFieldConfig: { (textField) -> Void in
+                    withTextFieldConfig: { textField in
                         textField.placeholder = "Task"
                         textField.text = document["task"] as? String
                         textField.autocapitalizationType = .Sentences
                     },
-                    onOk: { (task) -> Void in
+                    onOk: { task in
                         self.updateTask(document, withTitle: task)
                     }
                 )
@@ -186,8 +186,11 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     func updateSearchResultsForSearchController(searchController: UISearchController) {
         let text = searchController.searchBar.text ?? ""
-        let active = !text.isEmpty
-        tasksLiveQuery.postFilter = active ? NSPredicate(format: "key2 CONTAINS[cd] %@", text) : nil
+        if !text.isEmpty {
+            tasksLiveQuery.postFilter = NSPredicate(format: "key2 CONTAINS[cd] %@", text)
+        } else {
+            tasksLiveQuery.postFilter = nil
+        }
         tasksLiveQuery.queryOptionsChanged()
     }
     
@@ -209,11 +212,11 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
             onController: self,
             withTitle: "New Task",
             withMessage: nil,
-            withTextFieldConfig: { (textField) -> Void in
+            withTextFieldConfig: { textField in
                 textField.placeholder = "Task"
                 textField.autocapitalizationType = .Sentences
             },
-            onOk: { (task) -> Void in
+            onOk: { task in
                 self.createTask(task)
             }
         )
@@ -224,17 +227,17 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     func setupViewAndQuery() {
         let view = database.viewNamed("tasksByCreatedAt")
         if view.mapBlock == nil {
-            view.setMapBlock({ (doc, emit) -> Void in
-                if let type: String = doc["type"] as? String where type == "task" {
-                    if let list = doc["taskList"] as? [String: AnyObject] {
-                        if let listId = list["id"], createdAt = doc["createdAt"], task = doc["task"] {
-                            emit([listId, createdAt, task], nil)
-                        }
-                    }
+            view.setMapBlock({ (doc, emit) in
+                if let type = doc["type"] as? String,
+                       listId = (doc["taskList"] as? [String: AnyObject])?["id"],
+                       createdAt = doc["createdAt"],
+                       task = doc["task"]
+                    where type == "task" {
+                        emit([listId, createdAt, task], nil)
                 }
             }, version: "1.0")
         }
-        
+
         tasksLiveQuery = view.createQuery().asLiveQuery()
         tasksLiveQuery.startKey = [taskList.documentID]
         tasksLiveQuery.endKey = [taskList.documentID]
@@ -245,13 +248,13 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         tasksLiveQuery.start()
     }
     
-    func reloadTasks(queryEnum: CBLQueryEnumerator?) {
-        taskRows = queryEnum?.allObjects as? [CBLQueryRow] ?? nil
+    func reloadTasks() {
+        taskRows = tasksLiveQuery.rows?.allObjects as? [CBLQueryRow] ?? nil
         tableView.reloadData()
     }
     
     func createTask(task: String) {
-        let taskListInfo: Dictionary<String, AnyObject> = [
+        let taskListInfo = [
             "id": taskList.documentID,
             "owner": taskList["owner"]!
         ]
@@ -275,7 +278,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     func updateTask(task: CBLDocument, withTitle title: String) {
         do {
-            try task.update { (newRev) -> Bool in
+            try task.update { newRev in
                 newRev["task"] = title
                 return true
             }
@@ -287,7 +290,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     func updateTask(task: CBLDocument, withComplete complete: Bool) {
         do {
-            try task.update { (newRev) -> Bool in
+            try task.update { newRev in
                 newRev["complete"] = complete
                 return true
             }
@@ -334,7 +337,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         
         if dbChangeObserver == nil {
             dbChangeObserver = NSNotificationCenter.defaultCenter().addObserverForName(
-                kCBLDatabaseChangeNotification, object: database, queue: nil) { (note) -> Void in
+                kCBLDatabaseChangeNotification, object: database, queue: nil) { note in
                     // Review: Can optimize this by executing in the background dispatch queue:
                     if let changes = note.userInfo!["changes"] as? [CBLDatabaseChange] {
                         for change in changes {

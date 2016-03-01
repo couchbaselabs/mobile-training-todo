@@ -56,7 +56,7 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
     override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?,
         change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
             if object as? NSObject == usersLiveQuery {
-                reloadUsers(usersLiveQuery.rows)
+                reloadUsers()
             }
     }
     
@@ -69,10 +69,8 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
     override func tableView(tableView: UITableView,
         cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
             let cell = tableView.dequeueReusableCellWithIdentifier("UserCell") as UITableViewCell!
-            let doc = userRows![indexPath.row].document!
-            
-            cell.textLabel?.text = doc["username"] as? String
-            
+            let key = userRows![indexPath.row].key
+            cell.textLabel?.text = key[1] as? String
             return cell
     }
     
@@ -95,10 +93,14 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
     
     func updateSearchResultsForSearchController(searchController: UISearchController) {
         let text = searchController.searchBar.text ?? ""
-        let active = !text.isEmpty
-        usersLiveQuery.startKey = active ? [taskList.documentID, text] : nil
+        if !text.isEmpty {
+            usersLiveQuery.startKey = [taskList.documentID, text]
+            usersLiveQuery.prefixMatchLevel = 2
+        } else {
+            usersLiveQuery.startKey = nil
+            usersLiveQuery.prefixMatchLevel = 1
+        }
         usersLiveQuery.endKey = usersLiveQuery.startKey
-        usersLiveQuery.prefixMatchLevel = active ? 2 : 1
         usersLiveQuery.queryOptionsChanged()
     }
     
@@ -109,11 +111,11 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
             onController: self,
             withTitle: "Add User",
             withMessage: nil,
-            withTextFieldConfig: { (textField) -> Void in
+            withTextFieldConfig: { textField in
                 textField.placeholder = "Username"
                 textField.autocapitalizationType = .None
             },
-            onOk: { (username) -> Void in
+            onOk: { username in
                 self.addUser(username)
             }
         )
@@ -125,12 +127,11 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
         let view = database.viewNamed("usersByUsername")
         if view.mapBlock == nil {
             view.setMapBlock({ (doc, emit) -> Void in
-                if let type: String = doc["type"] as? String where type == "task-list.user" {
-                    if let list = doc["taskList"] as? [String: AnyObject] {
-                        if let listId = list["id"], username = doc["username"] {
-                            emit([listId, username], nil)
-                        }
-                    }
+                if let type = doc["type"] as? String,
+                       username = doc["username"] as? String,
+                       listId = (doc["taskList"] as? [String: AnyObject])?["id"]
+                    where type == "task-list.user" {
+                        emit([listId, username], nil)
                 }
             }, version: "1.0")
         }
@@ -145,13 +146,13 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
     }
     
     
-    func reloadUsers(queryEnum: CBLQueryEnumerator?) {
-        userRows = queryEnum?.allObjects as? [CBLQueryRow] ?? nil
+    func reloadUsers() {
+        userRows = usersLiveQuery.rows?.allObjects as? [CBLQueryRow] ?? nil
         tableView.reloadData()
     }
     
     func addUser(username: String) {
-        let taskListInfo: Dictionary<String, AnyObject> = [
+        let taskListInfo = [
             "id": taskList.documentID,
             "owner": taskList["owner"]!
         ]

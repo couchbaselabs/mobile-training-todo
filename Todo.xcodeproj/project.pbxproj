@@ -15,6 +15,7 @@
 		939279E61C6E9FCE009D9A92 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 939279E51C6E9FCE009D9A92 /* LoginViewController.swift */; };
 		939279EA1C6EAA10009D9A92 /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 939279E91C6EAA10009D9A92 /* Session.swift */; };
 		939279F81C72E9C8009D9A92 /* Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 939279F71C72E9C8009D9A92 /* Image.swift */; };
+		93D999FD1C7FE78300FEFF17 /* TextDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D999FC1C7FE78300FEFF17 /* TextDialog.swift */; };
 		93F4B2C31C6940D6005FF4D8 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93F4B2C21C6940D6005FF4D8 /* AppDelegate.swift */; };
 		93F4B2C51C6940D6005FF4D8 /* TaskListsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93F4B2C41C6940D6005FF4D8 /* TaskListsViewController.swift */; };
 		93F4B2C81C6940D6005FF4D8 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 93F4B2C61C6940D6005FF4D8 /* Main.storyboard */; };
@@ -37,6 +38,7 @@
 		939279E51C6E9FCE009D9A92 /* LoginViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		939279E91C6EAA10009D9A92 /* Session.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
 		939279F71C72E9C8009D9A92 /* Image.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Image.swift; sourceTree = "<group>"; };
+		93D999FC1C7FE78300FEFF17 /* TextDialog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextDialog.swift; sourceTree = "<group>"; };
 		93F4B2BF1C6940D6005FF4D8 /* Todo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Todo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		93F4B2C21C6940D6005FF4D8 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		93F4B2C41C6940D6005FF4D8 /* TaskListsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskListsViewController.swift; sourceTree = "<group>"; };
@@ -77,6 +79,7 @@
 				93F4B2DF1C696C78005FF4D8 /* Ui.swift */,
 				939279F71C72E9C8009D9A92 /* Image.swift */,
 				934646C21C6AC4CD002F52C9 /* TaskTableViewCell.swift */,
+				93D999FC1C7FE78300FEFF17 /* TextDialog.swift */,
 			);
 			name = UI;
 			sourceTree = "<group>";
@@ -213,6 +216,7 @@
 				93F4B2E01C696C78005FF4D8 /* Ui.swift in Sources */,
 				939279EA1C6EAA10009D9A92 /* Session.swift in Sources */,
 				939279F81C72E9C8009D9A92 /* Image.swift in Sources */,
+				93D999FD1C7FE78300FEFF17 /* TextDialog.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
