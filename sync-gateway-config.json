@@ -5,9 +5,7 @@
     "todo": {
       "server": "walrus:.",
       "users": {
-        "user1": {"admin_channels":["public"],"password":"1234"},
-        "user2": {"admin_channels":["public"],"password":"1234"},
-        "admin1": {"admin_channels":["public"],"password":"1234", "admin_roles": ["admin"]}
+        "admin": {"password":"admin", "admin_roles": ["admin"]}
       },
       "sync": `
 function (doc, oldDoc) {
