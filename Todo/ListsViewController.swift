@@ -8,7 +8,7 @@
 
 import UIKit
 
-class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
+class ListsViewController: UITableViewController, UISearchResultsUpdating {
     var searchController: UISearchController!
     
     var username: String!
@@ -71,6 +71,7 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
     
     // MARK: - KVO
     
+    // TRAINING: Responding to Live Query changes
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if object as? NSObject == listsLiveQuery {
             reloadTaskLists()
@@ -178,6 +179,7 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
     // MARK: - Database
 
     func setupViewAndQuery() {
+        // TRAINING: Writing a View
         let listsView = database.viewNamed("list/listsByName")
         if listsView.mapBlock == nil {
             listsView.setMapBlock({ (doc, emit) in
@@ -188,10 +190,12 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
             }, version: "1.0")
         }
 
+        // TRAINING: Running a Query
         listsLiveQuery = listsView.createQuery().asLive()
         listsLiveQuery.addObserver(self, forKeyPath: "rows", options: .new, context: nil)
         listsLiveQuery.start()
         
+        // TRAINING: Writing an Aggregation View
         let incompTasksCountView = database.viewNamed("list/incompleteTasksCount")
         if incompTasksCountView.mapBlock == nil {
             incompTasksCountView.setMapBlock({ (doc, emit) in
@@ -206,6 +210,7 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
             }, version: "1.0")
         }
         
+        // TRAINING: Running a Query
         incompTasksCountsLiveQuery = incompTasksCountView.createQuery().asLive()
         incompTasksCountsLiveQuery.groupLevel = 1
         incompTasksCountsLiveQuery.addObserver(self, forKeyPath: "rows", options: .new, context: nil)
@@ -229,7 +234,8 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
         tableView.reloadData()
     }
 
-    func createTaskList(name: String) {
+    func createTaskList(name: String) -> CBLSavedRevision? {
+        // TRAINING: Create a document
         let properties: [String : Any] = [
             "type": "task-list",
             "name": name,
@@ -240,18 +246,20 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
         guard let doc = database.document(withID: docId) else {
             Ui.showMessageDialog(onController: self, withTitle: "Error",
                 withMessage: "Couldn't save task list")
-            return
+            return nil
         }
 
         do {
-            try doc.putProperties(properties)
+            return try doc.putProperties(properties)
         } catch let error as NSError {
             Ui.showMessageDialog(onController: self, withTitle: "Error",
                 withMessage: "Couldn't save task list", withError: error)
+            return nil
         }
     }
     
     func updateTaskList(list: CBLDocument, withName name: String) {
+        // TRAINING: Update a document
         do {
             try list.update { newRev in
                 newRev["name"] = name
@@ -264,6 +272,7 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
     }
     
     func deleteTaskList(list: CBLDocument) {
+        // TRAINING: Delete a list
         do {
             try list.delete()
         } catch let error as NSError {
@@ -271,4 +280,26 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
                 withMessage: "Couldn't delete task list", withError: error)
         }
     }
+    
+    // MARK: - Conflicts
+    
+    override func motionEnded(_ motion: UIEventSubtype, with event: UIEvent?) {
+        if motion == .motionShake {
+            // TRAINING: Create task list conflict (for development only)
+            let savedRevision = createTaskList(name: "Test Conflicts List")
+            let newRev1 = savedRevision?.createRevision()
+            let propsRev1 = newRev1?.properties
+            propsRev1?.setValue("Update 1", forKey: "name")
+            let newRev2 = savedRevision?.createRevision()
+            let propsRev2 = newRev2?.properties
+            propsRev2?.setValue("Update 2", forKey: "name")
+            do {
+                try newRev1?.saveAllowingConflict()
+                try newRev2?.saveAllowingConflict()
+            } catch let error as NSError {
+                NSLog("Could not create document %@", error)
+            }
+        }
+    }
+    
 }

@@ -238,7 +238,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         tasksLiveQuery.startKey = [taskList.documentID]
         tasksLiveQuery.endKey = [taskList.documentID]
         tasksLiveQuery.prefixMatchLevel = 1
-        tasksLiveQuery.descending = true
+        tasksLiveQuery.descending = false
         
         tasksLiveQuery.addObserver(self, forKeyPath: "rows", options: .new, context: nil)
         tasksLiveQuery.start()
@@ -249,7 +249,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         tableView.reloadData()
     }
     
-    func createTask(task: String) {
+    func createTask(task: String) -> CBLSavedRevision? {
         let taskListInfo = [
             "id": taskList.documentID,
             "owner": taskList["owner"]!
@@ -265,10 +265,11 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         
         let doc = database.createDocument()
         do {
-            try doc.putProperties(properties)
+            return try doc.putProperties(properties)
         } catch let error as NSError {
             Ui.showMessageDialog(onController: self, withTitle: "Error",
                 withMessage: "Couldn't save task", withError: error)
+            return nil
         }
     }
     
@@ -349,4 +350,26 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
             }
         }
     }
+    
+    // MARK: - Conflicts
+    
+    override func motionEnded(_ motion: UIEventSubtype, with event: UIEvent?) {
+        if motion == .motionShake {
+            // TRAINING: Create task conflict (for development only)
+            let savedRevision = createTask(task: "Test Conflicts Task")
+            let newRev1 = savedRevision?.createRevision()
+            let propsRev1 = newRev1?.properties
+            propsRev1?.setValue("Update 1", forKey: "task")
+            let newRev2 = savedRevision?.createRevision()
+            let propsRev2 = newRev2?.properties
+            propsRev2?.setValue(true, forKey: "complete")
+            do {
+                try newRev1?.saveAllowingConflict()
+                try newRev2?.saveAllowingConflict()
+            } catch let error as NSError {
+                NSLog("Could not save revisions %@", error)
+            }
+        }
+    }
+
 }
