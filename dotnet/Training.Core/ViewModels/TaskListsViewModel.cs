@@ -56,7 +56,7 @@ namespace Training
                 _selectedItem = value;
                 SetProperty(ref _selectedItem, null); // No "selection" effect
                 if(value != null) {
-                    ShowViewModel<ListDetailViewModel>(new { username = Model.Username, name = value.Name, taskID = value.DocumentId });
+                    ShowViewModel<ListDetailViewModel>(new { username = Model.Username, name = value.Name, listID = value.DocumentId });
                 }
             }
         }
@@ -98,7 +98,11 @@ namespace Training
         /// <param name="loginEnabled">If set to <c>true</c> login is enabled in the application</param>
         public void Init(string username, bool loginEnabled)
         {
-            Model = new TaskListsModel(username ?? "todo");
+            if(String.IsNullOrEmpty(username)) {
+                username = "todo";
+            }
+
+            Model = new TaskListsModel(username);
             LoginEnabled = loginEnabled;
         }
 

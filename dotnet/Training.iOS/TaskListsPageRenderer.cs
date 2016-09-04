@@ -47,7 +47,7 @@ namespace Training.iOS
             var rightNavList = new List<UIBarButtonItem>();
 
             var navigationItem = this.NavigationController.TopViewController.NavigationItem;
-            if(navigationItem.LeftBarButtonItems.Length > 0) {
+            if(navigationItem.LeftBarButtonItems != null && navigationItem.LeftBarButtonItems.Length > 0) {
                 // Already run, likely coming back from a navigation
                 return;
             }

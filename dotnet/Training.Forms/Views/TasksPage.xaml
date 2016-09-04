@@ -14,10 +14,14 @@
         <ToolbarItem Text="+" Command="{Binding AddCommand}"/>
     </ContentPage.ToolbarItems>
     <ContentPage.Content>
-		<ListView ItemsSource="{Binding ListData}">
-			<ListView.Header>
-                <SearchBar SearchCommand="{Binding SearchCommand}" />
-			</ListView.Header>
+		<ListView ItemsSource="{Binding ListData}" Header="{Binding .}">
+			<ListView.HeaderTemplate>
+				<DataTemplate>
+                    <SearchBar x:Name="_searchBar"
+						SearchCommand="{Binding SearchCommand}"
+						SearchCommandParameter="{Binding Text, Source={x:Reference Name=_searchBar}}" />
+				</DataTemplate>
+			</ListView.HeaderTemplate>
 			 <ListView.ItemTemplate>
                 <DataTemplate>
 					<ViewCell>

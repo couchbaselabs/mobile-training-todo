@@ -18,19 +18,67 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+using System;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using Acr.UserDialogs;
+using MvvmCross.Core.ViewModels;
+using MvvmCross.Platform;
+
 namespace Training.Core
 {
     /// <summary>
     /// The view model for the users page
     /// </summary>
-    public class UsersViewModel : BaseViewModel
+    public class UsersViewModel : BaseViewModel<UsersModel>
     {
+        private IUserDialogs _dialogs;
+
+        public ICommand SearchCommand
+        {
+            get {
+                return new MvxCommand<string>(s => Model.Filter(s));
+            }
+        }
+
+        public ICommand AddCommand
+        {
+            get {
+                return new MvxAsyncCommand(AddNewUser);
+            }
+        }
+
+        public ObservableCollection<string> ListData
+        {
+            get {
+                return Model.ListData;
+            }
+        }
+
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="parent">The parent view model (this is a nested view model).</param>
-        public UsersViewModel(ListDetailViewModel parent)
+        public UsersViewModel(ListDetailViewModel parent) : base(new UsersModel(parent.Username, parent.CurrentListID))
         {
+            _dialogs = Mvx.Resolve<IUserDialogs>();
+        }
+
+        private async Task AddNewUser()
+        {
+            var result = await _dialogs.PromptAsync(new PromptConfig {
+                Title = "New User",
+                Placeholder = "User Name"
+            });
+
+            if(result.Ok) {
+                try {
+                    Model.CreateNewUser(result.Text);
+                } catch(Exception e) {
+                    _dialogs.ShowError(e.Message);
+                }
+            }
         }
     }
 }

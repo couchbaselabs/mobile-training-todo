@@ -19,7 +19,6 @@
 // limitations under the License.
 //
 using Foundation;
-using MvvmCross.Core.ViewModels;
 using MvvmCross.iOS.Platform;
 using MvvmCross.Platform;
 using Training.Core;
@@ -53,7 +52,7 @@ namespace Training.iOS
             Mvx.RegisterSingleton<IImageService>(() => new ImageService());
 
             //Start the application
-            var startup = Mvx.Resolve<IMvxAppStart>();
+            var startup = new CoreAppStart();
             startup.Start(new { loginEnabled = false, username = default(string) });
 
             Window.MakeKeyAndVisible();

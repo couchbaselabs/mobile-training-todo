@@ -55,7 +55,7 @@ namespace Training.Core
         public ICommand SearchCommand
         {
             get {
-                return new MvxCommand(() => Console.WriteLine("Foo"));
+                return new MvxCommand<string>(s => Model.Filter(s));
             }
         }
 
@@ -74,7 +74,7 @@ namespace Training.Core
         /// Constructor
         /// </summary>
         /// <param name="parent">The parent view model (this is a nested view model).</param>
-        public TasksViewModel(ListDetailViewModel parent) : base(new TasksModel(parent.Username, parent.CurrentTaskID))
+        public TasksViewModel(ListDetailViewModel parent) : base(new TasksModel(parent.Username, parent.CurrentListID))
         {
             _dialogs = Mvx.Resolve<IUserDialogs>();
             ListData.CollectionChanged += (sender, e) => 

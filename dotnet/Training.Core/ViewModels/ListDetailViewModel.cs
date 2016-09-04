@@ -34,7 +34,7 @@ namespace Training.Core
             get; private set;
         }
 
-        internal string CurrentTaskID
+        internal string CurrentListID
         {
             get; private set;
         }
@@ -49,12 +49,12 @@ namespace Training.Core
         /// </summary>
         /// <param name="username">The username of the current user.</param>
         /// <param name="name">The name of the task.</param>
-        /// <param name="taskID">The task document ID.</param>
-        public void Init(string username, string name, string taskID)
+        /// <param name="listID">The task document ID.</param>
+        public void Init(string username, string name, string listID)
         {
             Username = username;
             PageTitle = name;
-            CurrentTaskID = taskID;
+            CurrentListID = listID;
         }
     }
 }

@@ -24,6 +24,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Models\TaskImageModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModels\TaskCellModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModels\TaskListCellModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\UsersModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\UserCellModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)ViewModels\" />

@@ -18,6 +18,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+using System;
 using Acr.UserDialogs;
 using Couchbase.Lite;
 using MvvmCross.Core.ViewModels;
@@ -26,12 +27,14 @@ using MvvmCross.Platform.IoC;
 using XLabs.Platform.Device;
 using XLabs.Platform.Services.Media;
 
+
+
 namespace Training.Core
 {
     /// <summary>
     /// This is the first location to be reached in the actual application
     /// </summary>
-    public class CoreApp : MvxApplication
+    public sealed class CoreApp : MvxApplication
     {
         public static readonly Manager AppWideManager = Manager.SharedInstance;
 
@@ -45,6 +48,19 @@ namespace Training.Core
             Mvx.RegisterSingleton<IUserDialogs>(() => UserDialogs.Instance);
             Mvx.RegisterType<IMediaPicker>(() => Mvx.Resolve<IDevice>().MediaPicker);
             RegisterAppStart<TaskListsViewModel>();
+        }
+    }
+
+    public sealed class CoreAppStart : MvxNavigatingObject, IMvxAppStart
+    {
+        public void Start(object hint = null)
+        {
+            dynamic h = hint;
+            if(h.loginEnabled) {
+                // Login logic
+            } else {
+                ShowViewModel<TaskListsViewModel>(new { loginEnabled = false, username = h.username });
+            }
         }
     }
 }

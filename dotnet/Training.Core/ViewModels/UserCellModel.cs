@@ -1,5 +1,5 @@
 ﻿//
-// TasksPage.xaml.cs
+// UserCellModel.cs
 //
 // Author:
 // 	Jim Borden  <jim.borden@couchbase.com>
@@ -19,24 +19,17 @@
 // limitations under the License.
 //
 using System;
-using System.Collections.Generic;
-using Foundation;
-using UIKit;
-using Xamarin.Forms;
-
-namespace Training
+namespace Training.Core
 {
-    public partial class TasksPage : ContentPage
+    public class UserCellModel : BaseViewModel
     {
-        public TasksPage()
+        public string Name { get; }
+
+        public UserCellModel(string name)
         {
-            InitializeComponent();
+            Name = name;
         }
 
-        protected override void OnBindingContextChanged()
-        {
-            base.OnBindingContextChanged();
-        }
     }
 }
 

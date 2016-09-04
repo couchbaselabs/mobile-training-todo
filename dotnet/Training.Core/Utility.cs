@@ -31,6 +31,21 @@ namespace Training.Core
     /// </summary>
     public static class JsonUtility
     {
+        public static IList<T> ConvertToNetList<T>(object jsonObject)
+        {
+            var arrayAttempt = ConvertToList<T>(jsonObject);
+            if(arrayAttempt != null) {
+                var retVal = new List<T>();
+                foreach(var item in arrayAttempt) {
+                    retVal.Add((T)ConvertToNetObject(item));
+                }
+
+                return retVal;
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// Converts the given object to a .NET object, ensuring that all contained objects
         /// are also .NET objects

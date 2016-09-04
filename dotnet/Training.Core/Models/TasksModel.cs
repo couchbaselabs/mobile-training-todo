@@ -90,6 +90,25 @@ namespace Training.Core
             }
         }
 
+        public void Filter(string searchString)
+        {
+            if(!String.IsNullOrEmpty(searchString)) {
+                _tasksLiveQuery.PostFilter = row => {
+                    var key = JsonUtility.ConvertToNetList<object>(row.Key);
+                    var name = key[2] as string;
+                    if(name == null) {
+                        return false;
+                    }
+
+                    return name.ToLower().Contains(searchString.ToLower());
+                };
+            } else {
+                _tasksLiveQuery.PostFilter = null;
+            }
+
+            _tasksLiveQuery.QueryOptionsChanged();
+        }
+
         private void SetupViewAndQuery()
         {
             var view = _db.GetView("tasksByCreatedAt");
@@ -121,8 +140,8 @@ namespace Training.Core
             }, "1.0");
 
             _tasksLiveQuery = view.CreateQuery().ToLiveQuery();
-            //_tasksLiveQuery.StartKey = _taskList.Id;
-            //_tasksLiveQuery.EndKey = _taskList.Id;
+            _tasksLiveQuery.StartKey = new[] { _taskList.Id };
+            _tasksLiveQuery.EndKey = new[] { _taskList.Id };
             _tasksLiveQuery.PrefixMatchLevel = 1;
             _tasksLiveQuery.Descending = true;
             _tasksLiveQuery.Changed += (sender, e) =>
