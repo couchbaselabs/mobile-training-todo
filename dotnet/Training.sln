@@ -1,0 +1,27 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Training.iOS", "Training.iOS\Training.iOS.csproj", "{276FE4C3-44E0-4849-B12D-3251B02888F6}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Training.Core", "Training.Core\Training.Core.shproj", "{BF8AA46B-A6E3-42A5-85CC-C6F0B277D11A}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Training.Forms", "Training.Forms\Training.Forms.shproj", "{8F3EF044-219C-4D38-AB7A-58894B7FE7F2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|iPhoneSimulator = Debug|iPhoneSimulator
+		Release|iPhone = Release|iPhone
+		Release|iPhoneSimulator = Release|iPhoneSimulator
+		Debug|iPhone = Debug|iPhone
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{276FE4C3-44E0-4849-B12D-3251B02888F6}.Debug|iPhoneSimulator.ActiveCfg = Debug|iPhoneSimulator
+		{276FE4C3-44E0-4849-B12D-3251B02888F6}.Debug|iPhoneSimulator.Build.0 = Debug|iPhoneSimulator
+		{276FE4C3-44E0-4849-B12D-3251B02888F6}.Release|iPhone.ActiveCfg = Release|iPhone
+		{276FE4C3-44E0-4849-B12D-3251B02888F6}.Release|iPhone.Build.0 = Release|iPhone
+		{276FE4C3-44E0-4849-B12D-3251B02888F6}.Release|iPhoneSimulator.ActiveCfg = Release|iPhoneSimulator
+		{276FE4C3-44E0-4849-B12D-3251B02888F6}.Release|iPhoneSimulator.Build.0 = Release|iPhoneSimulator
+		{276FE4C3-44E0-4849-B12D-3251B02888F6}.Debug|iPhone.ActiveCfg = Debug|iPhone
+		{276FE4C3-44E0-4849-B12D-3251B02888F6}.Debug|iPhone.Build.0 = Debug|iPhone
+	EndGlobalSection
+EndGlobal
