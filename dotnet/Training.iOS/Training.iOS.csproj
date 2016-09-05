@@ -191,6 +191,7 @@
   <ItemGroup>
     <Folder Include="Resources\" />
     <Folder Include="Services\" />
+    <Folder Include="Renderers\" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="LaunchScreen.storyboard" />
@@ -206,8 +207,9 @@
     <Compile Include="Setup.cs" />
     <Compile Include="DebugTrace.cs" />
     <Compile Include="LinkerPleaseInclude.cs" />
-    <Compile Include="TaskListsPageRenderer.cs" />
     <Compile Include="Services\ImageService.cs" />
+    <Compile Include="Renderers\TaskListsPageRenderer.cs" />
+    <Compile Include="Renderers\TaskListCellRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <ImageAsset Include="Resources\Assets.xcassets\Contents.json" />

@@ -11,9 +11,7 @@
 		<ListView ItemsSource="{Binding ListData}" Header="{Binding .}">
             <ListView.HeaderTemplate>
 				<DataTemplate>
-                    <SearchBar x:Name="_searchBar" 
-    					SearchCommand="{Binding SearchCommand}"
-    					SearchCommandParameter="{Binding Text, Source={x:Reference Name=_searchBar}}" />
+                     <SearchBar Text="{Binding SearchTerm, Mode=TwoWay}" />
 				</DataTemplate>
             </ListView.HeaderTemplate>
 		</ListView>

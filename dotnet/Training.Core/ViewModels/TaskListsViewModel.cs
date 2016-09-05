@@ -20,6 +20,7 @@
 //
 using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Acr.UserDialogs;
@@ -44,6 +45,22 @@ namespace Training
         }
 
         /// <summary>
+        /// Gets or sets the current text being searched for in the list
+        /// </summary>
+        public string SearchTerm
+        {
+            get {
+                return _searchTerm;
+            }
+            set {
+                if(SetProperty(ref _searchTerm, value)) {
+                    Model.Filter(value);
+                }
+            }
+        }
+        private string _searchTerm;
+
+        /// <summary>
         /// Gets or sets the currently selected item in the page list
         /// </summary>
         /// <value>The selected item.</value>
@@ -56,7 +73,7 @@ namespace Training
                 _selectedItem = value;
                 SetProperty(ref _selectedItem, null); // No "selection" effect
                 if(value != null) {
-                    ShowViewModel<ListDetailViewModel>(new { username = Model.Username, name = value.Name, listID = value.DocumentId });
+                    ShowViewModel<ListDetailViewModel>(new { username = Model.Username, name = value.Name, listID = value.DocumentID });
                 }
             }
         }
@@ -104,6 +121,16 @@ namespace Training
 
             Model = new TaskListsModel(username);
             LoginEnabled = loginEnabled;
+            TaskLists.CollectionChanged += (sender, e) => 
+            {
+                if(e.NewItems == null) {
+                    return;
+                }
+
+                foreach(TaskListCellModel item in e.NewItems) {
+                    item.EditCommand = new MvxAsyncCommand<string>(Edit);
+                }
+            };
         }
 
         private void AddNewItem()
@@ -125,6 +152,22 @@ namespace Training
                 Model.CreateTaskList(result.Text);
             } catch(Exception e) {
                 _dialogs.ShowError(e.Message);
+            }
+        }
+
+        private async Task Edit(string documentID)
+        {
+            var result = await _dialogs.PromptAsync(new PromptConfig {
+                Title = "Edit Task List",
+                Placeholder = "List Name"
+            });
+
+            if(result.Ok) {
+                try {
+                    Model.EditTaskList(documentID, result.Text);
+                } catch(Exception e) {
+                    _dialogs.ShowError(e.Message);
+                }
             }
         }
     }

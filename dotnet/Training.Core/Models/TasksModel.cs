@@ -21,7 +21,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-
+using System.Linq;
 using Couchbase.Lite;
 
 namespace Training.Core
@@ -40,7 +40,8 @@ namespace Training.Core
         /// <summary>
         /// Gets the list of tasks for the current list
         /// </summary>
-        public ObservableCollection<TaskCellModel> ListData { get; } = new ObservableCollection<TaskCellModel>();
+        public ExtendedObservableCollection<TaskCellModel> ListData { get; } = 
+            new ExtendedObservableCollection<TaskCellModel>();
 
         /// <summary>
         /// Gets the name of the database being worked on
@@ -146,14 +147,7 @@ namespace Training.Core
             _tasksLiveQuery.Descending = true;
             _tasksLiveQuery.Changed += (sender, e) =>
             {
-                if(ListData.Count != e.Rows.Count) { 
-                    ListData.Clear();
-                    foreach(var row in e.Rows) {
-                        var doc = row.Document;
-                        var rev = doc.CurrentRevision;
-                        ListData.Add(new TaskCellModel(doc));
-                    }
-                }
+                ListData.Replace(e.Rows.Select(x => new TaskCellModel(_db.Name, x.DocumentId)));
             };
             _tasksLiveQuery.Start();
         }

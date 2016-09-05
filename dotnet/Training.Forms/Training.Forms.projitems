@@ -47,5 +47,6 @@
       <DependentUpon>TaskImagePage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Converters\StreamToImageSourceConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Views\TaskListCell.cs" />
   </ItemGroup>
 </Project>

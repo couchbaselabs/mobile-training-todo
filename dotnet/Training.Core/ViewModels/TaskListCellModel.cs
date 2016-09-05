@@ -18,11 +18,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+using System.Windows.Input;
+
 namespace Training.Core
 {
     public sealed class TaskListCellModel : BaseViewModel
     {
-        public readonly string DocumentId;
+        public string DocumentID { get; }
+
+        public ICommand EditCommand
+        {
+            get; set;
+        }
+
+        public ICommand DeleteCommand
+        {
+            get; set;
+        }
 
         private int _incompleteCount;
         public int IncompleteCount 
@@ -40,8 +52,23 @@ namespace Training.Core
         public TaskListCellModel(string name, string documentId)
         {
             Name = name;
-            DocumentId = documentId;
+            DocumentID = documentId;
             _incompleteCount = -1;
+        }
+
+        public override bool Equals(object obj)
+        {
+            var other = obj as TaskListCellModel;
+            if(other == null) {
+                return false;
+            }
+
+            return DocumentID.Equals(other.DocumentID);
+        }
+
+        public override int GetHashCode()
+        {
+            return DocumentID.GetHashCode();
         }
     }
 }

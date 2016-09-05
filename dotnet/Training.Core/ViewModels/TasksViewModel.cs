@@ -20,6 +20,7 @@
 //
 using System;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -38,6 +39,23 @@ namespace Training.Core
     {
         private readonly IUserDialogs _dialogs;
 
+        public TaskCellModel SelectedItem
+        {
+            get {
+                return _selectedItem;
+            }
+            set {
+                if(_selectedItem == value) {
+                    return;
+                }
+
+                _selectedItem = value;
+                value.IsChecked = !value.IsChecked;
+                SetProperty(ref _selectedItem, null);
+            }
+        }
+        private TaskCellModel _selectedItem;
+
         /// <summary>
         /// Gets the list of tasks for display in the list view
         /// </summary>
@@ -50,14 +68,20 @@ namespace Training.Core
         }
 
         /// <summary>
-        /// Gets the command that gets fired when a search is requested
+        /// Gets or sets the current text being searched for in the list
         /// </summary>
-        public ICommand SearchCommand
+        public string SearchTerm
         {
             get {
-                return new MvxCommand<string>(s => Model.Filter(s));
+                return _searchTerm;
+            }
+            set {
+                if(SetProperty(ref _searchTerm, value)) {
+                    Model.Filter(value);
+                }
             }
         }
+        private string _searchTerm;
 
         /// <summary>
         /// Gets the command that is fired when the add button is pressed
@@ -84,17 +108,19 @@ namespace Training.Core
                 }
 
                 foreach(TaskCellModel item in e.NewItems) {
-                    item.AddImageCommand = new MvxAsyncCommand(() => ShowOrChooseImage(item));
+                    if(item.AddImageCommand == null) {
+                        item.AddImageCommand = new MvxAsyncCommand(() => ShowOrChooseImage(item));
+                    }
                 }
             };
         }
 
         internal async Task ShowOrChooseImage(TaskCellModel taskDocument)
         {
-            if(taskDocument.Thumbnail == null) {
+            if(taskDocument.Thumbnail == null || taskDocument.Thumbnail == Stream.Null) {
                 await ChooseImage(taskDocument);
             } else {
-                ShowViewModel<TaskImageViewModel>(new { databaseName = Model.DatabaseName, documentID = taskDocument.Document.Id });
+                ShowViewModel<TaskImageViewModel>(new { databaseName = Model.DatabaseName, documentID = taskDocument.DocumentID });
             }
         }
 

@@ -14,10 +14,24 @@
 		<ToolbarItem x:Name="_logoutButton" Text="Logout" Priority="1" />
 	</ContentPage.ToolbarItems>
 	<ContentPage.Content>
-        <ListView ItemsSource="{Binding TaskLists}" SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
+        <ListView ItemsSource="{Binding TaskLists}" 
+				SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+				Header="{Binding .}">
+			<ListView.HeaderTemplate>
+                <DataTemplate>
+                    <SearchBar Text="{Binding SearchTerm, Mode=TwoWay}" />
+                </DataTemplate>
+            </ListView.HeaderTemplate>
             <ListView.ItemTemplate>
 				<DataTemplate>
-                    <TextCell Text="{Binding Name}" Detail="{Binding IncompleteCount, Converter={StaticResource IncompleteToString}}" />
+					<local:TaskListCell Name="{Binding Name}" IncompleteTasks="{Binding IncompleteCount, Converter={StaticResource IncompleteToString}}">
+                        <local:TaskListCell.ContextActions>
+                            <MenuItem Command="{Binding EditCommand}" CommandParameter="{Binding DocumentID}"
+                               Text="Edit" />
+                            <MenuItem Command="{Binding DeleteCommand}" CommandParameter="{Binding DocumentID}"
+                               Text="Delete" IsDestructive="True" />
+                         </local:TaskListCell.ContextActions>
+					</local:TaskListCell>
 				</DataTemplate>
 			</ListView.ItemTemplate>
 		</ListView>

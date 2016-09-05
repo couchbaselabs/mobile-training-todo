@@ -14,27 +14,34 @@
         <ToolbarItem Text="+" Command="{Binding AddCommand}"/>
     </ContentPage.ToolbarItems>
     <ContentPage.Content>
-		<ListView ItemsSource="{Binding ListData}" Header="{Binding .}">
+		<ListView ItemsSource="{Binding ListData}" 
+				Header="{Binding .}" 
+				RowHeight="54"
+				SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
 			<ListView.HeaderTemplate>
 				<DataTemplate>
-                    <SearchBar x:Name="_searchBar"
-						SearchCommand="{Binding SearchCommand}"
-						SearchCommandParameter="{Binding Text, Source={x:Reference Name=_searchBar}}" />
+                    <SearchBar Text="{Binding SearchTerm, Mode=TwoWay}" />
 				</DataTemplate>
 			</ListView.HeaderTemplate>
 			 <ListView.ItemTemplate>
                 <DataTemplate>
 					<ViewCell>
-                        <Grid HeightRequest="44">
+						<ViewCell.ContextActions>
+                            <MenuItem Command="{Binding EditCommand}" CommandParameter="{Binding DocumentID}"
+                               Text="Edit" />
+                            <MenuItem Command="{Binding DeleteCommand}" CommandParameter="{Binding DocumentID}"
+                               Text="Delete" IsDestructive="True" />
+						</ViewCell.ContextActions>
+                        <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 							<Image Source="{Binding Thumbnail, Converter={StaticResource ImageSourceConverter}}" WidthRequest="44" HeightRequest="44" VerticalOptions="Center" />
-                            <Button Command="{Binding AddImageCommand}" WidthRequest="44" HeightRequest="44" />
+                            <Button Command="{Binding AddImageCommand}" WidthRequest="44" HeightRequest="44" VerticalOptions="Center" />
                             <Label Text="{Binding Name}" Grid.Column="1" VerticalOptions="Center" />
-							<Image Source="{Binding CheckedImage}" Grid.Column="2" />
+							<Image Source="{Binding CheckedImage}" Grid.Column="2" VerticalOptions="Center" />
                         </Grid>
 					</ViewCell>
                 </DataTemplate>

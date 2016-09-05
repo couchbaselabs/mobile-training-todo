@@ -23,8 +23,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using Couchbase.Lite;
 using Couchbase.Lite.Views;
+using MvvmCross.Core.ViewModels;
 
 namespace Training.Core
 {
@@ -42,7 +44,8 @@ namespace Training.Core
         /// <summary>
         /// Gets the list of task lists currently saved
         /// </summary>
-        public ObservableCollection<TaskListCellModel> TasksList { get; } = new ObservableCollection<TaskListCellModel>();
+        public ReactiveObservableCollection<TaskListCellModel> TasksList { get; } = 
+            new ReactiveObservableCollection<TaskListCellModel>();
 
         /// <summary>
         /// Gets the username of the user using the app
@@ -87,6 +90,38 @@ namespace Training.Core
             }
         }
 
+        public void EditTaskList(string documentId, string name)
+        {
+            try {
+                var doc = _db.GetDocument(documentId);
+                doc.Update(rev =>
+                {
+                    var props = rev.UserProperties;
+                    props["name"] = name;
+                    rev.SetUserProperties(props);
+
+                    return true;
+                });
+            } catch(Exception e) {
+                var newException = new ApplicationException("Couldn't save task list", e);
+                throw newException;
+            }
+        }
+
+        public void Filter(string searchText)
+        {
+            if(!String.IsNullOrEmpty(searchText)) {
+                _byNameQuery.StartKey = searchText;
+                _byNameQuery.PrefixMatchLevel = 1;
+            } else {
+                _byNameQuery.StartKey = null;
+                _byNameQuery.PrefixMatchLevel = 0;
+            }
+
+            _byNameQuery.EndKey = _byNameQuery.StartKey;
+            _byNameQuery.QueryOptionsChanged();
+        }
+
         private void SetupViewAndQuery()
         {
             var view = _db.GetView("list/listsByName");
@@ -102,22 +137,9 @@ namespace Training.Core
             _byNameQuery = view.CreateQuery().ToLiveQuery();
             _byNameQuery.Changed += (sender, args) =>
             {
-                int currentIndex = 0;
-                foreach(var row in args.Rows) {
-                    var title = row.Key as string;
-                    if(currentIndex >= TasksList.Count) {
-                        TasksList.Add(new TaskListCellModel(title, row.DocumentId));
-                    }
-                    if(row.Key as string != TasksList[currentIndex].Name) {
-                        TasksList.Insert(currentIndex, new TaskListCellModel(title, row.DocumentId));
-                    }
-
-                    currentIndex++;
-                }
-
-                while(currentIndex < TasksList.Count) {
-                    TasksList.RemoveAt(currentIndex);
-                }
+                TasksList.Replace(args.Rows.Select(x => new TaskListCellModel(x.Key as string, x.DocumentId) {
+                    DeleteCommand = new MvxCommand<string>(Delete)
+                }));
             };
             _byNameQuery.Start();
 
@@ -133,7 +155,7 @@ namespace Training.Core
                 }
 
                 var list = JsonUtility.ConvertToNetObject<IDictionary<string, object>>(doc["taskList"]);
-                if(!list.ContainsKey("id") || !list.ContainsKey("complete") || (bool)list["complete"]) {
+                if(!list.ContainsKey("id") || (list.ContainsKey("complete") && (bool)list["complete"])) {
                     return;
                 }
 
@@ -146,13 +168,23 @@ namespace Training.Core
             _incompleteQuery.Changed += (sender, e) => 
             {
                 foreach(var row in e.Rows) {
-                    var existingTask = TasksList.FirstOrDefault(x => x.Name == row.Key as string);
+                    var existingTask = TasksList.FirstOrDefault(x => x.DocumentID == row.Key as string);
                     if(existingTask != null) {
                         existingTask.IncompleteCount = (int)row.Value;
                     }
                 }
             };
             _incompleteQuery.Start();
+        }
+
+        private void Delete(string documentID)
+        {
+            var doc = _db.GetExistingDocument(documentID);
+            if(doc == null) {
+                return;
+            }
+
+            doc.Delete();
         }
 
         public void Dispose()

@@ -19,8 +19,11 @@
 // limitations under the License.
 //
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
-
+using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 
 namespace Training.Core
@@ -144,6 +147,65 @@ namespace Training.Core
             }
 
             return true;
+        }
+    }
+
+    public class ExtendedObservableCollection<T> : ObservableCollection<T>
+    {
+        public void Replace(IEnumerable<T> newItems)
+        {
+            var index = 0;
+            foreach(T item in newItems) {
+                if(index < Count) {
+                    var existing = IndexOf(item);
+
+                    if(existing == -1) {
+                        SetItem(index, item);
+                    } else if(existing != index) {
+                        Move(existing, index);
+                    }
+                } else {
+                    Add(item);
+                }
+
+                index++;
+            }
+
+            while(index < Count) {
+                RemoveAt(index++);
+            }
+        }
+    }
+
+    public sealed class ReactiveObservableCollection<T> : ExtendedObservableCollection<T> where T : INotifyPropertyChanged
+    {
+        
+        protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+        {
+            base.OnCollectionChanged(e);
+
+            if(e.NewItems != null) {
+                foreach(INotifyPropertyChanged item in e.NewItems) {
+                    item.PropertyChanged += Item_PropertyChanged;
+                }
+            }
+
+            if(e.OldItems != null) {
+                foreach(INotifyPropertyChanged item in e.OldItems) {
+                    item.PropertyChanged -= Item_PropertyChanged;
+                }
+            }
+        }
+
+        private void Item_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            Task.Run(() =>
+            {
+                var index = IndexOf((T)sender);
+                if(index != -1) {
+                    SetItem(index, (T)sender);
+                }
+            });
         }
     }
 }

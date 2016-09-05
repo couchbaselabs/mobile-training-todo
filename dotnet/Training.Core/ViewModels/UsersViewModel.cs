@@ -35,12 +35,21 @@ namespace Training.Core
     {
         private IUserDialogs _dialogs;
 
-        public ICommand SearchCommand
+        /// <summary>
+        /// Gets or sets the current text being searched for in the list
+        /// </summary>
+        public string SearchTerm
         {
             get {
-                return new MvxCommand<string>(s => Model.Filter(s));
+                return _searchTerm;
+            }
+            set {
+                if(SetProperty(ref _searchTerm, value)) {
+                    Model.Filter(value);
+                }
             }
         }
+        private string _searchTerm;
 
         public ICommand AddCommand
         {

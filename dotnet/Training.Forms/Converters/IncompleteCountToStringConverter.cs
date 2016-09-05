@@ -38,14 +38,14 @@ namespace Training.Forms
             }
 
             var val = (int)value;
-            return val == -1 ? String.Empty : val.ToString();
+            return val <= 0 ? String.Empty : val.ToString();
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var val = value as string;
             if(String.IsNullOrEmpty(val)) {
-                return -1;
+                return 0;
             }
 
             return Int32.Parse(val);

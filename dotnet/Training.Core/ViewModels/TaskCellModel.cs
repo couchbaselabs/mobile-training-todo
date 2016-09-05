@@ -21,8 +21,8 @@
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
-
-using Couchbase.Lite;
+using Acr.UserDialogs;
+using MvvmCross.Core.ViewModels;
 using MvvmCross.Platform;
 
 namespace Training.Core
@@ -30,9 +30,18 @@ namespace Training.Core
     /// <summary>
     /// The model for a cell in the list on the Tasks page
     /// </summary>
-    public sealed class TaskCellModel : BaseViewModel<TasksModel>
+    public sealed class TaskCellModel : BaseViewModel<TaskModel>
     {
-        internal Document Document { get; }
+        private IUserDialogs _dialogs = Mvx.Resolve<IUserDialogs>();
+
+        public ICommand DeleteCommand
+        {
+            get {
+                return new MvxCommand(Delete);
+            }
+        }
+
+        public string DocumentID { get; }
 
         /// <summary>
         /// Gets the name of the task
@@ -40,7 +49,7 @@ namespace Training.Core
         public string Name
         {
             get {
-                return Document.GetProperty<string>("task");
+                return Model.Name;
             }
         }
 
@@ -64,30 +73,19 @@ namespace Training.Core
         public bool IsChecked 
         {
             get {
-                return Document.GetProperty<bool>("complete");
+                return Model.IsChecked;
             }
             set {
-                var saved = false;
-                Document.Update(rev =>
-                {
-                    var existing = (bool)rev.GetProperty("complete");
-                    var props = rev.UserProperties;
-                    props["complete"] = value;
-                    rev.SetUserProperties(props);
-                    saved = existing != value;
-                    return saved;
-                });
-
-                if(saved) {
-                    RaisePropertyChanged(nameof(CheckedImage));
+                if(Model.IsChecked == value) {
+                    return;
                 }
+
+                Model.IsChecked = value;
+                RaisePropertyChanged(nameof(CheckedImage));
             }
         }
 
-        /// <summary>
-        /// Gets the image to use for the checked area
-        /// </summary>
-        public string CheckedImage 
+        public string CheckedImage
         {
             get {
                 return IsChecked ? "Users.png" : null;
@@ -108,34 +106,51 @@ namespace Training.Core
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="taskDocument">The document to read information from</param>
-        public TaskCellModel(Document taskDocument)
+        /// <param name="databaseName">The name of the database</param>
+        /// <param name="documentID">The ID of the document to use</param>
+        public TaskCellModel(string databaseName, string documentID)
         {
-            Document = taskDocument;
+            DocumentID = documentID;
+            Model = new TaskModel(databaseName, documentID);
             GenerateThumbnail();
         }
 
         internal async Task SetImage(Stream image)
         {
-            Document.Update(rev =>
-            {
-                rev.SetAttachment("image", "image/png", image);
-                return true;
-            });
-
+            Model.SetImage(image);
             await GenerateThumbnail();
         }
 
         internal Stream GetImage()
         {
-            return Document.CurrentRevision.GetAttachment("image")?.ContentStream;
+            return Model.GetImage();
         }
 
         private async Task GenerateThumbnail()
         {
             var service = Mvx.Resolve<IImageService>();
-            var att = Document.CurrentRevision.GetAttachment("image");
-            Thumbnail = await service.Square(att?.ContentStream, 44, att?.Metadata?["digest"] as string);
+            var fullImage = GetImage();
+            Thumbnail = await service.Square(fullImage, 44, Model.GetImageDigest());
+        }
+
+        private void Delete()
+        {
+            Model.Delete();
+        }
+
+        public override bool Equals(object obj)
+        {
+            var other = obj as TaskCellModel;
+            if(other == null) {
+                return false;
+            }
+
+            return other.Model.Equals(Model);
+        }
+
+        public override int GetHashCode()
+        {
+            return Model.GetHashCode();
         }
     }
 }
