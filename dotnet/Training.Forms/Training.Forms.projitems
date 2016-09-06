@@ -11,6 +11,7 @@
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Views\" />
     <Folder Include="$(MSBuildThisFileDirectory)Converters\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Helpers\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Views\TaskListsPage.xaml">
@@ -48,5 +49,6 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Converters\StreamToImageSourceConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Views\TaskListCell.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\NavigationLifecycleHelper.cs" />
   </ItemGroup>
 </Project>

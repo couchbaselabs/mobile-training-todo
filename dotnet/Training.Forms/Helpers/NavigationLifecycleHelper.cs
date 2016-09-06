@@ -1,5 +1,5 @@
 ﻿//
-// UserCellModel.cs
+// NavigationLifecycleHelper.cs
 //
 // Author:
 // 	Jim Borden  <jim.borden@couchbase.com>
@@ -18,31 +18,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-using System.Windows.Input;
+using System;
+using System.Linq;
 
-using MvvmCross.Core.ViewModels;
+using Xamarin.Forms;
 
-namespace Training.Core
+namespace Training.Forms
 {
-    public class UserCellModel : BaseViewModel<UserModel>
+    public sealed class NavigationLifecycleHelper
     {
-        public ICommand DeleteCommand
+        private readonly Page _page;
+
+        public NavigationLifecycleHelper(Page page)
         {
-            get {
-                return new MvxCommand(Model.Delete);
-            }
+            _page = page;
         }
 
-        public string Name 
+        public bool OnDisappearing(INavigation navigation)
         {
-            get {
-                return Model.Name;
-            }
-        }
+            if(navigation.NavigationStack.Last() == _page) {
+                var disposable = _page.BindingContext as IDisposable;
+                if(disposable != null) {
+                    disposable.Dispose();
+                }
 
-        public UserCellModel(string databaseName, string documentID) : base(new UserModel(databaseName, documentID))
-        {
+                return true;
+            }
+
+            return false;
         }
     }
 }
+
 

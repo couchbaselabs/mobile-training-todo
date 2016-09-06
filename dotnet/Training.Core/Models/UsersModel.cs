@@ -21,7 +21,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-
+using System.Linq;
 using Couchbase.Lite;
 
 namespace Training.Core
@@ -34,7 +34,7 @@ namespace Training.Core
         private LiveQuery _usersLiveQuery;
         private Document _taskList;
 
-        public ObservableCollection<string> ListData { get; } = new ObservableCollection<string>();
+        public ExtendedObservableCollection<UserCellModel> ListData { get; } = new ExtendedObservableCollection<UserCellModel>();
 
         public UsersModel(string databaseName, string currentListId)
         {
@@ -103,12 +103,14 @@ namespace Training.Core
             _usersLiveQuery.PrefixMatchLevel = 1;
             _usersLiveQuery.Changed += (sender, e) => 
             {
-                ListData.Clear();
-                foreach(var row in e.Rows) {
-                    var key = JsonUtility.ConvertToNetList<string>(row.Key);
+                ListData.Replace(e.Rows.Select(x =>
+                {
+                    var key = JsonUtility.ConvertToNetList<string>(x.Key);
+                    var id = key[0];
                     var name = key[1];
-                    ListData.Add(name);
-                }
+                    var docId = $"{id}.{name}";
+                    return new UserCellModel(_db.Name, docId);
+                }));
             };
             _usersLiveQuery.Start();
         }

@@ -121,16 +121,6 @@ namespace Training
 
             Model = new TaskListsModel(username);
             LoginEnabled = loginEnabled;
-            TaskLists.CollectionChanged += (sender, e) => 
-            {
-                if(e.NewItems == null) {
-                    return;
-                }
-
-                foreach(TaskListCellModel item in e.NewItems) {
-                    item.EditCommand = new MvxAsyncCommand<string>(Edit);
-                }
-            };
         }
 
         private void AddNewItem()
@@ -152,22 +142,6 @@ namespace Training
                 Model.CreateTaskList(result.Text);
             } catch(Exception e) {
                 _dialogs.ShowError(e.Message);
-            }
-        }
-
-        private async Task Edit(string documentID)
-        {
-            var result = await _dialogs.PromptAsync(new PromptConfig {
-                Title = "Edit Task List",
-                Placeholder = "List Name"
-            });
-
-            if(result.Ok) {
-                try {
-                    Model.EditTaskList(documentID, result.Text);
-                } catch(Exception e) {
-                    _dialogs.ShowError(e.Message);
-                }
             }
         }
     }

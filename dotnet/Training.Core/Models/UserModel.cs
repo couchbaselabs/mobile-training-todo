@@ -1,5 +1,5 @@
 ﻿//
-// UserCellModel.cs
+// UserModel.cs
 //
 // Author:
 // 	Jim Borden  <jim.borden@couchbase.com>
@@ -18,30 +18,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-using System.Windows.Input;
-
-using MvvmCross.Core.ViewModels;
+using System;
+using Couchbase.Lite;
 
 namespace Training.Core
 {
-    public class UserCellModel : BaseViewModel<UserModel>
+    public sealed class UserModel : BaseModel
     {
-        public ICommand DeleteCommand
+        private Document _document;
+
+        public string Name
         {
             get {
-                return new MvxCommand(Model.Delete);
+                return _document.GetProperty<string>("username");
             }
         }
 
-        public string Name 
+        public UserModel(string databaseName, string documentId)
         {
-            get {
-                return Model.Name;
-            }
+            var db = CoreApp.AppWideManager.GetDatabase(databaseName);
+            _document = db.GetExistingDocument(documentId);
         }
 
-        public UserCellModel(string databaseName, string documentID) : base(new UserModel(databaseName, documentID))
+        public void Delete()
         {
+            _document.Delete();
         }
     }
 }

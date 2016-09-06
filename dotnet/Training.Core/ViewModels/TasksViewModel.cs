@@ -21,23 +21,23 @@
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Acr.UserDialogs;
 using MvvmCross.Core.ViewModels;
 using MvvmCross.Platform;
-using XLabs.Platform.Services.Media;
+using Training.Core;
 
-namespace Training.Core
+namespace Training
 {
     /// <summary>
     /// The view model for the list of tasks page
     /// </summary>
-    public class TasksViewModel : BaseViewModel<TasksModel>
+    public class TasksViewModel : BaseViewModel<TasksModel>, IDisposable
     {
         private readonly IUserDialogs _dialogs;
+        private readonly ImageChooser _imageChooser;
 
         public TaskCellModel SelectedItem
         {
@@ -101,6 +101,10 @@ namespace Training.Core
         public TasksViewModel(ListDetailViewModel parent) : base(new TasksModel(parent.Username, parent.CurrentListID))
         {
             _dialogs = Mvx.Resolve<IUserDialogs>();
+            _imageChooser = new ImageChooser(new ImageChooserConfig {
+                Dialogs = _dialogs
+            });
+
             ListData.CollectionChanged += (sender, e) => 
             {
                 if(e.NewItems == null) {
@@ -109,7 +113,7 @@ namespace Training.Core
 
                 foreach(TaskCellModel item in e.NewItems) {
                     if(item.AddImageCommand == null) {
-                        item.AddImageCommand = new MvxAsyncCommand(() => ShowOrChooseImage(item));
+                        item.AddImageCommand = new MvxAsyncCommand<TaskCellModel>(ShowOrChooseImage);
                     }
                 }
             };
@@ -117,46 +121,32 @@ namespace Training.Core
 
         internal async Task ShowOrChooseImage(TaskCellModel taskDocument)
         {
-            if(taskDocument.Thumbnail == null || taskDocument.Thumbnail == Stream.Null) {
+            if(!taskDocument.HasImage()) {
                 await ChooseImage(taskDocument);
             } else {
                 ShowViewModel<TaskImageViewModel>(new { databaseName = Model.DatabaseName, documentID = taskDocument.DocumentID });
             }
         }
 
-        private async Task ChooseImage(TaskCellModel taskDocument)
+        private async Task ChooseImage(TaskCellModel taskCellModel)
         {
-            var mediaPicker = Mvx.Resolve<IMediaPicker>();
-            var result = default(string);
-            if(mediaPicker.IsCameraAvailable) {
-                result = await _dialogs.ActionSheetAsync(null, "Cancel", "Delete", CancellationToken.None, "Choose Existing", "Take Photo");
-            } else {
-                result = await _dialogs.ActionSheetAsync(null, "Cancel", "Delete", CancellationToken.None, "Choose Existing");
-            }
-
-            if(result == "Cancel") {
+            var result = await _imageChooser.GetPhotoAsync();
+            if(result == null) {
                 return;
             }
 
-            var photoResult = default(MediaFile);
-            if(result == "Choose Existing") {
-                try {
-                    photoResult = await mediaPicker.SelectPhotoAsync(new CameraMediaStorageOptions());
-                } catch(OperationCanceledException) {
-                    return;
-                }
-            } else if(result == "Take Photo") {
-                try {
-                    photoResult = await mediaPicker.TakePhotoAsync(new CameraMediaStorageOptions { DefaultCamera = CameraDevice.Rear, SaveMediaOnCapture = false });
-                } catch(OperationCanceledException) {
-                    return;
-                }
+            if(result == Stream.Null) {
+                result = null;
             }
 
-            await taskDocument.SetImage(photoResult.Source);
+            try {
+                taskCellModel.SetImage(result);
+            } catch(Exception e) {
+                _dialogs.ShowError(e.Message);
+                return;
+            }
         }
-
-                
+    
         private void AddNewItem()
         {
             _dialogs.Prompt(new PromptConfig {
@@ -177,6 +167,11 @@ namespace Training.Core
             } catch(Exception e) {
                 _dialogs.ShowError(e.Message);
             }
+        }
+
+        public void Dispose()
+        {
+            Model.Dispose();
         }
     }
 }

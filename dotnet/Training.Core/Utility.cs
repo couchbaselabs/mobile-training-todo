@@ -18,13 +18,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Acr.UserDialogs;
+using MvvmCross.Platform;
 using Newtonsoft.Json.Linq;
+using XLabs.Platform.Services.Media;
 
 namespace Training.Core
 {
@@ -172,7 +178,7 @@ namespace Training.Core
             }
 
             while(index < Count) {
-                RemoveAt(index++);
+                RemoveAt(index);
             }
         }
     }
@@ -207,6 +213,62 @@ namespace Training.Core
                 }
             });
         }
+    }
+
+    public sealed class ImageChooser
+    {
+        private readonly ImageChooserConfig _config;
+
+        public ImageChooser(ImageChooserConfig config) 
+        {
+            _config = config;
+        }
+
+        public async Task<Stream> GetPhotoAsync()
+        {
+            var result = default(string);
+            if(_config.MediaPicker.IsCameraAvailable) {
+                result = await _config.Dialogs.ActionSheetAsync(_config.Title, _config.CancelText, _config.DeleteText, CancellationToken.None, "Choose Existing", "Take Photo");
+            } else {
+                result = await _config.Dialogs.ActionSheetAsync(_config.Title, _config.CancelText, _config.DeleteText, CancellationToken.None, "Choose Existing");
+            }
+
+            if(result == _config.CancelText) {
+                return null;
+            }
+
+            var photoResult = default(MediaFile);
+            if(result == "Choose Existing") {
+                try {
+                    photoResult = await _config.MediaPicker.SelectPhotoAsync(new CameraMediaStorageOptions());
+                } catch(OperationCanceledException) {
+                    return null;
+                }
+            } else if(result == "Take Photo") {
+                try {
+                    photoResult = await _config.MediaPicker.TakePhotoAsync(new CameraMediaStorageOptions { DefaultCamera = CameraDevice.Rear, SaveMediaOnCapture = false });
+                } catch(OperationCanceledException) {
+                    return null;
+                }
+            } else if(result == _config.DeleteText) {
+                return Stream.Null;
+            }
+
+            return photoResult?.Source;
+        }
+    }
+
+    public sealed class ImageChooserConfig
+    {
+        public string Title { get; set; }
+
+        public string DeleteText { get; set; }
+
+        public string CancelText { get; set; } = "Cancel";
+
+        public IUserDialogs Dialogs { get; set; } = Mvx.Resolve<IUserDialogs>();
+
+        public IMediaPicker MediaPicker { get; set; } = Mvx.Resolve<IMediaPicker>();
     }
 }
 

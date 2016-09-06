@@ -19,6 +19,7 @@
 // limitations under the License.
 //
 using System;
+using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
 using CoreGraphics;
@@ -34,32 +35,6 @@ namespace Training.iOS
     public sealed class ImageService : IImageService
     {
         private static NSCache _cache = new NSCache { CountLimit = 50 };
-
-        public async Task<Stream> Square(Stream image, float size, string cacheName)
-        {
-            if(image == null || image == Stream.Null) {
-                return Stream.Null;
-            }
-
-            if(!String.IsNullOrEmpty(cacheName)) {
-                var cachedObject = _cache.ObjectForKey(new NSString(cacheName)) as UIImage;
-                if(cachedObject != null) {
-                    return cachedObject.AsPNG().AsStream();
-                }
-            }
-
-            return await Task.Run<Stream>(() =>
-            {
-                var uiImage = UIImage.LoadFromData(NSData.FromStream(image));
-                var square = Square(uiImage, size);
-                square = Resize(square, new CGSize(size, size));
-                if(!String.IsNullOrEmpty(cacheName)) {
-                    _cache.SetObjectforKey(square, new NSString(cacheName));
-                }
-
-                return square.AsPNG().AsStream();
-            });
-        }
 
         private static UIImage Square(UIImage image, float size)
         {
@@ -94,6 +69,54 @@ namespace Training.iOS
             UIGraphics.EndImageContext();
 
             return newImage;
+        }
+
+        public async Task<Stream> Square(Stream image, float size, string cacheName)
+        {
+            if(image == null || image == Stream.Null) {
+                return Stream.Null;
+            }
+
+            if(!String.IsNullOrEmpty(cacheName)) {
+                var cachedObject = _cache.ObjectForKey(new NSString(cacheName)) as UIImage;
+                if(cachedObject != null) {
+                    return cachedObject.AsPNG().AsStream();
+                }
+            }
+
+            return await Task.Run<Stream>(() =>
+            {
+                var uiImage = UIImage.LoadFromData(NSData.FromStream(image));
+                var square = Square(uiImage, size);
+                square = Resize(square, new CGSize(size, size));
+                if(!String.IsNullOrEmpty(cacheName)) {
+                    _cache.SetObjectforKey(square, new NSString(cacheName));
+                }
+
+                return square.AsPNG().AsStream();
+            });
+        }
+
+        public Stream GenerateSolidColor(float size, Color color, string cacheName)
+        {
+            if(!String.IsNullOrEmpty(cacheName)) {
+                var cachedObject = _cache.ObjectForKey(new NSString(cacheName)) as UIImage;
+                if(cachedObject != null) {
+                    return cachedObject.AsPNG().AsStream();
+                }
+            }
+
+            UIGraphics.BeginImageContextWithOptions(new CGSize(size, size), true, 1);
+            UIGraphics.GetCurrentContext().SetFillColor(new CGColor(color.R / 255.0f, color.G / 255.0f, color.B / 255.0f));
+            UIGraphics.RectFill(new CGRect(0, 0, size, size));
+            var image = UIGraphics.GetImageFromCurrentImageContext();
+            UIGraphics.EndImageContext();
+
+            if(!String.IsNullOrEmpty(cacheName)) {
+                _cache.SetObjectforKey(image, new NSString(cacheName));
+            }
+
+            return image.AsPNG().AsStream();
         }
     }
 }

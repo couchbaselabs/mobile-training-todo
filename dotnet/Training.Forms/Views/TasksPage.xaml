@@ -27,9 +27,9 @@
                 <DataTemplate>
 					<ViewCell>
 						<ViewCell.ContextActions>
-                            <MenuItem Command="{Binding EditCommand}" CommandParameter="{Binding DocumentID}"
+                            <MenuItem Command="{Binding EditCommand}"
                                Text="Edit" />
-                            <MenuItem Command="{Binding DeleteCommand}" CommandParameter="{Binding DocumentID}"
+                            <MenuItem Command="{Binding DeleteCommand}"
                                Text="Delete" IsDestructive="True" />
 						</ViewCell.ContextActions>
                         <Grid>
@@ -39,7 +39,7 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 							<Image Source="{Binding Thumbnail, Converter={StaticResource ImageSourceConverter}}" WidthRequest="44" HeightRequest="44" VerticalOptions="Center" />
-                            <Button Command="{Binding AddImageCommand}" WidthRequest="44" HeightRequest="44" VerticalOptions="Center" />
+                            <Button Command="{Binding AddImageCommand}" CommandParameter="{Binding .}" WidthRequest="44" HeightRequest="44" VerticalOptions="Center" />
                             <Label Text="{Binding Name}" Grid.Column="1" VerticalOptions="Center" />
 							<Image Source="{Binding CheckedImage}" Grid.Column="2" VerticalOptions="Center" />
                         </Grid>

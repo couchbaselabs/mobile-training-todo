@@ -36,7 +36,7 @@ namespace Training
     /// </summary>
     public abstract class BaseViewModel<T> : BaseViewModel where T : BaseModel
     {
-        protected T Model { get; set; }
+        public T Model { get; protected set; }
 
         protected BaseViewModel() 
         {

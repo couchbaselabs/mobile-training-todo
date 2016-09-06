@@ -18,6 +18,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -37,6 +38,8 @@ namespace Training.Core
         /// <returns>An awaitable task that will contain a stream of data containing the result
         /// of the operation upon completion</returns>
         Task<Stream> Square(Stream image, float size, string cacheName);
+
+        Stream GenerateSolidColor(float size, Color color, string cacheName);
     }
 }
 

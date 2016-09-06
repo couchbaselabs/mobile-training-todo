@@ -18,13 +18,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+using System;
+
 namespace Training.Core
 {
     /// <summary>
     /// The view model for the task list / users tabbed view of the application
     /// </summary>
-    public class ListDetailViewModel : BaseViewModel
+    public class ListDetailViewModel : BaseViewModel<ListDetailModel>, IDisposable
     {
+        public bool HasModeratorStatus
+        {
+            get {
+                return _hasModeratorStatus;
+            }
+            set {
+                SetProperty(ref _hasModeratorStatus, value);
+            }
+        }
+        private bool _hasModeratorStatus;
+
         /// <summary>
         /// Gets the title of the page
         /// </summary>
@@ -55,6 +68,25 @@ namespace Training.Core
             Username = username;
             PageTitle = name;
             CurrentListID = listID;
+            Model = new ListDetailModel(username, listID);
+            CalculateModeratorStatus();
+        }
+
+        private void CalculateModeratorStatus()
+        {
+            var owner = Model.Owner;
+            if(Username.Equals(owner) || Model.HasModerator(Username)) {
+                HasModeratorStatus = true;
+                return;
+            }
+
+            Model.TrackModeratorStatus(Username);
+            Model.ModeratorStatusGained += (sender, e) => HasModeratorStatus = true;
+        }
+
+        public void Dispose()
+        {
+            Model.Dispose();
         }
     }
 }

@@ -20,8 +20,9 @@
 //
 using System;
 using System.Collections.Generic;
-using Foundation;
-using UIKit;
+using System.Linq;
+
+using Training.Core;
 using Xamarin.Forms;
 
 namespace Training
@@ -31,11 +32,6 @@ namespace Training
         public TasksPage()
         {
             InitializeComponent();
-        }
-
-        protected override void OnBindingContextChanged()
-        {
-            base.OnBindingContextChanged();
         }
     }
 }

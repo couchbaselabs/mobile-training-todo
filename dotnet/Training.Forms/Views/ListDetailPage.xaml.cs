@@ -19,20 +19,36 @@
 // limitations under the License.
 //
 using System;
-using System.Collections.Generic;
-using MvvmCross.Core.ViewModels;
-using MvvmCross.Forms.Presenter.Core;
-using MvvmCross.Platform;
+using System.ComponentModel;
 using Training.Core;
+using Training.Forms;
 using Xamarin.Forms;
 
 namespace Training
 {
     public partial class ListDetailPage : TabbedPage
     {
+        private NavigationLifecycleHelper _navHelper;
+        private UsersPage _usersPage;
+
         public ListDetailPage()
         {
             InitializeComponent();
+            _navHelper =  new NavigationLifecycleHelper(this);
+        }
+
+        private void AddUsersTab(object sender, PropertyChangedEventArgs e)
+        {
+            var viewModel = BindingContext as ListDetailViewModel;
+            if(viewModel == null) {
+                return;
+            }
+
+            if(e.PropertyName == nameof(viewModel.HasModeratorStatus)) {
+                if(viewModel.HasModeratorStatus && Children.Count < 2) {
+                    Children.Add(_usersPage);
+                }
+            }
         }
 
         protected override void OnBindingContextChanged()
@@ -47,8 +63,21 @@ namespace Training
             var child1 = (TasksPage)Children[0];
             child1.BindingContext = new TasksViewModel(viewModel);
 
-            var child2 = (UsersPage)Children[1];
-            child2.BindingContext = new UsersViewModel(viewModel);
+            _usersPage = (UsersPage)Children[1];
+            _usersPage.BindingContext = new UsersViewModel(viewModel);
+
+            if(!viewModel.HasModeratorStatus) {
+                Children.RemoveAt(1);
+                viewModel.PropertyChanged += AddUsersTab;
+            }
+        }
+
+        protected override void OnDisappearing()
+        {
+            if(_navHelper.OnDisappearing(Navigation)) {
+                (Children[0].BindingContext as IDisposable)?.Dispose();
+                (_usersPage.BindingContext as IDisposable)?.Dispose();
+            }
         }
     }
 }

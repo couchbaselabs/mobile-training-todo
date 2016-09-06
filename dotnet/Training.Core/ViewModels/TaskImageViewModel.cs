@@ -18,7 +18,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Input;
+
+using Acr.UserDialogs;
+using MvvmCross.Core.ViewModels;
+using XLabs.Platform.Services.Media;
 
 namespace Training.Core
 {
@@ -27,7 +35,14 @@ namespace Training.Core
     /// </summary>
     public class TaskImageViewModel : BaseViewModel<TaskImageModel>
     {
+        private ImageChooser _imageChooser;
 
+        public ICommand EditCommand
+        {
+            get {
+                return new MvxAsyncCommand(EditImage);
+            }
+        }
         /// <summary>
         /// Gets the stream containing the image data
         /// </summary>
@@ -37,6 +52,19 @@ namespace Training.Core
             get {
                 return Model.Image ?? Stream.Null;
             }
+            set {
+                Model.Image = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public TaskImageViewModel(IUserDialogs dialogs, IMediaPicker mediaPicker)
+        {
+            _imageChooser = new ImageChooser(new ImageChooserConfig {
+                Dialogs = dialogs,
+                MediaPicker = mediaPicker,
+                DeleteText = "Delete"
+            });
         }
 
         /// <summary>
@@ -47,6 +75,20 @@ namespace Training.Core
         public void Init(string databaseName, string documentID)
         {
             Model = new TaskImageModel(databaseName, documentID);
+        }
+
+        private async Task EditImage()
+        {
+            var result = await _imageChooser.GetPhotoAsync();
+            if(result == null) {
+                return;
+            }
+
+            if(result == Stream.Null) {
+                result = null;
+            }
+
+            Image = result;
         }
     }
 }

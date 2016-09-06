@@ -20,6 +20,8 @@
 //
 using System;
 using System.IO;
+using System.Linq;
+using System.Threading;
 using Couchbase.Lite;
 
 namespace Training.Core
@@ -31,9 +33,10 @@ namespace Training.Core
         public string Name
         {
             get {
-                return _document.GetProperty<string>("task");
+                return _name.Value;
             }
         }
+        private Lazy<string> _name;
 
         public bool IsChecked
         {
@@ -41,15 +44,19 @@ namespace Training.Core
                 return _document.GetProperty<bool>("complete");
             }
             set {
-                _document.Update(rev =>
-                {
-                    var existing = (bool)rev.GetProperty("complete");
-                    var props = rev.UserProperties;
-                    props["complete"] = value;
-                    rev.SetUserProperties(props);
-                    var saved = existing != value;
-                    return saved;
-                });
+                try {
+                    _document.Update(rev =>
+                    {
+                        var existing = (bool)rev.GetProperty("complete");
+                        var props = rev.UserProperties;
+                        props["complete"] = value;
+                        rev.SetUserProperties(props);
+                        var saved = existing != value;
+                        return saved;
+                    });
+                } catch(Exception e) {
+                    throw new ApplicationException("Failed to edit task", e);
+                }
             }
         }
 
@@ -57,13 +64,20 @@ namespace Training.Core
         {
             var db = CoreApp.AppWideManager.GetDatabase(databaseName);
             _document = db.GetExistingDocument(documentID);
+            _name = new Lazy<string>(() => _document.GetProperty<string>("task"), LazyThreadSafetyMode.None);
+            _imageDigest = new Lazy<string>(() => _document.CurrentRevision.GetAttachment("image")?.Metadata?["digest"] as string, LazyThreadSafetyMode.None);
         }
 
         public string GetImageDigest()
         {
-            return _document.CurrentRevision.GetAttachment("image")?.Metadata?["digest"] as string;
+            return _imageDigest.Value;
         }
+        private Lazy<string> _imageDigest;
 
+        public bool HasImage()
+        {
+            return _document.CurrentRevision.AttachmentNames.Contains("image");
+        }
 
         public Stream GetImage()
         {
@@ -72,31 +86,45 @@ namespace Training.Core
 
         public void SetImage(Stream image)
         {
-            _document.Update(rev =>
-            {
-                rev.SetAttachment("image", "image/png", image);
-                return true;
-            });
+            try {
+                _document.Update(rev =>
+                {
+                    if(image == null) {
+                        rev.RemoveAttachment("image");
+                    } else {
+                        rev.SetAttachment("image", "image/png", image);
+                    }
+
+                    return true;
+                });
+            } catch(Exception e) {
+                throw new ApplicationException("Failed to save image", e);
+            }
         }
 
         public void Delete()
         {
-            _document.Delete();
-        }
-
-        public override bool Equals(object obj)
-        {
-            var other = obj as TaskModel;
-            if(other == null) {
-                return false;
+            try {
+                _document.Delete();
+            } catch(Exception e) {
+                throw new ApplicationException("Failed to delete task", e);
             }
-
-            return _document.Id.Equals(other._document.Id);
         }
 
-        public override int GetHashCode()
+        public void Edit(string name)
         {
-            return _document.Id.GetHashCode();
+            try {
+                _document.Update(rev =>
+                {
+                    var props = rev.UserProperties;
+                    var oldName = props["task"];
+                    props["task"] = name;
+                    rev.SetUserProperties(props);
+                    return !String.Equals(oldName, name);
+                });
+            } catch(Exception e) {
+                throw new ApplicationException("Failed to edit task", e);
+            }
         }
     }
 }

@@ -58,7 +58,7 @@ namespace Training.Core
             }
         }
 
-        public ObservableCollection<string> ListData
+        public ObservableCollection<UserCellModel> ListData
         {
             get {
                 return Model.ListData;

@@ -40,6 +40,18 @@ namespace Training.Core
             get {
                 return _taskDocument.CurrentRevision.GetAttachment("image")?.ContentStream;
             }
+            set {
+                _taskDocument.Update(rev =>
+                {
+                    if(value == null) {
+                        rev.RemoveAttachment("image");
+                    } else {
+                        rev.SetAttachment("image", "image/png", value);
+                    }
+
+                    return true;
+                });
+            }
         }
 
         /// <summary>

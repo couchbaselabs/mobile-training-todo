@@ -14,6 +14,16 @@
                      <SearchBar Text="{Binding SearchTerm, Mode=TwoWay}" />
 				</DataTemplate>
             </ListView.HeaderTemplate>
+			<ListView.ItemTemplate>
+                <DataTemplate>
+                    <TextCell Text="{Binding Name}">
+                        <TextCell.ContextActions>
+                            <MenuItem Command="{Binding DeleteCommand}"
+                               Text="Delete" IsDestructive="True" />
+                        </TextCell.ContextActions>
+					</TextCell>
+				</DataTemplate>
+			</ListView.ItemTemplate>
 		</ListView>
     </ContentPage.Content>
 </ContentPage>

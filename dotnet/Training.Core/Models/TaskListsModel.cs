@@ -90,24 +90,6 @@ namespace Training.Core
             }
         }
 
-        public void EditTaskList(string documentId, string name)
-        {
-            try {
-                var doc = _db.GetDocument(documentId);
-                doc.Update(rev =>
-                {
-                    var props = rev.UserProperties;
-                    props["name"] = name;
-                    rev.SetUserProperties(props);
-
-                    return true;
-                });
-            } catch(Exception e) {
-                var newException = new ApplicationException("Couldn't save task list", e);
-                throw newException;
-            }
-        }
-
         public void Filter(string searchText)
         {
             if(!String.IsNullOrEmpty(searchText)) {
@@ -137,9 +119,7 @@ namespace Training.Core
             _byNameQuery = view.CreateQuery().ToLiveQuery();
             _byNameQuery.Changed += (sender, args) =>
             {
-                TasksList.Replace(args.Rows.Select(x => new TaskListCellModel(x.Key as string, x.DocumentId) {
-                    DeleteCommand = new MvxCommand<string>(Delete)
-                }));
+                TasksList.Replace(args.Rows.Select(x => new TaskListCellModel(x.Key as string, _db.Name, x.DocumentId)));
             };
             _byNameQuery.Start();
 
@@ -167,12 +147,15 @@ namespace Training.Core
             _incompleteQuery.GroupLevel = 1;
             _incompleteQuery.Changed += (sender, e) => 
             {
+                var newItems = TasksList.ToList();
                 foreach(var row in e.Rows) {
-                    var existingTask = TasksList.FirstOrDefault(x => x.DocumentID == row.Key as string);
-                    if(existingTask != null) {
-                        existingTask.IncompleteCount = (int)row.Value;
+                    var item = newItems.FirstOrDefault(x => x.DocumentID == row.Key as string);
+                    if(item != null) {
+                        item.IncompleteCount = (int)row.Value;
                     }
                 }
+
+                TasksList.Replace(newItems);
             };
             _incompleteQuery.Start();
         }

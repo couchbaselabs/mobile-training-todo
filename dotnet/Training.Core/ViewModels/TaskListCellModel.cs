@@ -18,22 +18,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+using System;
+using System.Threading.Tasks;
 using System.Windows.Input;
+
+using Acr.UserDialogs;
+using MvvmCross.Core.ViewModels;
+using MvvmCross.Platform;
 
 namespace Training.Core
 {
-    public sealed class TaskListCellModel : BaseViewModel
+    public sealed class TaskListCellModel : BaseViewModel<TaskListModel>
     {
+        private IUserDialogs _dialogs = Mvx.Resolve<IUserDialogs>();
+
         public string DocumentID { get; }
 
         public ICommand EditCommand
         {
-            get; set;
+            get {
+                return new MvxAsyncCommand(Edit);
+            }
         }
 
         public ICommand DeleteCommand
         {
-            get; set;
+            get {
+                return new MvxCommand(Delete);
+            }
         }
 
         private int _incompleteCount;
@@ -49,11 +61,38 @@ namespace Training.Core
 
         public string Name { get; }
 
-        public TaskListCellModel(string name, string documentId)
+        public TaskListCellModel(string name, string databaseName, string documentId) 
+            : base(new TaskListModel(databaseName, documentId))
         {
             Name = name;
             DocumentID = documentId;
             _incompleteCount = -1;
+        }
+
+        private void Delete()
+        {
+            try {
+                Model.Delete();
+            } catch(Exception e) {
+                _dialogs.ShowError(e.Message);
+            }
+        }
+
+        private async Task Edit()
+        {
+            var result = await _dialogs.PromptAsync(new PromptConfig {
+                Title = "Edit Task List",
+                Text = Name,
+                Placeholder = "List Name"
+            });
+
+            if(result.Ok) {
+                try {
+                    Model.Edit(result.Text);
+                } catch(Exception e) {
+                    _dialogs.ShowError(e.Message);
+                }
+            }
         }
 
         public override bool Equals(object obj)
@@ -63,12 +102,12 @@ namespace Training.Core
                 return false;
             }
 
-            return DocumentID.Equals(other.DocumentID);
+            return DocumentID.Equals(other.DocumentID) && Name.Equals(other.Name) && IncompleteCount == other.IncompleteCount;
         }
 
         public override int GetHashCode()
         {
-            return DocumentID.GetHashCode();
+            return DocumentID.GetHashCode() ^ Name.GetHashCode() ^ IncompleteCount.GetHashCode();
         }
     }
 }

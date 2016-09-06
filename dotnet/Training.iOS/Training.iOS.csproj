@@ -225,6 +225,9 @@
     <BundleResource Include="Resources\Users%401x.png" />
     <BundleResource Include="Resources\Users%402x.png" />
     <BundleResource Include="Resources\Users%403x.png" />
+    <BundleResource Include="Resources\Checkmark%401x.png" />
+    <BundleResource Include="Resources\Checkmark%402x.png" />
+    <BundleResource Include="Resources\Checkmark%403x.png" />
   </ItemGroup>
   <Import Project="..\Training.Forms\Training.Forms.projitems" Label="Shared" Condition="Exists('..\Training.Forms\Training.Forms.projitems')" />
   <Import Project="..\Training.Core\Training.Core.projitems" Label="Shared" Condition="Exists('..\Training.Core\Training.Core.projitems')" />

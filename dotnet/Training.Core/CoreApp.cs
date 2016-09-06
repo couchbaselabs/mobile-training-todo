@@ -21,13 +21,12 @@
 using System;
 using Acr.UserDialogs;
 using Couchbase.Lite;
+using Couchbase.Lite.Auth;
 using MvvmCross.Core.ViewModels;
 using MvvmCross.Platform;
 using MvvmCross.Platform.IoC;
 using XLabs.Platform.Device;
 using XLabs.Platform.Services.Media;
-
-
 
 namespace Training.Core
 {
@@ -37,6 +36,29 @@ namespace Training.Core
     public sealed class CoreApp : MvxApplication
     {
         public static readonly Manager AppWideManager = Manager.SharedInstance;
+        private static readonly Uri SyncGatewayUrl = new Uri("http://localhost:4984/todo/");
+        private static Replication _pusher;
+        private static Replication _puller;
+
+        public static void StartReplication(string username, string password = null)
+        {
+            var authenticator = default(IAuthenticator);
+            if(username != null && password != null) {
+                authenticator = AuthenticatorFactory.CreateBasicAuthenticator(username, password);
+            }
+
+            var db = AppWideManager.GetDatabase(username);
+            _pusher = db.CreatePushReplication(SyncGatewayUrl);
+            _pusher.Continuous = true;
+            _pusher.Authenticator = authenticator;
+
+            _puller = db.CreatePullReplication(SyncGatewayUrl);
+            _puller.Continuous = true;
+            _puller.Authenticator = authenticator;
+
+            _pusher.Start();
+            _puller.Start();
+        }
 
         public override void Initialize()
         {
@@ -59,7 +81,11 @@ namespace Training.Core
             if(h.loginEnabled) {
                 // Login logic
             } else {
-                ShowViewModel<TaskListsViewModel>(new { loginEnabled = false, username = h.username });
+                if(h.syncEnabled) {
+                    CoreApp.StartReplication("todo");
+                }
+
+                ShowViewModel<TaskListsViewModel>(new { loginEnabled = false, username = "todo"});
             }
         }
     }
