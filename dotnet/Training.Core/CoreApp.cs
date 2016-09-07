@@ -31,7 +31,7 @@ using XLabs.Platform.Services.Media;
 namespace Training.Core
 {
     /// <summary>
-    /// This is the first location to be reached in the actual application
+    /// This is the first location to be reached in the actual shared application
     /// </summary>
     public sealed class CoreApp : MvxApplication
     {

@@ -24,16 +24,34 @@ using Couchbase.Lite;
 
 namespace Training.Core
 {
+    /// <summary>
+    /// The model for an entry in the TaskListsPage table view
+    /// </summary>
     public class TaskListModel : BaseModel
     {
         private Document _document;
 
+        public string Name
+        {
+            get {
+                return _document.GetProperty<string>("name");
+            }
+        }
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="databaseName">The name of the database to use.</param>
+        /// <param name="documentId">The ID of the document containing information for this entry</param>
         public TaskListModel(string databaseName, string documentId)
         {
             var db = CoreApp.AppWideManager.GetDatabase(databaseName);
             _document = db.GetExistingDocument(documentId);
         }
 
+        /// <summary>
+        /// Deletes the list entry
+        /// </summary>
         public void Delete()
         {
             try {
@@ -43,6 +61,10 @@ namespace Training.Core
             }
         }
 
+        /// <summary>
+        /// Edits the list entry's name
+        /// </summary>
+        /// <param name="name">The new name to use.</param>
         public void Edit(string name)
         {
             try {

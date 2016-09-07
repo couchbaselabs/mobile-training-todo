@@ -21,14 +21,16 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Threading;
+
 using Xamarin.Forms;
 
 namespace Training.Forms
 {
     /// <summary>
-    /// A converter to convert a streaminto an ImageSource for Xamarin Forms
+    /// A converter to convert a byte array into an ImageSource for Xamarin Forms
     /// </summary>
-    public class StreamToImageSourceConverter : IValueConverter
+    public class ByteArrayToImageConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -36,12 +38,12 @@ namespace Training.Forms
                 throw new NotSupportedException();
             }
 
-            var source = value as Stream;
-            if(source == null || source == Stream.Null) {
+            var source = value as byte[];
+            if(source == null) {
                 return null;
             }
 
-            return ImageSource.FromStream(() => source);
+            return ImageSource.FromStream(() => new MemoryStream(source));
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -50,5 +52,4 @@ namespace Training.Forms
         }
     }
 }
-
 

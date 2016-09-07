@@ -36,13 +36,24 @@ namespace Training
     /// </summary>
     public abstract class BaseViewModel<T> : BaseViewModel where T : BaseModel
     {
+        /// <summary>
+        /// Gets (or sets in derived classes) the model that this view model
+        /// will interact with
+        /// </summary>
         public T Model { get; protected set; }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         protected BaseViewModel() 
         {
             
         }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="model">The model that this view model will interact with.</param>
         protected BaseViewModel(T model)
         {
             Model = model;

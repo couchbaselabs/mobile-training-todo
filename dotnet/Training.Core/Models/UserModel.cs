@@ -18,15 +18,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-using System;
 using Couchbase.Lite;
 
 namespace Training.Core
 {
+    /// <summary>
+    /// The model for an entry in the UsersPage table view
+    /// </summary>
     public sealed class UserModel : BaseModel
     {
         private Document _document;
 
+        /// <summary>
+        /// Gets the name of the user
+        /// </summary>
         public string Name
         {
             get {
@@ -34,12 +39,21 @@ namespace Training.Core
             }
         }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="databaseName">The name of the database to use</param>
+        /// <param name="documentId">The ID of the document containing information about
+        /// the user</param>
         public UserModel(string databaseName, string documentId)
         {
             var db = CoreApp.AppWideManager.GetDatabase(databaseName);
             _document = db.GetExistingDocument(documentId);
         }
 
+        /// <summary>
+        /// Deletes the user
+        /// </summary>
         public void Delete()
         {
             _document.Delete();

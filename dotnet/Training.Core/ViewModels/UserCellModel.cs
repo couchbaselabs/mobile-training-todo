@@ -18,21 +18,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+using System;
 using System.Windows.Input;
 
+using Acr.UserDialogs;
 using MvvmCross.Core.ViewModels;
+using MvvmCross.Platform;
 
 namespace Training.Core
 {
-    public class UserCellModel : BaseViewModel<UserModel>
+    /// <summary>
+    /// The view model for an entry in the 
+    /// </summary>
+    public sealed class UserCellModel : BaseViewModel<UserModel>
     {
+        private IUserDialogs _dialogs = Mvx.Resolve<IUserDialogs>();
+
+        /// <summary>
+        /// Gets the handler for a delete request
+        /// </summary>
         public ICommand DeleteCommand
         {
             get {
-                return new MvxCommand(Model.Delete);
+                return new MvxCommand(Delete);
             }
         }
 
+        /// <summary>
+        /// Gets the name of the user
+        /// </summary>
         public string Name 
         {
             get {
@@ -40,8 +54,22 @@ namespace Training.Core
             }
         }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="databaseName">The name of the database to use</param>
+        /// <param name="documentID">The ID of the document containing the user information</param>
         public UserCellModel(string databaseName, string documentID) : base(new UserModel(databaseName, documentID))
         {
+        }
+
+        private void Delete()
+        {
+            try {
+                Model.Delete();
+            } catch(Exception e) {
+                _dialogs.ShowError(e.Message);
+            }
         }
     }
 }

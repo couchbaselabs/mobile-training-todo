@@ -20,12 +20,15 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
+
 using Couchbase.Lite;
 
 namespace Training.Core
 {
+    /// <summary>
+    /// The model for UsersViewModel
+    /// </summary>
     public class UsersModel : BaseModel, IDisposable
     {
         private const string UserType = "task-list.user";
@@ -34,8 +37,16 @@ namespace Training.Core
         private LiveQuery _usersLiveQuery;
         private Document _taskList;
 
+        /// <summary>
+        /// Gets the applicable list of users
+        /// </summary>
         public ExtendedObservableCollection<UserCellModel> ListData { get; } = new ExtendedObservableCollection<UserCellModel>();
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="databaseName">The name of the database to use</param>
+        /// <param name="currentListId">The document ID of the list to check for users</param>
         public UsersModel(string databaseName, string currentListId)
         {
             _db = CoreApp.AppWideManager.GetDatabase(databaseName);
@@ -43,6 +54,10 @@ namespace Training.Core
             SetupViewAndQuery();
         }
 
+        /// <summary>
+        /// Creates a new user for the associated list
+        /// </summary>
+        /// <param name="username">The username to create.</param>
         public void CreateNewUser(string username)
         {
             var taskListInfo = new Dictionary<string, object> {
@@ -64,6 +79,10 @@ namespace Training.Core
             }
         }
 
+        /// <summary>
+        /// Filters the users list based on a given string
+        /// </summary>
+        /// <param name="searchString">The string to filter on.</param>
         public void Filter(string searchString)
         {
             if(!String.IsNullOrEmpty(searchString)) {

@@ -5,8 +5,4 @@
 		xmlns:core="clr-namespace:Training.Core"
 		x:Class="Training.ListDetailPage"
 		Title="{Binding PageTitle}">
-    <TabbedPage.Children>
-        <local:TasksPage />
-		<local:UsersPage />
-	</TabbedPage.Children>
 </TabbedPage>

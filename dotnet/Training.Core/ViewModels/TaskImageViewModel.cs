@@ -18,9 +18,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
@@ -37,12 +35,16 @@ namespace Training.Core
     {
         private ImageChooser _imageChooser;
 
+        /// <summary>
+        /// Gets the command to handle an edit request
+        /// </summary>
         public ICommand EditCommand
         {
             get {
                 return new MvxAsyncCommand(EditImage);
             }
         }
+
         /// <summary>
         /// Gets the stream containing the image data
         /// </summary>
@@ -58,6 +60,11 @@ namespace Training.Core
             }
         }
 
+        /// <summary>
+        /// Constructor (not to be called directly)
+        /// </summary>
+        /// <param name="dialogs">The interface responsible for showing dialogs.</param>
+        /// <param name="mediaPicker">The interface responsible for getting photos.</param>
         public TaskImageViewModel(IUserDialogs dialogs, IMediaPicker mediaPicker)
         {
             _imageChooser = new ImageChooser(new ImageChooserConfig {

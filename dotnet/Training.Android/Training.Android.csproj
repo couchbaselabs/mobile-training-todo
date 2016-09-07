@@ -173,6 +173,12 @@
       <HintPath>..\packages\Couchbase.Lite.1.3.0\lib\MonoAndroid\websocket-sharp.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="SQLitePCLPlugin_sqlcipher">
+      <HintPath>..\packages\SQLitePCL.plugin.sqlcipher.android.0.9.1\lib\MonoAndroid\SQLitePCLPlugin_sqlcipher.dll</HintPath>
+    </Reference>
+    <Reference Include="Couchbase.Lite.Storage.SQLCipher">
+      <HintPath>..\packages\Couchbase.Lite.Storage.SQLCipher.1.3.0\lib\MonoAndroid\Couchbase.Lite.Storage.SQLCipher.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MvxFormsApplicationActivity.cs" />

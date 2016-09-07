@@ -21,30 +21,55 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+
 using Android.Graphics;
 using Android.Util;
 using Training.Core;
 
 namespace Training.Android
 {
+    /// <summary>
+    /// An implementation of IImageService using LruCache, Bitmap, and Canvas
+    /// </summary>
     public class ImageService : IImageService
     {
-        private LruCache _cache = new LruCache(50);
+        private static LruCache _cache = new LruCache(50);
 
         private static Bitmap Square(Bitmap image, float size)
         {
             return global::Android.Media.ThumbnailUtils.ExtractThumbnail(image, (int)size, (int)size);
         }
 
-        public Stream GenerateSolidColor(float size, System.Drawing.Color color, string cacheName)
+        private byte[] GetExisting(string cacheName)
         {
             if(!String.IsNullOrEmpty(cacheName)) {
-                var existing = _cache.Get(new Java.Lang.String(cacheName)) as Bitmap;
+                var existing = _cache.Get(new Java.Lang.String(cacheName)) as ByteArrayWrapper;
                 if(existing != null) {
-                    var existingStream = new MemoryStream();
-                    existing.Compress(Bitmap.CompressFormat.Png, 100, existingStream);
-                    return existingStream;
+                    return existing.Bytes;
                 }
+            }
+
+            return null;
+        }
+
+        private byte[] Put(string cacheName, Bitmap bmp)
+        {
+            var memoryStream = new MemoryStream();
+            bmp.Compress(Bitmap.CompressFormat.Png, 100, memoryStream);
+            var bytes = memoryStream.ToArray();
+
+            if(!String.IsNullOrEmpty(cacheName)) {
+                _cache.Put(new Java.Lang.String(cacheName), new ByteArrayWrapper(bytes));
+            }
+
+            return bytes;
+        }
+
+        public byte[] GenerateSolidColor(float size, System.Drawing.Color color, string cacheName)
+        {
+            var existing = GetExisting(cacheName);
+            if(existing != null) {
+                return existing;
             }
 
             var conf = Bitmap.Config.Rgb565;
@@ -57,34 +82,40 @@ namespace Training.Android
 
             paint.SetStyle(Paint.Style.FillAndStroke);
             canvas.DrawRect(new Rect(0, 0, (int)size, (int)size), paint);
-            if(!String.IsNullOrEmpty(cacheName)) {
-                _cache.Put(new Java.Lang.String(cacheName), bmp);
-            }
-
-            var memoryStream = new MemoryStream();
-            bmp.Compress(Bitmap.CompressFormat.Png, 100, memoryStream);
-            return memoryStream;
+            return Put(cacheName, bmp);
         }
 
-        public async Task<Stream> Square(Stream image, float size, string cacheName)
+        public async Task<byte[]> Square(Stream image, float size, string cacheName)
         {
             if(image == null || image == Stream.Null) {
-                return Stream.Null;
+                return null;
             }
 
-            return await Task.Run<Stream>(() =>
+            var existing = GetExisting(cacheName);
+            if(existing != null) {
+                return existing;
+            }
+
+            return await Task.Run<byte[]>(() =>
             {
                 var bmp = BitmapFactory.DecodeStream(image);
-                var square = Square(bmp, size);
-                if(!String.IsNullOrEmpty(cacheName)) {
-                    _cache.Put(new Java.Lang.String(cacheName), square);
+                if(bmp == null) {
+                    return null;
                 }
 
-                var memoryStream = new MemoryStream();
-                square.Compress(Bitmap.CompressFormat.Png, 100, memoryStream);
-                memoryStream.Seek(0, SeekOrigin.Begin);
-                return memoryStream;
+                var square = Square(bmp, size);
+                return Put(cacheName, square);
             });
+        }
+    }
+
+    internal sealed class ByteArrayWrapper : Java.Lang.Object
+    {
+        public byte[] Bytes { get; }
+
+        public ByteArrayWrapper(byte[] bytes)
+        {
+            Bytes = bytes;
         }
     }
 }

@@ -33,6 +33,11 @@ namespace Training
         {
             InitializeComponent();
         }
+
+        protected override void OnBindingContextChanged()
+        {
+            base.OnBindingContextChanged();
+        }
     }
 }
 

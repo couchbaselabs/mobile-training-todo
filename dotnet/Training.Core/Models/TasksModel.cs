@@ -91,6 +91,10 @@ namespace Training.Core
             }
         }
 
+        /// <summary>
+        /// Filters the list of tasks based on a given search string.
+        /// </summary>
+        /// <param name="searchString">The search string to filter on.</param>
         public void Filter(string searchString)
         {
             if(!String.IsNullOrEmpty(searchString)) {
@@ -155,6 +159,7 @@ namespace Training.Core
         public void Dispose()
         {
             _tasksLiveQuery.Stop();
+            ListData.Clear();
         }
     }
 }

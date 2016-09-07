@@ -18,10 +18,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-using System;
 using Android.App;
 using Android.Content;
-using Android.Graphics;
 using Android.Views;
 using Android.Widget;
 using Training.Forms;
@@ -31,6 +29,9 @@ using Xamarin.Forms.Platform.Android;
 
 namespace Training.Android
 {
+    /// <summary>
+    /// Custom renderer for the list cells on Android
+    /// </summary>
     public class TaskListCellRenderer : ViewCellRenderer
     {
         protected override View GetCellCore(Xamarin.Forms.Cell item, View convertView, ViewGroup parent, Context context)

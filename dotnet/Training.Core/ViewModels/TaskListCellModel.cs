@@ -28,12 +28,21 @@ using MvvmCross.Platform;
 
 namespace Training.Core
 {
+    /// <summary>
+    /// The view model for an entry in the TaskListsPage table view
+    /// </summary>
     public sealed class TaskListCellModel : BaseViewModel<TaskListModel>
     {
         private IUserDialogs _dialogs = Mvx.Resolve<IUserDialogs>();
 
+        /// <summary>
+        /// Gets the document ID of the document being tracked
+        /// </summary>
         public string DocumentID { get; }
 
+        /// <summary>
+        /// Gets the handler for an edit request
+        /// </summary>
         public ICommand EditCommand
         {
             get {
@@ -41,6 +50,9 @@ namespace Training.Core
             }
         }
 
+        /// <summary>
+        /// Gets the handler for a delete request
+        /// </summary>
         public ICommand DeleteCommand
         {
             get {
@@ -48,7 +60,9 @@ namespace Training.Core
             }
         }
 
-        private int _incompleteCount;
+        /// <summary>
+        /// Gets or sets the incomplete count for this row
+        /// </summary>
         public int IncompleteCount 
         {
             get {
@@ -58,13 +72,26 @@ namespace Training.Core
                 SetProperty(ref _incompleteCount, value);
             }
         }
+        private int _incompleteCount;
 
-        public string Name { get; }
+        /// <summary>
+        /// Gets the name of the list
+        /// </summary>
+        public string Name 
+        {
+            get {
+                return Model.Name;
+            }
+        }
 
-        public TaskListCellModel(string name, string databaseName, string documentId) 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="databaseName">The name of the database.</param>
+        /// <param name="documentId">The ID of the document to track.</param>
+        public TaskListCellModel(string databaseName, string documentId) 
             : base(new TaskListModel(databaseName, documentId))
         {
-            Name = name;
             DocumentID = documentId;
             _incompleteCount = -1;
         }

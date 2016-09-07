@@ -56,19 +56,21 @@ namespace Training
             base.OnBindingContextChanged();
 
             var viewModel = BindingContext as ListDetailViewModel;
-            if(viewModel == null) {
+            if(viewModel == null || Children.Count > 0) {
                 return;
             }
 
-            var child1 = (TasksPage)Children[0];
+            var child1 = new TasksPage();
             child1.BindingContext = new TasksViewModel(viewModel);
+            Children.Add(child1);
 
-            _usersPage = (UsersPage)Children[1];
+            _usersPage = new UsersPage();
             _usersPage.BindingContext = new UsersViewModel(viewModel);
 
             if(!viewModel.HasModeratorStatus) {
-                Children.RemoveAt(1);
                 viewModel.PropertyChanged += AddUsersTab;
+            } else {
+                Children.Add(_usersPage);
             }
         }
 

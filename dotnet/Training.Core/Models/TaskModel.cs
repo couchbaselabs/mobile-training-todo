@@ -22,14 +22,22 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
+
 using Couchbase.Lite;
 
 namespace Training.Core
 {
+    /// <summary>
+    /// The model for an entry in the TasksPage table view
+    /// </summary>
     public sealed class TaskModel : BaseModel
     {
         private readonly Document _document;
 
+        /// <summary>
+        /// Gets the name of the task (cached)
+        /// </summary>
+        /// <value>The name.</value>
         public string Name
         {
             get {
@@ -38,6 +46,10 @@ namespace Training.Core
         }
         private Lazy<string> _name;
 
+        /// <summary>
+        /// Gets or sets whether or not this document is "checked off" (i.e. finished)
+        /// </summary>
+        /// <value><c>true</c> if the entry is checked off; otherwise, <c>false</c>.</value>
         public bool IsChecked
         {
             get {
@@ -60,6 +72,12 @@ namespace Training.Core
             }
         }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="databaseName">The name of the database to use</param>
+        /// <param name="documentID">The ID of the document containing information about 
+        /// this task</param>
         public TaskModel(string databaseName, string documentID)
         {
             var db = CoreApp.AppWideManager.GetDatabase(databaseName);
@@ -68,22 +86,38 @@ namespace Training.Core
             _imageDigest = new Lazy<string>(() => _document.CurrentRevision.GetAttachment("image")?.Metadata?["digest"] as string, LazyThreadSafetyMode.None);
         }
 
+        /// <summary>
+        /// Gets the digest of the image for this task (cached)
+        /// </summary>
+        /// <returns>The calculated or cached digest</returns>
         public string GetImageDigest()
         {
             return _imageDigest.Value;
         }
         private Lazy<string> _imageDigest;
 
+        /// <summary>
+        /// Indicates whether or not this task has an associated image
+        /// </summary>
+        /// <returns><c>true</c>, if the task has an image, <c>false</c> otherwise.</returns>
         public bool HasImage()
         {
             return _document.CurrentRevision.AttachmentNames.Contains("image");
         }
 
+        /// <summary>
+        /// Gets the image associated with this task
+        /// </summary>
+        /// <returns>The image associated with this task</returns>
         public Stream GetImage()
         {
             return _document.CurrentRevision.GetAttachment("image")?.ContentStream;
         }
 
+        /// <summary>
+        /// Sets the image associated with this task
+        /// </summary>
+        /// <param name="image">The image to associate with the task.</param>
         public void SetImage(Stream image)
         {
             try {
@@ -102,6 +136,9 @@ namespace Training.Core
             }
         }
 
+        /// <summary>
+        /// Deletes the task
+        /// </summary>
         public void Delete()
         {
             try {
@@ -111,6 +148,10 @@ namespace Training.Core
             }
         }
 
+        /// <summary>
+        /// Edits the task name
+        /// </summary>
+        /// <param name="name">The new name for the task.</param>
         public void Edit(string name)
         {
             try {

@@ -51,6 +51,9 @@ namespace Training.Core
         }
         private string _searchTerm;
 
+        /// <summary>
+        /// Gets the handler for an add request
+        /// </summary>
         public ICommand AddCommand
         {
             get {
@@ -58,6 +61,10 @@ namespace Training.Core
             }
         }
 
+        /// <summary>
+        /// Gets the current list of users for the list
+        /// </summary>
+        /// <value>The list data.</value>
         public ObservableCollection<UserCellModel> ListData
         {
             get {

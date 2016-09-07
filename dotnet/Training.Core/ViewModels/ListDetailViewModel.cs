@@ -27,6 +27,10 @@ namespace Training.Core
     /// </summary>
     public class ListDetailViewModel : BaseViewModel<ListDetailModel>, IDisposable
     {
+        /// <summary>
+        /// Gets or sets whether the current user has moderator status
+        /// </summary>
+        /// <value><c>true</c> if the user has moderator status; otherwise, <c>false</c>.</value>
         public bool HasModeratorStatus
         {
             get {

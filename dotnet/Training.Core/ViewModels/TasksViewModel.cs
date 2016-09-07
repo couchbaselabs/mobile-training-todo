@@ -39,6 +39,10 @@ namespace Training
         private readonly IUserDialogs _dialogs;
         private readonly ImageChooser _imageChooser;
 
+        /// <summary>
+        /// Gets or sets the currently selected item in the table view
+        /// </summary>
+        /// <value>The selected item.</value>
         public TaskCellModel SelectedItem
         {
             get {

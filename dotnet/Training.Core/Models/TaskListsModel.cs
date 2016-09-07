@@ -20,13 +20,10 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Linq;
-using System.Threading.Tasks;
+
 using Couchbase.Lite;
 using Couchbase.Lite.Views;
-using MvvmCross.Core.ViewModels;
 
 namespace Training.Core
 {
@@ -119,7 +116,7 @@ namespace Training.Core
             _byNameQuery = view.CreateQuery().ToLiveQuery();
             _byNameQuery.Changed += (sender, args) =>
             {
-                TasksList.Replace(args.Rows.Select(x => new TaskListCellModel(x.Key as string, _db.Name, x.DocumentId)));
+                TasksList.Replace(args.Rows.Select(x => new TaskListCellModel(_db.Name, x.DocumentId)));
             };
             _byNameQuery.Start();
 

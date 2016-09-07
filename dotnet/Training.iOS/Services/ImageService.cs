@@ -71,39 +71,31 @@ namespace Training.iOS
             return newImage;
         }
 
-        public async Task<Stream> Square(Stream image, float size, string cacheName)
+        public async Task<byte[]> Square(Stream image, float size, string cacheName)
         {
             if(image == null || image == Stream.Null) {
-                return Stream.Null;
+                return null;
             }
 
-            if(!String.IsNullOrEmpty(cacheName)) {
-                var cachedObject = _cache.ObjectForKey(new NSString(cacheName)) as UIImage;
-                if(cachedObject != null) {
-                    return cachedObject.AsPNG().AsStream();
-                }
+            var existing = GetExisting(cacheName);
+            if(existing != null) {
+                return existing;
             }
 
-            return await Task.Run<Stream>(() =>
+            return await Task.Run<byte[]>(() =>
             {
                 var uiImage = UIImage.LoadFromData(NSData.FromStream(image));
                 var square = Square(uiImage, size);
                 square = Resize(square, new CGSize(size, size));
-                if(!String.IsNullOrEmpty(cacheName)) {
-                    _cache.SetObjectforKey(square, new NSString(cacheName));
-                }
-
-                return square.AsPNG().AsStream();
+                return Put(cacheName, square);
             });
         }
 
-        public Stream GenerateSolidColor(float size, Color color, string cacheName)
+        public byte[] GenerateSolidColor(float size, Color color, string cacheName)
         {
-            if(!String.IsNullOrEmpty(cacheName)) {
-                var cachedObject = _cache.ObjectForKey(new NSString(cacheName)) as UIImage;
-                if(cachedObject != null) {
-                    return cachedObject.AsPNG().AsStream();
-                }
+            var existing = GetExisting(cacheName);
+            if(existing != null) {
+                return existing;
             }
 
             UIGraphics.BeginImageContextWithOptions(new CGSize(size, size), true, 1);
@@ -112,11 +104,29 @@ namespace Training.iOS
             var image = UIGraphics.GetImageFromCurrentImageContext();
             UIGraphics.EndImageContext();
 
+            return Put(cacheName, image);
+        }
+
+        private byte[] GetExisting(string cacheName)
+        {
             if(!String.IsNullOrEmpty(cacheName)) {
-                _cache.SetObjectforKey(image, new NSString(cacheName));
+                var cachedObject = _cache.ObjectForKey(new NSString(cacheName)) as NSData;
+                if(cachedObject != null) {
+                    return cachedObject.ToArray();
+                }
             }
 
-            return image.AsPNG().AsStream();
+            return null;
+        }
+
+        private byte[] Put(string cacheName, UIImage image)
+        {
+            var data = image.AsPNG();
+            if(!String.IsNullOrEmpty(cacheName)) {
+                _cache.SetObjectforKey(data, new NSString(cacheName));
+            }
+
+            return data.ToArray();
         }
     }
 }

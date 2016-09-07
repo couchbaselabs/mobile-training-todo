@@ -19,19 +19,30 @@
 // limitations under the License.
 //
 using System;
-using System.Collections.Generic;
+
 using Couchbase.Lite;
 
 namespace Training.Core
 {
+    /// <summary>
+    /// The model for the list detail page (tabbed page containing tasks list
+    /// and users list as children)
+    /// </summary>
     public sealed class ListDetailModel : BaseModel, IDisposable
     {
         private Database _db;
         private Document _document;
         private string _username;
 
+        /// <summary>
+        /// Fired when a change in the database causes moderator status to be
+        /// gained (enabling the users page to be visible)
+        /// </summary>
         public event EventHandler ModeratorStatusGained;
 
+        /// <summary>
+        /// Gets the owner of the list being shown
+        /// </summary>
         public string Owner
         {
             get {
@@ -39,22 +50,48 @@ namespace Training.Core
             }
         }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="dbName">The name of the database to use</param>
+        /// <param name="documentId">The ID of the document containing the list details</param>
         public ListDetailModel(string dbName, string documentId)
         {
             _db = CoreApp.AppWideManager.GetDatabase(dbName);
             _document = _db.GetExistingDocument(documentId);
-            _db.Changed += MonitorModeratorStatus;
         }
 
+        /// <summary>
+        /// Calculates whether or not the given user has moderator access to the 
+        /// current list
+        /// </summary>
+        /// <returns><c>true</c>, if the user has access, <c>false</c> otherwise.</returns>
+        /// <param name="username">The user to check access for.</param>
         public bool HasModerator(string username)
         {
             var moderatorDocId = $"moderator.{username}";
             return _db.GetExistingDocument(moderatorDocId) != null;
         }
 
+        /// <summary>
+        /// Triggers the class to monitor the database until a change occurs
+        /// that enabled moderator access for the given user
+        /// </summary>
+        /// <param name="username">The username to track.</param>
         public void TrackModeratorStatus(string username)
         {
+            if(_username == null && username == null) {
+                return;
+            }
+
+            if(_username == null) {
+                _db.Changed += MonitorModeratorStatus;
+            } else if(username == null) {
+                _db.Changed -= MonitorModeratorStatus;
+            }
+
             _username = username;
+
         }
 
         private void MonitorModeratorStatus(object sender, DatabaseChangeEventArgs e)

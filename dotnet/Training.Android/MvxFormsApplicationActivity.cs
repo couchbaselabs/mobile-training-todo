@@ -32,6 +32,10 @@ using XLabs.Platform.Device;
 
 namespace Training.Android
 {
+    /// <summary>
+    /// The highest entry point in the MvvmCross application, and the first activity that the user
+    /// interacts with
+    /// </summary>
     [Activity(Label = "MvxFormsApplicationActivity", ScreenOrientation = ScreenOrientation.Portrait, Icon = "@android:color/transparent")]
     public class MvxFormsApplicationActivity
         : FormsApplicationActivity
@@ -40,16 +44,22 @@ namespace Training.Android
         {
             base.OnCreate(bundle);
 
+            // Init Forms and presenter
             Xamarin.Forms.Forms.Init(this, bundle);
             var mvxFormsApp = new MvxFormsApp();
             LoadApplication(mvxFormsApp);
-
             var presenter = Mvx.Resolve<IMvxViewPresenter>() as MvxFormsDroidPagePresenter;
             presenter.MvxFormsApp = mvxFormsApp;
+
+            // Register platform specific implementations
             UserDialogs.Init(() => (Activity)Xamarin.Forms.Forms.Context);
             Mvx.RegisterSingleton<IDevice>(() => AndroidDevice.CurrentDevice);
             Mvx.RegisterSingleton<IImageService>(() => new ImageService());
 
+            // Cannot use system SQLite on Android API 24+
+            Couchbase.Lite.Storage.SQLCipher.Plugin.Register();
+
+            // Start the app
             var appStart = new CoreAppStart();
             appStart.Start(new { syncEnabled = false, loginEnabled = false });
         }

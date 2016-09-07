@@ -29,6 +29,9 @@ using Foundation;
 
 namespace Training.iOS
 {
+    /// <summary>
+    /// A custom renderer for a list view cell on iOS (to show the detail disclosure)
+    /// </summary>
     public class TaskListCellRenderer : ViewCellRenderer
     {
         private static readonly NSString rid = new NSString("TaskListCell");

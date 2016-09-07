@@ -39,6 +39,9 @@ namespace Training.Core
         private IUserDialogs _dialogs = Mvx.Resolve<IUserDialogs>();
         private Lazy<string> _imageDigest;
 
+        /// <summary>
+        /// Gets the command that handles a delete request
+        /// </summary>
         public ICommand DeleteCommand
         {
             get {
@@ -46,6 +49,9 @@ namespace Training.Core
             }
         }
 
+        /// <summary>
+        /// Gets the command that handles an edit request
+        /// </summary>
         public ICommand EditCommand
         {
             get {
@@ -53,6 +59,10 @@ namespace Training.Core
             }
         }
 
+        /// <summary>
+        /// Gets the ID of the document being tracked
+        /// </summary>
+        /// <value>The document identifier.</value>
         public string DocumentID { get; }
 
         /// <summary>
@@ -69,7 +79,7 @@ namespace Training.Core
         /// <summary>
         /// Gets the thumbnail of the image stored with the task, if it exists
         /// </summary>
-        public Stream Thumbnail
+        public byte[] Thumbnail
         {
             get {
                 return _thumbnail;
@@ -78,7 +88,7 @@ namespace Training.Core
                 SetProperty(ref _thumbnail, value);
             }
         }
-        private Stream _thumbnail;
+        private byte[] _thumbnail;
 
         /// <summary>
         /// Gets or sets whether or not the task is checked
@@ -104,6 +114,9 @@ namespace Training.Core
             }
         }
 
+        /// <summary>
+        /// Gets the image to use for the checked portion of a table view row
+        /// </summary>
         public string CheckedImage
         {
             get {
@@ -111,7 +124,9 @@ namespace Training.Core
             }
         }
 
-        private ICommand _addImageCommand;
+        /// <summary>
+        /// Gets or sets the command to process an add image request
+        /// </summary>
         public ICommand AddImageCommand
         {
             get {
@@ -121,6 +136,7 @@ namespace Training.Core
                 SetProperty(ref _addImageCommand, value);
             }
         }
+        private ICommand _addImageCommand;
 
         /// <summary>
         /// Constructor

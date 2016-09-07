@@ -25,15 +25,27 @@ using Xamarin.Forms;
 
 namespace Training.Forms
 {
+    /// <summary>
+    /// A helper class to dispose view models when a page disappears
+    /// </summary>
     public sealed class NavigationLifecycleHelper
     {
         private readonly Page _page;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="page">The page to monitor.</param>
         public NavigationLifecycleHelper(Page page)
         {
             _page = page;
         }
 
+        /// <summary>
+        /// Handles a disappear event
+        /// </summary>
+        /// <returns><c>true</c>, if the page disappeared and was processed, <c>false</c> otherwise.</returns>
+        /// <param name="navigation">The navigation item in question when the disappear happened.</param>
         public bool OnDisappearing(INavigation navigation)
         {
             if(navigation.NavigationStack.Last() == _page) {

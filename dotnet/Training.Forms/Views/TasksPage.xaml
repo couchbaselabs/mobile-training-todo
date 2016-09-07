@@ -7,7 +7,7 @@
 		Icon="Tasks.png">
 	<ContentPage.Resources>
         <ResourceDictionary>
-            <local:StreamToImageSourceConverter x:Key="ImageSourceConverter" />
+            <local:ByteArrayToImageConverter x:Key="ImageSourceConverter" />
 		</ResourceDictionary>
 	</ContentPage.Resources>
 	<ContentPage.ToolbarItems>
