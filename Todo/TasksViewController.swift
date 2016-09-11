@@ -29,7 +29,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         self.tableView.tableHeaderView = searchController.searchBar
         
         // Get database and username:
-        let app = UIApplication.sharedApplication().delegate as! AppDelegate
+        let app = UIApplication.shared.delegate as! AppDelegate
         database = app.database
         username = Session.username
         
@@ -40,13 +40,13 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         displayOrHideUsers()
     }
 
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
         // Setup navigation bar:
         self.tabBarController?.title = taskList["name"] as? String
         self.tabBarController?.navigationItem.rightBarButtonItem =
-            UIBarButtonItem(barButtonSystemItem: .Add, target: self, action: "addAction:")
+            UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addAction(sender:)))
     }
     
     deinit {
@@ -56,15 +56,15 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         }
         
         if dbChangeObserver != nil {
-             NSNotificationCenter.defaultCenter().removeObserver(dbChangeObserver!)
+            NotificationCenter.default.removeObserver(dbChangeObserver!)
         }
     }
     
     // MARK: - Navigation
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showTaskImage" {
-            let navController = segue.destinationViewController as! UINavigationController
+            let navController = segue.destination as! UINavigationController
             let controller = navController.topViewController as! TaskImageViewController
             controller.task = taskForImage
             taskForImage = nil
@@ -73,118 +73,115 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     // MARK: - KVO
     
-    override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?,
-        change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
-            if object as? NSObject == tasksLiveQuery {
-                reloadTasks()
-            }
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?,
+                               change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        if object as? NSObject == tasksLiveQuery {
+            reloadTasks()
+        }
     }
     
     // MARK: - UITableViewController
     
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return taskRows?.count ?? 0
     }
     
-    override func tableView(tableView: UITableView,
-        cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-            let cell = tableView.dequeueReusableCellWithIdentifier("TaskCell") as! TaskTableViewCell
-            
-            let doc = taskRows![indexPath.row].document!
-            cell.taskLabel.text = doc["task"] as? String
-            
-            let complete = doc["complete"] as? Bool ?? false
-            cell.accessoryType = complete ? .Checkmark : .None
-            
-            let rev = doc.currentRevision
-            if let attachment = rev?.attachmentNamed("image"), data = attachment.content {
-                let digest = attachment.metadata["digest"] as! String
-                let scale = UIScreen.mainScreen().scale
-                let thumbnail = Image.square(UIImage(data: data, scale: scale), withSize: 44.0,
-                    withCacheName: digest, onComplete: { (thumbnail) -> Void in
-                        self.updateImage(thumbnail, withDigest: digest, atIndexPath: indexPath)
-                })
-                cell.taskImage = thumbnail
-                cell.taskImageAction = {
-                    self.taskForImage = doc
-                    self.performSegueWithIdentifier("showTaskImage", sender: self)
-                }
-            } else {
-                cell.taskImage = nil
-                cell.taskImageAction = {
-                    self.taskForImage = doc
-                    Ui.showImageActionSheet(onController: self, withImagePickerDelegate: self)
-                }
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "TaskCell") as! TaskTableViewCell
+        
+        let doc = taskRows![indexPath.row].document!
+        cell.taskLabel.text = doc["task"] as? String
+        
+        let complete = doc["complete"] as? Bool ?? false
+        cell.accessoryType = complete ? .checkmark : .none
+        
+        let rev = doc.currentRevision
+        if let attachment = rev?.attachmentNamed("image"), let data = attachment.content {
+            let digest = attachment.metadata["digest"] as! String
+            let scale = UIScreen.main.scale
+            let thumbnail = Image.square(image: UIImage(data: data, scale: scale), withSize: 44.0,
+                                         withCacheName: digest, onComplete: { (thumbnail) -> Void in
+                                            self.updateImage(image: thumbnail, withDigest: digest, atIndexPath: indexPath)
+            })
+            cell.taskImage = thumbnail
+            cell.taskImageAction = {
+                self.taskForImage = doc
+                self.performSegue(withIdentifier: "showTaskImage", sender: self)
             }
-            return cell
+        } else {
+            cell.taskImage = nil
+            cell.taskImageAction = {
+                self.taskForImage = doc
+                Ui.showImageActionSheet(onController: self, withImagePickerDelegate: self)
+            }
+        }
+        return cell
     }
     
-    func updateImage(image: UIImage?, withDigest digest: String, atIndexPath indexPath: NSIndexPath) {
-        guard let rows = self.taskRows where rows.count > indexPath.row else {
+    func updateImage(image: UIImage?, withDigest digest: String, atIndexPath indexPath: IndexPath) {
+        guard let rows = self.taskRows, rows.count > indexPath.row else {
             return
         }
         
         let rev = rows[indexPath.row].document!.currentRevision
-        if let revDigest = rev?.attachmentNamed("image")?.metadata["digest"] as? String
-            where digest == revDigest {
-                let cell = tableView.cellForRowAtIndexPath(indexPath) as! TaskTableViewCell
+        if let revDigest = rev?.attachmentNamed("image")?.metadata["digest"] as? String, digest == revDigest {
+                let cell = tableView.cellForRow(at: indexPath) as! TaskTableViewCell
                 cell.taskImage = image
         }
     }
     
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let doc = taskRows![indexPath.row].document!
         var complete = doc["complete"] as? Bool ?? false
         complete = !complete
         
-        updateTask(doc, withComplete: complete)
+        updateTask(task: doc, withComplete: complete)
         
         // Optimistically update the UI:
-        let cell = tableView.cellForRowAtIndexPath(indexPath) as! TaskTableViewCell
-        cell.accessoryType = complete ? .Checkmark : .None
+        let cell = tableView.cellForRow(at: indexPath) as! TaskTableViewCell
+        cell.accessoryType = complete ? .checkmark : .none
     }
     
-    override func tableView(tableView: UITableView,
-        editActionsForRowAtIndexPath indexPath: NSIndexPath) -> [UITableViewRowAction]? {
-            let delete = UITableViewRowAction(style: .Normal, title: "Delete") {
-                (action, indexPath) -> Void in
-                // Dismiss row actions:
-                tableView.setEditing(false, animated: true)
-                // Delete list document:
-                let doc = self.taskRows![indexPath.row].document!
-                self.deleteTask(doc)
-            }
-            delete.backgroundColor = UIColor(red: 1.0, green: 0.23, blue: 0.19, alpha: 1.0)
+    override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+        let delete = UITableViewRowAction(style: .normal, title: "Delete") {
+            (action, indexPath) -> Void in
+            // Dismiss row actions:
+            tableView.setEditing(false, animated: true)
+            // Delete list document:
+            let doc = self.taskRows![indexPath.row].document!
+            self.deleteTask(task: doc)
+        }
+        delete.backgroundColor = UIColor(red: 1.0, green: 0.23, blue: 0.19, alpha: 1.0)
+        
+        let update = UITableViewRowAction(style: .normal, title: "Edit") {
+            (action, indexPath) -> Void in
+            // Dismiss row actions:
+            tableView.setEditing(false, animated: true)
+            // Display update list dialog:
+            let document = self.taskRows![indexPath.row].document!
             
-            let update = UITableViewRowAction(style: .Normal, title: "Edit") {
-                (action, indexPath) -> Void in
-                // Dismiss row actions:
-                tableView.setEditing(false, animated: true)
-                // Display update list dialog:
-                let document = self.taskRows![indexPath.row].document!
-                
-                Ui.showTextInputDialog(
-                    onController: self,
-                    withTitle: "Edit Task",
-                    withMessage:  nil,
-                    withTextFieldConfig: { textField in
-                        textField.placeholder = "Task"
-                        textField.text = document["task"] as? String
-                        textField.autocapitalizationType = .Sentences
-                    },
-                    onOk: { task in
-                        self.updateTask(document, withTitle: task)
-                    }
-                )
-            }
-            update.backgroundColor = UIColor(red: 0.0, green: 0.48, blue: 1.0, alpha: 1.0)
-            
-            return [delete, update]
+            Ui.showTextInputDialog(
+                onController: self,
+                withTitle: "Edit Task",
+                withMessage:  nil,
+                withTextFieldConfig: { textField in
+                    textField.placeholder = "Task"
+                    textField.text = document["task"] as? String
+                    textField.autocapitalizationType = .sentences
+                },
+                onOk: { task in
+                    self.updateTask(task: document, withTitle: task)
+                }
+            )
+        }
+        update.backgroundColor = UIColor(red: 0.0, green: 0.48, blue: 1.0, alpha: 1.0)
+        
+        return [delete, update]
     }
     
     // MARK: - UISearchController
     
-    func updateSearchResultsForSearchController(searchController: UISearchController) {
+    func updateSearchResults(for searchController: UISearchController) {
         let text = searchController.searchBar.text ?? ""
         if !text.isEmpty {
             tasksLiveQuery.postFilter = NSPredicate(format: "key2 CONTAINS[cd] %@", text)
@@ -199,10 +196,10 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     func imagePickerController(picker: UIImagePickerController,
         didFinishPickingImage image: UIImage, editingInfo: [String : AnyObject]?) {
             if let task = taskForImage {
-                updateTask(task, withImage: image)
+                updateTask(task: task, withImage: image)
                 self.taskForImage = nil
             }
-            picker.presentingViewController?.dismissViewControllerAnimated(true, completion: nil)
+            picker.presentingViewController?.dismiss(animated: true, completion: nil)
     }
     
     // MARK: - Action
@@ -214,10 +211,10 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
             withMessage: nil,
             withTextFieldConfig: { textField in
                 textField.placeholder = "Task"
-                textField.autocapitalizationType = .Sentences
+                textField.autocapitalizationType = .sentences
             },
             onOk: { task in
-                self.createTask(task)
+                self.createTask(task: task)
             }
         )
     }
@@ -229,22 +226,22 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         if view.mapBlock == nil {
             view.setMapBlock({ (doc, emit) in
                 if let type = doc["type"] as? String,
-                       listId = (doc["taskList"] as? [String: AnyObject])?["id"],
-                       createdAt = doc["createdAt"],
-                       task = doc["task"]
-                    where type == "task" {
-                        emit([listId, createdAt, task], nil)
+                   let listId = (doc["taskList"] as? [String: Any])?["id"],
+                   let createdAt = doc["createdAt"],
+                   let task = doc["task"],
+                   type == "task" {
+                    emit([listId, createdAt, task], nil)
                 }
             }, version: "1.0")
         }
 
-        tasksLiveQuery = view.createQuery().asLiveQuery()
+        tasksLiveQuery = view.createQuery().asLive()
         tasksLiveQuery.startKey = [taskList.documentID]
         tasksLiveQuery.endKey = [taskList.documentID]
         tasksLiveQuery.prefixMatchLevel = 1
         tasksLiveQuery.descending = true
         
-        tasksLiveQuery.addObserver(self, forKeyPath: "rows", options: .New, context: nil)
+        tasksLiveQuery.addObserver(self, forKeyPath: "rows", options: .new, context: nil)
         tasksLiveQuery.start()
     }
     
@@ -259,10 +256,10 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
             "owner": taskList["owner"]!
         ]
         
-        let properties: Dictionary<String, AnyObject> = [
+        let properties: Dictionary<String, Any> = [
             "type": "task",
             "taskList": taskListInfo,
-            "createdAt": CBLJSON.JSONObjectWithDate(NSDate()),
+            "createdAt": CBLJSON.jsonObject(with: Date()),
             "task": task,
             "complete": false
         ]
@@ -318,7 +315,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     func deleteTask(task: CBLDocument) {
         do {
-            try task.deleteDocument()
+            try task.delete()
         } catch let error as NSError {
             Ui.showMessageDialog(onController: self, withTitle: "Error",
                 withMessage: "Couldn't delete task", withError: error)
@@ -331,25 +328,25 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         if username == taskList["owner"] as? String {
             display = true
         } else {
-            display = (database.existingDocumentWithID(moderatorDocId) != nil)
+            display = (database.existingDocument(withID: moderatorDocId) != nil)
         }
         Ui.displayOrHideTabbar(onController: self, withDisplay: display)
         
         if dbChangeObserver == nil {
-            dbChangeObserver = NSNotificationCenter.defaultCenter().addObserverForName(
-                kCBLDatabaseChangeNotification, object: database, queue: nil) { note in
-                    // Review: Can optimize this by executing in the background dispatch queue:
-                    if let changes = note.userInfo!["changes"] as? [CBLDatabaseChange] {
-                        for change in changes {
-                            if change.source == nil {
-                                return
-                            }
-                            if change.documentID == moderatorDocId {
-                                self.displayOrHideUsers()
-                                return
-                            }
+            dbChangeObserver = NotificationCenter.default.addObserver(
+            forName: NSNotification.Name.cblDatabaseChange, object: database, queue: nil) { note in
+                // Review: Can optimize this by executing in the background dispatch queue:
+                if let changes = note.userInfo!["changes"] as? [CBLDatabaseChange] {
+                    for change in changes {
+                        if change.source == nil {
+                            return
+                        }
+                        if change.documentID == moderatorDocId {
+                            self.displayOrHideUsers()
+                            return
                         }
                     }
+                }
             }
         }
     }

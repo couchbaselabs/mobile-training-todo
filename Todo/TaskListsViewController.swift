@@ -35,7 +35,7 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
         self.tableView.tableHeaderView = searchController.searchBar
         
         // Get database and username:
-        let app = UIApplication.sharedApplication().delegate as! AppDelegate
+        let app = UIApplication.shared.delegate as! AppDelegate
         database = app.database
         username = Session.username
         
@@ -57,8 +57,8 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
     
     // MARK: - Navigation
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        if let tabBarController = segue.destinationViewController as? UITabBarController {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let tabBarController = segue.destination as? UITabBarController {
             let selectedList = listRows![self.tableView.indexPathForSelectedRow!.row].document
             
             let tasksController = tabBarController.viewControllers![0] as! TasksViewController
@@ -71,75 +71,77 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
     
     // MARK: - KVO
     
-    override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?,
-        change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
-            if object as? NSObject == listsLiveQuery {
-                reloadTaskLists()
-            } else if object as? NSObject == incompTasksCountsLiveQuery {
-                reloadIncompleteTasksCounts()
-            }
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        if object as? NSObject == listsLiveQuery {
+            reloadTaskLists()
+        } else if object as? NSObject == incompTasksCountsLiveQuery {
+            reloadIncompleteTasksCounts()
+        }
     }
 
     // MARK: - UITableViewController
+    
 
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return listRows?.count ?? 0
     }
-
-    override func tableView(tableView: UITableView,
-        cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-            let cell = tableView.dequeueReusableCellWithIdentifier("TaskListCell") as UITableViewCell!
-            
-            let row = listRows![indexPath.row] as CBLQueryRow
-            cell.textLabel?.text = row.key as? String
-            
-            let incompleteCount = incompTasksCounts?[row.documentID!] ?? 0
-            cell.detailTextLabel?.text = incompleteCount > 0 ? "\(incompleteCount)" : ""
-            
-            return cell
+    
+    override func tableView(_ tableView: UITableView,
+                            cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "TaskListCell", for: indexPath)
+        
+        let row = listRows![indexPath.row] as CBLQueryRow
+        
+        cell.textLabel?.text = row.key as? String
+        
+        let incompleteCount = incompTasksCounts?[row.documentID!] ?? 0
+        cell.detailTextLabel?.text = incompleteCount > 0 ? "\(incompleteCount)" : ""
+        
+        return cell
     }
     
-    override func tableView(tableView: UITableView,
-        editActionsForRowAtIndexPath indexPath: NSIndexPath) -> [UITableViewRowAction]? {
-            let delete = UITableViewRowAction(style: .Normal, title: "Delete") {
-                (action, indexPath) -> Void in
-                // Dismiss row actions:
-                tableView.setEditing(false, animated: true)
-                // Delete list document:
-                let doc = self.listRows![indexPath.row].document!
-                self.deleteTaskList(doc)
-            }
-            delete.backgroundColor = UIColor(red: 1.0, green: 0.23, blue: 0.19, alpha: 1.0)
+    override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath)
+        -> [UITableViewRowAction]? {
+        let delete = UITableViewRowAction(style: .normal, title: "Delete") {
+            (action, indexPath) -> Void in
+            // Dismiss row actions:
+            tableView.setEditing(false, animated: true)
+            // Delete list document:
+            let doc = self.listRows![indexPath.row].document!
+            self.deleteTaskList(list: doc)
+        }
+        delete.backgroundColor = UIColor(red: 1.0, green: 0.23, blue: 0.19, alpha: 1.0)
+        
+        let update = UITableViewRowAction(style: .normal, title: "Edit") {
+            (action, indexPath) -> Void in
+            // Dismiss row actions:
+            tableView.setEditing(false, animated: true)
+            // Display update list dialog:
+            let doc = self.listRows![indexPath.row].document!
             
-            let update = UITableViewRowAction(style: .Normal, title: "Edit") {
-                (action, indexPath) -> Void in
-                // Dismiss row actions:
-                tableView.setEditing(false, animated: true)
-                // Display update list dialog:
-                let doc = self.listRows![indexPath.row].document!
-                
-                Ui.showTextInputDialog(
-                    onController: self,
-                    withTitle: "Edit List",
-                    withMessage:  nil,
-                    withTextFieldConfig: { textField in
-                        textField.placeholder = "List name"
-                        textField.text = doc["name"] as? String
-                        textField.autocapitalizationType = .Words
-                    },
-                    onOk: { (name) -> Void in
-                        self.updateTaskList(doc, withName: name)
-                    }
-                )
-            }
-            update.backgroundColor = UIColor(red: 0.0, green: 0.48, blue: 1.0, alpha: 1.0)
-            
-            return [delete, update]
+            Ui.showTextInputDialog(
+                onController: self,
+                withTitle: "Edit List",
+                withMessage:  nil,
+                withTextFieldConfig: { textField in
+                    textField.placeholder = "List name"
+                    textField.text = doc["name"] as? String
+                    textField.autocapitalizationType = .words
+                },
+                onOk: { (name) -> Void in
+                    self.updateTaskList(list: doc, withName: name)
+                }
+            )
+        }
+        update.backgroundColor = UIColor(red: 0.0, green: 0.48, blue: 1.0, alpha: 1.0)
+        
+        return [delete, update]
     }
     
     // MARK: - UISearchController
     
-    func updateSearchResultsForSearchController(searchController: UISearchController) {
+    
+    func updateSearchResults(for searchController: UISearchController) {
         let text = searchController.searchBar.text ?? ""
         if !text.isEmpty {
             listsLiveQuery.startKey = text
@@ -160,16 +162,16 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
             withMessage:  nil,
             withTextFieldConfig: { textField in
                 textField.placeholder = "List name"
-                textField.autocapitalizationType = .Words
+                textField.autocapitalizationType = .words
             },
             onOk: { name in
-                self.createTaskList(name)
+                self.createTaskList(name: name)
             }
         )
     }
     
     @IBAction func logoutAction(sender: AnyObject) {
-        let app = UIApplication.sharedApplication().delegate as! AppDelegate
+        let app = UIApplication.shared.delegate as! AppDelegate
         app.logout()
     }
 
@@ -179,34 +181,34 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
         let listsView = database.viewNamed("list/listsByName")
         if listsView.mapBlock == nil {
             listsView.setMapBlock({ (doc, emit) in
-                if let type: String = doc["type"] as? String, name = doc["name"]
-                    where type == "task-list" {
+                if let type: String = doc["type"] as? String, let name = doc["name"]
+                    , type == "task-list" {
                         emit(name, nil)
                 }
             }, version: "1.0")
         }
 
-        listsLiveQuery = listsView.createQuery().asLiveQuery()
-        listsLiveQuery.addObserver(self, forKeyPath: "rows", options: .New, context: nil)
+        listsLiveQuery = listsView.createQuery().asLive()
+        listsLiveQuery.addObserver(self, forKeyPath: "rows", options: .new, context: nil)
         listsLiveQuery.start()
         
         let incompTasksCountView = database.viewNamed("list/incompleteTasksCount")
         if incompTasksCountView.mapBlock == nil {
             incompTasksCountView.setMapBlock({ (doc, emit) in
-                if let type: String = doc["type"] as? String where type == "task" {
-                    if let list = doc["taskList"] as? [String: AnyObject], listId = list["id"],
-                        complete = doc["complete"] as? Bool where !complete {
-                            emit(listId, nil)
+                if let type: String = doc["type"] as? String , type == "task" {
+                    if let list = doc["taskList"] as? [String: AnyObject], let listId = list["id"],
+                        let complete = doc["complete"] as? Bool , !complete {
+                        emit(listId, nil)
                     }
                 }
-            }, reduceBlock: { (keys, values, reredeuce) in
+                }, reduce: { (keys, values, reredeuce) in
                 return values.count
             }, version: "1.0")
         }
         
-        incompTasksCountsLiveQuery = incompTasksCountView.createQuery().asLiveQuery()
+        incompTasksCountsLiveQuery = incompTasksCountView.createQuery().asLive()
         incompTasksCountsLiveQuery.groupLevel = 1
-        incompTasksCountsLiveQuery.addObserver(self, forKeyPath: "rows", options: .New, context: nil)
+        incompTasksCountsLiveQuery.addObserver(self, forKeyPath: "rows", options: .new, context: nil)
         incompTasksCountsLiveQuery.start()
     }
 
@@ -217,9 +219,9 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
     
     func reloadIncompleteTasksCounts() {
         var counts : [String : Int] = [:]
-        let rows = incompTasksCountsLiveQuery.rows;
+        let rows = incompTasksCountsLiveQuery.rows
         while let row = rows?.nextRow() {
-            if let listId = row.key as? String, count = row.value as? Int {
+            if let listId = row.key as? String, let count = row.value as? Int {
                 counts[listId] = count
             }
         }
@@ -234,8 +236,8 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
             "owner": username
         ]
 
-        let docId = username + "." + NSUUID().UUIDString
-        guard let doc = database.documentWithID(docId) else {
+        let docId = username + "." + NSUUID().uuidString
+        guard let doc = database.document(withID: docId) else {
             Ui.showMessageDialog(onController: self, withTitle: "Error",
                 withMessage: "Couldn't save task list")
             return
@@ -263,7 +265,7 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
     
     func deleteTaskList(list: CBLDocument) {
         do {
-            try list.deleteDocument()
+            try list.delete()
         } catch let error as NSError {
             Ui.showMessageDialog(onController: self, withTitle: "Error",
                 withMessage: "Couldn't delete task list", withError: error)

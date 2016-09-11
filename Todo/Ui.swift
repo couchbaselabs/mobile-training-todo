@@ -20,27 +20,27 @@ class Ui {
             dialog.message = message
             dialog.textFieldConfig = textFieldConfig
             dialog.onOkAction = onOkAction
-            dialog.show(controller)
+            dialog.show(controller: controller)
     }
 
     class func showEncryptionErrorDialog(
         onController controller: UIViewController,
-        onMigrateAction migrateAction: ((String) -> Void),
-        onDeleteAction deleteAction: (() -> Void)) {
+        onMigrateAction migrateAction: @escaping ((String) -> Void),
+        onDeleteAction deleteAction: @escaping (() -> Void)) {
             let dialog = TextDialog()
             dialog.title = "Password Changed"
             dialog.message = "Please enter your old password to migrate your database."
             dialog.textFieldConfig = { textField in
                 textField.placeholder = "old password"
-                textField.secureTextEntry = true
-                textField.autocapitalizationType = .None
+                textField.isSecureTextEntry = true
+                textField.autocapitalizationType = .none
             }
             dialog.okButtonTitle = "Migrate"
             dialog.cancelButtonTitle = "Delete"
-            dialog.cancelButtonStyle = UIAlertActionStyle.Destructive
+            dialog.cancelButtonStyle = UIAlertActionStyle.destructive
             dialog.onOkAction = migrateAction
             dialog.onCancelAction = deleteAction
-            dialog.show(controller)
+            dialog.show(controller: controller)
     }
     
     class func showMessageDialog(
@@ -57,55 +57,55 @@ class Ui {
                 mesg = message
             }
 
-            let alert = UIAlertController(title: title, message: mesg, preferredStyle: .Alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .Cancel) { (_) in
+            let alert = UIAlertController(title: title, message: mesg, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .cancel) { (_) in
                 if let action = closeAction {
                     action()
                 }
             })
-            controller.presentViewController(alert, animated: true, completion: nil)
+            controller.present(alert, animated: true, completion: nil)
     }
     
     class func showImageActionSheet(
         onController controller: UIViewController,
         withImagePickerDelegate delegate:
-        protocol<UIImagePickerControllerDelegate, UINavigationControllerDelegate>?,
+        UIImagePickerControllerDelegate & UINavigationControllerDelegate,
         onDelete deleteAction: (() -> Void)? = nil) {
             let alert = UIAlertController(title: nil, message: nil,
-                preferredStyle: .ActionSheet)
+                preferredStyle: .actionSheet)
             
-            if UIImagePickerController.isSourceTypeAvailable(.Camera) {
-                alert.addAction(UIAlertAction(title: "Take Photo", style: .Default) { _ in
-                    showImagePicker(onController: controller, withImageSourceType: .Camera,
+            if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                alert.addAction(UIAlertAction(title: "Take Photo", style: .default) { _ in
+                    showImagePicker(onController: controller, withImageSourceType: .camera,
                         withImagePickerDelegate: delegate)
                 })
             }
             
-            alert.addAction(UIAlertAction(title: "Choose Existing", style: .Default) { _ in
-                showImagePicker(onController: controller, withImageSourceType: .PhotoLibrary,
+            alert.addAction(UIAlertAction(title: "Choose Existing", style: .default) { _ in
+                showImagePicker(onController: controller, withImageSourceType: .photoLibrary,
                     withImagePickerDelegate: delegate)
             })
             
             if let action = deleteAction {
-                alert.addAction(UIAlertAction(title: "Delete", style: .Destructive) { _ in
+                alert.addAction(UIAlertAction(title: "Delete", style: .destructive) { _ in
                     action()
                 })
             }
             
-            alert.addAction(UIAlertAction(title: "Cancel", style: .Cancel) { _ in })
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in })
             
-            controller.presentViewController(alert, animated: true, completion: nil)
+            controller.present(alert, animated: true, completion: nil)
     }
     
     class func showImagePicker(
         onController controller: UIViewController,
         withImageSourceType sourceType: UIImagePickerControllerSourceType!,
         withImagePickerDelegate delegate:
-        protocol<UIImagePickerControllerDelegate, UINavigationControllerDelegate>?) {
+        UIImagePickerControllerDelegate & UINavigationControllerDelegate) {
             let imagePicker = UIImagePickerController()
             imagePicker.sourceType = sourceType
             imagePicker.delegate = delegate
-            controller.presentViewController(imagePicker, animated: true, completion: nil)
+            controller.present(imagePicker, animated: true, completion: nil)
     }
     
     class func displayOrHideTabbar(
@@ -114,28 +114,28 @@ class Ui {
             guard let tabBar = controller.tabBarController?.tabBar else {
                 return
             }
-            
-            if display == tabBar.hidden {
-                tabBar.hidden = !display
-                if tabBar.hidden {
+        
+            if display == tabBar.isHidden {
+                tabBar.isHidden = !display
+                if tabBar.isHidden {
                     controller.tabBarController!.selectedIndex = 0
                 }
                 
                 // Workaround for resizing table view:
                 if let tableViewController = controller as? UITableViewController {
-                    let tableView = tableViewController.tableView
+                    let tableView = tableViewController.tableView!
                     if display {
-                        tableView.frame = CGRectMake(
-                            tableView.frame.origin.x,
-                            tableView.frame.origin.y,
-                            tableView.frame.size.width,
-                            tableView.frame.size.height - tabBar.frame.size.height)
+                        tableView.frame = CGRect(
+                            x: tableView.frame.origin.x,
+                            y: tableView.frame.origin.y,
+                            width: tableView.frame.size.width,
+                            height: tableView.frame.size.height - tabBar.frame.size.height)
                     } else {
-                        tableView.frame = CGRectMake(
-                            tableView.frame.origin.x,
-                            tableView.frame.origin.y,
-                            tableView.frame.size.width,
-                            tableView.frame.size.height + tabBar.frame.size.height)
+                        tableView.frame = CGRect(
+                            x: tableView.frame.origin.x,
+                            y: tableView.frame.origin.y,
+                            width: tableView.frame.size.width,
+                            height: tableView.frame.size.height + tabBar.frame.size.height)
                     }
                 }
             }

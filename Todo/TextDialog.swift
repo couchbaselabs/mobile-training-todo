@@ -21,29 +21,29 @@ class TextDialog {
 
     func show(controller: UIViewController) {
         var observer: NSObjectProtocol?
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .Alert)
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
 
         // OK:
         let okTitle = okButtonTitle ?? "OK"
-        let okStyle = okButtonStyle ?? UIAlertActionStyle.Default
+        let okStyle = okButtonStyle ?? UIAlertActionStyle.default
         let okAction = UIAlertAction(title: okTitle, style: okStyle) { _ in
             let textField = alert.textFields![0] as UITextField
             if let curObserver = observer {
-                NSNotificationCenter.defaultCenter().removeObserver(curObserver)
+                NotificationCenter.default.removeObserver(curObserver)
             }
-            if let action = self.onOkAction, text = textField.text {
+            if let action = self.onOkAction, let text = textField.text {
                 action(text)
             }
         }
-        okAction.enabled = false
+        okAction.isEnabled = false
         alert.addAction(okAction)
 
         // Cancel:
         let cancelTitle = cancelButtonTitle ?? "Cancel"
-        let cancelStyle = cancelButtonStyle ?? UIAlertActionStyle.Cancel
+        let cancelStyle = cancelButtonStyle ?? UIAlertActionStyle.cancel
         let cancelAction = UIAlertAction(title: cancelTitle, style: cancelStyle) { _ in
             if let curObserver = observer {
-                NSNotificationCenter.defaultCenter().removeObserver(curObserver)
+                NotificationCenter.default.removeObserver(curObserver)
             }
             if let action = self.onCancelAction {
                 action()
@@ -52,20 +52,20 @@ class TextDialog {
         alert.addAction(cancelAction)
 
         // TextField:
-        alert.addTextFieldWithConfigurationHandler { textField in
+        alert.addTextField { textField in
             if let config = self.textFieldConfig {
                 config(textField)
             }
-            observer =  NSNotificationCenter.defaultCenter().addObserverForName(
-                UITextFieldTextDidChangeNotification,
+            observer =  NotificationCenter.default.addObserver(
+                forName: NSNotification.Name.UITextFieldTextDidChange,
                 object: textField,
-                queue: NSOperationQueue.mainQueue()) { note in
-                    okAction.enabled = textField.text != ""
+                queue: OperationQueue.main) { note in
+                    okAction.isEnabled = textField.text != ""
             }
         }
 
         // Workaround for UICollectionViewFlowLayout is not defined warning:
         alert.view.setNeedsLayout()
-        controller.presentViewController(alert, animated: true, completion: nil)
+        controller.present(alert, animated: true, completion: nil)
     }
 }

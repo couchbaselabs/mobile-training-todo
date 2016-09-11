@@ -22,38 +22,38 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
         super.viewDidLoad()
         
         // Get database:
-        let app = UIApplication.sharedApplication().delegate as! AppDelegate
+        let app = UIApplication.shared.delegate as! AppDelegate
         database = app.database
 
         if docChangeObserver == nil {
-            docChangeObserver = NSNotificationCenter.defaultCenter().addObserverForName(
-                kCBLDocumentChangeNotification, object: task, queue: nil) { note in
-                    if let change = note.userInfo?["change"] as? CBLDatabaseChange {
-                        if change.source == nil || !change.isCurrentRevision {
-                            return
-                        }
-
-                        if let rev = self.task.currentRevision {
-                            let digest = rev.attachmentNamed("image")?.metadata["digest"] as? String
-                            let currentDigest = self.currentImage?.metadata["digest"] as? String
-                            if digest != currentDigest {
-                                self.reloadImage()
-                            }
+            docChangeObserver = NotificationCenter.default.addObserver(
+            forName: NSNotification.Name.cblDocumentChange, object: task, queue: nil) { note in
+                if let change = note.userInfo?["change"] as? CBLDatabaseChange {
+                    if change.source == nil || !change.isCurrentRevision {
+                        return
+                    }
+                    
+                    if let rev = self.task.currentRevision {
+                        let digest = rev.attachmentNamed("image")?.metadata["digest"] as? String
+                        let currentDigest = self.currentImage?.metadata["digest"] as? String
+                        if digest != currentDigest {
+                            self.reloadImage()
                         }
                     }
+                }
             }
         }
         
         reloadImage()
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
     }
 
     deinit {
         if docChangeObserver != nil {
-            NSNotificationCenter.defaultCenter().removeObserver(docChangeObserver!)
+            NotificationCenter.default.removeObserver(docChangeObserver!)
         }
     }
 
@@ -72,15 +72,15 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
     }
 
     func dismissController() {
-        dismissViewControllerAnimated(true, completion: nil)
+        dismiss(animated: true, completion: nil)
     }
     
     // MARK: - UIImagePickerControllerDelegate
     
     func imagePickerController(picker: UIImagePickerController,
         didFinishPickingImage image: UIImage, editingInfo: [String : AnyObject]?) {
-            updateImage(image)
-            picker.presentingViewController?.dismissViewControllerAnimated(true, completion: nil)
+            updateImage(image: image)
+            picker.presentingViewController?.dismiss(animated: true, completion: nil)
     }
     
     // MARK: - Database
@@ -116,7 +116,7 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
         newRev.removeAttachmentNamed("image")
         do {
             try newRev.save()
-            dismissViewControllerAnimated(true, completion: nil)
+            dismiss(animated: true, completion: nil)
         } catch let error as NSError {
             Ui.showMessageDialog(onController: self, withTitle: "Error",
                 withMessage: "Couldn't delete image", withError: error)
