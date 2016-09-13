@@ -27,6 +27,7 @@
 		93F4B2E21C6985BA005FF4D8 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 93F4B2E11C6985BA005FF4D8 /* SystemConfiguration.framework */; };
 		93F4B2E41C6985C6005FF4D8 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 93F4B2E31C6985C6005FF4D8 /* Security.framework */; };
 		93F4B2E61C6985CD005FF4D8 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 93F4B2E51C6985CD005FF4D8 /* CFNetwork.framework */; };
+		BE39804A1D87FDCB00940644 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = BE3980491D87FDCB00940644 /* libc++.tbd */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -54,6 +55,7 @@
 		93F4B2E11C6985BA005FF4D8 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		93F4B2E31C6985C6005FF4D8 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 		93F4B2E51C6985CD005FF4D8 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
+		BE3980491D87FDCB00940644 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +63,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BE39804A1D87FDCB00940644 /* libc++.tbd in Frameworks */,
 				93F4B2E61C6985CD005FF4D8 /* CFNetwork.framework in Frameworks */,
 				93F4B2E41C6985C6005FF4D8 /* Security.framework in Frameworks */,
 				93F4B2E21C6985BA005FF4D8 /* SystemConfiguration.framework in Frameworks */,
@@ -124,6 +127,7 @@
 		93F4B2D41C694257005FF4D8 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				BE3980491D87FDCB00940644 /* libc++.tbd */,
 				938939DA1C769C8B00177AE3 /* libsqlcipher.a */,
 				93F4B2E51C6985CD005FF4D8 /* CFNetwork.framework */,
 				93F4B2E31C6985C6005FF4D8 /* Security.framework */,
