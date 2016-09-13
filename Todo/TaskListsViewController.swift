@@ -218,7 +218,7 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
     }
     
     func reloadIncompleteTasksCounts() {
-        var counts : [String : Int] = [:]
+        let counts : [String : Int] = [:]
         let rows = incompTasksCountsLiveQuery.rows
         while let row = rows?.nextRow() {
             if let listId = row.key as? String, let count = row.value as? Int {
