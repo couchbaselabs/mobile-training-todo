@@ -8,8 +8,8 @@
 
 import UIKit
 
-let kLoginFlowEnabled = true
-let kEncryptionEnabled = true
+let kLoginFlowEnabled = false
+let kEncryptionEnabled = false
 let kSyncEnabled = true
 let kSyncGatewayUrl = URL(string: "http://10.17.2.133:4984/todo/")!
 let kLoggingEnabled = true
