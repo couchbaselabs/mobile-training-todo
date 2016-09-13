@@ -230,7 +230,7 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
     }
 
     func createTaskList(name: String) {
-        let properties = [
+        let properties: [String : Any] = [
             "type": "task-list",
             "name": name,
             "owner": username

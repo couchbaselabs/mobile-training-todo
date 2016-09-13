@@ -193,13 +193,12 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     // MARK: - UIImagePickerControllerDelegate
     
-    func imagePickerController(picker: UIImagePickerController,
-        didFinishPickingImage image: UIImage, editingInfo: [String : AnyObject]?) {
-            if let task = taskForImage {
-                updateTask(task: task, withImage: image)
-                self.taskForImage = nil
-            }
-            picker.presentingViewController?.dismiss(animated: true, completion: nil)
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        if let task = taskForImage {
+            updateTask(task: task, withImage: info["UIImagePickerControllerOriginalImage"] as! UIImage)
+            self.taskForImage = nil
+        }
+        picker.presentingViewController?.dismiss(animated: true, completion: nil)
     }
     
     // MARK: - Action
