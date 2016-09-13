@@ -92,7 +92,7 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
         
         let row = listRows![indexPath.row] as CBLQueryRow
         
-        //cell.textLabel?.text = row.key as? String
+        cell.textLabel?.text = row.key as? String
         
         let incompleteCount = incompTasksCounts?[row.documentID!] ?? 0
         cell.detailTextLabel?.text = incompleteCount > 0 ? "\(incompleteCount)" : ""
@@ -221,11 +221,9 @@ class TaskListsViewController: UITableViewController, UISearchResultsUpdating {
         let counts : [String : Int] = [:]
         let rows = incompTasksCountsLiveQuery.rows
         while let row = rows?.nextRow() {
-            print(row)
-            print(counts)
-            //if let listId = row.key as? String, let count = row.value as? Int {
-            //    counts[listId] = count
-            //}
+            if let listId = row.key as? String, let count = row.value as? Int {
+                counts[listId] = count
+            }
         }
         incompTasksCounts = counts
         tableView.reloadData()
