@@ -23,11 +23,11 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
         // Setup SearchController:
         searchController = UISearchController(searchResultsController: nil)
         searchController.searchResultsUpdater = self
-        searchController.searchBar.autocapitalizationType = .None
+        searchController.searchBar.autocapitalizationType = .none
         self.tableView.tableHeaderView = searchController.searchBar
         
         // Get username and database:
-        let app = UIApplication.sharedApplication().delegate as! AppDelegate
+        let app = UIApplication.shared.delegate as! AppDelegate
         database = app.database
         username = Session.username
         
@@ -35,13 +35,13 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
         setupViewAndQuery()
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
         // Setup navigation bar:
         self.tabBarController?.title = taskList["name"] as? String
         self.tabBarController?.navigationItem.rightBarButtonItem =
-            UIBarButtonItem(barButtonSystemItem: .Add, target: self, action: "addAction:")
+            UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addAction(sender:)))
     }
     
     deinit {
@@ -53,45 +53,42 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
     
     // MARK: - KVO
     
-    override func observeValueForKeyPath(keyPath: String?, ofObject object: AnyObject?,
-        change: [String : AnyObject]?, context: UnsafeMutablePointer<Void>) {
-            if object as? NSObject == usersLiveQuery {
-                reloadUsers()
-            }
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?,
+                               change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        if object as? NSObject == usersLiveQuery {
+            reloadUsers()
+        }
     }
     
     // MARK: - UITableViewController
     
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return userRows?.count ?? 0
     }
     
-    override func tableView(tableView: UITableView,
-        cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-            let cell = tableView.dequeueReusableCellWithIdentifier("UserCell") as UITableViewCell!
-            let key = userRows![indexPath.row].key
-            cell.textLabel?.text = key[1] as? String
-            return cell
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "UserCell", for: indexPath)
+        let username = userRows![indexPath.row].key(at: 1) as? String
+        cell.textLabel?.text = username
+        return cell
     }
     
-    override func tableView(tableView: UITableView,
-        editActionsForRowAtIndexPath indexPath: NSIndexPath) -> [UITableViewRowAction]? {
-            let delete = UITableViewRowAction(style: .Normal, title: "Delete") {
-                (action, indexPath) -> Void in
-                // Dismiss row actions:
-                tableView.setEditing(false, animated: true)
-                // Delete list document:
-                let doc = self.userRows![indexPath.row].document!
-                self.deleteUser(doc)
-            }
-            delete.backgroundColor = UIColor(red: 1.0, green: 0.23, blue: 0.19, alpha: 1.0)
-            return [delete]
+    override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+        let delete = UITableViewRowAction(style: .normal, title: "Delete") {
+            (action, indexPath) -> Void in
+            // Dismiss row actions:
+            tableView.setEditing(false, animated: true)
+            // Delete list document:
+            let doc = self.userRows![indexPath.row].document!
+            self.deleteUser(user: doc)
+        }
+        delete.backgroundColor = UIColor(red: 1.0, green: 0.23, blue: 0.19, alpha: 1.0)
+        return [delete]
     }
-
     
     // MARK: - UISearchController
     
-    func updateSearchResultsForSearchController(searchController: UISearchController) {
+    func updateSearchResults(for searchController: UISearchController) {
         let text = searchController.searchBar.text ?? ""
         if !text.isEmpty {
             usersLiveQuery.startKey = [taskList.documentID, text]
@@ -113,10 +110,10 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
             withMessage: nil,
             withTextFieldConfig: { textField in
                 textField.placeholder = "Username"
-                textField.autocapitalizationType = .None
+                textField.autocapitalizationType = .none
             },
             onOk: { username in
-                self.addUser(username)
+                self.addUser(username: username)
             }
         )
     }
@@ -128,20 +125,20 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
         if view.mapBlock == nil {
             view.setMapBlock({ (doc, emit) -> Void in
                 if let type = doc["type"] as? String,
-                       username = doc["username"] as? String,
-                       listId = (doc["taskList"] as? [String: AnyObject])?["id"]
-                    where type == "task-list.user" {
-                        emit([listId, username], nil)
+                   let username = doc["username"] as? String,
+                   let listId = (doc["taskList"] as? [String: AnyObject])?["id"],
+                   type == "task-list.user" {
+                    emit([listId, username], nil)
                 }
             }, version: "1.0")
         }
         
-        usersLiveQuery = view.createQuery().asLiveQuery()
+        usersLiveQuery = view.createQuery().asLive()
         usersLiveQuery.startKey = [taskList.documentID]
         usersLiveQuery.endKey = [taskList.documentID]
         usersLiveQuery.prefixMatchLevel = 1
         
-        usersLiveQuery.addObserver(self, forKeyPath: "rows", options: .New, context: nil)
+        usersLiveQuery.addObserver(self, forKeyPath: "rows", options: .new, context: nil)
         usersLiveQuery.start()
     }
     
@@ -157,14 +154,14 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
             "owner": taskList["owner"]!
         ]
         
-        let properties: Dictionary<String, AnyObject> = [
+        let properties: Dictionary<String, Any> = [
             "type": "task-list.user",
             "taskList": taskListInfo,
             "username": username,
         ]
         
         let docId = taskList.documentID + "." + username
-        guard let doc = database.documentWithID(docId) else {
+        guard let doc = database.document(withID: docId) else {
             Ui.showMessageDialog(onController: self, withTitle: "Error",
                 withMessage: "Couldn't save task list")
             return
@@ -179,7 +176,7 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
     
     func deleteUser(user: CBLDocument) {
         do {
-            try user.deleteDocument()
+            try user.delete()
         } catch let error as NSError {
             Ui.showMessageDialog(onController: self, withTitle: "Error",
                 withMessage: "Couldn't delete user", withError: error)

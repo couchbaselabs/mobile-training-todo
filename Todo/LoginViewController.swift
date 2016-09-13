@@ -27,10 +27,10 @@ class LoginViewController: UITableViewController {
     
     @IBAction func loginAction(sender: AnyObject) {
         var username = usernameTextField.text ?? ""
-        username = username.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceCharacterSet())
+        username = username.trimmingCharacters(in: CharacterSet.whitespaces)
         
         var password = passwordTextField.text ?? ""
-        password = password.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceCharacterSet())
+        password = password.trimmingCharacters(in: CharacterSet.whitespaces)
         
         if username.isEmpty || password.isEmpty {
             Ui.showMessageDialog(onController: self, withTitle: "Error",
@@ -38,6 +38,6 @@ class LoginViewController: UITableViewController {
             return
         }
         
-        delegate?.login(self, withUsername: username, andPassword: password)
+        delegate?.login(controller: self, withUsername: username, andPassword: password)
     }
 }

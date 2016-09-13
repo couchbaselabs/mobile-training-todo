@@ -14,7 +14,7 @@ class TaskTableViewCell: UITableViewCell {
     
     var taskImage: UIImage? {
         didSet {
-            imageButton.setImage(taskImage, forState: .Normal)
+            imageButton.setImage(taskImage, for: .normal)
         }
     }
     

@@ -10,18 +10,18 @@ import Foundation
 
 extension UIImage {
     func square(size: CGFloat) -> UIImage? {
-        return square()?.resize(CGSizeMake(size, size))
+        return square()?.resize(newSize: CGSize(width: size, height: size))
     }
     
     func square() -> UIImage? {
-        let oWidth = CGFloat(CGImageGetWidth(self.CGImage))
-        let oHeight = CGFloat(CGImageGetHeight(self.CGImage))
+        let oWidth = CGFloat(self.cgImage!.width)
+        let oHeight = CGFloat(self.cgImage!.height)
         let sqSize = min(oWidth, oHeight)
         let x = (oWidth - sqSize) / 2.0
         let y = (oHeight - sqSize) / 2.0
-        let rect = CGRectMake(x, y, sqSize, sqSize)
-        let sqImage = CGImageCreateWithImageInRect(self.CGImage, rect)
-        return UIImage(CGImage: sqImage!, scale: self.scale, orientation: self.imageOrientation)
+        let rect = CGRect(x: x, y: y, width: sqSize, height: sqSize)
+        let sqImage = self.cgImage!.cropping(to: rect)
+        return UIImage(cgImage: sqImage!, scale: self.scale, orientation: self.imageOrientation)
     }
     
     func resize(newSize: CGSize) -> UIImage? {
@@ -32,14 +32,14 @@ extension UIImage {
         
         var nuSize: CGSize
         if(wRatio > hRatio) {
-            nuSize = CGSizeMake(oWidth * hRatio, oHeight * hRatio)
+            nuSize = CGSize(width: oWidth * hRatio, height: oHeight * hRatio)
         } else {
-            nuSize = CGSizeMake(oWidth * wRatio, oHeight * wRatio)
+            nuSize = CGSize(width: oWidth * wRatio, height: oHeight * wRatio)
         }
-        let rect = CGRectMake(0, 0, nuSize.width, nuSize.height)
+        let rect = CGRect(x: 0, y: 0, width: nuSize.width, height: nuSize.height)
 
         UIGraphicsBeginImageContextWithOptions(nuSize, false, self.scale)
-        self.drawInRect(rect)
+        self.draw(in: rect)
         let newImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         return newImage
@@ -47,37 +47,36 @@ extension UIImage {
 }
 
 class Image {
-    private static let cache = NSCache()
-    private static var token: dispatch_once_t = 0
+    private static let cache = NSCache<AnyObject, AnyObject>()
     
     class func square(image: UIImage?, withSize size: CGFloat, withCacheName name: String?,
         onComplete action: ((UIImage?) -> Void)?) -> UIImage? {
-            dispatch_once(&token) {
-                cache.countLimit = 50
-            }
-            
-            guard let oImage = image else {
-                return nil
-            }
-            
-            if let key = name where !key.isEmpty {
-                if let cachedImage = cache.objectForKey(key) as? UIImage {
-                    return cachedImage
-                }
-            }
-            
-            dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0)) {
-                let square = oImage.square(size)
-                dispatch_async(dispatch_get_main_queue()) {
-                    if let key = name, cachedImage = square where !key.isEmpty {
-                        cache.setObject(cachedImage, forKey: key)
-                    }
-                    if let complete = action {
-                        complete(square)
-                    }
-                }
-            }
-            
+        if (cache.countLimit != 50) {
+            cache.countLimit = 50
+        }
+        
+        guard let oImage = image else {
             return nil
+        }
+        
+        if let key = name, !key.isEmpty {
+            if let cachedImage = cache.object(forKey: key as AnyObject) as? UIImage {
+                return cachedImage
+            }
+        }
+        
+        DispatchQueue.global().async {
+            let square = oImage.square(size: size)
+            DispatchQueue.main.async {
+                if let key = name, let cachedImage = square, !key.isEmpty {
+                    cache.setObject(cachedImage, forKey: key as AnyObject)
+                }
+                if let complete = action {
+                    complete(square)
+                }
+            }
+        }
+        
+        return nil
     }
 }
