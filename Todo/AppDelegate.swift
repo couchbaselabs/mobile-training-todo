@@ -10,9 +10,11 @@ import UIKit
 
 let kLoginFlowEnabled = false
 let kEncryptionEnabled = false
-let kSyncEnabled = true
-let kSyncGatewayUrl = URL(string: "http://10.17.2.133:4984/todo/")!
-let kLoggingEnabled = true
+let kSyncEnabled = false
+let kSyncGatewayUrl = URL(string: "http://localhost:4984/todo/")!
+let kLoggingEnabled = false
+let kUsePrebuiltDb = false
+let kConflictResolution = false
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelegate {
@@ -31,7 +33,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         if kLoggingEnabled {
             enableLogging()
         }
-        
+
         if kLoginFlowEnabled {
             login()
         } else {
@@ -61,29 +63,49 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
     
     func startSession(username:String, withPassword password:String? = nil,
         withNewPassword newPassword:String? = nil) throws {
-            try openDatabase(username: username, withKey: password, withNewKey: newPassword)
-            Session.username = username
-            startReplication(withUsername: username, andPassword: newPassword ?? password)
-            showApp()
+        installPrebuiltDb()
+        try openDatabase(username: username, withKey: password, withNewKey: newPassword)
+        Session.username = username
+        startReplication(withUsername: username, andPassword: newPassword ?? password)
+        showApp()
+        startConflictLiveQuery()
+    }
+
+    func installPrebuiltDb() {
+        // TRAINING: Install pre-built database
+        guard kUsePrebuiltDb else {
+            return
+        }
+        
+        let db = CBLManager.sharedInstance().databaseExistsNamed("todo")
+        
+        if (!db) {
+            let dbPath = Bundle.main.path(forResource: "todo", ofType: "cblite2")
+            do {
+                try CBLManager.sharedInstance().replaceDatabaseNamed("todo", withDatabaseDir: dbPath!)
+            } catch let error as NSError {
+                NSLog("Cannot replace the database %@", error)
+            }
+        }
     }
     
     func openDatabase(username:String, withKey key:String?,
         withNewKey newKey:String?) throws {
-            let dbname = username
-            let options = CBLDatabaseOptions()
-            options.create = true
+        // TRAINING: Create a database
+        let dbname = username
+        let options = CBLDatabaseOptions()
+        options.create = true
 
-            if kEncryptionEnabled {
-                if let encryptionKey = key {
-                    options.encryptionKey = encryptionKey
-                }
+        if kEncryptionEnabled {
+            if let encryptionKey = key {
+                options.encryptionKey = encryptionKey
             }
+        }
 
-            try database = CBLManager.sharedInstance().openDatabaseNamed(dbname, with: options)
-            if newKey != nil {
-                try database.changeEncryptionKey(newKey)
-            }
-            startConflictLiveQuery()
+        try database = CBLManager.sharedInstance().openDatabaseNamed(dbname, with: options)
+        if newKey != nil {
+            try database.changeEncryptionKey(newKey)
+        }
     }
     
     func closeDatabase() throws {
@@ -187,37 +209,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         guard kSyncEnabled else {
             return
         }
-
-        var authenticator: CBLAuthenticatorProtocol?
-        var headers: [String: String]?
-        if kLoginFlowEnabled {
-            authenticator = CBLAuthenticator.basicAuthenticator(withName: username, password: password!)
-
-            // Workaround #1124:
-            // https://github.com/couchbase/couchbase-lite-ios/issues/1124
-            let cred = NSString(format: "%@:%@", username, password!)
-            let credData = cred.data(using: String.Encoding.utf8.rawValue)!
-            let credBase64 = credData.base64EncodedString()
-            headers = ["Authorization": "Basic \(credBase64)"]
-        }
         
         syncError = nil
         
+        // TRAINING: Start push/pull replications
         pusher = database.createPushReplication(kSyncGatewayUrl)
         pusher.continuous = true
-        pusher.authenticator = authenticator
-        pusher.headers = headers
         NotificationCenter.default.addObserver(self, selector: #selector(replicationProgress(notification:)),
             name: NSNotification.Name.cblReplicationChange, object: pusher)
 
         puller = database.createPullReplication(kSyncGatewayUrl)
         puller.continuous = true
-        puller.customProperties = ["websocket": false]
-        puller.authenticator = authenticator
-        puller.headers = headers
         NotificationCenter.default.addObserver(self, selector: #selector(replicationProgress(notification:)),
                                                name: NSNotification.Name.cblReplicationChange, object: puller)
 
+        if kLoginFlowEnabled {
+            let authenticator = CBLAuthenticator.basicAuthenticator(withName: username, password: password!)
+            pusher.authenticator = authenticator
+            puller.authenticator = authenticator
+        }
+        
         pusher.start()
         puller.start()
     }
@@ -261,6 +272,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
 
     // MARK: - Conflicts Resolution
     
+    // TRAINING: Responding to Live Query changes
     override func observeValue(forKeyPath keyPath: String?, of object: Any?,
                                change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if object as? NSObject == conflictsLiveQuery {
@@ -269,6 +281,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
     }
 
     func startConflictLiveQuery() {
+        guard kConflictResolution else {
+            return
+        }
+        
+        // TRAINING: Detecting when conflicts occur
         conflictsLiveQuery = database.createAllDocumentsQuery().asLive()
         conflictsLiveQuery!.allDocsMode = .onlyConflicts
         conflictsLiveQuery!.addObserver(self, forKeyPath: "rows", options: .new, context: nil)
@@ -285,24 +302,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         let rows = conflictsLiveQuery?.rows
         while let row = rows?.nextRow() {
             if let revs = row.conflictingRevisions, revs.count > 1 {
-                resolveConflicts(revisions: revs)
+                let defaultWinning = revs[0]
+                let type = (defaultWinning["type"] as? String) ?? ""
+                switch type {
+                // TRAINING: Automatic conflict resolution
+                case "task-list", "task-list.user":
+                    let props = defaultWinning.userProperties
+                    let image = defaultWinning.attachmentNamed("image")
+                    resolveConflicts(revisions: revs, withProps: props, andImage: image)
+                // TRAINING: N-way merge conflict resolution
+                case "task":
+                    let merged = nWayMergeConflicts(revs: revs)
+                    resolveConflicts(revisions: revs, withProps: merged.props, andImage: merged.image)
+                default:
+                    break
+                }
             }
-        }
-    }
-
-    func resolveConflicts(revisions revs: [CBLRevision]) {
-        let defaultWinning = revs[0]
-        let type = (defaultWinning["type"] as? String) ?? ""
-        switch type {
-        case "task-list", "task-list.user":
-            let props = defaultWinning.userProperties
-            let image = defaultWinning.attachmentNamed("image")
-            resolveConflicts(revisions: revs, withProps: props, andImage: image)
-        case "task":
-            let merged = nWayMergeConflicts(revs: revs)
-            resolveConflicts(revisions: revs, withProps: merged.props, andImage: merged.image)
-        default:
-            break
         }
     }
 
