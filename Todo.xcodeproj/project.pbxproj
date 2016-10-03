@@ -28,6 +28,7 @@
 		BE63C6621D6C95B500E88A18 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = BEA159241D62523F007B4DB6 /* libc++.tbd */; };
 		BE727EE41D8AD8360016B3E0 /* CouchbaseLite.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BE727EE31D8AD8360016B3E0 /* CouchbaseLite.framework */; };
 		BE727EE61D8ADC660016B3E0 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = BE727EE51D8ADC660016B3E0 /* libsqlite3.tbd */; };
+		BE7683601DA282B40025CB3A /* todo.cblite2 in Resources */ = {isa = PBXBuildFile; fileRef = BE76835F1DA282B40025CB3A /* todo.cblite2 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -54,6 +55,7 @@
 		93F4B2E51C6985CD005FF4D8 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
 		BE727EE31D8AD8360016B3E0 /* CouchbaseLite.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CouchbaseLite.framework; sourceTree = "<group>"; };
 		BE727EE51D8ADC660016B3E0 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		BE76835F1DA282B40025CB3A /* todo.cblite2 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = todo.cblite2; sourceTree = "<group>"; };
 		BEA159241D62523F007B4DB6 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -89,6 +91,7 @@
 		93F4B2B61C6940D6005FF4D8 = {
 			isa = PBXGroup;
 			children = (
+				BE76835F1DA282B40025CB3A /* todo.cblite2 */,
 				93F4B2C11C6940D6005FF4D8 /* Todo */,
 				93F4B2C01C6940D6005FF4D8 /* Products */,
 				93F4B2D41C694257005FF4D8 /* Frameworks */,
@@ -199,6 +202,7 @@
 				93F4B2CD1C6940D6005FF4D8 /* LaunchScreen.storyboard in Resources */,
 				93F4B2CA1C6940D6005FF4D8 /* Assets.xcassets in Resources */,
 				93F4B2C81C6940D6005FF4D8 /* Main.storyboard in Resources */,
+				BE7683601DA282B40025CB3A /* todo.cblite2 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
