@@ -1,0 +1,12 @@
+PODS:
+  - couchbase-lite-ios (1.3.1):
+    - couchbase-lite-ios/SQLite (= 1.3.1)
+  - couchbase-lite-ios/SQLite (1.3.1)
+
+DEPENDENCIES:
+  - couchbase-lite-ios (~> 1.3.1)
+
+SPEC CHECKSUMS:
+  couchbase-lite-ios: e4672e9c623e31584602c0300c299c363acebb05
+
+COCOAPODS: 0.39.0
