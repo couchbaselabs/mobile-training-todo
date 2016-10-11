@@ -79,7 +79,7 @@ namespace Training.Core
         {
             dynamic h = hint;
             if(h.loginEnabled) {
-                // Login logic
+                ShowViewModel<LoginViewModel>();
             } else {
                 if(h.syncEnabled) {
                     CoreApp.StartReplication("todo");

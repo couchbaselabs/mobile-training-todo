@@ -30,6 +30,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Models\TaskListModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\ListDetailModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\UserModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\LoginViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\LoginModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)ViewModels\" />

@@ -35,5 +35,9 @@
 	<string>Resources/Assets.xcassets/AppIcon.appiconset</string>
 	<key>XSLaunchImageAssets</key>
 	<string>Resources/Assets.xcassets/LaunchImage.launchimage</string>
+	<key>NSCameraUsageDescription</key>
+	<string>For taking photos for tasks</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>For choosing photos for tasks</string>
 </dict>
 </plist>

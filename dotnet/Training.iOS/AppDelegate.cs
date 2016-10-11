@@ -53,7 +53,7 @@ namespace Training.iOS
 
             //Start the application
             var startup = new CoreAppStart();
-            startup.Start(new { loginEnabled = false, syncEnabled = true });
+            startup.Start(new { loginEnabled = true, syncEnabled = false });
 
             Window.MakeKeyAndVisible();
 

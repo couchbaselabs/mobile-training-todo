@@ -99,6 +99,13 @@ namespace Training
             }
         }
 
+        public ICommand LogoutCommand
+        {
+            get {
+                return new MvxCommand(Logout);
+            }
+        }
+
         /// <summary>
         /// Constructor, not to be called directly.
         /// </summary>
@@ -113,7 +120,7 @@ namespace Training
         /// </summary>
         /// <param name="username">The name of the current user.</param>
         /// <param name="loginEnabled">If set to <c>true</c> login is enabled in the application</param>
-        public void Init(string username, bool loginEnabled)
+        public void Init(string username, string password, bool loginEnabled)
         {
             if(String.IsNullOrEmpty(username)) {
                 username = "todo";
@@ -130,6 +137,11 @@ namespace Training
                 Title = "New Task List",
                 Placeholder = "List Name"
             });
+        }
+
+        private void Logout()
+        {
+            Close(this);
         }
 
         private void CreateNewItem(PromptResult result)
