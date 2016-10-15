@@ -36,8 +36,15 @@ namespace Training
     /// </summary>
     public class TasksViewModel : BaseViewModel<TasksModel>, IDisposable
     {
+
+        #region Variables
+
         private readonly IUserDialogs _dialogs;
         private readonly ImageChooser _imageChooser;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets or sets the currently selected item in the table view
@@ -98,11 +105,15 @@ namespace Training
             }
         }
 
+        #endregion
+
+        #region Constructors
+
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="parent">The parent view model (this is a nested view model).</param>
-        public TasksViewModel(ListDetailViewModel parent) : base(new TasksModel(parent.Username, parent.CurrentListID))
+        public TasksViewModel(ListDetailViewModel parent) : base(new TasksModel(parent.CurrentListID))
         {
             _dialogs = Mvx.Resolve<IUserDialogs>();
             _imageChooser = new ImageChooser(new ImageChooserConfig {
@@ -123,14 +134,22 @@ namespace Training
             };
         }
 
+        #endregion
+
+        #region Internal API
+
         internal async Task ShowOrChooseImage(TaskCellModel taskDocument)
         {
             if(!taskDocument.HasImage()) {
                 await ChooseImage(taskDocument);
             } else {
-                ShowViewModel<TaskImageViewModel>(new { databaseName = Model.DatabaseName, documentID = taskDocument.DocumentID });
+                ShowViewModel<TaskImageViewModel>(new { documentID = taskDocument.DocumentID });
             }
         }
+
+        #endregion
+
+        #region Private API
 
         private async Task ChooseImage(TaskCellModel taskCellModel)
         {
@@ -173,10 +192,16 @@ namespace Training
             }
         }
 
+        #endregion
+
+        #region IDisposable
+
         public void Dispose()
         {
             Model.Dispose();
         }
+
+        #endregion
     }
 }
 

@@ -27,6 +27,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Acr.UserDialogs;
 using MvvmCross.Platform;
 using Newtonsoft.Json.Linq;
@@ -40,6 +41,16 @@ namespace Training.Core
     /// </summary>
     public static class JsonUtility
     {
+
+        #region Public API
+
+        /// <summary>
+        /// Convert an object that potentially contains intermediate classes from JSON .NET 
+        /// to only contain Standard .NET collections
+        /// </summary>
+        /// <typeparam name="T">The type of objects in the returned list</typeparam>
+        /// <param name="jsonObject">The object with potential json classes inside</param>
+        /// <returns>The object that only contains Standard .NET collections</returns>
         public static IList<T> ConvertToNetList<T>(object jsonObject)
         {
             var arrayAttempt = ConvertToList<T>(jsonObject);
@@ -98,6 +109,10 @@ namespace Training.Core
             return (T)ConvertToNetObject(jsonObject);
         }
 
+        #endregion
+
+        #region Private API
+
         private static IDictionary<K, V> ConvertToDictionary<K, V>(object obj)
         {
             var shortCut = obj as IDictionary<K, V>;
@@ -127,6 +142,9 @@ namespace Training.Core
             var jObj = obj as JArray;
             return jObj == null ? null : jObj.Select(x => x.ToObject<T>()).ToList();
         }
+
+        #endregion
+
     }
 
     /// <summary>
@@ -135,6 +153,9 @@ namespace Training.Core
     /// </summary>
     public static class DictionaryUtility
     {
+
+        #region Public API
+
         /// <summary>
         /// Extracts the values for the given keys in the given dictionary to the given list
         /// </summary>
@@ -154,10 +175,26 @@ namespace Training.Core
 
             return true;
         }
+
+        #endregion
+
     }
 
+    /// <summary>
+    /// An observable collection that allows delta replacement from another collection
+    /// </summary>
+    /// <typeparam name="T">The type contained in the collection</typeparam>
     public class ExtendedObservableCollection<T> : ObservableCollection<T>
     {
+
+        #region Variables
+
+        protected readonly SynchronizationContext _context = SynchronizationContext.Current;
+
+        #endregion
+
+        #region Public API
+
         public void Replace(IEnumerable<T> newItems)
         {
             var index = 0;
@@ -181,49 +218,90 @@ namespace Training.Core
                 RemoveAt(index);
             }
         }
+
+        #endregion
+
     }
 
+    /// <summary>
+    /// A collection that reacts to changes on any of its contained items as well as
+    /// changes to the collection itself
+    /// </summary>
+    /// <typeparam name="T">The type of item in the collection</typeparam>
     public sealed class ReactiveObservableCollection<T> : ExtendedObservableCollection<T> where T : INotifyPropertyChanged
     {
-        
+
+        #region Overrides 
+
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            base.OnCollectionChanged(e);
+            _context.Post(s =>
+            {
+                var e2 = s as NotifyCollectionChangedEventArgs;
+                base.OnCollectionChanged(e2);
 
-            if(e.NewItems != null) {
-                foreach(INotifyPropertyChanged item in e.NewItems) {
-                    item.PropertyChanged += Item_PropertyChanged;
+                if(e2.NewItems != null) {
+                    foreach(INotifyPropertyChanged item in e2.NewItems) {
+                        item.PropertyChanged += Item_PropertyChanged;
+                    }
                 }
-            }
 
-            if(e.OldItems != null) {
-                foreach(INotifyPropertyChanged item in e.OldItems) {
-                    item.PropertyChanged -= Item_PropertyChanged;
+                if(e2.OldItems != null) {
+                    foreach(INotifyPropertyChanged item in e2.OldItems) {
+                        item.PropertyChanged -= Item_PropertyChanged;
+                    }
                 }
-            }
+            }, e);
         }
+
+        #endregion
+
+        #region Private API
 
         private void Item_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            Task.Run(() =>
+            _context.Post(s=>
             {
-                var index = IndexOf((T)sender);
+                var index = IndexOf((T)s);
                 if(index != -1) {
-                    SetItem(index, (T)sender);
+                    SetItem(index, (T)s);
                 }
-            });
+            }, sender);
         }
+
+        #endregion
+
     }
 
+    /// <summary>
+    /// A utility for choosing or taking an image
+    /// </summary>
     public sealed class ImageChooser
     {
+
+        #region Variables
+
         private readonly ImageChooserConfig _config;
+
+        #endregion
+
+        #region Constructors
 
         public ImageChooser(ImageChooserConfig config) 
         {
             _config = config;
         }
 
+        #endregion
+
+        #region Public API
+
+        /// <summary>
+        /// Prompts to choose or take an image (based on the configuration passed
+        /// in the constructor)
+        /// </summary>
+        /// <returns>An awaitable task that contains the resulting stream to the image
+        /// binary data</returns>
         public async Task<Stream> GetPhotoAsync()
         {
             var result = default(string);
@@ -256,19 +334,45 @@ namespace Training.Core
 
             return photoResult?.Source;
         }
+
+        #endregion
     }
 
+    /// <summary>
+    /// Configuration options for <see cref="ImageChooser"/> 
+    /// </summary>
     public sealed class ImageChooserConfig
     {
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the title of the UI Element
+        /// </summary>
         public string Title { get; set; }
 
+        /// <summary>
+        /// Gets or sets the text for deleting a photo instead of choosing
+        /// </summary>
         public string DeleteText { get; set; }
 
+        /// <summary>
+        /// Gets or sets the text to cancel the operation
+        /// </summary>
         public string CancelText { get; set; } = "Cancel";
 
+        /// <summary>
+        /// Gets or sets the interface controlling UI dialog elements
+        /// </summary>
         public IUserDialogs Dialogs { get; set; } = Mvx.Resolve<IUserDialogs>();
 
+        /// <summary>
+        /// Gets or sets the interface that controls choosing media
+        /// </summary>
         public IMediaPicker MediaPicker { get; set; } = Mvx.Resolve<IMediaPicker>();
+
+        #endregion
+
     }
 }
 

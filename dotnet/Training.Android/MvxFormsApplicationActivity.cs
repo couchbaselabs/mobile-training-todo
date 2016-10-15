@@ -56,12 +56,10 @@ namespace Training.Android
             Mvx.RegisterSingleton<IDevice>(() => AndroidDevice.CurrentDevice);
             Mvx.RegisterSingleton<IImageService>(() => new ImageService());
 
-            // Cannot use system SQLite on Android API 24+
-            Couchbase.Lite.Storage.SQLCipher.Plugin.Register();
-
             // Start the app
             var appStart = new CoreAppStart();
-            appStart.Start(new { syncEnabled = false, loginEnabled = false });
+            var hint = CoreAppStart.CreateHint();
+            appStart.Start(hint);
         }
     }
 }

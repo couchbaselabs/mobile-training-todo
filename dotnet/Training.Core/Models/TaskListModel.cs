@@ -29,8 +29,18 @@ namespace Training.Core
     /// </summary>
     public class TaskListModel : BaseModel
     {
+
+        #region Variables
+
         private Document _document;
 
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the name of the list
+        /// </summary>
         public string Name
         {
             get {
@@ -38,16 +48,22 @@ namespace Training.Core
             }
         }
 
+        #endregion
+
+        #region Constructors
+
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="databaseName">The name of the database to use.</param>
         /// <param name="documentId">The ID of the document containing information for this entry</param>
-        public TaskListModel(string databaseName, string documentId)
+        public TaskListModel(string documentId)
         {
-            var db = CoreApp.AppWideManager.GetDatabase(databaseName);
-            _document = db.GetExistingDocument(documentId);
+            _document = CoreApp.Database.GetExistingDocument(documentId);
         }
+
+        #endregion
+
+        #region Public API
 
         /// <summary>
         /// Deletes the list entry
@@ -81,6 +97,8 @@ namespace Training.Core
                 throw new ApplicationException("Couldn't edit task list", e);
             }
         }
+
+        #endregion
     }
 }
 

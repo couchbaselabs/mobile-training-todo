@@ -18,6 +18,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+using System.Windows.Input;
+
 using MvvmCross.Core.ViewModels;
 using Training.Core;
 
@@ -28,7 +30,20 @@ namespace Training
     /// </summary>
     public abstract class BaseViewModel : MvxViewModel
     {
-        // Reserved for future expansion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the command for going back to a previous view model
+        /// </summary>
+        public ICommand BackCommand
+        {
+            get {
+                return new MvxCommand(() => Close(this));
+            }
+        }
+
+        #endregion
     }
 
     /// <summary>
@@ -36,11 +51,18 @@ namespace Training
     /// </summary>
     public abstract class BaseViewModel<T> : BaseViewModel where T : BaseModel
     {
+
+        #region Properties
+
         /// <summary>
         /// Gets (or sets in derived classes) the model that this view model
         /// will interact with
         /// </summary>
         public T Model { get; protected set; }
+
+        #endregion
+
+        #region Constructors
 
         /// <summary>
         /// Constructor
@@ -58,6 +80,8 @@ namespace Training
         {
             Model = model;
         }
+
+        #endregion
     }
 }
 

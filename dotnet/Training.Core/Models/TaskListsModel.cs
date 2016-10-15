@@ -32,11 +32,22 @@ namespace Training.Core
     /// </summary>
     public sealed class TaskListsModel : BaseModel, IDisposable
     {
+
+        #region Constants
+
         private const string TaskListType = "task-list";
+
+        #endregion
+
+        #region Variables
 
         private Database _db;
         private LiveQuery _byNameQuery;
         private LiveQuery _incompleteQuery;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets the list of task lists currently saved
@@ -54,15 +65,23 @@ namespace Training.Core
             }
         }
 
+        #endregion
+
+        #region Constructors
+
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="username">The username of the user using the app.</param>
-        public TaskListsModel(string username)
+        /// <param name="db">The database to use</param>
+        public TaskListsModel(Database db)
         {
-            _db = CoreApp.AppWideManager.GetDatabase(username);
+            _db = db;
             SetupViewAndQuery();
         }
+
+        #endregion
+
+        #region Public API
 
         /// <summary>
         /// Creates a new task list
@@ -101,6 +120,10 @@ namespace Training.Core
             _byNameQuery.QueryOptionsChanged();
         }
 
+        #endregion
+
+        #region Private API
+
         private void SetupViewAndQuery()
         {
             var view = _db.GetView("list/listsByName");
@@ -116,7 +139,7 @@ namespace Training.Core
             _byNameQuery = view.CreateQuery().ToLiveQuery();
             _byNameQuery.Changed += (sender, args) =>
             {
-                TasksList.Replace(args.Rows.Select(x => new TaskListCellModel(_db.Name, x.DocumentId)));
+                TasksList.Replace(args.Rows.Select(x => new TaskListCellModel(x.DocumentId)));
             };
             _byNameQuery.Start();
 
@@ -167,12 +190,19 @@ namespace Training.Core
             doc.Delete();
         }
 
+        #endregion
+
+        #region IDisposable
+
         public void Dispose()
         {
             _byNameQuery.Stop();
             _incompleteQuery.Stop();
             _db.Close();
         }
+
+        #endregion
+
     }
 }
 

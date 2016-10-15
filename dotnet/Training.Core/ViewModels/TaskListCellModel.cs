@@ -33,7 +33,14 @@ namespace Training.Core
     /// </summary>
     public sealed class TaskListCellModel : BaseViewModel<TaskListModel>
     {
+
+        #region Variables
+
         private IUserDialogs _dialogs = Mvx.Resolve<IUserDialogs>();
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets the document ID of the document being tracked
@@ -84,17 +91,24 @@ namespace Training.Core
             }
         }
 
+        #endregion
+
+        #region Constructors
+
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="databaseName">The name of the database.</param>
         /// <param name="documentId">The ID of the document to track.</param>
-        public TaskListCellModel(string databaseName, string documentId) 
-            : base(new TaskListModel(databaseName, documentId))
+        public TaskListCellModel(string documentId) 
+            : base(new TaskListModel(documentId))
         {
             DocumentID = documentId;
             _incompleteCount = -1;
         }
+
+        #endregion
+
+        #region Private API
 
         private void Delete()
         {
@@ -122,6 +136,10 @@ namespace Training.Core
             }
         }
 
+        #endregion
+
+        #region Overrides
+
         public override bool Equals(object obj)
         {
             var other = obj as TaskListCellModel;
@@ -134,8 +152,11 @@ namespace Training.Core
 
         public override int GetHashCode()
         {
-            return DocumentID.GetHashCode() ^ Name.GetHashCode() ^ IncompleteCount.GetHashCode();
+            return DocumentID.GetHashCode() ^ (Name ?? "").GetHashCode() ^ IncompleteCount.GetHashCode();
         }
+
+        #endregion
+
     }
 }
 

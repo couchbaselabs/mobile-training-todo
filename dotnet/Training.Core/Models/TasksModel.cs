@@ -20,8 +20,8 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
+
 using Couchbase.Lite;
 
 namespace Training.Core
@@ -31,11 +31,22 @@ namespace Training.Core
     /// </summary>
     public sealed class TasksModel : BaseModel, IDisposable
     {
+
+        #region Constants
+
         private const string TaskType = "task";
+
+        #endregion
+
+        #region Variables
 
         private LiveQuery _tasksLiveQuery;
         private Database _db;
         private Document _taskList;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets the list of tasks for the current list
@@ -53,17 +64,24 @@ namespace Training.Core
             }
         }
 
+        #endregion
+
+        #region Constructors
+
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="dbName">The name of the database to operate on</param>
         /// <param name="listId">The id of the list to retrieve tasks from</param>
-        public TasksModel(string dbName, string listId)
+        public TasksModel(string listId)
         {
-            _db = CoreApp.AppWideManager.GetDatabase(dbName);
+            _db = CoreApp.Database;
             _taskList = _db.GetDocument(listId);
             SetupViewAndQuery();
         }
+
+        #endregion
+
+        #region Public API
 
         /// <summary>
         /// Creates a new task in the current list
@@ -114,6 +132,10 @@ namespace Training.Core
             _tasksLiveQuery.QueryOptionsChanged();
         }
 
+        #endregion
+
+        #region Private API
+
         private void SetupViewAndQuery()
         {
             var view = _db.GetView("tasksByCreatedAt");
@@ -151,16 +173,23 @@ namespace Training.Core
             _tasksLiveQuery.Descending = true;
             _tasksLiveQuery.Changed += (sender, e) =>
             {
-                ListData.Replace(e.Rows.Select(x => new TaskCellModel(_db.Name, x.DocumentId)));
+                ListData.Replace(e.Rows.Select(x => new TaskCellModel(x.DocumentId)));
             };
             _tasksLiveQuery.Start();
         }
+
+        #endregion
+
+        #region IDisposable
 
         public void Dispose()
         {
             _tasksLiveQuery.Stop();
             ListData.Clear();
         }
+
+        #endregion
+
     }
 }
 

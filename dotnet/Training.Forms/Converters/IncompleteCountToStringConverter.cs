@@ -31,6 +31,9 @@ namespace Training.Forms
     /// </summary>
     public sealed class IncompleteCountToStringConverter : IValueConverter
     {
+
+        #region IValueConverter
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if(!(value is int)) {
@@ -50,6 +53,9 @@ namespace Training.Forms
 
             return Int32.Parse(val);
         }
+
+        #endregion
+
     }
 }
 

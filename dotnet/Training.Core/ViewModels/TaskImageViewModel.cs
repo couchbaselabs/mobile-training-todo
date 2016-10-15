@@ -33,7 +33,14 @@ namespace Training.Core
     /// </summary>
     public class TaskImageViewModel : BaseViewModel<TaskImageModel>
     {
+
+        #region Variables
+
         private ImageChooser _imageChooser;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets the command to handle an edit request
@@ -60,6 +67,10 @@ namespace Training.Core
             }
         }
 
+        #endregion
+
+        #region Constructors
+
         /// <summary>
         /// Constructor (not to be called directly)
         /// </summary>
@@ -74,15 +85,22 @@ namespace Training.Core
             });
         }
 
+        #endregion
+
+        #region Public API
+
         /// <summary>
         /// Initializes the view model with data passed to it
         /// </summary>
-        /// <param name="databaseName">The name of the database</param>
         /// <param name="documentID">The ID of the task document</param>
-        public void Init(string databaseName, string documentID)
+        public void Init(string documentID)
         {
-            Model = new TaskImageModel(databaseName, documentID);
+            Model = new TaskImageModel(documentID);
         }
+
+        #endregion
+
+        #region Private API
 
         private async Task EditImage()
         {
@@ -97,6 +115,9 @@ namespace Training.Core
 
             Image = result;
         }
+
+        #endregion
+
     }
 }
 

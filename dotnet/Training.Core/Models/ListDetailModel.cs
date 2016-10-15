@@ -30,6 +30,9 @@ namespace Training.Core
     /// </summary>
     public sealed class ListDetailModel : BaseModel, IDisposable
     {
+
+        #region Variables
+
         private Database _db;
         private Document _document;
         private string _username;
@@ -39,6 +42,10 @@ namespace Training.Core
         /// gained (enabling the users page to be visible)
         /// </summary>
         public event EventHandler ModeratorStatusGained;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets the owner of the list being shown
@@ -50,16 +57,23 @@ namespace Training.Core
             }
         }
 
+        #endregion
+
+        #region Constructors
+
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="dbName">The name of the database to use</param>
         /// <param name="documentId">The ID of the document containing the list details</param>
-        public ListDetailModel(string dbName, string documentId)
+        public ListDetailModel(string documentId)
         {
-            _db = CoreApp.AppWideManager.GetDatabase(dbName);
+            _db = CoreApp.Database;
             _document = _db.GetExistingDocument(documentId);
         }
+
+        #endregion
+
+        #region Public API
 
         /// <summary>
         /// Calculates whether or not the given user has moderator access to the 
@@ -94,6 +108,10 @@ namespace Training.Core
 
         }
 
+        #endregion
+
+        #region Private API
+
         private void MonitorModeratorStatus(object sender, DatabaseChangeEventArgs e)
         {
             if(_username == null) {
@@ -114,6 +132,10 @@ namespace Training.Core
             }
         }
 
+        #endregion
+
+        #region IDisposable
+
         public void Dispose()
         {
             if(_username == null) {
@@ -122,6 +144,8 @@ namespace Training.Core
 
             _db.Changed -= MonitorModeratorStatus;
         }
+
+        #endregion
     }
 }
 

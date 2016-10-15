@@ -32,7 +32,14 @@ namespace Training.Core
     /// </summary>
     public sealed class TaskModel : BaseModel
     {
+
+        #region Variables
+
         private readonly Document _document;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets the name of the task (cached)
@@ -72,19 +79,25 @@ namespace Training.Core
             }
         }
 
+        #endregion
+
+        #region Constructors
+
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="databaseName">The name of the database to use</param>
         /// <param name="documentID">The ID of the document containing information about 
         /// this task</param>
-        public TaskModel(string databaseName, string documentID)
+        public TaskModel(string documentID)
         {
-            var db = CoreApp.AppWideManager.GetDatabase(databaseName);
-            _document = db.GetExistingDocument(documentID);
+            _document = CoreApp.Database.GetExistingDocument(documentID);
             _name = new Lazy<string>(() => _document.GetProperty<string>("task"), LazyThreadSafetyMode.None);
             _imageDigest = new Lazy<string>(() => _document.CurrentRevision.GetAttachment("image")?.Metadata?["digest"] as string, LazyThreadSafetyMode.None);
         }
+
+        #endregion
+
+        #region Public API
 
         /// <summary>
         /// Gets the digest of the image for this task (cached)
@@ -167,6 +180,9 @@ namespace Training.Core
                 throw new ApplicationException("Failed to edit task", e);
             }
         }
+
+        #endregion
+
     }
 }
 

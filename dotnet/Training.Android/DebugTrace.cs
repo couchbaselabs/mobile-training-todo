@@ -1,4 +1,6 @@
-﻿using System;
+﻿// This file was automatically included from MvvmCross.  It's for logging purposes
+
+using System;
 using System.Diagnostics;
 using MvvmCross.Platform.Platform;
 

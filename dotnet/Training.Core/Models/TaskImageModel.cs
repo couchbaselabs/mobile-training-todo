@@ -29,7 +29,14 @@ namespace Training.Core
     /// </summary>
     public sealed class TaskImageModel : BaseModel
     {
+
+        #region Variables
+
         private Document _taskDocument;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// The image stored on the task
@@ -54,16 +61,20 @@ namespace Training.Core
             }
         }
 
+        #endregion
+
+        #region Constructors
+
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="databaseName">The name of the database to retrieve the document from</param>
         /// <param name="documentID">The id of the document to read from</param>
-        public TaskImageModel(string databaseName, string documentID)
+        public TaskImageModel(string documentID)
         {
-            var db = CoreApp.AppWideManager.GetDatabase(databaseName);
-            _taskDocument = db.GetDocument(documentID);
+            _taskDocument = CoreApp.Database.GetDocument(documentID);
         }
+
+        #endregion
     }
 }
 

@@ -31,28 +31,46 @@ namespace Training.Core
     /// </summary>
     public class UsersModel : BaseModel, IDisposable
     {
+
+        #region Constants
+
         private const string UserType = "task-list.user";
+
+        #endregion
+
+        #region Variables
 
         private Database _db;
         private LiveQuery _usersLiveQuery;
         private Document _taskList;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets the applicable list of users
         /// </summary>
         public ExtendedObservableCollection<UserCellModel> ListData { get; } = new ExtendedObservableCollection<UserCellModel>();
 
+        #endregion
+
+        #region Constructors
+
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="databaseName">The name of the database to use</param>
         /// <param name="currentListId">The document ID of the list to check for users</param>
-        public UsersModel(string databaseName, string currentListId)
+        public UsersModel(string currentListId)
         {
-            _db = CoreApp.AppWideManager.GetDatabase(databaseName);
+            _db = CoreApp.Database;
             _taskList = _db.GetDocument(currentListId);
             SetupViewAndQuery();
         }
+
+        #endregion
+
+        #region Public API
 
         /// <summary>
         /// Creates a new user for the associated list
@@ -97,6 +115,10 @@ namespace Training.Core
             _usersLiveQuery.QueryOptionsChanged();
         }
 
+        #endregion
+
+        #region Private API
+
         private void SetupViewAndQuery()
         {
             var view = _db.GetView("usersByUsername");
@@ -120,7 +142,7 @@ namespace Training.Core
             _usersLiveQuery.StartKey = new[] { _taskList.Id };
             _usersLiveQuery.EndKey = new[] { _taskList.Id };
             _usersLiveQuery.PrefixMatchLevel = 1;
-            _usersLiveQuery.Changed += (sender, e) => 
+            _usersLiveQuery.Changed += (sender, e) =>
             {
                 ListData.Replace(e.Rows.Select(x =>
                 {
@@ -128,16 +150,23 @@ namespace Training.Core
                     var id = key[0];
                     var name = key[1];
                     var docId = $"{id}.{name}";
-                    return new UserCellModel(_db.Name, docId);
+                    return new UserCellModel(docId);
                 }));
             };
             _usersLiveQuery.Start();
         }
 
+        #endregion
+
+        #region IDisposable
+
         public void Dispose()
         {
             _usersLiveQuery.Stop();
         }
+
+        #endregion
+
     }
 }
 

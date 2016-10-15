@@ -27,6 +27,9 @@ namespace Training.Core
     /// </summary>
     public class ListDetailViewModel : BaseViewModel<ListDetailModel>, IDisposable
     {
+
+        #region Properties
+
         /// <summary>
         /// Gets or sets whether the current user has moderator status
         /// </summary>
@@ -61,6 +64,10 @@ namespace Training.Core
             get; private set;
         }
 
+        #endregion
+
+        #region Public API
+
         /// <summary>
         /// Initializes the view model with data passed to it
         /// </summary>
@@ -72,9 +79,13 @@ namespace Training.Core
             Username = username;
             PageTitle = name;
             CurrentListID = listID;
-            Model = new ListDetailModel(username, listID);
+            Model = new ListDetailModel(listID);
             CalculateModeratorStatus();
         }
+
+        #endregion
+
+        #region Private API
 
         private void CalculateModeratorStatus()
         {
@@ -88,10 +99,16 @@ namespace Training.Core
             Model.ModeratorStatusGained += (sender, e) => HasModeratorStatus = true;
         }
 
+        #endregion
+
+        #region IDisposable
+
         public void Dispose()
         {
             Model.Dispose();
         }
+
+        #endregion
     }
 }
 

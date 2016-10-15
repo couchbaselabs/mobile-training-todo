@@ -30,7 +30,14 @@ namespace Training.Forms
     /// </summary>
     public sealed class NavigationLifecycleHelper
     {
+
+        #region Variables
+
         private readonly Page _page;
+
+        #endregion
+
+        #region Constructors
 
         /// <summary>
         /// Constructor
@@ -41,6 +48,10 @@ namespace Training.Forms
             _page = page;
         }
 
+        #endregion
+
+        #region Public API
+
         /// <summary>
         /// Handles a disappear event
         /// </summary>
@@ -49,16 +60,15 @@ namespace Training.Forms
         public bool OnDisappearing(INavigation navigation)
         {
             if(navigation.NavigationStack.Last() == _page) {
-                var disposable = _page.BindingContext as IDisposable;
-                if(disposable != null) {
-                    disposable.Dispose();
-                }
-
+                (_page.BindingContext as IDisposable)?.Dispose();
                 return true;
             }
 
             return false;
         }
+
+        #endregion
+
     }
 }
 

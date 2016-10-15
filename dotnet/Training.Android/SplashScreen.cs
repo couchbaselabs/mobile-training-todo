@@ -35,15 +35,28 @@ namespace Training.Android
         , MainLauncher = true
         , Theme = "@style/Theme.Splash"
         , NoHistory = true
+        , Icon = "@mipmap/icon"
         , ScreenOrientation = ScreenOrientation.Portrait)]
     public class SplashScreen : MvxSplashScreenActivity
     {
+
+        #region Variables
+
+        private bool isInitializationComplete = false;
+
+        #endregion
+
+        #region Constructors
+
         public SplashScreen()
             : base(Resource.Layout.SplashScreen)
         {
         }
 
-        private bool isInitializationComplete = false;
+        #endregion
+
+        #region Overrides
+
         public override void InitializationComplete()
         {
             if(!isInitializationComplete) {
@@ -65,5 +78,7 @@ namespace Training.Android
 
             base.OnCreate(bundle);
         }
+
+        #endregion
     }
 }

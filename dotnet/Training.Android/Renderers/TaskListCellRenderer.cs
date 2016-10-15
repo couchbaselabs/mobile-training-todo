@@ -34,6 +34,9 @@ namespace Training.Android
     /// </summary>
     public class TaskListCellRenderer : ViewCellRenderer
     {
+
+        #region Overrides
+
         protected override View GetCellCore(Xamarin.Forms.Cell item, View convertView, ViewGroup parent, Context context)
         {
             var x = (TaskListCell)item;
@@ -47,6 +50,8 @@ namespace Training.Android
 
             return view;
         }
+
+        #endregion
     }
 }
 

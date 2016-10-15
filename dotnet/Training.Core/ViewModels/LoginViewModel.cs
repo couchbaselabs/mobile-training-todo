@@ -19,19 +19,29 @@
 // limitations under the License.
 //
 using System;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Acr.UserDialogs;
+using Couchbase.Lite;
 using MvvmCross.Core.ViewModels;
-using MvvmCross.Platform;
 
 namespace Training.Core
 {
     public sealed class LoginViewModel : BaseViewModel<LoginModel>
     {
+
+        #region Variables 
+
         private readonly IUserDialogs _dialogs;
 
-        private string _username;
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the username of the user currently trying to log in
+        /// </summary>
         public string Username
         {
             get {
@@ -41,33 +51,38 @@ namespace Training.Core
                 SetProperty(ref _username, value);
             }
         }
+        private string _username;
 
-        private string _password;
-        public string Password
-        {
-            get {
-                return _password;
-            }
-            set {
-                SetProperty(ref _password, value);
-            }
-        }
-
+        /// <summary>
+        /// Gets the command to execute for login
+        /// </summary>
         public ICommand LoginCommand
         {
             get {
-                return new MvxCommand(Login);
+                return new MvxAsyncCommand<string>(Login);
             }
         }
 
-        public LoginViewModel(IUserDialogs dialogs)
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Constructor (not to be called directly)
+        /// </summary>
+        /// <param name="dialogs">The interface controlling UI dialogs</param>
+        public LoginViewModel(IUserDialogs dialogs) : base(new LoginModel())
         {
             _dialogs = dialogs;
         }
 
-        private void Login()
+        #endregion
+
+        #region Private API
+
+        private async Task Login(string password)
         {
-            if(String.IsNullOrWhiteSpace(Username) || String.IsNullOrWhiteSpace(Password)) {
+            if(String.IsNullOrWhiteSpace(Username) || String.IsNullOrWhiteSpace(password)) {
                 _dialogs.ShowError("Username or password cannot be empty");
                 return;
             }
@@ -77,7 +92,37 @@ namespace Training.Core
                 return;
             }
 
-            ShowViewModel<TaskListsViewModel>(new { loginEnabled = true, username = Username, password = Password });
+            try {
+                CoreApp.StartSession(Username, password, null);
+            } catch(CouchbaseLiteException e) {
+                if(e.CBLStatus.Code == StatusCode.Unauthorized) {
+                    var result = await _dialogs.PromptAsync(new PromptConfig {
+                        Title = "Password Changed",
+                        OkText = "Migrate",
+                        CancelText = "Delete",
+                        IsCancellable = true,
+                        InputType = Acr.UserDialogs.InputType.Password
+                    });
+
+                    if(result.Ok) {
+                        CoreApp.StartSession(Username, result.Text, password);
+                    } else {
+                        Model.DeleteDatabase(Username);
+                        Login(password);
+                        return;
+                    }
+                } else {
+                    _dialogs.ShowError($"Login has an error occurred, code = {e.CBLStatus.Code}");
+                    return;
+                }
+            } catch(Exception e) {
+                _dialogs.ShowError($"Login has an error occurred, code = {e}");
+                return;
+            }
+
+            ShowViewModel<TaskListsViewModel>(new { loginEnabled = true });
         }
+
+        #endregion
     }
 }

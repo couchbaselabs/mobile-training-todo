@@ -33,7 +33,14 @@ namespace Training.Android
     /// </summary>
     public class ImageService : IImageService
     {
+
+        #region Variables
+
         private static LruCache _cache = new LruCache(50);
+
+        #endregion
+
+        #region Private API
 
         private static Bitmap Square(Bitmap image, float size)
         {
@@ -64,6 +71,10 @@ namespace Training.Android
 
             return bytes;
         }
+
+        #endregion
+
+        #region IImageService
 
         public byte[] GenerateSolidColor(float size, System.Drawing.Color color, string cacheName)
         {
@@ -107,16 +118,27 @@ namespace Training.Android
                 return Put(cacheName, square);
             });
         }
+
+        #endregion
     }
 
+    // Thin wrapper for storing bytes in a collection that holds Java objects
     internal sealed class ByteArrayWrapper : Java.Lang.Object
     {
+        #region Properties
+
         public byte[] Bytes { get; }
+
+        #endregion
+
+        #region Public API
 
         public ByteArrayWrapper(byte[] bytes)
         {
             Bytes = bytes;
         }
+
+        #endregion
     }
 }
 

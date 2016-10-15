@@ -22,6 +22,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
+
 using Acr.UserDialogs;
 using MvvmCross.Core.ViewModels;
 using MvvmCross.Platform;
@@ -31,9 +32,16 @@ namespace Training.Core
     /// <summary>
     /// The view model for the users page
     /// </summary>
-    public class UsersViewModel : BaseViewModel<UsersModel>
+    public class UsersViewModel : BaseViewModel<UsersModel>, IDisposable
     {
+
+        #region Variables
+
         private IUserDialogs _dialogs;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets or sets the current text being searched for in the list
@@ -72,14 +80,22 @@ namespace Training.Core
             }
         }
 
+        #endregion
+
+        #region Constructors
+
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="parent">The parent view model (this is a nested view model).</param>
-        public UsersViewModel(ListDetailViewModel parent) : base(new UsersModel(parent.Username, parent.CurrentListID))
+        public UsersViewModel(ListDetailViewModel parent) : base(new UsersModel(parent.CurrentListID))
         {
             _dialogs = Mvx.Resolve<IUserDialogs>();
         }
+
+        #endregion
+
+        #region Private API
 
         private async Task AddNewUser()
         {
@@ -96,6 +112,18 @@ namespace Training.Core
                 }
             }
         }
+
+        #endregion
+
+        #region IDisposable
+
+        public void Dispose()
+        {
+            Model.Dispose();
+        }
+
+        #endregion
+
     }
 }
 

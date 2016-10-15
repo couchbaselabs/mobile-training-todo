@@ -20,7 +20,6 @@
 //
 using System;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Acr.UserDialogs;
@@ -34,7 +33,14 @@ namespace Training
     /// </summary>
     public class TaskListsViewModel : BaseViewModel<TaskListsModel>
     {
+
+        #region Variables
+
         private readonly IUserDialogs _dialogs;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets whether or not login is enabled
@@ -106,29 +112,35 @@ namespace Training
             }
         }
 
+        #endregion
+
+        #region Constructors
+
         /// <summary>
         /// Constructor, not to be called directly.
         /// </summary>
         /// <param name="dialogs">The interface responsible for displaying dialogs (from IoC container)</param>
-        public TaskListsViewModel(IUserDialogs dialogs)
+        public TaskListsViewModel(IUserDialogs dialogs) : base(new TaskListsModel(CoreApp.Database))
         {
             _dialogs = dialogs;
         }
 
+        #endregion
+
+        #region Public API
+
         /// <summary>
         /// Initializes the view model with data passed to it
         /// </summary>
-        /// <param name="username">The name of the current user.</param>
         /// <param name="loginEnabled">If set to <c>true</c> login is enabled in the application</param>
-        public void Init(string username, string password, bool loginEnabled)
+        public void Init(bool loginEnabled)
         {
-            if(String.IsNullOrEmpty(username)) {
-                username = "todo";
-            }
-
-            Model = new TaskListsModel(username);
             LoginEnabled = loginEnabled;
         }
+
+        #endregion
+
+        #region Private API
 
         private void AddNewItem()
         {
@@ -158,6 +170,9 @@ namespace Training
                 _dialogs.ShowError(e.Message);
             }
         }
+
+        #endregion
+
     }
 }
 

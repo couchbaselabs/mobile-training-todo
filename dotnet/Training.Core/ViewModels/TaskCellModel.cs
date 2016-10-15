@@ -36,8 +36,15 @@ namespace Training.Core
     /// </summary>
     public sealed class TaskCellModel : BaseViewModel<TaskModel>
     {
+
+        #region Variables
+
         private IUserDialogs _dialogs = Mvx.Resolve<IUserDialogs>();
         private Lazy<string> _imageDigest;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets the command that handles a delete request
@@ -110,6 +117,7 @@ namespace Training.Core
                     return;
                 }
 
+                RaisePropertyChanged(nameof(IsChecked));
                 RaisePropertyChanged(nameof(CheckedImage));
             }
         }
@@ -138,19 +146,26 @@ namespace Training.Core
         }
         private ICommand _addImageCommand;
 
+        #endregion
+
+        #region Constructors
+
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="databaseName">The name of the database</param>
         /// <param name="documentID">The ID of the document to use</param>
-        public TaskCellModel(string databaseName, string documentID)
+        public TaskCellModel(string documentID)
         {
             DocumentID = documentID;
-            Model = new TaskModel(databaseName, documentID);
+            Model = new TaskModel(documentID);
             _name = new Lazy<string>(() => Model.Name, LazyThreadSafetyMode.None);
             _imageDigest = new Lazy<string>(() => Model.GetImageDigest(), LazyThreadSafetyMode.None);
             GenerateThumbnail();
         }
+
+        #endregion
+
+        #region Internal API
 
         internal bool HasImage()
         {
@@ -166,6 +181,10 @@ namespace Training.Core
         {
             Model.SetImage(image);
         }
+
+        #endregion
+
+        #region Private API
 
         private async Task GenerateThumbnail()
         {
@@ -205,6 +224,10 @@ namespace Training.Core
             }
         }
 
+        #endregion
+
+        #region Overrides
+
         public override bool Equals(object obj)
         {
             var other = obj as TaskCellModel;
@@ -218,8 +241,13 @@ namespace Training.Core
 
         public override int GetHashCode()
         {
-            return DocumentID.GetHashCode() ^ Name.GetHashCode() ^ _imageDigest.Value.GetHashCode();
+            var digest = _imageDigest.Value;
+            var b = DocumentID.GetHashCode() ^ Name.GetHashCode();
+            return digest == null ? b : (b ^ digest.GetHashCode());
         }
+
+        #endregion
+
     }
 }
 

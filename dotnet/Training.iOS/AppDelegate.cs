@@ -44,16 +44,14 @@ namespace Training.iOS
             var setup = new Setup(this, Window);
             setup.Initialize();
 
-            // Couchbase requires plugin registration for any storage engine on iOS
-            Couchbase.Lite.Storage.SystemSQLite.Plugin.Register();
-
             // Register platform specific implementations
             Mvx.RegisterSingleton<IDevice>(() => AppleDevice.CurrentDevice);
             Mvx.RegisterSingleton<IImageService>(() => new ImageService());
 
             //Start the application
             var startup = new CoreAppStart();
-            startup.Start(new { loginEnabled = true, syncEnabled = false });
+            var hint = CoreAppStart.CreateHint();
+            startup.Start(hint);
 
             Window.MakeKeyAndVisible();
 

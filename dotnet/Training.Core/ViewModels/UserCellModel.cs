@@ -32,7 +32,14 @@ namespace Training.Core
     /// </summary>
     public sealed class UserCellModel : BaseViewModel<UserModel>
     {
+
+        #region Variables
+
         private IUserDialogs _dialogs = Mvx.Resolve<IUserDialogs>();
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets the handler for a delete request
@@ -54,14 +61,21 @@ namespace Training.Core
             }
         }
 
+        #endregion
+
+        #region Constructors
+
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="databaseName">The name of the database to use</param>
         /// <param name="documentID">The ID of the document containing the user information</param>
-        public UserCellModel(string databaseName, string documentID) : base(new UserModel(databaseName, documentID))
+        public UserCellModel(string documentID) : base(new UserModel(documentID))
         {
         }
+
+        #endregion
+
+        #region Private API
 
         private void Delete()
         {
@@ -71,6 +85,9 @@ namespace Training.Core
                 _dialogs.ShowError(e.Message);
             }
         }
+
+        #endregion
+
     }
 }
 

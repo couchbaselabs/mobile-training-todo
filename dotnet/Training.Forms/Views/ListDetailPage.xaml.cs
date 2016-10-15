@@ -20,6 +20,7 @@
 //
 using System;
 using System.ComponentModel;
+
 using Training.Core;
 using Training.Forms;
 using Xamarin.Forms;

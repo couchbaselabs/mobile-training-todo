@@ -21,7 +21,6 @@
 using System;
 using System.Globalization;
 using System.IO;
-using System.Threading;
 
 using Xamarin.Forms;
 
@@ -32,6 +31,9 @@ namespace Training.Forms
     /// </summary>
     public class ByteArrayToImageConverter : IValueConverter
     {
+
+        #region IValueConverter
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if(targetType != typeof(ImageSource) && targetType != typeof(StreamImageSource)) {
@@ -50,6 +52,9 @@ namespace Training.Forms
         {
             throw new NotSupportedException();
         }
+
+        #endregion
+
     }
 }
 

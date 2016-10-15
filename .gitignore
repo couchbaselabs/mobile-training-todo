@@ -71,3 +71,4 @@ libsqlcipher.a
 packages/
 bin/
 obj/
+*.[Dd]esigner.*

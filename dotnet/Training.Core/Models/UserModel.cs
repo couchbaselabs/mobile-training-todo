@@ -27,7 +27,14 @@ namespace Training.Core
     /// </summary>
     public sealed class UserModel : BaseModel
     {
+
+        #region Variables
+
         private Document _document;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets the name of the user
@@ -39,17 +46,23 @@ namespace Training.Core
             }
         }
 
+        #endregion
+
+        #region Constructors
+
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="databaseName">The name of the database to use</param>
         /// <param name="documentId">The ID of the document containing information about
         /// the user</param>
-        public UserModel(string databaseName, string documentId)
+        public UserModel(string documentId)
         {
-            var db = CoreApp.AppWideManager.GetDatabase(databaseName);
-            _document = db.GetExistingDocument(documentId);
+            _document = CoreApp.Database.GetExistingDocument(documentId);
         }
+
+        #endregion
+
+        #region Public API
 
         /// <summary>
         /// Deletes the user
@@ -58,6 +71,8 @@ namespace Training.Core
         {
             _document.Delete();
         }
+
+        #endregion
     }
 }
 
