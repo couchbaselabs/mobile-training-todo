@@ -141,6 +141,8 @@ namespace Training
 
         private void Logout()
         {
+            CoreApp.StopReplication();
+            Model.Dispose();
             Close(this);
         }
 

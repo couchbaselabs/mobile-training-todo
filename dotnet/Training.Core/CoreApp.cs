@@ -60,6 +60,18 @@ namespace Training.Core
             _puller.Start();
         }
 
+        public static void StopReplication()
+        {
+            if(_pusher == null || _puller == null) {
+                return;
+            }
+
+            _pusher.Stop();
+            _pusher = null;
+            _puller.Stop();
+            _puller = null;
+        }
+
         public override void Initialize()
         {
             CreatableTypes()
@@ -79,6 +91,9 @@ namespace Training.Core
         {
             dynamic h = hint;
             if(h.loginEnabled) {
+                if(h.syncEnabled) {
+                    CoreApp.StartReplication(h.username, h.password);
+                }
                 ShowViewModel<LoginViewModel>();
             } else {
                 if(h.syncEnabled) {
