@@ -4,6 +4,7 @@
   "databases": {
     "todo": {
       "server": "walrus:",
+      "bucket": "todo",
       "users": {
         "user1": {"password": "pass"},
         "user2": {"password": "pass"}
