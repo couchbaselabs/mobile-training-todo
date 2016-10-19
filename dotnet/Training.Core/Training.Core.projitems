@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>{BF8AA46B-A6E3-42A5-85CC-C6F0B277D11A}</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Training.Core</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)CoreApp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\TaskListsViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\BaseViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\TaskListsModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\BaseModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\TasksViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\UsersViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\ListDetailViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\TasksModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\TaskImageViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\IImageService.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\TaskImageModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\TaskCellModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\TaskListCellModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\UsersModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\UserCellModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\TaskModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\TaskListModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\ListDetailModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\UserModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModels\LoginViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\LoginModel.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)ViewModels\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Models\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\Resources\todo.zip">
+        <LogicalName>todo.zip</LogicalName>
+        <Link>todo.zip</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>

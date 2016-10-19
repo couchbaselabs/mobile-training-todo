@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" 
+        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+        xmlns:local="clr-namespace:Training.Forms"
+        x:Class="Training.TasksPage"
+        Title="Tasks"
+        Icon="Tasks.png">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <local:ByteArrayToImageConverter x:Key="ImageSourceConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="+" Command="{Binding AddCommand}"/>
+    </ContentPage.ToolbarItems>
+    <ContentPage.Content>
+        <ListView ItemsSource="{Binding ListData}" 
+                Header="{Binding .}" 
+                RowHeight="54"
+                SelectedItem="{Binding SelectedItem, Mode=TwoWay}">
+            <ListView.HeaderTemplate>
+                <DataTemplate>
+                    <SearchBar Text="{Binding SearchTerm, Mode=TwoWay}" />
+                </DataTemplate>
+            </ListView.HeaderTemplate>
+             <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <ViewCell.ContextActions>
+                            <MenuItem Command="{Binding EditCommand}"
+                               Text="Edit" />
+                            <MenuItem Command="{Binding DeleteCommand}"
+                               Text="Delete" IsDestructive="True" />
+                        </ViewCell.ContextActions>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Image Source="{Binding Thumbnail, Converter={StaticResource ImageSourceConverter}}" WidthRequest="44" HeightRequest="44" VerticalOptions="Center" />
+                            <Button Command="{Binding AddImageCommand}" CommandParameter="{Binding .}" WidthRequest="44" HeightRequest="44" VerticalOptions="Center" BackgroundColor="Transparent" />
+                            <Label Text="{Binding Name}" Grid.Column="1" VerticalOptions="Center" />
+                            <Image Source="{Binding CheckedImage}" Grid.Column="2" VerticalOptions="Center" HeightRequest="44" />
+                        </Grid>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </ContentPage.Content>
+</ContentPage>

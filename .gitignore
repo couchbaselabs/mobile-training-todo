@@ -67,3 +67,8 @@ fastlane/screenshots
 # CouchbaseLite
 CouchbaseLite.framework
 libsqlcipher.a
+*.userprefs
+packages/
+bin/
+obj/
+*.[Dd]esigner.*
