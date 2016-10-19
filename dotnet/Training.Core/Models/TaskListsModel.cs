@@ -155,7 +155,7 @@ namespace Training.Core
                 }
 
                 var list = JsonUtility.ConvertToNetObject<IDictionary<string, object>>(doc["taskList"]);
-                if(!list.ContainsKey("id") || (list.ContainsKey("complete") && (bool)list["complete"])) {
+                if(!list.ContainsKey("id") || (doc.ContainsKey("complete") && (bool)doc["complete"])) {
                     return;
                 }
 

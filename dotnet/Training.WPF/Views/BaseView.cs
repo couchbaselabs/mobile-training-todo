@@ -24,7 +24,7 @@ using MvvmCross.Wpf.Views;
 
 namespace Training
 {
-    public abstract class BaseView : MvxWpfView, IDisposable
+    public class BaseView : MvxWpfView, IDisposable
     {
         protected virtual void Dispose(bool finalizing)
         {

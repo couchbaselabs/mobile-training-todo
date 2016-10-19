@@ -39,7 +39,7 @@ namespace Training.WPF.Services
         {
             var bmp = new Bitmap((int)size, (int)size, PixelFormat.Format24bppRgb);
             using(var g = Graphics.FromImage(bmp)) {
-                g.DrawRectangle(new Pen(color), new Rectangle(0, 0, bmp.Width, bmp.Height));
+                g.FillRectangle(new SolidBrush(color), 0, 0, bmp.Width, bmp.Height);
             }
 
             return Put(cacheName, bmp);

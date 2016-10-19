@@ -19,7 +19,7 @@ namespace Training
     /// <summary>
     /// Interaction logic for TaskImageView.xaml
     /// </summary>
-    public partial class TaskImageView : MvxWpfView
+    public partial class TaskImageView : BaseView
     {
         public TaskImageView()
         {

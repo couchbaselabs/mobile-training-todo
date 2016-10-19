@@ -17,7 +17,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <TextBox Text="{Binding SearchTerm, Mode=TwoWay}" />
+        <TextBox Text="{Binding SearchTerm, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
         <ListView
             Name="_listView"
             Grid.Row="1"
@@ -46,7 +46,7 @@
                         <Image Source="{Binding Thumbnail, Converter={StaticResource ImageSourceConverter}}" Width="44" Height="44" VerticalAlignment="Center" />
                         <Button Command="{Binding AddImageCommand}" CommandParameter="{Binding .}" Width="44" Height="44" VerticalAlignment="Center" Background="Transparent" />
                         <Label Content="{Binding Name}" Grid.Column="1" VerticalAlignment="Center" />
-                        <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" Grid.Column="2" VerticalAlignment="Center" />
+                        <CheckBox IsChecked="{Binding IsChecked}" IsHitTestVisible="False" Grid.Column="2" VerticalAlignment="Center" />
                     </Grid>
 
                 </DataTemplate>

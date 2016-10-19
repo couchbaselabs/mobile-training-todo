@@ -20,7 +20,7 @@ namespace Training
     /// <summary>
     /// Interaction logic for TaskListsView.xaml
     /// </summary>
-    public partial class TaskListsView : MvxWpfView
+    public partial class TaskListsView : BaseView
     {
         private TaskListCellModel _lastRightClicked;
 
