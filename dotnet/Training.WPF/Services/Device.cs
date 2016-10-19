@@ -20,10 +20,8 @@
 //
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+
 using XLabs.Enums;
 using XLabs.Platform.Device;
 using XLabs.Platform.Services;
@@ -32,6 +30,8 @@ using XLabs.Platform.Services.Media;
 
 namespace Training.WPF.Services
 {
+    // An implementation of the IDevice interface for WPF 
+    // (mostly unimplemented, except what is needed for this app)
     internal sealed class Device : IDevice
     {
         public IAccelerometer Accelerometer

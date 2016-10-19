@@ -18,18 +18,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-using System;
-using System.Collections.Generic;
 
 using Xamarin.Forms;
 
 namespace Training
 {
+    /// <summary>
+    /// The page for handling user login
+    /// </summary>
     public partial class LoginPage : ContentPage
     {
+
+        #region Constructors
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public LoginPage()
         {
             InitializeComponent();
         }
+
+        #endregion
+
     }
 }

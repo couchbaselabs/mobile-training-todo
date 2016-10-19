@@ -20,18 +20,20 @@
 //
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+
 using Microsoft.Win32;
 using XLabs.Platform.Services.Media;
 
 namespace Training.WPF.Services
 {
+    // An implementation of IMediaPicker for WPF, using OpenFileDialog
     internal sealed class MediaPicker : IMediaPicker
     {
+
+        #region Properties
+
         public bool IsCameraAvailable
         {
             get {
@@ -56,6 +58,10 @@ namespace Training.WPF.Services
         public EventHandler<MediaPickerErrorArgs> OnError { get; set; }
 
         public EventHandler<MediaPickerArgs> OnMediaSelected { get; set; }
+
+        #endregion
+
+        #region IMediaPicker
 
         public Task<MediaFile> SelectPhotoAsync(CameraMediaStorageOptions options)
         {
@@ -86,5 +92,8 @@ namespace Training.WPF.Services
         {
             throw new NotImplementedException();
         }
+
+        #endregion
+
     }
 }

@@ -21,7 +21,6 @@
 using System;
 using System.Globalization;
 using System.IO;
-using System.Threading;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -33,6 +32,9 @@ namespace Training.WPF
     /// </summary>
     public class ByteArrayToImageConverter : IValueConverter
     {
+
+        #region IValueConverter
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if(targetType != typeof(ImageSource)) {
@@ -53,6 +55,9 @@ namespace Training.WPF
         {
             throw new NotSupportedException();
         }
+
+        #endregion
+
     }
 }
 

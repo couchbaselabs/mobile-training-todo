@@ -29,16 +29,32 @@ using MvvmCross.Wpf.Views;
 
 namespace Training.WPF
 {
+    // The logic for presenting views in WPF.  Needed to track history
     internal sealed class WpfPresenter : MvxWpfViewPresenter
     {
+
+        #region Variables
+
         private readonly ContentControl _contentControl;
         private Stack<FrameworkElement> _history = new Stack<FrameworkElement>();
         private bool _first = true;
 
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="contentControl">The parent view to swap children in</param>
         public WpfPresenter(ContentControl contentControl)
         {
             _contentControl = contentControl;
         }
+
+        #endregion
+
+        #region Overrides
 
         public override void Present(FrameworkElement frameworkElement)
         {
@@ -63,5 +79,8 @@ namespace Training.WPF
             (_contentControl as IDisposable)?.Dispose();
             _contentControl.Content = _history.Pop();
         }
+
+        #endregion
+
     }
 }

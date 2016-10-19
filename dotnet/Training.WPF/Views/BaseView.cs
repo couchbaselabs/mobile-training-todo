@@ -20,20 +20,41 @@
 //
 
 using System;
+
 using MvvmCross.Wpf.Views;
 
 namespace Training
 {
+
+    /// <summary>
+    /// A base class for other views (cannot be abstract because this prevents its
+    /// use inside of XAML)
+    /// </summary>
     public class BaseView : MvxWpfView, IDisposable
     {
+
+        #region Protected API
+
+        /// <summary>
+        /// Virtual disposal logic
+        /// </summary>
+        /// <param name="finalizing">Whether or not this is the finalizer (always false unless
+        /// a subclass call it from a finalizer)</param>
         protected virtual void Dispose(bool finalizing)
         {
             (DataContext as IDisposable)?.Dispose();
         }
 
+        #endregion
+
+        #region IDisposable
+
         public void Dispose()
         {
             Dispose(false);
         }
+
+        #endregion
+
     }
 }

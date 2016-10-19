@@ -27,16 +27,33 @@ using Xamarin.Forms;
 
 namespace Training
 {
+    /// <summary>
+    /// The high level page containing a list of tasks and list of users
+    /// </summary>
     public partial class ListDetailPage : TabbedPage
     {
+
+        #region Variables
+
         private NavigationLifecycleHelper _navHelper;
         private UsersPage _usersPage;
 
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public ListDetailPage()
         {
             InitializeComponent();
             _navHelper =  new NavigationLifecycleHelper(this);
         }
+
+        #endregion
+
+        #region Private API
 
         private void AddUsersTab(object sender, PropertyChangedEventArgs e)
         {
@@ -51,6 +68,10 @@ namespace Training
                 }
             }
         }
+
+        #endregion
+
+        #region Overrides
 
         protected override void OnBindingContextChanged()
         {
@@ -82,6 +103,9 @@ namespace Training
                 (_usersPage.BindingContext as IDisposable)?.Dispose();
             }
         }
+
+        #endregion
+
     }
 }
 

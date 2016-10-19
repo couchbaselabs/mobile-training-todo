@@ -18,19 +18,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-using System;
-using System.Collections.Generic;
 
 using Xamarin.Forms;
 
 namespace Training
 {
+    /// <summary>
+    /// The page for handling display and editing of a task's image
+    /// </summary>
     public partial class TaskImagePage : ContentPage
     {
+
+        #region Constructors
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public TaskImagePage()
         {
             InitializeComponent();
         }
+
+        #endregion
+
     }
 }
 

@@ -18,19 +18,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-using System;
-using System.Collections.Generic;
 
 using Xamarin.Forms;
 
 namespace Training
 {
+    /// <summary>
+    /// The page that displays the list of task lists in a given database
+    /// </summary>
     public partial class TaskListsPage : ContentPage
     {
+
+        #region Constructors
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public TaskListsPage()
         {
             InitializeComponent();
         }
+
+        #endregion
+
+        #region Overrides
 
         protected override void OnBindingContextChanged()
         {
@@ -50,6 +61,9 @@ namespace Training
                 _logoutButton = null;
             }
         }
+
+        #endregion
+
     }
 }
 

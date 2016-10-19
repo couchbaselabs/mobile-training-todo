@@ -34,10 +34,17 @@ namespace Training.iOS
     /// </summary>
     public sealed class TaskListsPageRenderer : PageRenderer
     {
+
+        #region Properties
+
         public new ContentPage Element
         {
             get { return (ContentPage)base.Element; }
         }
+
+        #endregion
+
+        #region Overrides
 
         public override void ViewWillAppear(bool animated)
         {
@@ -69,6 +76,8 @@ namespace Training.iOS
             navigationItem.SetLeftBarButtonItems(LeftNavList.ToArray(), false);
             navigationItem.SetRightBarButtonItems(rightNavList.ToArray(), false);
         }
+
+        #endregion
     }
 }
 

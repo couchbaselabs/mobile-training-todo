@@ -18,19 +18,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-using System;
-using System.Collections.Generic;
 
 using Xamarin.Forms;
 
 namespace Training
 {
+    /// <summary>
+    /// The page that lists the users that have access to a given task list
+    /// </summary>
     public partial class UsersPage : ContentPage
     {
+
+        #region Constructors
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public UsersPage()
         {
             InitializeComponent();
         }
+
+        #endregion
+
     }
 }
 

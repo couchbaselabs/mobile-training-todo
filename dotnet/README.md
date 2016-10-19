@@ -23,7 +23,7 @@ This interface allows the conversion of any type of object to another and it is 
 
 ### Organization
 
-- Training.Android (TODO): The platform specific code for Android
+- Training.Android: The platform specific code for Android
 - Training.Core: The view model and model layer, as well as interfaces for services
  - Models: The models, where all the Couchbase Lite functionality lives
  - Services: Service interface definitions
@@ -32,7 +32,7 @@ This interface allows the conversion of any type of object to another and it is 
  - Converters: `IValueConverter` definitions
  - Views: UI for Xamarin Forms
 - Training.iOS: The platform specific code for iOS
-- Training.WPF (TODO): The view layer for WPF, any applicable `IValueConverter`, and WPF platform specific code
+- Training.WPF: The view layer for WPF, any applicable `IValueConverter`, and WPF platform specific code
 
 ### Frameworks Used
 

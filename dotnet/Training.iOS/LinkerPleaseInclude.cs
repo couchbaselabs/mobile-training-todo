@@ -1,5 +1,8 @@
+// This file was automatically included from MvvmCross.
+
 using System.Collections.Specialized;
 using System.Windows.Input;
+
 using Foundation;
 using MvvmCross.Binding.BindingContext;
 using MvvmCross.iOS.Views;
@@ -12,7 +15,7 @@ namespace Training.iOS
     [Preserve(AllMembers = true)]
     public class LinkerPleaseInclude
     {
-		public void Include(MvxTaskBasedBindingContext c)
+        public void Include(MvxTaskBasedBindingContext c)
         {
             c.Dispose();
             var c2 = new MvxTaskBasedBindingContext();

@@ -171,7 +171,6 @@
     <Compile Include="Services\Device.cs" />
     <Compile Include="Services\ImageService.cs" />
     <Compile Include="Services\MediaPicker.cs" />
-    <Compile Include="Services\ProgressDialogImpl.cs" />
     <Compile Include="Services\UserDialogsImpl.cs" />
     <Compile Include="Setup.cs" />
     <Compile Include="Views\BaseView.cs" />
@@ -266,9 +265,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Images\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Resource Include="appicon.ico" />
   </ItemGroup>

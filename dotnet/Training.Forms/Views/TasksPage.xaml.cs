@@ -18,26 +18,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
-using Training.Core;
 using Xamarin.Forms;
 
 namespace Training
 {
+    /// <summary>
+    /// The page that display the tasks in a given task list
+    /// </summary>
     public partial class TasksPage : ContentPage
     {
+
+        #region Constructors
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public TasksPage()
         {
             InitializeComponent();
         }
 
-        protected override void OnBindingContextChanged()
-        {
-            base.OnBindingContextChanged();
-        }
+        #endregion
+
     }
 }
 

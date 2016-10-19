@@ -18,6 +18,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+
 using Foundation;
 using MvvmCross.iOS.Platform;
 using MvvmCross.Platform;
@@ -27,14 +28,24 @@ using XLabs.Platform.Device;
 
 namespace Training.iOS
 {
+    /// <summary>
+    /// The app delegate for the overall iOS app lifecycle
+    /// </summary>
     [Register("AppDelegate")]
     public partial class AppDelegate : MvxApplicationDelegate
     {
+
+        #region Properties
+
         public override UIWindow Window
         {
             get;
             set;
         }
+
+        #endregion
+
+        #region Overrides
 
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
@@ -57,5 +68,8 @@ namespace Training.iOS
 
             return true;
         }
+
+        #endregion
+
     }
 }

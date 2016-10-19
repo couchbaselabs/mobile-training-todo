@@ -31,38 +31,17 @@ using Training.Core;
 
 namespace Training.WPF.Services
 {
+    // An implementation of IImageService using ObjectCache and System.Drawing
     internal sealed class ImageService : IImageService
     {
+
+        #region Variables
+
         private ObjectCache _cache = MemoryCache.Default;
 
-        public byte[] GenerateSolidColor(float size, Color color, string cacheName)
-        {
-            var bmp = new Bitmap((int)size, (int)size, PixelFormat.Format24bppRgb);
-            using(var g = Graphics.FromImage(bmp)) {
-                g.FillRectangle(new SolidBrush(color), 0, 0, bmp.Width, bmp.Height);
-            }
+        #endregion
 
-            return Put(cacheName, bmp);
-        }
-
-        public async Task<byte[]> Square(Stream image, float size, string cacheName)
-        {
-            if(image == null || image == Stream.Null) {
-                return null;
-            }
-
-            var existing = GetExisting(cacheName);
-            if(existing != null) {
-                return existing;
-            }
-
-            return await Task.Run(() =>
-            {
-                var imageObj = Image.FromStream(image);
-                var square = Shrink(imageObj, size);
-                return Put(cacheName, square);
-            });
-        }
+        #region Private API
 
         private Bitmap Shrink(Image src, float size)
         {
@@ -113,5 +92,41 @@ namespace Training.WPF.Services
 
             return data;
         }
+
+        #endregion
+
+        #region IImageService
+
+        public byte[] GenerateSolidColor(float size, Color color, string cacheName)
+        {
+            var bmp = new Bitmap((int)size, (int)size, PixelFormat.Format24bppRgb);
+            using(var g = Graphics.FromImage(bmp)) {
+                g.FillRectangle(new SolidBrush(color), 0, 0, bmp.Width, bmp.Height);
+            }
+
+            return Put(cacheName, bmp);
+        }
+
+        public async Task<byte[]> Square(Stream image, float size, string cacheName)
+        {
+            if(image == null || image == Stream.Null) {
+                return null;
+            }
+
+            var existing = GetExisting(cacheName);
+            if(existing != null) {
+                return existing;
+            }
+
+            return await Task.Run(() =>
+            {
+                var imageObj = Image.FromStream(image);
+                var square = Shrink(imageObj, size);
+                return Put(cacheName, square);
+            });
+        }
+
+        #endregion
+ 
     }
 }

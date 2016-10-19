@@ -22,6 +22,7 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
+
 using CoreGraphics;
 using Foundation;
 using Training.Core;
@@ -34,7 +35,14 @@ namespace Training.iOS
     /// </summary>
     public sealed class ImageService : IImageService
     {
+
+        #region Variables
+
         private static NSCache _cache = new NSCache { CountLimit = 50 };
+
+        #endregion
+
+        #region Private API
 
         private static UIImage Square(UIImage image, float size)
         {
@@ -70,6 +78,32 @@ namespace Training.iOS
 
             return newImage;
         }
+
+        private byte[] GetExisting(string cacheName)
+        {
+            if(!String.IsNullOrEmpty(cacheName)) {
+                var cachedObject = _cache.ObjectForKey(new NSString(cacheName)) as NSData;
+                if(cachedObject != null) {
+                    return cachedObject.ToArray();
+                }
+            }
+
+            return null;
+        }
+
+        private byte[] Put(string cacheName, UIImage image)
+        {
+            var data = image.AsPNG();
+            if(!String.IsNullOrEmpty(cacheName)) {
+                _cache.SetObjectforKey(data, new NSString(cacheName));
+            }
+
+            return data.ToArray();
+        }
+
+        #endregion
+
+        #region IImageService
 
         public async Task<byte[]> Square(Stream image, float size, string cacheName)
         {
@@ -107,27 +141,8 @@ namespace Training.iOS
             return Put(cacheName, image);
         }
 
-        private byte[] GetExisting(string cacheName)
-        {
-            if(!String.IsNullOrEmpty(cacheName)) {
-                var cachedObject = _cache.ObjectForKey(new NSString(cacheName)) as NSData;
-                if(cachedObject != null) {
-                    return cachedObject.ToArray();
-                }
-            }
+        #endregion
 
-            return null;
-        }
-
-        private byte[] Put(string cacheName, UIImage image)
-        {
-            var data = image.AsPNG();
-            if(!String.IsNullOrEmpty(cacheName)) {
-                _cache.SetObjectforKey(data, new NSString(cacheName));
-            }
-
-            return data.ToArray();
-        }
     }
 }
 

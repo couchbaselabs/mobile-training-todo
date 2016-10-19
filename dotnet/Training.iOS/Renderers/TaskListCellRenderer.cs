@@ -18,14 +18,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-using System;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.iOS;
 using UIKit;
 using Training.Forms;
 using Foundation;
 
-[assembly:ExportRenderer(typeof(TaskListCell), typeof(Training.iOS.TaskListCellRenderer))]
+[assembly: ExportRenderer(typeof(TaskListCell), typeof(Training.iOS.TaskListCellRenderer))]
 
 namespace Training.iOS
 {
@@ -34,7 +33,14 @@ namespace Training.iOS
     /// </summary>
     public class TaskListCellRenderer : ViewCellRenderer
     {
+
+        #region Constants
+
         private static readonly NSString rid = new NSString("TaskListCell");
+
+        #endregion
+
+        #region Overrides
 
         public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
         {
@@ -49,6 +55,9 @@ namespace Training.iOS
             cell.Accessory = UITableViewCellAccessory.DisclosureIndicator;
             return cell;
         }
+
+        #endregion
+
     }
 }
 
