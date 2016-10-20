@@ -1,0 +1,57 @@
+# Instructions:
+# 
+# == Download the box ==
+# $ wget http://cloud.centos.org/centos/7/vagrant/x86_64/images/CentOS-7-x86_64-Vagrant-1609_01.VirtualBox.box
+# 
+# == Add it to Vagrant ==
+# $ vagrant box add centos-local-customized downloaded_boxes/CentOS-7-x86_64-Vagrant-1609_01.VirtualBox.box
+#
+# NOTE: for Connect demo, the download step won't be necessary, and the path to the box will be to the file on the USB drive
+#
+# == Download Vagrantfile ==
+# $ wget raw_url_of_this_gist
+#
+# == Start Virtual Machines ==
+# $ vagrant up
+#
+# == SSH in ==
+# $ vagrant ssh sync-gateway1
+#
+# == Customizing the box ==
+# Customizations required:
+# - update the sshd config to allow password authentication so that you can ssh in without running 'vagrant ssh'
+# - pre-install the couchbase and sync gateway packages
+# Customization steps:
+# - $ vagrant up (as in previous steps)
+# - $ vagrant ssh sync-gateway1 
+# - Make the changes in the vm
+# - $ vagrant package --output centos-local-customized2.box
+# - $ vagrant box add centos-local-customized2 centos-local-customized2.box
+# - Now you can create a Vagrantfile that uses centos-local-customized2 as the box name
+#
+Vagrant.configure(2) do |config|
+
+  host_ip = {
+    "sync-gateway1" => "192.168.34.10",
+    "sync-gateway2" => "192.168.34.11",
+    "couchbase-server" => "192.168.34.12",
+    "nginx" => "192.168.34.13",
+  }
+  
+  host_ip.each do |host_name, ip|
+      config.vm.define host_name do |host|
+        host.vm.box = "centos-local-customized"
+        host.vm.hostname = host_name
+        host.vm.network "private_network", ip: ip
+        host.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
+        host.vm.provider "virtualbox" do |vb|
+            # Customize the amount of memory on the VM:
+            vb.memory = "2048"
+
+            # Allow vm to send data via VPN
+            vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+        end
+      end
+  end
+
+end
