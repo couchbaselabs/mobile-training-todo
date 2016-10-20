@@ -1,0 +1,19 @@
+upstream sync_gateway {
+# sync_gateway_nodes
+}
+# HTTP server
+#
+server {
+		access_log /var/log/nginx/access_log combined;
+		listen 8000;
+		client_max_body_size 20m;
+		location / {
+				proxy_pass              http://sync_gateway;
+				proxy_pass_header       Accept;
+				proxy_pass_header       Server;
+				proxy_http_version      1.1;
+				keepalive_requests      1000;
+				keepalive_timeout       360s;
+				proxy_read_timeout      360s;
+		}
+}
