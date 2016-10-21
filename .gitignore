@@ -72,3 +72,6 @@ packages/
 bin/
 obj/
 *.[Dd]esigner.*
+
+# Ignore node_modules in /test/
+/test/node_modules

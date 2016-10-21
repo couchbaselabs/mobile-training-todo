@@ -117,12 +117,9 @@ var Operation = function (client, callback) {
       })
       .then(function() {
         makeRequest();
-      });
+      })
+      .catch(function (err) {console.log(err)});
     
-  }
-  
-  function GetSimple() {
-    return request(options.url);
   }
 
   function GetDatabaseEndpoint () {
@@ -134,8 +131,11 @@ var Operation = function (client, callback) {
     return client.document.post({db: 'todo', body: list})
       .then(function (res) {
         return client.document.get({db: 'todo', doc: list._id});
-      })
-      .catch(function (err) {console.log(err)});
+      });
+  }
+
+  function GetSimple() {
+    return request(options.url);
   }
 
 };
