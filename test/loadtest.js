@@ -1,0 +1,180 @@
+var spec = require('./spec')
+  , SwaggerClient = require('swagger-client')
+  , request = require('request-promise');
+
+var options = {
+  url: 'http://user1:pass@138.68.159.166:8000/',
+  // url: 'http://localhost:7357/',
+  concurrency: 20
+};
+
+var client = new SwaggerClient({
+  spec: spec,
+  usePromise: true,
+})
+  .then(function (client) {
+    client.setHost(options.url.split('/')[2]);
+    
+    var operation = new Operation(client);
+    operation.start();
+  })
+  .catch(function (error) {
+    console.log(error);
+  });
+
+/**
+ * Used to keep track of individual load test Operation runs.
+ */
+var operationInstanceIndex = 0;
+
+var results = {
+  totalRequests: 0,
+  meanLatencyMs: 0,
+  percentiles: {},
+  histogramMs: {},
+  maxLatencyMs: 0,
+  totalTime: 0
+};
+
+/**
+ * A load test operation.
+ */
+var Operation = function (client, callback) {
+  // self-reference
+  var self = this;
+  
+  self.instanceIndex = operationInstanceIndex++;
+  
+  /**
+   * Start the operation.
+   */
+  self.start = function() {
+    
+    // time interval to print the result
+    var timer = setInterval(function () {
+      console.log('Requests: %s', results.totalRequests)
+    }, 2000);
+    
+    startClients();
+  
+    // time out to stop the test
+    setTimeout(function () {
+      clearInterval(timer);
+      self.stop();
+      process.exit();
+    }, 6000);
+    
+  };
+
+  /**
+   * Stop clients
+   */
+  self.stop = function() {
+    console.log('');
+    console.log('Target URL:          %s', options.url);
+    console.log('');
+    console.log('Completed requests:  %s', results.totalRequests);
+    console.log('Mean latency:        %s ms', Math.round((results.totalTime / results.totalRequests) * 10) / 10);
+    console.log('');
+    console.log('Percentage of the requests served within a certain time');
+    results.percentiles = computePercentiles();
+    Object.keys(results.percentiles).forEach(function (percentile) {
+      console.log('  %s%      %s ms', percentile, results.percentiles[percentile]);
+    });
+  };
+
+  /**
+   * Start a number of measuring clients.
+   */
+  function startClients() {
+    for (var i = 0; i < options.concurrency; i++) {
+
+      makeRequest();
+      
+    }
+  }
+
+  /**
+   * Send HTTP request
+   */
+  function makeRequest() {
+    var start_time = process.hrtime();
+
+    WriteAndReadDocument()
+      .then(function () {
+        results.totalRequests++;
+        var hr_time = process.hrtime(start_time);
+        var elapsed_time = hr_time[0] * 1000 + hr_time[1] / 1000000;
+        results.totalTime += elapsed_time;
+        var rounded = Math.floor(elapsed_time);
+        if (rounded > results.maxLatencyMs) {
+          results.maxLatencyMs = rounded;
+        }
+        if (!results.histogramMs[rounded]) {
+          results.histogramMs[rounded] = 0;
+        }
+        results.histogramMs[rounded] += 1;
+      })
+      .then(function() {
+        makeRequest();
+      });
+    
+  }
+  
+  function GetSimple() {
+    return request(options.url);
+  }
+
+  function GetDatabaseEndpoint () {
+    return client.database.get_db({db: 'todo'});
+  }
+  
+  function WriteAndReadDocument() {
+    var list = {"_id": "user1." + guid(), "name": "Groceries", "owner": "user1", "type": "task-list"};
+    return client.document.post({db: 'todo', body: list})
+      .then(function (res) {
+        return client.document.get({db: 'todo', doc: list._id});
+      })
+      .catch(function (err) {console.log(err)});
+  }
+
+};
+
+/**
+ * Calculate percentiles
+ */
+function computePercentiles() {
+  var percentiles = {
+    50: false,
+    90: false,
+    95: false,
+    99: false
+  };
+  var counted = 0;
+
+  for (var ms = 0; ms <= results.maxLatencyMs; ms++) {
+    if (!results.histogramMs[ms]) {
+      continue;
+    }
+
+    counted += results.histogramMs[ms];
+    var percent = counted / results.totalRequests * 100;
+
+    Object.keys(percentiles).forEach(function(percentile) {
+      if (!percentiles[percentile] && percent > percentile) {
+        percentiles[percentile] = ms;
+      }
+    });
+  }
+  return percentiles;
+}
+
+function guid() {
+  function s4() {
+    return Math.floor((1 + Math.random()) * 0x10000)
+      .toString(16)
+      .substring(1);
+  }
+  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+    s4() + '-' + s4() + s4() + s4();
+}
