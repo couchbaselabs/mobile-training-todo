@@ -21,7 +21,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Dynamic;
 using System.Linq;
 using System.Threading;
 
@@ -56,7 +55,9 @@ namespace Training.Core
 
         private static Replication _pusher;
         private static Replication _puller;
+        private static Exception _syncError;
         private static LiveQuery _conflictsLiveQuery;
+        private static readonly IUserDialogs _dialogs = Mvx.Resolve<IUserDialogs>();
 
         #endregion
 
@@ -170,11 +171,13 @@ namespace Training.Core
             var pusher = db.CreatePushReplication(SyncGatewayUrl);
             pusher.Continuous = true;
             pusher.Authenticator = authenticator;
+            pusher.Changed += HandleReplicationChanged;
             
 
             var puller = db.CreatePullReplication(SyncGatewayUrl);
             puller.Continuous = true;
             puller.Authenticator = authenticator;
+            puller.Changed += HandleReplicationChanged;
 
             pusher.Start();
             puller.Start();
@@ -190,8 +193,16 @@ namespace Training.Core
         {
             var pusher = Interlocked.Exchange(ref _pusher, null);
             var puller = Interlocked.Exchange(ref _puller, null);
-            pusher?.Stop();
-            puller?.Stop();
+
+            if(pusher != null) {
+                pusher.Changed -= HandleReplicationChanged;
+                pusher.Stop();
+            }
+
+            if(puller != null) {
+                puller.Changed -= HandleReplicationChanged;
+                puller.Stop();
+            }
         }
 
         /// <summary>
@@ -220,6 +231,17 @@ namespace Training.Core
         #endregion
 
         #region Private API
+
+        private static void HandleReplicationChanged(object sender, ReplicationChangeEventArgs args)
+        {
+            var error = Interlocked.Exchange(ref _syncError, args.LastError);
+            if(error != args.LastError) {
+                var errorCode = (args.LastError as CouchbaseLiteException)?.CBLStatus?.Code;
+                if(errorCode == StatusCode.Unauthorized) {
+                    _dialogs.ShowError("Authorization failed: Your username or password is not correct.");
+                }
+            }
+        }
 
         private static void ResolveConflicts(object sender, QueryChangeEventArgs e)
         {
@@ -452,6 +474,8 @@ namespace Training.Core
                 CoreApp.StartSession(CoreApp.Hint.Username, null, null);
                 ShowViewModel<TaskListsViewModel>(new { loginEnabled = false });
             }
+
+            
         }
 
         #endregion
