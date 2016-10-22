@@ -138,6 +138,11 @@ namespace Training
             LoginEnabled = loginEnabled;
         }
 
+        public void TestConflict()
+        {
+            Model.TestConflict();
+        }
+
         #endregion
 
         #region Private API

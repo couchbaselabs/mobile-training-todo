@@ -21,6 +21,7 @@
 using System.Collections.Generic;
 
 using Training;
+using Training.Forms;
 using UIKit;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.iOS;
@@ -45,6 +46,16 @@ namespace Training.iOS
         #endregion
 
         #region Overrides
+
+        public override void MotionEnded(UIEventSubtype motion, UIEvent evt)
+        {
+            if(motion == UIEventSubtype.MotionShake) {
+                // TRAINING: Create task list conflict (for development only)
+                var page = this.Element as TaskListsPage;
+                var vm = page.BindingContext as TaskListsViewModel;
+                vm.TestConflict();
+            }
+        }
 
         public override void ViewWillAppear(bool animated)
         {

@@ -83,11 +83,30 @@ namespace Training.Core
 
         #region Public API
 
+        public void TestConflict()
+        {
+            var savedRevision = CreateTaskList("Test Conflicts List");
+            var newRev1 = savedRevision.CreateRevision();
+            var propsRev1 = newRev1.Properties;
+            propsRev1["name"] = "Update 1";
+            newRev1.SetProperties(propsRev1);
+            var newRev2 = savedRevision.CreateRevision();
+            var propsRev2 = newRev2.Properties;
+            propsRev2["name"] = "Update 2";
+            newRev2.SetProperties(propsRev2);
+            try {
+                newRev1.Save(true);
+                newRev2.Save(true);
+            } catch(Exception e) {
+                throw new ApplicationException("Could not create document", e);
+            }
+        }
+
         /// <summary>
         /// Creates a new task list
         /// </summary>
         /// <param name="name">The name of the task list.</param>
-        public void CreateTaskList(string name)
+        public SavedRevision CreateTaskList(string name)
         {
             var properties = new Dictionary<string, object> {
                 ["type"] = TaskListType,
@@ -99,7 +118,7 @@ namespace Training.Core
             var doc = default(Document);
             try {
                 doc = _db.GetDocument(docId);
-                doc.PutProperties(properties);
+                return doc.PutProperties(properties);
             } catch(Exception e) {
                 var newException = new ApplicationException("Couldn't save task list", e);
                 throw newException;

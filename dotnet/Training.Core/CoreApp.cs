@@ -67,7 +67,7 @@ namespace Training.Core
         /// </summary>
         public static Database Database { get; private set; }
 
-        internal static dynamic Hint { get; set; }
+        internal static CoreAppStartHint Hint { get; set; }
 
         #endregion
 
@@ -81,19 +81,19 @@ namespace Training.Core
         /// <param name="newPassword">The new password for the database (optional)</param>
         public static void StartSession(string username, string password, string newPassword)
         {
-            if(Hint.usePrebuiltDB) {
+            if(Hint.UsePrebuiltDB) {
                 InstallPrebuiltDB();
             }
 
-            var p = Hint.encryptionEnabled ? password : null;
-            var np = Hint.encryptionEnabled ? newPassword : null;
+            var p = Hint.EncryptionEnabled ? password : null;
+            var np = Hint.EncryptionEnabled ? newPassword : null;
             OpenDatabase(username, p, np);
 
-            if(Hint.syncEnabled) {
+            if(Hint.SyncEnabled) {
                 StartReplication(username, newPassword ?? password);
             }
 
-            if(Hint.conflictResolution) {
+            if(Hint.ConflictResolution) {
                 StartConflictLiveQuery();
             }
         }
@@ -423,16 +423,17 @@ namespace Training.Core
         /// Creates the hint for starting CoreApp, which will control the way the app behaves
         /// </summary>
         /// <returns>The hint object</returns>
-        public static dynamic CreateHint()
+        public static CoreAppStartHint CreateHint()
         {
-            dynamic retVal = new ExpandoObject();
-            retVal.loginEnabled = false;
-            retVal.encryptionEnabled = false;
-            retVal.syncEnabled = false;
-            retVal.usePrebuiltDB = false;
-            retVal.conflictResolution = false;
-            retVal.username = "todo";
-            retVal.password = default(string);
+            var retVal = new CoreAppStartHint {
+                LoginEnabled = false,
+                EncryptionEnabled = false,
+                SyncEnabled = false,
+                UsePrebuiltDB = false,
+                ConflictResolution = false,
+                Username = "todo"
+            };
+
             return retVal;
         }
 
@@ -444,17 +445,53 @@ namespace Training.Core
         {
             Couchbase.Lite.Storage.SQLCipher.Plugin.Register();
 
-            CoreApp.Hint = hint;
-            if(CoreApp.Hint.loginEnabled) {
+            CoreApp.Hint = (CoreAppStartHint)hint;
+            if(CoreApp.Hint.LoginEnabled) {
                 ShowViewModel<LoginViewModel>();
             } else {
-                CoreApp.StartSession(CoreApp.Hint.username, null, null);
+                CoreApp.StartSession(CoreApp.Hint.Username, null, null);
                 ShowViewModel<TaskListsViewModel>(new { loginEnabled = false });
             }
         }
 
         #endregion
 
+    }
+
+    /// <summary>
+    /// The hints for how the application should function
+    /// </summary>
+    public sealed class CoreAppStartHint
+    {
+        /// <summary>
+        /// Gets or sets whether or not to use login functionality
+        /// </summary>
+        public bool LoginEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether or not to use encryption on the local DB files
+        /// </summary>
+        public bool EncryptionEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether or not to use sync
+        /// </summary>
+        public bool SyncEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether or not to seed the app with a prepopulated database
+        /// </summary>
+        public bool UsePrebuiltDB { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether or not to handle conflict resolution automatically
+        /// </summary>
+        public bool ConflictResolution { get; set; }
+
+        /// <summary>
+        /// Gets or sets the username to use for the session
+        /// </summary>
+        public string Username { get; set; }
     }
 }
 

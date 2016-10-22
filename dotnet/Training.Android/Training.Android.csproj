@@ -195,6 +195,7 @@
     <Compile Include="LinkerPleaseInclude.cs" />
     <Compile Include="Renderers\TaskListCellRenderer.cs" />
     <Compile Include="Services\ImageService.cs" />
+    <Compile Include="Renderers\TaskListsPageRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
