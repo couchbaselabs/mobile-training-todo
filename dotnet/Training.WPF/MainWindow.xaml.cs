@@ -21,6 +21,9 @@
 
 
 using System.Windows;
+using System.Windows.Input;
+
+using XLabs;
 
 namespace Training.WPF
 {
@@ -29,6 +32,23 @@ namespace Training.WPF
     /// </summary>
     public partial class MainWindow : Window
     {
+
+        #region Properties
+
+        public ICommand CreateConflictCommand
+        {
+            get {
+                //HACK: MvxCommand is not available at this point because IoC is not prepared yet
+                return new RelayCommand(() =>
+                {
+                    var listsPage = Content as TaskListsView;
+                    var vm = listsPage?.DataContext as TaskListsViewModel;
+                    vm?.TestConflict();
+                });
+            }
+        }
+
+        #endregion
 
         #region Constructors
 

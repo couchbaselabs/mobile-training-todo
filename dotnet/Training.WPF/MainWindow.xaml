@@ -5,8 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Training.WPF"
         mc:Ignorable="d"
+        x:Name="_self"
         Icon="appicon.ico"
         Title="Todo" Height="480" Width="720">
+    <Window.InputBindings>
+        <KeyBinding Modifiers="Control" Key="C" Command="{Binding CreateConflictCommand, ElementName=_self}" />
+    </Window.InputBindings>
     <Grid>
         
     </Grid>
