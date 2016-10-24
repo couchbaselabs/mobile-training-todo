@@ -4,13 +4,13 @@ Vagrant instructions targeted towards the folks who are helping end users follow
 ## Download the Vagrant centos box
 
 ```
-$ wget http://cbmobile-bucket.s3.amazonaws.com/training-virtual-machines/centos-local-customized.box
+$ wget http://cbmobile-bucket.s3.amazonaws.com/training-virtual-machines/couchbase-mobile-training.box
 ```
 
 ## Add it to Vagrant
 
 ```
-$ vagrant box add centos-local-customized downloaded_boxes/centos-local-customized.box
+$ vagrant box add couchbase-mobile-training downloaded_boxes/couchbase-mobile-training.box
 ```
 
 *NOTE:* for Connect demo, the download step won't be necessary, and the path to the box will be to the file on the USB drive
@@ -58,7 +58,7 @@ Customization steps:
 - `$ vagrant up` (as in previous steps)
 - `$ vagrant ssh sync-gateway1` 
 - Make the changes in the vm
-- `$ vagrant package --output centos-local-customized2.box`
-- `$ vagrant box add centos-local-customized2 centos-local-customized2.box`
-- Now you can create a Vagrantfile that uses centos-local-customized2 as the box name
+- `$ vagrant package --output couchbase-mobile-training.box`
+- `$ vagrant box add couchbase-mobile-training couchbase-mobile-training.box`
+- Now you can create a Vagrantfile that uses couchbase-mobile-training as the box name
 

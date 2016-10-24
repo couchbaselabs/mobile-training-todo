@@ -3,6 +3,16 @@
 set -e
 set -x
 
+if [ "$#" -ne 1 ]; then
+    echo "You must pass the IP of the Couchbase Server VM"
+    exit 1
+fi
+
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root"
+   exit 1
+fi
+
 # Download Sync Gateway 1.3.1
 if [ ! -f couchbase-sync-gateway-community_1.3.1-16_x86_64.rpm ]; then
     wget http://packages.couchbase.com/releases/couchbase-sync-gateway/1.3.1/couchbase-sync-gateway-community_1.3.1-16_x86_64.rpm

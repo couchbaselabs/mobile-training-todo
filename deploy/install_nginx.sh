@@ -3,6 +3,16 @@
 set -e
 set -x
 
+if [ "$#" -eq 0 ]; then
+    echo "You must pass the IP of at least one Sync Gateway"
+    exit 1
+fi
+
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root"
+   exit 1
+fi
+
 if [ ! -f nginx_template.txt ]; then
     echo "Could not find nginx_template.txt"
     exit 1
