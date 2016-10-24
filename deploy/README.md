@@ -58,7 +58,9 @@ Customization steps:
 - `$ vagrant up` (as in previous steps)
 - `$ vagrant ssh sync-gateway1` 
 - Make the changes in the vm
+- `$ rm couchbase-mobile-training.box`
 - `$ vagrant package --output couchbase-mobile-training.box`
+- `$ vagrant box remove couchbase-mobile-training`
 - `$ vagrant box add couchbase-mobile-training couchbase-mobile-training.box`
 - Now you can create a Vagrantfile that uses couchbase-mobile-training as the box name
 
