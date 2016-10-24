@@ -3,6 +3,16 @@
 set -e
 set -x
 
+if [ "$#" -ne 0 ]; then
+    echo "This script does not take any arguments"
+    exit 1
+fi
+
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root"
+   exit 1
+fi
+
 # Download Couchbase Server 4.1
 if [ ! -f couchbase-server-community-4.1.0-centos6.x86_64.rpm ]; then
     wget http://packages.couchbase.com/releases/4.1.0/couchbase-server-community-4.1.0-centos6.x86_64.rpm
