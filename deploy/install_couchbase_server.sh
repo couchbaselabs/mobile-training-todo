@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 
+set -e
+set -x
+
 # Download Couchbase Server 4.1
-wget http://packages.couchbase.com/releases/4.1.0/couchbase-server-community-4.1.0-centos6.x86_64.rpm
+if [ ! -f couchbase-server-community-4.1.0-centos6.x86_64.rpm ]; then
+    wget http://packages.couchbase.com/releases/4.1.0/couchbase-server-community-4.1.0-centos6.x86_64.rpm
+fi
 
 # Install Couchbase Server 4.1
 yum install -y couchbase-server-community-4.1.0-centos6.x86_64.rpm

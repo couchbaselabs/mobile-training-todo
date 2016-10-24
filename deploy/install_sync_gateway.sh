@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 
+set -e
+set -x
+
 # Download Sync Gateway 1.3.1
-wget http://packages.couchbase.com/releases/couchbase-sync-gateway/1.3.1/couchbase-sync-gateway-community_1.3.1-16_x86_64.rpm
+if [ ! -f couchbase-sync-gateway-community_1.3.1-16_x86_64.rpm ]; then
+    wget http://packages.couchbase.com/releases/couchbase-sync-gateway/1.3.1/couchbase-sync-gateway-community_1.3.1-16_x86_64.rpm
+fi
 
 # Install Sync Gateway 1.3.1
 rpm -i couchbase-sync-gateway-community_1.3.1-16_x86_64.rpm

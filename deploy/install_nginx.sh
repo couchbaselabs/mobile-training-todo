@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+set -e
+set -x
+
+if [ ! -f nginx_template.txt ]; then
+    echo "Could not find nginx_template.txt"
+    exit 1
+fi
+
 # Update NGINX config with IPs
 cp nginx_template.txt tmp.txt
 for ip in "$@"
