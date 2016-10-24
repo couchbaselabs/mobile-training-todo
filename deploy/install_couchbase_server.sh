@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 
 # Download Couchbase Server 4.1
-wget http://packages.couchbase.com/releases/4.1.0/couchbase-server-community_4.1.0-ubuntu14.04_amd64.deb
+wget http://packages.couchbase.com/releases/4.1.0/couchbase-server-community-4.1.0-centos6.x86_64.rpm
 
 # Install Couchbase Server 4.1
-dpkg -i couchbase-server-community_4.1.0-ubuntu14.04_amd64.deb
+yum install -y couchbase-server-community-4.1.0-centos6.x86_64.rpm
+
+# Start Couchbase Server 4.1
+/opt/couchbase/etc/couchbase_init.d start
 
 # Waiting for server
 sleep 10

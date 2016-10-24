@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-# Download Sync Gateway 1.3
-wget http://packages.couchbase.com/releases/couchbase-sync-gateway/1.3.0/couchbase-sync-gateway-enterprise_1.3.0-274_x86_64.deb
+# Download Sync Gateway 1.3.1
+wget http://packages.couchbase.com/releases/couchbase-sync-gateway/1.3.1/couchbase-sync-gateway-community_1.3.1-16_x86_64.rpm
 
-# Install Sync Gateway 1.3
-dpkg -i couchbase-sync-gateway-enterprise_1.3.0-274_x86_64.deb
+# Install Sync Gateway 1.3.1
+rpm -i couchbase-sync-gateway-community_1.3.1-16_x86_64.rpm
 
 # Update Sync Gateway config with Couchbase Server URL
 sed 's/walrus:/http:\/\/'${1}':8091/g' sync-gateway-config.json > sync_gateway.json
