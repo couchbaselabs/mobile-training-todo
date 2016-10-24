@@ -1,14 +1,5 @@
 
-# Usage: ./build_deploy.zip [--skip-rpm-download]
-
-
-if [ "$1" = "--skip-rpm-download" ]; then
-    echo "skip-rpm"
-else
-    echo "no skip rpm"
-fi
-
-exit 0
+# Usage: ./build_deploy.zip [--download-rpms]
 
 # Make a deploy directory
 mkdir deploy
@@ -25,9 +16,10 @@ cp *.txt deploy
 
 # wget the appropriate rpms
 cd deploy
-
-wget http://packages.couchbase.com/releases/4.1.0/couchbase-server-community-4.1.0-centos6.x86_64.rpm
-wget http://packages.couchbase.com/releases/couchbase-sync-gateway/1.3.1/couchbase-sync-gateway-community_1.3.1-16_x86_64.rpm
+if [ "$1" = "--download-rpms" ]; then
+    wget http://packages.couchbase.com/releases/4.1.0/couchbase-server-community-4.1.0-centos6.x86_64.rpm
+    wget http://packages.couchbase.com/releases/couchbase-sync-gateway/1.3.1/couchbase-sync-gateway-community_1.3.1-16_x86_64.rpm
+fi
 
 # Zip it
 cd ..
