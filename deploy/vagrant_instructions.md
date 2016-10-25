@@ -11,7 +11,7 @@
 1. Open a new Terminal/Command prompt and import the box image.
 
     ```bash
-    vagrant box add couchbase-mobile-training downloaded_boxes/couchbase-mobile-training.box
+    vagrant box add couchbase-mobile-training couchbase-mobile-training.box
     ```
 
 1. Start the VMs.
@@ -20,7 +20,4 @@
     vagrant up
     ```
 
-- redo VM with node.js
-- with test.zip (and extracted) containing loadtest, spec.js
-
-test: run the load test and multiply by 10 and see that all the response are under x ms. then good to deploy to production. you'll be able to split your load between different SGs and you should see the overall latency go down.
+1. Start the Deploy lesson of the Training.
