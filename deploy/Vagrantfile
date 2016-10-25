@@ -2,11 +2,11 @@
 Vagrant.configure(2) do |config|
 
   host_ip = {
-    "couchbase-server" => "192.168.34.10",    
-    "sync-gateway1" => "192.168.34.11",
-    "sync-gateway2" => "192.168.34.12",
-    "nginx" => "192.168.34.13",    
-    "sync-gateway3" => "192.168.34.14",    
+    "couchbase-server" => "192.168.34.11",
+    "sync-gateway1" => "192.168.34.12",
+    "sync-gateway2" => "192.168.34.13",
+    "nginx" => "192.168.34.14",    
+    "sync-gateway3" => "192.168.34.15",    
   }
   
   host_ip.each do |host_name, ip|
