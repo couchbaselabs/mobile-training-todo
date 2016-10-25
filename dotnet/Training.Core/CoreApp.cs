@@ -57,8 +57,6 @@ namespace Training.Core
         private static Replication _puller;
         private static Exception _syncError;
         private static LiveQuery _conflictsLiveQuery;
-        private static readonly IUserDialogs _dialogs = Mvx.Resolve<IUserDialogs>();
-
         #endregion
 
         #region Properties
@@ -238,7 +236,7 @@ namespace Training.Core
             if(error != args.LastError) {
                 var errorCode = (args.LastError as CouchbaseLiteException)?.CBLStatus?.Code;
                 if(errorCode == StatusCode.Unauthorized) {
-                    _dialogs.ShowError("Authorization failed: Your username or password is not correct.");
+                    Mvx.Resolve<IUserDialogs>().ShowError("Authorization failed: Your username or password is not correct.");
                 }
             }
         }
