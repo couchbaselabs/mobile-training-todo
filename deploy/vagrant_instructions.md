@@ -19,5 +19,13 @@
     ```bash
     vagrant up
     ```
+    
+    |VM Name|Host Name|IP|
+    |:------|:--------|:--|
+    |VM1|couchbase-server|192.168.34.11|
+    |VM2|sync-gateway1|192.168.34.12|
+    |VM3|sync-gateway2|192.168.34.13|
+    |VM4|nginx|192.168.34.14|
+    |VM5|sync-gateway3|192.168.34.15|
 
 1. Start the Deploy lesson of the Training.
