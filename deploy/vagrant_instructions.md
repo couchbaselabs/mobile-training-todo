@@ -38,3 +38,4 @@
 - http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/Vagrantfile
 - http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/VirtualBox-5.0.26-108824-OSX.dmg
 - http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/VirtualBox-5.0.26-108824-Win.exe
+- http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/couchbase-mobile-training.box
