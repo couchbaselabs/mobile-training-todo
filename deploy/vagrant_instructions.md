@@ -29,3 +29,12 @@
     |VM5|sync-gateway3|192.168.34.15|
 
 1. Start the Deploy lesson of the Training.
+
+### Links to resources
+
+- http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/putty-0.67-installer.msi
+- http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/vagrant_1.8.1.dmg
+- http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/vagrant_1.8.1.msi
+- http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/Vagrantfile
+- http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/VirtualBox-5.0.26-108824-OSX.dmg
+- http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/VirtualBox-5.0.26-108824-Win.exe
