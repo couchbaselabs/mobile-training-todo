@@ -14,12 +14,12 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Download Sync Gateway 1.3.1
-if [ ! -f couchbase-sync-gateway-community_1.3.1-16_x86_64.rpm ]; then
-    wget http://packages.couchbase.com/releases/couchbase-sync-gateway/1.3.1/couchbase-sync-gateway-community_1.3.1-16_x86_64.rpm
+if [ ! -f couchbase-sync-gateway-community_1.3.0-274_x86_64.rpm ]; then
+    wget http://packages.couchbase.com/releases/couchbase-sync-gateway/1.3.0/couchbase-sync-gateway-community_1.3.0-274_x86_64.rpm
 fi
 
 # Install Sync Gateway 1.3.1
-rpm -i couchbase-sync-gateway-community_1.3.1-16_x86_64.rpm
+rpm -i couchbase-sync-gateway-community_1.3.0-274_x86_64.rpm
 
 # Update Sync Gateway config with Couchbase Server URL
 sed 's/walrus:/http:\/\/'${1}':8091/g' sync-gateway-config.json > sync_gateway.json
