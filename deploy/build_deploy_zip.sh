@@ -1,5 +1,6 @@
+#!/usr/bin/env bash
 
-# Usage: ./build_deploy.zip [--download-rpms]
+# Usage: ./build_deploy_zip [--download-rpms]
 
 # Make a deploy directory
 mkdir deploy
@@ -11,7 +12,7 @@ cp *.sh deploy
 rm deploy/build_deploy_zip.sh
 
 # Copy in SG + nginx config
-cp ../*.json deploy
+cp ../sync-gateway-config.json deploy
 cp *.txt deploy
 
 # wget the appropriate rpms

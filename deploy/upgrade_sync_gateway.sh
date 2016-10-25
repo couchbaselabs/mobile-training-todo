@@ -13,7 +13,7 @@ service sync_gateway stop
 
 # Uninstall Sync Gateway 1.3.0
 sudo systemctl stop sync_gateway
-rpm -e couchbase-sync-gateway-community_1.3.0-274_x86_64.rpm
+rpm -e couchbase-sync-gateway-1.3.0-274.x86_64
 
 # Download and Sync Gateway 1.3.1
 if [ ! -f couchbase-sync-gateway-community_1.3.1-16_x86_64.rpm ]; then
