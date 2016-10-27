@@ -8,12 +8,20 @@
 1. Install VirtualBox from the installer on the USB.
 1. Install Vagrant from the installer on the USB.
 1. Copy **couchbase-mobile-training.box** and **Vagrantfile** to a directory on your machine.
-1. Open a new Terminal/Command prompt and import the box image.
+1. Open a new Terminal/Command Prompt and import the box image.
 
+    **Mac / Linux**
     ```bash
+    cd ~/Desktop/vagrant
     vagrant box add couchbase-mobile-training couchbase-mobile-training.box
     ```
-
+    
+    **Windows**
+    ```bash
+    cd c:\Users\Username\Desktop\vagrant
+    vagrant box add couchbase-mobile-training couchbase-mobile-training.box
+    ```
+   
 1. Start the VMs.
 
     ```bash
