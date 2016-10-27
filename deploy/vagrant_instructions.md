@@ -5,6 +5,7 @@
 
 ## Getting Started
 
+1. (Windows only) Install Microsoft Visual C++ 2010 Redistributable Package (x86) (vcredist_x86.exe)
 1. Install VirtualBox from the installer on the USB.
 1. Install Vagrant from the installer on the USB.
 1. Copy **couchbase-mobile-training.box** and **Vagrantfile** to a directory on your machine.
@@ -41,6 +42,7 @@
 ### Links to resources
 
 - http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/putty-0.67-installer.msi
+- http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/vcredist_x86.exe
 - http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/vagrant_1.8.1.dmg
 - http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/vagrant_1.8.1.msi
 - http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/Vagrantfile
