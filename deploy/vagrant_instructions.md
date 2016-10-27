@@ -5,7 +5,9 @@
 
 ## Getting Started
 
-1. (Windows only) Install Microsoft Visual C++ 2010 Redistributable Package (x86) (vcredist_x86.exe)
+1. (Windows only) 
+   - Install Microsoft Visual C++ 2010 Redistributable Package (x86) (vcredist_x86.exe)
+   - Install the PuTTY ssh client (putty-0.67-installer.msi)
 1. Install VirtualBox from the installer on the USB.
 1. Install Vagrant from the installer on the USB.
 1. Copy **couchbase-mobile-training.box** and **Vagrantfile** to a directory on your machine.
