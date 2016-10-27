@@ -92,7 +92,14 @@ namespace Training.Core
         {
             _document = CoreApp.Database.GetExistingDocument(documentID);
             _name = new Lazy<string>(() => _document.GetProperty<string>("task"), LazyThreadSafetyMode.None);
-            _imageDigest = new Lazy<string>(() => _document.CurrentRevision.GetAttachment("image")?.Metadata?["digest"] as string, LazyThreadSafetyMode.None);
+            _imageDigest = new Lazy<string>(() => {
+                var metadata = _document.CurrentRevision.GetAttachment("image")?.Metadata;
+                if(metadata?.ContainsKey("digest") != true) {
+                    return null;
+                }
+
+                return _document.CurrentRevision.GetAttachment("image")?.Metadata?["digest"] as string;
+            }, LazyThreadSafetyMode.None);
         }
 
         #endregion
