@@ -36,15 +36,6 @@ namespace Training.iOS
     public sealed class TaskListsPageRenderer : PageRenderer
     {
 
-        #region Properties
-
-        public new ContentPage Element
-        {
-            get { return (ContentPage)base.Element; }
-        }
-
-        #endregion
-
         #region Overrides
 
         public override void MotionEnded(UIEventSubtype motion, UIEvent evt)
@@ -52,8 +43,8 @@ namespace Training.iOS
             if(motion == UIEventSubtype.MotionShake) {
                 // TRAINING: Create task list conflict (for development only)
                 var page = this.Element as TaskListsPage;
-                var vm = page.BindingContext as TaskListsViewModel;
-                vm.TestConflict();
+                var vm = page?.BindingContext as TaskListsViewModel;
+                vm?.TestConflict();
             }
         }
 
@@ -70,10 +61,11 @@ namespace Training.iOS
                 return;
             }
 
-            for(var i = 0; i < Element.ToolbarItems.Count; i++) {
+            var element = Element as ContentPage;
+            for(var i = 0; i < element.ToolbarItems.Count; i++) {
 
-                var reorder = (Element.ToolbarItems.Count - 1);
-                var ItemPriority = Element.ToolbarItems[reorder - i].Priority;
+                var reorder = (element.ToolbarItems.Count - 1);
+                var ItemPriority = element.ToolbarItems[reorder - i].Priority;
 
                 if(ItemPriority == 1) {
                     UIBarButtonItem LeftNavItems = navigationItem.RightBarButtonItems[i];

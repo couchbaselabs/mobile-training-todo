@@ -83,11 +83,25 @@ namespace Training.Core
 
         #region Public API
 
+        public void TestConfict()
+        {
+            // TRAINING: Create task conflict (for development only)
+            var savedRevision = CreateNewTask("Test Conflicts Task");
+            var newRev1 = savedRevision.CreateRevision();
+            var propsRev1 = newRev1.Properties;
+            propsRev1["task"] = "Update 1";
+            var newRev2 = savedRevision.CreateRevision();
+            var propsRev2 = newRev2.Properties;
+            propsRev2["complete"] = true;
+            newRev1.Save(true);
+            newRev2.Save(true);
+        }
+
         /// <summary>
         /// Creates a new task in the current list
         /// </summary>
         /// <param name="taskName">The name of the task</param>
-        public void CreateNewTask(string taskName)
+        public SavedRevision CreateNewTask(string taskName)
         {
             var taskListInfo = new Dictionary<string, object> {
                 ["id"] = _taskList.Id,
@@ -103,7 +117,7 @@ namespace Training.Core
             };
 
             try {
-                _db.CreateDocument().PutProperties(properties);
+                return _db.CreateDocument().PutProperties(properties);
             } catch(Exception e) {
                 throw new ApplicationException("Couldn't save task", e);
             }

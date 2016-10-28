@@ -138,6 +138,11 @@ namespace Training
 
         #region Internal API
 
+        internal void TestConflict()
+        {
+            Model.TestConfict();
+        }
+
         internal async Task ShowOrChooseImage(TaskCellModel taskDocument)
         {
             if(!taskDocument.HasImage()) {
