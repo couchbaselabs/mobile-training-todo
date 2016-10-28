@@ -52,8 +52,8 @@ namespace Training.Core
         /// <summary>
         /// Gets the list of task lists currently saved
         /// </summary>
-        public ReactiveObservableCollection<TaskListCellModel> TasksList { get; } = 
-            new ReactiveObservableCollection<TaskListCellModel>();
+        public ExtendedObservableCollection<TaskListCellModel> TasksList { get; } = 
+            new ExtendedObservableCollection<TaskListCellModel>();
 
         /// <summary>
         /// Gets the username of the user using the app
