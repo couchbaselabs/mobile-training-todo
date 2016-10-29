@@ -42,8 +42,13 @@ namespace Training.WPF
                 return new RelayCommand(() =>
                 {
                     var listsPage = Content as TaskListsView;
-                    var vm = listsPage?.DataContext as TaskListsViewModel;
-                    vm?.TestConflict();
+                    if(listsPage != null) {
+                        var vm = listsPage?.DataContext as TaskListsViewModel;
+                        vm?.TestConflict();
+                    } else {
+                        var tasksPage = Content as ListDetailView;
+                        tasksPage?.TestConflict();
+                    }
                 });
             }
         }

@@ -76,6 +76,17 @@ namespace Training
 
         #endregion
 
+        #region Internal API
+
+        internal void TestConflict()
+        {
+            if(_tasksView.IsVisible) {
+                (_tasksView.DataContext as TasksViewModel).TestConflict();
+            }
+        }
+
+        #endregion
+
         #region Private API
 
         private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)

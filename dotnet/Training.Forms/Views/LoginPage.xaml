@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
         x:Class="Training.LoginPage">
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Login" Command="{Binding LoginCommand}" CommandParameter="{Binding Text, ElementName=_passBox}"/>
+        <ToolbarItem Text="Login" Clicked="OnLoginClick" />
     </ContentPage.ToolbarItems>
     <StackLayout>
         <Entry Placeholder="Username" Text="{Binding Username}" />

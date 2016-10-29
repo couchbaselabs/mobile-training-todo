@@ -19,6 +19,9 @@
 // limitations under the License.
 //
 
+using System;
+
+using Training.Core;
 using Xamarin.Forms;
 
 namespace Training
@@ -37,6 +40,15 @@ namespace Training
         public LoginPage()
         {
             InitializeComponent();
+        }
+
+        #endregion
+
+        #region Private API
+
+        private void OnLoginClick(object sender, EventArgs args)
+        {
+            (BindingContext as LoginViewModel).LoginCommand.Execute(_passBox.Text);
         }
 
         #endregion

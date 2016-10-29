@@ -234,9 +234,10 @@ namespace Training.Core
         {
             var error = Interlocked.Exchange(ref _syncError, args.LastError);
             if(error != args.LastError) {
-                var errorCode = (args.LastError as CouchbaseLiteException)?.CBLStatus?.Code;
+                var errorCode = (args.LastError as CouchbaseLiteException)?.CBLStatus?.Code
+                    ?? (StatusCode)(args.LastError as HttpResponseException)?.StatusCode;
                 if(errorCode == StatusCode.Unauthorized) {
-                    Mvx.Resolve<IUserDialogs>().ShowError("Authorization failed: Your username or password is not correct.");
+                    Mvx.Resolve<IUserDialogs>().AlertAsync("Your username or password is not correct.", "Authorization failed");
                 }
             }
         }
@@ -339,7 +340,7 @@ namespace Training.Core
 
                     if(!gotImage) {
                         var attachment = rev.GetAttachment("image");
-                        var attachmentDigest = attachment.Metadata[AttachmentMetadataDictionaryKeys.Digest] as string;
+                        var attachmentDigest = attachment?.Metadata[AttachmentMetadataDictionaryKeys.Digest] as string;
                         if(attachmentDigest != mergedImage?.Metadata?["digest"] as string) {
                             mergedImage = attachment;
                             gotImage = true;
