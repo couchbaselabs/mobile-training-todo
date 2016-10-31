@@ -125,10 +125,11 @@ function(doc, oldDoc){
     // Add doc to task-list and moderators channel.
     channel("task-list." + doc.taskList.id);
     channel("moderators");
-  } else if (doc.type == "task-list.user") {
+  } else if (doc.type == "task-list.user" || (oldDoc && oldDoc.type == "task-list.user")) {
     /* Control Write Access */
+    var owner = doc._deleted ? oldDoc.taskList.owner : doc.taskList.owner;
     try {
-      requireUser(doc.taskList.owner);
+      requireUser(owner);
     } catch (e) {
       requireRole("moderator");
     }
@@ -160,12 +161,15 @@ function(doc, oldDoc){
 
     /* Route */
     // Add doc to task-list users and moderators channel.
-    channel("task-list." + doc.taskList.id + ".users");
+    var list = doc._deleted ? oldDoc.taskList.id : doc.taskList.id;
+    channel("task-list." + list + ".users");
     channel("moderators");
 
     /* Grant Read Access */
     // Grant the user access to the task-list and its tasks.
-    access(doc.username, "task-list." + doc.taskList.id);
+    if (!isDelete()) {
+      access(doc.username, "task-list." + list);
+    }
   } else {
     // Log invalid document type error.
     log("Invalid document type: " + doc.type);
@@ -174,7 +178,7 @@ function(doc, oldDoc){
   }
 
   function isCreate() {
-    return (oldDoc == null && doc._deleted != true);
+    return ((oldDoc == null || oldDoc._deleted) && doc._deleted != true);
   }
 
   function isUpdate() {
