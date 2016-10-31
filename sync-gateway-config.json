@@ -97,9 +97,9 @@ function(doc, oldDoc){
   } else if (getType() == "task") {
     /* Write Access */
     var owner = doc._deleted ? oldDoc.taskList.owner : doc.taskList.owner;
-    var list = doc._deleted ? oldDoc.taskList.id : doc.taskList.id;
+    var listId = doc._deleted ? oldDoc.taskList.id : doc.taskList.id;
     try {
-      requireAccess("task-list." + list);
+      requireAccess("task-list." + listId);
     } catch (e) {
       requireUser(owner);
     }
@@ -124,7 +124,7 @@ function(doc, oldDoc){
 
     /* Route */
     // Add doc to task-list and moderators channel.
-    channel("task-list." + list);
+    channel("task-list." + listId);
     channel("moderators");
   } else if (getType() == "task-list.user") {
     /* Control Write Access */
@@ -162,14 +162,14 @@ function(doc, oldDoc){
 
     /* Route */
     // Add doc to task-list users and moderators channel.
-    var list = doc._deleted ? oldDoc.taskList.id : doc.taskList.id;
-    channel("task-list." + list + ".users");
+    var listId = doc._deleted ? oldDoc.taskList.id : doc.taskList.id;
+    channel("task-list." + listId + ".users");
     channel("moderators");
 
     /* Grant Read Access */
     // Grant the user access to the task-list and its tasks.
     if (!isDelete()) {
-      access(doc.username, "task-list." + list);
+      access(doc.username, "task-list." + listId);
     }
   } else {
     // Log invalid document type error.
