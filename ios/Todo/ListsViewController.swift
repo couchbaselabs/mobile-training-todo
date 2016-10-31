@@ -166,7 +166,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
                 textField.autocapitalizationType = .words
             },
             onOk: { name in
-                self.createTaskList(name: name)
+                _ = self.createTaskList(name: name)
             }
         )
     }

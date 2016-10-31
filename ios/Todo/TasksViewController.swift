@@ -213,7 +213,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
                 textField.autocapitalizationType = .sentences
             },
             onOk: { task in
-                self.createTask(task: task)
+                _ = self.createTask(task: task)
             }
         )
     }
