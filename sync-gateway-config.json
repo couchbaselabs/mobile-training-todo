@@ -20,7 +20,7 @@ function(doc, oldDoc){
     validateReadOnly("type", doc.type, oldDoc.type);
   }
 
-  if (doc.type == "moderator") {
+  if (getType() == "moderator") {
     /* Control Write Access */
     // Only allow admins to add/remove moderators.
     requireRole("admin");
@@ -59,7 +59,7 @@ function(doc, oldDoc){
     }
     // Grant user access to their channel.
     access(doc.username, doc.username);
-  } else if (doc.type == "task-list") {
+  } else if (getType() == "task-list") {
     /* Control Write Access */
     if (isCreate()) {
       try {
@@ -95,7 +95,7 @@ function(doc, oldDoc){
     // Grant task-list owner access to the task-list, its tasks, and its users.
     access(doc.owner, "task-list." + doc._id);
     access(doc.owner, "task-list." + doc._id + ".users");
-  } else if (doc.type == "task") {
+  } else if (getType() == "task") {
     /* Write Access */
     try {
       requireAccess("task-list." + doc.taskList.id);
@@ -125,10 +125,11 @@ function(doc, oldDoc){
     // Add doc to task-list and moderators channel.
     channel("task-list." + doc.taskList.id);
     channel("moderators");
-  } else if (doc.type == "task-list.user") {
+  } else if (getType() == "task-list.user") {
     /* Control Write Access */
+    var owner = doc._deleted ? oldDoc.taskList.owner : doc.taskList.owner;
     try {
-      requireUser(doc.taskList.owner);
+      requireUser(owner);
     } catch (e) {
       requireRole("moderator");
     }
@@ -160,12 +161,15 @@ function(doc, oldDoc){
 
     /* Route */
     // Add doc to task-list users and moderators channel.
-    channel("task-list." + doc.taskList.id + ".users");
+    var list = doc._deleted ? oldDoc.taskList.id : doc.taskList.id;
+    channel("task-list." + list + ".users");
     channel("moderators");
 
     /* Grant Read Access */
     // Grant the user access to the task-list and its tasks.
-    access(doc.username, "task-list." + doc.taskList.id);
+    if (!isDelete()) {
+      access(doc.username, "task-list." + list);
+    }
   } else {
     // Log invalid document type error.
     log("Invalid document type: " + doc.type);
@@ -173,8 +177,12 @@ function(doc, oldDoc){
     throw({forbidden: "Invalid document type: " + doc.type});
   }
 
+  function getType() {
+    return (isDelete() ? oldDoc.type : doc.type);
+  }
+
   function isCreate() {
-    return (oldDoc == null && doc._deleted != true);
+    return ((oldDoc == null || oldDoc._deleted) && doc._deleted != true);
   }
 
   function isUpdate() {
