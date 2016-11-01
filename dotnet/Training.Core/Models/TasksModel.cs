@@ -184,7 +184,7 @@ namespace Training.Core
             _tasksLiveQuery.StartKey = new[] { _taskList.Id };
             _tasksLiveQuery.EndKey = new[] { _taskList.Id };
             _tasksLiveQuery.PrefixMatchLevel = 1;
-            _tasksLiveQuery.Descending = true;
+            _tasksLiveQuery.Descending = false;
             _tasksLiveQuery.Changed += (sender, e) =>
             {
                 ListData.Replace(e.Rows.Select(x => new TaskCellModel(x.DocumentId)));
