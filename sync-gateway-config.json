@@ -96,6 +96,7 @@ function(doc, oldDoc){
     access(doc.owner, "task-list." + doc._id + ".users");
   } else if (getType() == "task") {
     /* Write Access */
+    validateNotEmpty("taskList", doc.taskList);
     var owner = doc._deleted ? oldDoc.taskList.owner : doc.taskList.owner;
     var listId = doc._deleted ? oldDoc.taskList.id : doc.taskList.id;
     try {
@@ -128,6 +129,7 @@ function(doc, oldDoc){
     channel("moderators");
   } else if (getType() == "task-list.user") {
     /* Control Write Access */
+    validateNotEmpty("taskList", doc.taskList);
     var owner = doc._deleted ? oldDoc.taskList.owner : doc.taskList.owner;
     try {
       requireUser(owner);
