@@ -235,7 +235,7 @@ namespace Training.Core
             var error = Interlocked.Exchange(ref _syncError, args.LastError);
             if(error != args.LastError) {
                 var errorCode = (args.LastError as CouchbaseLiteException)?.CBLStatus?.Code
-                    ?? (StatusCode)(args.LastError as HttpResponseException)?.StatusCode;
+                    ?? (StatusCode?)(args.LastError as HttpResponseException)?.StatusCode;
                 if(errorCode == StatusCode.Unauthorized) {
                     Mvx.Resolve<IUserDialogs>().AlertAsync("Your username or password is not correct.", "Authorization failed");
                 }
