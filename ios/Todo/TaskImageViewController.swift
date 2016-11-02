@@ -67,10 +67,10 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
         )
     }
     
-    @IBAction func closeAction(sender: AnyObject) {
+    @IBAction func closeAction(_ sender: AnyObject) {
         dismissController()
     }
-
+    
     func dismissController() {
         dismiss(animated: true, completion: nil)
     }
