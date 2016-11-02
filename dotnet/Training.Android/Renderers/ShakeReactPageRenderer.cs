@@ -71,6 +71,10 @@ namespace Training.Android
 
         public void OnSensorChanged(SensorEvent e)
         {
+            if(!this.Element.IsVisible) {
+                return;    
+            }
+
             if(e.Sensor.Type == SensorType.Accelerometer) {
                 float x = e.Values[0];
                 float y = e.Values[1];

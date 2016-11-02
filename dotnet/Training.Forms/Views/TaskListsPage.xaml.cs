@@ -43,6 +43,24 @@ namespace Training
 
         #region Overrides
 
+        protected override void OnDisappearing()
+        {
+            base.OnDisappearing();
+
+            // To detect from the renderer that this page doesn't need
+            // to process shakes
+            IsVisible = false;
+        }
+
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+
+            // To detect from the renderer that this page needs to
+            // to process shakes
+            IsVisible = true;
+        }
+
         protected override void OnBindingContextChanged()
         {
             base.OnBindingContextChanged();
