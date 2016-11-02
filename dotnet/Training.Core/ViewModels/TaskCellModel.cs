@@ -103,24 +103,22 @@ namespace Training.Core
         public bool IsChecked 
         {
             get {
-                return Model.IsChecked;
+                return _checked;
             }
             set {
-                if(Model.IsChecked == value) {
-                    return;
-                }
+                if (SetProperty(ref _checked, value))  {
+                    try {
+                        Model.IsChecked = value;
+                    } catch (Exception e) {
+                        _dialogs.ShowError(e.Message);
+                        return;
+                    }
 
-                try {
-                    Model.IsChecked = value;
-                } catch(Exception e) {
-                    _dialogs.ShowError(e.Message);
-                    return;
+                    RaisePropertyChanged(nameof(CheckedImage));
                 }
-
-                RaisePropertyChanged(nameof(IsChecked));
-                RaisePropertyChanged(nameof(CheckedImage));
             }
         }
+        private bool _checked;
 
         /// <summary>
         /// Gets the image to use for the checked portion of a table view row
@@ -160,6 +158,7 @@ namespace Training.Core
             Model = new TaskModel(documentID);
             _name = new Lazy<string>(() => Model.Name, LazyThreadSafetyMode.None);
             _imageDigest = new Lazy<string>(() => Model.GetImageDigest(), LazyThreadSafetyMode.None);
+            _checked = Model.IsChecked;
             GenerateThumbnail();
         }
 
@@ -235,14 +234,14 @@ namespace Training.Core
                 return false;
             }
 
-            return DocumentID.Equals(other.DocumentID) && Name.Equals(other.Name)
+            return DocumentID.Equals(other.DocumentID) && Name.Equals(other.Name) && IsChecked == other.IsChecked
                              && String.Equals(_imageDigest.Value, other._imageDigest.Value);
         }
 
         public override int GetHashCode()
         {
             var digest = _imageDigest.Value;
-            var b = DocumentID.GetHashCode() ^ Name.GetHashCode();
+            var b = DocumentID.GetHashCode() ^ Name.GetHashCode() ^ IsChecked.GetHashCode();
             return digest == null ? b : (b ^ digest.GetHashCode());
         }
 
