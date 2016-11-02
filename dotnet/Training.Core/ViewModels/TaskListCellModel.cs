@@ -19,6 +19,7 @@
 // limitations under the License.
 //
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
@@ -87,9 +88,10 @@ namespace Training.Core
         public string Name 
         {
             get {
-                return Model.Name;
+                return _name.Value;
             }
         }
+        private Lazy<string> _name;
 
         #endregion
 
@@ -104,6 +106,7 @@ namespace Training.Core
         {
             DocumentID = documentId;
             _incompleteCount = -1;
+            _name = new Lazy<string>(() => Model.Name, LazyThreadSafetyMode.None);
         }
 
         #endregion

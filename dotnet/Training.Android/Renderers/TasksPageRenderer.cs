@@ -1,5 +1,5 @@
 ﻿//
-// TaskListsPageRenderer.cs
+// TasksPageRenderer.cs
 //
 // Author:
 // 	Jim Borden  <jim.borden@couchbase.com>
@@ -20,25 +20,18 @@
 //
 using System;
 
-using Android.App;
-using Android.Content.PM;
-using Android.Hardware;
-using Android.OS;
-using Android.Views;
-using Training.Forms;
 using Xamarin.Forms;
-using Xamarin.Forms.Platform.Android;
 
-[assembly:ExportRenderer(typeof(Training.TaskListsPage), typeof(Training.Android.TaskListsPageRenderer))]
+[assembly: ExportRenderer(typeof(Training.TasksPage), typeof(Training.Android.TasksPageRenderer))]
 
 namespace Training.Android
 {
-    public sealed class TaskListsPageRenderer : ShakeReactPageRenderer
+    public sealed class TasksPageRenderer : ShakeReactPageRenderer
     {
         protected override void HandleShake()
         {
-            var page = this.Element as TaskListsPage;
-            var vm = page.BindingContext as TaskListsViewModel;
+            var page = this.Element as TasksPage;
+            var vm = page.BindingContext as TasksViewModel;
             vm.TestConflict();
         }
     }
