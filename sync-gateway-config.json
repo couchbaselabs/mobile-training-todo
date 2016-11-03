@@ -92,8 +92,9 @@ function(doc, oldDoc){
 
     /* Grant Read Access */
     // Grant task-list owner access to the task-list, its tasks, and its users.
-    access(doc.owner, "task-list." + doc._id);
-    access(doc.owner, "task-list." + doc._id + ".users");
+    access(owner, "task-list." + doc._id);
+    access(owner, "task-list." + doc._id + ".users");
+    access("role:moderator", "task-list." + doc._id);
   } else if (getType() == "task") {
     /* Write Access */
     if (!isDelete()) {
