@@ -31,12 +31,11 @@ import static android.R.attr.value;
 public class Application extends android.app.Application {
     public static final String TAG = "Todo";
 
-    private Boolean mLoginFlowEnabled = true;
+    private Boolean mLoginFlowEnabled = false;
     private Boolean mEncryptionEnabled = false;
-    private Boolean mSyncEnabled = true;
-    private String mSyncGatewayUrl = "http://192.168.129.179:4984/todo/";
-//    private String mSyncGatewayUrl = "http://localhost:5983/user1/";
-    private Boolean mLoggingEnabled = true;
+    private Boolean mSyncEnabled = false;
+    private String mSyncGatewayUrl = "http://localhost:4984/todo/";
+    private Boolean mLoggingEnabled = false;
     private Boolean mUsePrebuiltDb = false;
     private Boolean mConflictResolution = false;
 
@@ -64,8 +63,7 @@ public class Application extends android.app.Application {
         }
 
         if (mLoginFlowEnabled) {
-//            login();
-            startSession("user1", "pass", null);
+            login();
         } else {
             startSession("todo", null, null);
         }
@@ -75,8 +73,6 @@ public class Application extends android.app.Application {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        LiteListener listener = new LiteListener(manager, 5984, new Credentials("", ""));
-        listener.start();
     }
 
     // Logging
