@@ -1,0 +1,242 @@
+package com.couchbase.todo;
+
+import android.app.ListActivity;
+import android.content.Intent;
+import android.os.Handler;
+import android.util.Log;
+import android.widget.Toast;
+
+import com.couchbase.lite.CouchbaseLiteException;
+import com.couchbase.lite.Database;
+import com.couchbase.lite.DatabaseOptions;
+import com.couchbase.lite.Manager;
+import com.couchbase.lite.android.AndroidContext;
+import com.couchbase.lite.auth.Authenticator;
+import com.couchbase.lite.auth.AuthenticatorFactory;
+import com.couchbase.lite.auth.LoginAuthorizer;
+import com.couchbase.lite.listener.Credentials;
+import com.couchbase.lite.listener.LiteListener;
+import com.couchbase.lite.replicator.Replication;
+import com.couchbase.lite.util.ZipUtils;
+import com.facebook.stetho.Stetho;
+import com.robotpajamas.stetho.couchbase.CouchbaseInspectorModulesProvider;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import static android.R.attr.value;
+
+public class Application extends android.app.Application {
+    public static final String TAG = "Todo";
+
+    private Boolean mLoginFlowEnabled = true;
+    private Boolean mEncryptionEnabled = false;
+    private Boolean mSyncEnabled = true;
+    private String mSyncGatewayUrl = "http://192.168.129.179:4984/todo/";
+//    private String mSyncGatewayUrl = "http://localhost:5983/user1/";
+    private Boolean mLoggingEnabled = true;
+    private Boolean mUsePrebuiltDb = false;
+    private Boolean mConflictResolution = false;
+
+    public Database getDatabase() {
+        return database;
+    }
+
+    private Manager manager;
+    private Database database;
+    private Replication pusher;
+    private Replication puller;
+
+    private String mUsername;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        if (BuildConfig.DEBUG) {
+            Stetho.initialize(
+                    Stetho.newInitializerBuilder(this)
+                            .enableDumpapp(Stetho.defaultDumperPluginsProvider(this))
+                            .enableWebKitInspector(new CouchbaseInspectorModulesProvider(this))
+                            .build());
+        }
+
+        if (mLoginFlowEnabled) {
+//            login();
+            startSession("user1", "pass", null);
+        } else {
+            startSession("todo", null, null);
+        }
+
+        try {
+            manager = new Manager(new AndroidContext(getApplicationContext()), Manager.DEFAULT_OPTIONS);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        LiteListener listener = new LiteListener(manager, 5984, new Credentials("", ""));
+        listener.start();
+    }
+
+    // Logging
+
+    private void enableLogging() {
+        Manager.enableLogging(TAG, Log.VERBOSE);
+        Manager.enableLogging(com.couchbase.lite.util.Log.TAG, Log.VERBOSE);
+        Manager.enableLogging(com.couchbase.lite.util.Log.TAG_SYNC_ASYNC_TASK, Log.VERBOSE);
+        Manager.enableLogging(com.couchbase.lite.util.Log.TAG_SYNC, Log.VERBOSE);
+        Manager.enableLogging(com.couchbase.lite.util.Log.TAG_QUERY, Log.VERBOSE);
+        Manager.enableLogging(com.couchbase.lite.util.Log.TAG_VIEW, Log.VERBOSE);
+        Manager.enableLogging(com.couchbase.lite.util.Log.TAG_DATABASE, Log.VERBOSE);
+    }
+
+    // Session
+
+    private void startSession(String username, String password, String newPassword) {
+        enableLogging();
+        installPrebuiltDb();
+        openDatabase(username, password, newPassword);
+        startReplication(username, password);
+        showApp();
+    }
+
+    private void installPrebuiltDb() {
+        if (!mUsePrebuiltDb) {
+            return;
+        }
+
+        try {
+            manager = new Manager(new AndroidContext(getApplicationContext()), Manager.DEFAULT_OPTIONS);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            database = manager.getExistingDatabase("todo");
+        } catch (CouchbaseLiteException e) {
+            e.printStackTrace();
+        }
+        if (database == null) {
+            try {
+                ZipUtils.unzip(getAssets().open("todo.zip"), manager.getContext().getFilesDir());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void openDatabase(String username, String key, String newKey) {
+        String dbname = username;
+        DatabaseOptions options = new DatabaseOptions();
+        options.setCreate(true);
+
+        if (mEncryptionEnabled) {
+            options.setEncryptionKey(key);
+        }
+
+        Manager manager = null;
+        try {
+            manager = new Manager(new AndroidContext(getApplicationContext()), Manager.DEFAULT_OPTIONS);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            database = manager.openDatabase(dbname, options);
+        } catch (CouchbaseLiteException e) {
+            e.printStackTrace();
+        }
+        if (newKey != null) {
+            try {
+                database.changeEncryptionKey(newKey);
+            } catch (CouchbaseLiteException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void closeDatabase() {
+        // stop live query
+        // close the database
+    }
+
+    // Login
+
+    private void login() {
+        Intent myIntent = new Intent();
+        myIntent.setClass(getApplicationContext(), LoginActivity.class);
+        startActivity(myIntent);
+    }
+
+    private void showApp() {
+        Intent intent = new Intent();
+        intent.setClass(getApplicationContext(), ListsActivity.class);
+        startActivity(intent);
+    }
+
+    public void login(String username, String password) {
+        mUsername = username;
+        startSession(username, password, null);
+    }
+
+    private void logout() {
+
+    }
+
+    // LoginActivity
+
+    // Replication
+
+    private void startReplication(String username, String password) {
+        if (!mSyncEnabled) {
+            return;
+        }
+
+        URL url = null;
+        try {
+            url = new URL(mSyncGatewayUrl);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        pusher = database.createPushReplication(url);
+        pusher.setContinuous(true);
+
+        puller = database.createPullReplication(url);
+        puller.setContinuous(true);
+
+        if (mLoginFlowEnabled) {
+            Authenticator authenticator = AuthenticatorFactory.createBasicAuthenticator(username, password);
+            pusher.setAuthenticator(authenticator);
+            puller.setAuthenticator(authenticator);
+        }
+
+        pusher.start();
+        puller.start();
+    }
+
+
+    public String getUsername() {
+        return mUsername;
+    }
+
+    public void setUsername(String mUsername) {
+        this.mUsername = mUsername;
+    }
+
+    public void showErrorMessage(final String errorMessage, final Throwable throwable) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                android.util.Log.e(TAG, errorMessage, throwable);
+                String msg = String.format("%s: %s",
+                        errorMessage, throwable != null ? throwable : "");
+                Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void runOnUiThread(Runnable runnable) {
+        Handler mainHandler = new Handler(getApplicationContext().getMainLooper());
+        mainHandler.post(runnable);
+    }
+}
