@@ -174,7 +174,13 @@ namespace Acr.UserDialogs
 
         public override void ShowError(string message, int timeoutMillis)
         {
-            throw new NotImplementedException();
+            var a = Alert(new AlertConfig
+            {
+                Title = "Error",
+                Message = message
+            });
+
+            a.Dispose();
         }
 
         #endregion

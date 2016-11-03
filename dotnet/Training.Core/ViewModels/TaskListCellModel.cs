@@ -116,7 +116,10 @@ namespace Training.Core
         private void Delete()
         {
             try {
-                Model.Delete();
+                if(!Model.Delete())
+                {
+                    _dialogs.ShowError("Error: Missing delete access");
+                }
             } catch(Exception e) {
                 _dialogs.ShowError(e.Message);
             }

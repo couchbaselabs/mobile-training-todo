@@ -199,16 +199,6 @@ namespace Training.Core
             _incompleteQuery.Start();
         }
 
-        private void Delete(string documentID)
-        {
-            var doc = _db.GetExistingDocument(documentID);
-            if(doc == null) {
-                return;
-            }
-
-            doc.Delete();
-        }
-
         #endregion
 
         #region IDisposable

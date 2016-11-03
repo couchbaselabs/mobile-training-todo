@@ -68,13 +68,24 @@ namespace Training.Core
         /// <summary>
         /// Deletes the list entry
         /// </summary>
-        public void Delete()
+        public bool Delete()
         {
-            try {
+            var db = _document.Database;
+            if (_document.UserProperties["owner"] as string != db.Name && !HasModerator(db)
+            {
+                return false;
+            }
+
+            try
+            {
                 _document.Delete();
-            } catch(Exception e) {
+            }
+            catch (Exception e)
+            {
                 throw new ApplicationException("Couldn't delete task list", e);
             }
+
+            return true;
         }
 
         /// <summary>
@@ -96,6 +107,16 @@ namespace Training.Core
             } catch(Exception e) {
                 throw new ApplicationException("Couldn't edit task list", e);
             }
+        }
+
+        #endregion
+
+        #region Private API
+
+        private bool HasModerator(Database db)
+        {
+            var moderatorDocId = $"moderator.{db.Name}";
+            return db.GetExistingDocument(moderatorDocId) != null;
         }
 
         #endregion
