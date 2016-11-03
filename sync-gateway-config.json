@@ -136,6 +136,7 @@ function(doc, oldDoc){
       validateNotEmpty("taskList", doc.taskList);
     }
     var owner = doc._deleted ? oldDoc.taskList.owner : doc.taskList.owner;
+    var username = doc._deleted ? oldDoc.username : doc.username;
     try {
       requireUser(owner);
     } catch (e) {
@@ -178,6 +179,9 @@ function(doc, oldDoc){
     if (!isDelete()) {
       access(doc.username, "task-list." + listId);
     }
+
+    channel(username);
+    access(username, username);
   } else {
     // Log invalid document type error.
     log("Invalid document type: " + doc.type);
