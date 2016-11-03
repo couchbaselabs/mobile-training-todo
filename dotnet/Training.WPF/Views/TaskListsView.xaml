@@ -19,7 +19,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <DockPanel>
-            <Menu DockPanel.Dock="Top" Height="20" VerticalAlignment="Top">
+            <Menu DockPanel.Dock="Top" VerticalAlignment="Top">
                 <MenuItem Header="Action" x:Name="_actionMenu">
                     <MenuItem Header="Add List..." Command="{Binding AddCommand}" />
                 </MenuItem>

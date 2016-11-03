@@ -74,6 +74,11 @@ namespace Training.Core
         /// <param name="jsonObject">The object that potentially has Newtonsoft classes contained</param>
        public static object ConvertToNetObject(object jsonObject)
         {
+            if(jsonObject == null)
+            {
+                return null;
+            }
+
             var dictionaryAttempt = ConvertToDictionary<string, object>(jsonObject);
             if(dictionaryAttempt != null) {
                 var retVal = new Dictionary<string, object>();

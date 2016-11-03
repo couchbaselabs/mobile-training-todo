@@ -86,10 +86,10 @@ namespace Training.Core
         public void TestConfict()
         {
             // TRAINING: Create task conflict (for development only)
-            var savedRevision = CreateNewTask("Test Conflicts Task");
+            var savedRevision = CreateNewTask("Text");
             var newRev1 = savedRevision.CreateRevision();
             var propsRev1 = newRev1.Properties;
-            propsRev1["task"] = "Update 1";
+            propsRev1["task"] = "Text Changed";
             var newRev2 = savedRevision.CreateRevision();
             var propsRev2 = newRev2.Properties;
             propsRev2["complete"] = true;

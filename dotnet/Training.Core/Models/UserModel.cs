@@ -69,7 +69,13 @@ namespace Training.Core
         /// </summary>
         public void Delete()
         {
-            _document.Delete();
+            _document.Update(rev =>
+            {
+                var props = rev.Properties;
+                props["_deleted"] = true;
+                rev.SetProperties(props);
+                return true;
+            });
         }
 
         #endregion

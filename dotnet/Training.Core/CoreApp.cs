@@ -57,6 +57,8 @@ namespace Training.Core
         private static Replication _puller;
         private static Exception _syncError;
         private static LiveQuery _conflictsLiveQuery;
+        private static HashSet<Document> _accessDocuments = new HashSet<Document>();
+
         #endregion
 
         #region Properties
@@ -138,6 +140,48 @@ namespace Training.Core
             if(newKey != null) {
                 Database.ChangeEncryptionKey(new SymmetricKey(newKey));
             }
+
+            Database.Changed += (sender, args) =>
+            {
+                if (!args.IsExternal)
+                {
+                    return;
+                }
+
+                var db = (Database)sender;
+                foreach(var change in args.Changes)
+                {
+                    if(!change.IsCurrentRevision)
+                    {
+                        continue;
+                    }
+
+                    var changedDoc = db.GetExistingDocument(change.DocumentId);
+                    if (changedDoc == null)
+                    {
+                        continue;
+                    }
+
+                    object docType;
+                    if (!changedDoc.Properties.TryGetValue("type", out docType))
+                    {
+                        continue;
+                    }
+
+                    if ((docType as string) != "task-list.user")
+                    {
+                        continue;
+                    }
+
+                    if (changedDoc.UserProperties["username"] as string != db.Name)
+                    {
+                        continue;
+                    }
+
+                    _accessDocuments.Add(changedDoc);
+                    changedDoc.Change += HandleAccessChanged;
+                }
+            };
         }
 
         /// <summary>
@@ -229,6 +273,27 @@ namespace Training.Core
         #endregion
 
         #region Private API
+
+        private static void HandleAccessChanged(object sender, Document.DocumentChangeEventArgs args)
+        {
+            var changedDoc = Database.GetDocument(args.Change.DocumentId);
+            if(!changedDoc.Deleted)
+            {
+                return;
+            }
+
+            _accessDocuments.Remove(changedDoc);
+            var deletedRev = changedDoc.LeafRevisions.FirstOrDefault();
+            var listId = (JsonUtility.ConvertToNetObject<IDictionary<string, object>>(deletedRev?.UserProperties?["taskList"]))?["id"] as string;
+            if(listId == null)
+            {
+                return;
+            }
+
+            var listDoc = Database.GetExistingDocument(listId);
+            listDoc?.Purge();
+            changedDoc.Purge();
+        }
 
         private static void HandleReplicationChanged(object sender, ReplicationChangeEventArgs args)
         {

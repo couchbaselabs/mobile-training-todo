@@ -13,7 +13,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <DockPanel>
-            <Menu DockPanel.Dock="Top" Height="20" VerticalAlignment="Top">
+            <Menu DockPanel.Dock="Top" VerticalAlignment="Top">
                 <MenuItem Header="Action">
                     <MenuItem Header="Back..." Command="{Binding BackCommand}" />
                     <MenuItem Header="Add Item..." Command="{Binding AddCommand, ElementName=_self}" />

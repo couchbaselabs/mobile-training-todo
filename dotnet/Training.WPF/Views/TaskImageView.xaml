@@ -14,14 +14,18 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
         <DockPanel>
-            <Menu DockPanel.Dock="Top" Height="20" VerticalAlignment="Top">
+            <Menu DockPanel.Dock="Top" VerticalAlignment="Top">
                 <MenuItem Header="Action">
                     <MenuItem Header="Back..." Command="{Binding BackCommand}" />
                 </MenuItem>
             </Menu>
         </DockPanel>
-        <Image Margin="0,20,0,0" Source="{Binding Image, Converter={StaticResource ImageSourceConverter}}">
+        <Image Grid.Row="1" Source="{Binding Image, Converter={StaticResource ImageSourceConverter}}">
             <Image.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="Edit..." Command="{Binding EditCommand}" />
