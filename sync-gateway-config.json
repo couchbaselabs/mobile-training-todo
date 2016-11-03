@@ -7,7 +7,12 @@
       "bucket": "todo",
       "users": {
         "user1": {"password": "pass"},
-        "user2": {"password": "pass"}
+        "user2": {"password": "pass"},
+        "mod": {"password": "pass", "admin_roles": ["moderator"]},
+        "admin": {"password": "pass", "admin_roles": ["admin"]},
+      "roles": {
+        "moderator": {},
+        "admin": {}
       },
       "sync": `
 function(doc, oldDoc){
