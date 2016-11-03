@@ -273,6 +273,14 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     
     func deleteTaskList(list: CBLDocument) {
         // TRAINING: Delete a list
+        if(list.userProperties?["owner"] as? String != username) {
+            let moderatorDocId = "moderator." + username;
+            if(database.existingDocument(withID: moderatorDocId) == nil) {
+                Ui.showMessageDialog(onController: self, withTitle: "Error", withMessage: "Required access to delete list missing");
+                return;
+            }
+        }
+        
         do {
             try list.delete()
         } catch let error as NSError {
