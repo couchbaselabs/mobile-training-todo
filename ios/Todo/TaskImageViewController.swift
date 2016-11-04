@@ -59,8 +59,10 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
 
     // MARK: - Action
     
-    @IBAction func editAction(sender: AnyObject) {
-        Ui.showImageActionSheet(onController: self, withImagePickerDelegate: self,
+    @IBAction func editAction(_ sender: AnyObject) {
+        Ui.showImageActionSheet(
+            onController: self,
+            withImagePickerDelegate: self,
             onDelete: {
                 self.deleteImage()
             }

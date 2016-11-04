@@ -27,6 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import static android.R.attr.value;
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
 public class Application extends android.app.Application {
     public static final String TAG = "Todo";
@@ -158,13 +159,15 @@ public class Application extends android.app.Application {
     // Login
 
     private void login() {
-        Intent myIntent = new Intent();
-        myIntent.setClass(getApplicationContext(), LoginActivity.class);
-        startActivity(myIntent);
+        Intent intent = new Intent();
+        intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
+        intent.setClass(getApplicationContext(), LoginActivity.class);
+        startActivity(intent);
     }
 
     private void showApp() {
         Intent intent = new Intent();
+        intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
         intent.setClass(getApplicationContext(), ListsActivity.class);
         startActivity(intent);
     }
