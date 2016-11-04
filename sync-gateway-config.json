@@ -9,7 +9,8 @@
         "user1": {"password": "pass", "admin_channels": ["user1"]},
         "user2": {"password": "pass", "admin_channels": ["user2"]},
         "mod": {"password": "pass", "admin_roles": ["moderator"]},
-        "admin": {"password": "pass", "admin_roles": ["admin"]},
+        "admin": {"password": "pass", "admin_roles": ["admin"]}
+      },
       "roles": {
         "moderator": {},
         "admin": {}
@@ -84,7 +85,9 @@ function(doc, oldDoc){
 
         if (isCreate()) {
           // Validate that the _id is prefixed by owner.
-          // validatePrefix("_id", doc._id, "owner", doc.owner + ".");
+          if (!hasPrefix(doc._id, doc.owner + ".")) {
+              throw({forbidden: "task-list id must be prefixed by list owner"});
+          }
         } else {
           // Don’t allow task-list ownership to be changed.
           validateReadOnly("owner", doc.owner, oldDoc.owner);
@@ -124,7 +127,9 @@ function(doc, oldDoc){
       if (isCreate()) {
         // Validate that the taskList.id is prefixed by taskList.owner.  We only need to
         // validate this during create because these fields are read-only after create.
-        // validatePrefix("taskList.id", doc.taskList.id, "taskList.owner", doc.taskList.owner + ".");
+        if (!hasPrefix(doc.taskList.id, doc.taskList.owner + ".")) {
+            throw({forbidden: "task-list id must be prefixed by task-list owner"});
+        }
       } else {
         // Don’t allow tasks to be moved to another task-list.
         validateReadOnly("taskList.id", doc.taskList.id, oldDoc.taskList.id);
@@ -164,7 +169,9 @@ function(doc, oldDoc){
           }
 
           // Validate that the taskList.id is prefixed by taskList.owner.
-          // validatePrefix("taskList.id", doc.taskList.id, "taskList.owner", doc.taskList.owner + ".");
+          if (!hasPrefix(doc.taskList.id, doc.taskList.owner + ".")) {
+              throw({forbidden: "task-list id must be prefixed by task-list owner"});
+          }
         } else {
           // Don’t allow users to be moved to another task-list.  Also, doc._id is tied to
           // these values, validated during create, and must remain this way to ensure
@@ -199,11 +206,11 @@ function(doc, oldDoc){
   }
 
   function isCreate() {
-    return ((oldDoc == null || oldDoc._deleted) && doc._deleted != true);
+    return ((oldDoc == null || oldDoc._deleted) && !isDelete());
   }
 
   function isUpdate() {
-    return (!isCreate(oldDoc) && !isDelete(doc));
+    return (!isCreate() && !isDelete());
   }
 
   function isDelete() {
@@ -219,6 +226,15 @@ function(doc, oldDoc){
   function validateReadOnly(name, value, oldValue) {
     if (value != oldValue) {
       throw({forbidden: name + " is read-only."});
+    }
+  }
+
+  // Checks whether the provided value starts with the specified prefix
+  function hasPrefix(value, prefix) {
+    if (value && prefix) {
+      return value.substring(0, prefix.length) == prefix
+    } else {
+      return false
     }
   }
 }
