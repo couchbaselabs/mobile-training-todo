@@ -94,7 +94,7 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
             usersLiveQuery.startKey = [taskList.documentID, text]
             usersLiveQuery.prefixMatchLevel = 2
         } else {
-            usersLiveQuery.startKey = nil
+            usersLiveQuery.startKey = [taskList.documentID]
             usersLiveQuery.prefixMatchLevel = 1
         }
         usersLiveQuery.endKey = usersLiveQuery.startKey
