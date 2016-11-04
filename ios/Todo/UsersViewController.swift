@@ -176,7 +176,10 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
     
     func deleteUser(user: CBLDocument) {
         do {
-            try user.delete()
+            try user.update({ (rev) -> Bool in
+                rev["_deleted"] = true;
+                return true;
+            });
         } catch let error as NSError {
             Ui.showMessageDialog(onController: self, withTitle: "Error",
                 withMessage: "Couldn't delete user", withError: error)
