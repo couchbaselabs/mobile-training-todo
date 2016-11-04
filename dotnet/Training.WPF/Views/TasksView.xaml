@@ -45,7 +45,7 @@
                         </Grid.ColumnDefinitions>
                         <Image Source="{Binding Thumbnail, Converter={StaticResource ImageSourceConverter}}" Width="44" Height="44" VerticalAlignment="Center" />
                         <Button Command="{Binding AddImageCommand}" CommandParameter="{Binding .}" Width="44" Height="44" VerticalAlignment="Center" Background="Transparent" />
-                        <Label Content="{Binding Name}" Grid.Column="1" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding Name}" Grid.Column="1" VerticalAlignment="Center" />
                         <CheckBox IsChecked="{Binding IsChecked}" IsHitTestVisible="False" Grid.Column="2" VerticalAlignment="Center" />
                     </Grid>
 

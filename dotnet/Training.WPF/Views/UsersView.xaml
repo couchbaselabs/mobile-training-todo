@@ -27,7 +27,7 @@
             </ListView.ContextMenu>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Label Content="{Binding Name}" />
+                    <TextBlock Text="{Binding Name}" />
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
