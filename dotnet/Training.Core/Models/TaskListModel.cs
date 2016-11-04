@@ -71,7 +71,7 @@ namespace Training.Core
         public bool Delete()
         {
             var db = _document.Database;
-            if (_document.UserProperties["owner"] as string != db.Name && !HasModerator(db)
+            if (_document.UserProperties["owner"] as string != db.Name && !HasModerator(db))
             {
                 return false;
             }
