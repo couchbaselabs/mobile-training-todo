@@ -99,6 +99,12 @@ public class UsersFragment extends Fragment {
         Query query = view.createQuery();
 
         LiveQuery usersLiveQuery = query.toLiveQuery();
+        ArrayList<String> startKey = new ArrayList<String>();
+        startKey.add(mTaskList.getId());
+        usersLiveQuery.setStartKey(startKey);
+        usersLiveQuery.setEndKey(startKey);
+        usersLiveQuery.setPrefixMatchLevel(1);
+
         final UsersFragment.UserAdapter mAdapter = new UsersFragment.UserAdapter(getActivity(), usersLiveQuery);
 
         mListView.setAdapter(mAdapter);
