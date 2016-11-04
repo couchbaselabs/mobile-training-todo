@@ -94,6 +94,7 @@ public class Application extends android.app.Application {
         enableLogging();
         installPrebuiltDb();
         openDatabase(username, password, newPassword);
+        mUsername = "todo";
         startReplication(username, password);
         showApp();
     }

@@ -51,6 +51,9 @@ public class ListsActivity extends AppCompatActivity {
     private String mUsername;
     private Map<String, Object> incompCounts;
 
+    private LiveQuery listsLiveQuery;
+    private ListAdapter mAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,56 +76,11 @@ public class ListsActivity extends AppCompatActivity {
         mUsername = application.getUsername();
 
         setupViewAndQuery();
-    }
-
-    // Database
-
-    private void setupViewAndQuery() {
-        if (mDatabase == null) {
-            return;
-        }
-        com.couchbase.lite.View listsView = mDatabase.getView("list/listsByName");
-        if (listsView.getMap() == null) {
-            listsView.setMap(new Mapper() {
-                @Override
-                public void map(Map<String, Object> document, Emitter emitter) {
-                    String type = (String) document.get("type");
-                    if ("task-list".equals(type)) {
-                        emitter.emit(document.get("name"), null);
-                    }
-                }
-            }, "1.0");
-        }
-
-        com.couchbase.lite.View incompTasksCountView = mDatabase.getView("list/incompleteTasksCount");
-        if (incompTasksCountView.getMap() == null) {
-            incompTasksCountView.setMapReduce(new Mapper() {
-                @Override
-                public void map(Map<String, Object> document, Emitter emitter) {
-                    String type = (String) document.get("type");
-                    if ("task".equals(type)) {
-                        Boolean complete = (Boolean) document.get("complete");
-                        if (!complete) {
-                            Map<String, Object> taskList = (Map<String, Object>) document.get("taskList");
-                            String listId = (String) taskList.get("id");
-                            emitter.emit(listId, null);
-                        }
-                    }
-                }
-            }, new Reducer() {
-                @Override
-                public Object reduce(List<Object> keys, List<Object> values, boolean rereduce) {
-                    return values.size();
-                }
-            }, "1.0");
-        }
-
-        LiveQuery listsLiveQuery = listsView.createQuery().toLiveQuery();
-
-        final ListAdapter mAdapter = new ListAdapter(this, listsLiveQuery);
+        mAdapter = new ListAdapter(this, listsLiveQuery);
 
         ListView listView = (ListView) findViewById(R.id.list);
         listView.setAdapter(mAdapter);
+
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -153,10 +111,55 @@ public class ListsActivity extends AppCompatActivity {
                 return true;
             }
         });
+    }
 
+    // Database
+
+    private void setupViewAndQuery() {
+        if (mDatabase == null) {
+            return;
+        }
+        com.couchbase.lite.View listsView = mDatabase.getView("list/listsByName");
+        if (listsView.getMap() == null) {
+            listsView.setMap(new Mapper() {
+                @Override
+                public void map(Map<String, Object> document, Emitter emitter) {
+                    String type = (String) document.get("type");
+                    if ("task-list".equals(type)) {
+                        emitter.emit(document.get("name"), null);
+                    }
+                }
+            }, "1.0");
+        }
+
+        listsLiveQuery = listsView.createQuery().toLiveQuery();
+
+        com.couchbase.lite.View incompTasksCountView = mDatabase.getView("list/incompleteTasksCount");
+        if (incompTasksCountView.getMap() == null) {
+            incompTasksCountView.setMapReduce(new Mapper() {
+                @Override
+                public void map(Map<String, Object> document, Emitter emitter) {
+                    String type = (String) document.get("type");
+                    if ("task".equals(type)) {
+                        Boolean complete = (Boolean) document.get("complete");
+                        if (!complete) {
+                            Map<String, Object> taskList = (Map<String, Object>) document.get("taskList");
+                            String listId = (String) taskList.get("id");
+                            emitter.emit(listId, null);
+                        }
+                    }
+                }
+            }, new Reducer() {
+                @Override
+                public Object reduce(List<Object> keys, List<Object> values, boolean rereduce) {
+                    return values.size();
+                }
+            }, "1.0");
+        }
 
         final LiveQuery incompTasksCountLiveQuery = incompTasksCountView.createQuery().toLiveQuery();
         incompTasksCountLiveQuery.setGroupLevel(1);
+
         incompTasksCountLiveQuery.addChangeListener(new LiveQuery.ChangeListener() {
             @Override
             public void changed(LiveQuery.ChangeEvent event) {
@@ -166,7 +169,6 @@ public class ListsActivity extends AppCompatActivity {
                         Map<String, Object> counts = new HashMap<String, Object>();
                         QueryEnumerator rows = incompTasksCountLiveQuery.getRows();
                         for (QueryRow row : rows) {
-                            android.util.Log.d(Application.TAG, String.format("ID:: %s", row.getValue()));
                             String listId = (String) row.getKey();
                             int count = (int) row.getValue();
                             counts.put(listId, count);
@@ -291,7 +293,7 @@ public class ListsActivity extends AppCompatActivity {
         }
     }
 
-    private Document createTaskList(String title) throws CouchbaseLiteException {
+    private void createTaskList(String title) throws CouchbaseLiteException {
         Map<String, Object> properties = new HashMap<String, Object>();
         properties.put("type", "task-list");
         properties.put("name", title);
@@ -301,7 +303,6 @@ public class ListsActivity extends AppCompatActivity {
 
         Document document = mDatabase.getDocument(docId);
         document.putProperties(properties);
-        return document;
     }
 
 }

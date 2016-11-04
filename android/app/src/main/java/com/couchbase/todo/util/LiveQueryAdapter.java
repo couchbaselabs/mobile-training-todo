@@ -26,7 +26,6 @@ public class LiveQueryAdapter extends BaseAdapter {
                 ((Activity) LiveQueryAdapter.this.context).runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Log.d(Application.TAG, "new doc received");
                         enumerator = event.getRows();
                         notifyDataSetChanged();
                     }
