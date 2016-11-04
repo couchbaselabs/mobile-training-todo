@@ -6,8 +6,8 @@
       "server": "walrus:",
       "bucket": "todo",
       "users": {
-        "user1": {"password": "pass"},
-        "user2": {"password": "pass"},
+        "user1": {"password": "pass", "admin_channels": ["user1"]},
+        "user2": {"password": "pass", "admin_channels": ["user2"]},
         "mod": {"password": "pass", "admin_roles": ["moderator"]},
         "admin": {"password": "pass", "admin_roles": ["admin"]},
       "roles": {
@@ -186,7 +186,6 @@ function(doc, oldDoc){
     }
 
     channel(username);
-    access(username, username);
   } else {
     // Log invalid document type error.
     log("Invalid document type: " + doc.type);
