@@ -53,9 +53,10 @@ function(doc, oldDoc){
     if (!isDelete()) {
       // Add user to moderator role.
       role(doc.username, "role:moderator");
-    }
+    } 
     // Add doc to the user's channel.
-    channel(doc.username);
+    var username = doc._deleted ? oldDoc.username : doc.username;
+    channel(username);
 
     /* Grant Read Access */
     if (!isDelete()) {
