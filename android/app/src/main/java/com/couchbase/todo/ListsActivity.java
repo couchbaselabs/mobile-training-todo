@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.PopupMenu;
@@ -73,7 +74,17 @@ public class ListsActivity extends AppCompatActivity {
             }
         });
 
-        Application application = (Application) getApplication();
+        final Application application = (Application) getApplication();
+        if(application.LoginFlowEnabled) {
+            Button button = (Button) findViewById(R.id.logout);
+            button.setVisibility(View.VISIBLE);
+            button.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    application.logout();
+                }
+            });
+        }
+
         mDatabase = application.getDatabase();
         mUsername = application.getUsername();
 

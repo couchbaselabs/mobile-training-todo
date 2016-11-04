@@ -80,7 +80,7 @@ public class Application extends android.app.Application {
                             .build());
         }
 
-        if (mLoginFlowEnabled) {
+        if (LoginFlowEnabled) {
             login();
         } else {
             startSession("todo", null, null);
@@ -227,8 +227,8 @@ public class Application extends android.app.Application {
     }
 
     private void closeDatabase() {
-        // stop live query
-        // close the database
+        // TODO: stop conflicts live query
+        database.close();
     }
 
     // Login
@@ -252,14 +252,13 @@ public class Application extends android.app.Application {
         startSession(username, password, null);
     }
 
-    private void logout() {
-
+    public void logout() {
+        stopReplication();
+        closeDatabase();
+        login();
     }
 
-    // LoginActivity
-
     // Replication
-
     private void startReplication(String username, String password) {
         if (!mSyncEnabled) {
             return;
@@ -278,7 +277,7 @@ public class Application extends android.app.Application {
         puller = database.createPullReplication(url);
         puller.setContinuous(true);
 
-        if (mLoginFlowEnabled) {
+        if (LoginFlowEnabled) {
             Authenticator authenticator = AuthenticatorFactory.createBasicAuthenticator(username, password);
             pusher.setAuthenticator(authenticator);
             puller.setAuthenticator(authenticator);
@@ -286,6 +285,15 @@ public class Application extends android.app.Application {
 
         pusher.start();
         puller.start();
+    }
+
+    private void stopReplication() {
+        if (!mSyncEnabled) {
+            return;
+        }
+
+        pusher.stop();
+        puller.stop();
     }
 
 
