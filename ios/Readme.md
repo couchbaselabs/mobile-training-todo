@@ -5,6 +5,12 @@ Install CocoaPods
 sudo gem install cocoapods
 ```
 
+Change to ios directory
+
+```
+cd ios
+```
+
 Install dependencies
 
 ```
