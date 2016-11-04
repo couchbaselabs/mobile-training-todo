@@ -26,13 +26,30 @@ public class ListDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_detail);
 
+        Application application = (Application)getApplication();
+        mDatabase = application.getDatabase();
+        mUsername = application.getUsername();
+        mTaskList = mDatabase.getDocument(getIntent().getStringExtra(INTENT_LIST_ID));
+
+        int tabCount = (isOwner() || hasModeratorAccess()) ? 2 : 1;
+
         // Get the ViewPager and set it's PagerAdapter so that it can display items
         ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
-        viewPager.setAdapter(new ListFragmentPagerAdapter(getSupportFragmentManager()));
+        viewPager.setAdapter(new ListFragmentPagerAdapter(getSupportFragmentManager(), tabCount));
 
         // Give the TabLayout the ViewPager
         TabLayout tabLayout = (TabLayout) findViewById(R.id.sliding_tabs);
         tabLayout.setupWithViewPager(viewPager);
+    }
+
+    private boolean isOwner()
+    {
+        return mTaskList.getProperty("owner").equals(mUsername);
+    }
+
+    private boolean hasModeratorAccess()
+    {
+        return mDatabase.getExistingDocument("moderator." + mUsername) != null;
     }
 
 

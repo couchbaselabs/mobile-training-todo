@@ -8,11 +8,13 @@ import com.couchbase.todo.TasksFragment;
 import com.couchbase.todo.UsersFragment;
 
 public class ListFragmentPagerAdapter extends FragmentPagerAdapter {
-    final int PAGE_COUNT = 2;
+    final int PAGE_COUNT;
     private String tabTitles[] = new String[]{"Tasks", "Users"};
 
-    public ListFragmentPagerAdapter(FragmentManager fm) {
+    public ListFragmentPagerAdapter(FragmentManager fm, int tabCount) {
         super(fm);
+
+        PAGE_COUNT = tabCount;
     }
 
     @Override
