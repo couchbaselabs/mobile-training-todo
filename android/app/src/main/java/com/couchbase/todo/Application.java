@@ -48,6 +48,7 @@ public class Application extends android.app.Application {
     private Database database;
     private Replication pusher;
     private Replication puller;
+    private ArrayList<Document> accessDocuments = new ArrayList<Document>();
 
     private String mUsername;
 
@@ -150,6 +151,62 @@ public class Application extends android.app.Application {
                 e.printStackTrace();
             }
         }
+
+        database.addChangeListener(new Database.ChangeListener() {
+            @Override
+            public void changed(Database.ChangeEvent event) {
+                if(!event.isExternal()) {
+                    return;
+                }
+
+                for(final DocumentChange change : event.getChanges()) {
+                    if(!change.isCurrentRevision()) {
+                        continue;
+                    }
+
+                    Document changedDoc = database.getExistingDocument(change.getDocumentId());
+                    if(changedDoc == null) {
+                        return;
+                    }
+
+                    Object docType = changedDoc.getProperty("type");
+                    if(docType == null || !String.class.isInstance(docType)) {
+                        continue;
+                    }
+
+                    if((String)docType != "task-list.user") {
+                        continue;
+                    }
+
+                    Object username = changedDoc.getProperty("username");
+                    if(username == null || !String.class.isInstance(username)) {
+                        continue;
+                    }
+
+                    accessDocuments.add(changedDoc);
+                    changedDoc.addChangeListener(new Document.ChangeListener() {
+                        @Override
+                        public void changed(Document.ChangeEvent event) {
+                            Document changedDoc = database.getDocument(event.getChange().getDocumentId());
+                            if (!changedDoc.isDeleted()) {
+                                return;
+                            }
+
+                            try {
+                                SavedRevision deletedRev = changedDoc.getLeafRevisions().get(0);
+                                String listId = (String) ((HashMap<String, Object>) deletedRev.getProperty("taskList")).get("id");
+                                Document listDoc = database.getExistingDocument(listId);
+                                accessDocuments.remove(changedDoc);
+                                listDoc.purge();
+                                changedDoc.purge();
+                            } catch (CouchbaseLiteException e) {
+                                Log.e(TAG, "Failed to get deleted rev in document change listener");
+                            }
+                        }
+                    });
+                }
+            }
+        });
     }
 
     private void closeDatabase() {
