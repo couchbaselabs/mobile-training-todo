@@ -25,6 +25,7 @@ import com.couchbase.lite.Emitter;
 import com.couchbase.lite.LiveQuery;
 import com.couchbase.lite.Mapper;
 import com.couchbase.lite.Query;
+import com.couchbase.lite.UnsavedRevision;
 import com.couchbase.lite.util.Log;
 import com.couchbase.todo.util.LiveQueryAdapter;
 
@@ -130,7 +131,15 @@ public class UsersFragment extends Fragment {
 
     private void deleteUser(final Document user) {
         try {
-            user.delete();
+            user.update(new Document.DocumentUpdater() {
+                @Override
+                public boolean update(UnsavedRevision newRevision) {
+                    Map<String, Object> props = newRevision.getProperties();
+                    props.put("_deleted", true);
+                    newRevision.setProperties(props);
+                    return true;
+                }
+            });
         } catch (CouchbaseLiteException e) {
             e.printStackTrace();
         }

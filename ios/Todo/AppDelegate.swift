@@ -25,6 +25,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
     var puller: CBLReplication!
     var syncError: NSError?
     var conflictsLiveQuery: CBLLiveQuery?
+    var accessDocuments: Array<CBLDocument> = [];
 
     // MARK: - Application Life Cycle
     
@@ -106,6 +107,61 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         if newKey != nil {
             try database.changeEncryptionKey(newKey)
         }
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.observeDatabaseChange), name:Notification.Name.cblDatabaseChange, object: database)
+    }
+    
+    func observeDatabaseChange(notification: Notification) {
+        if(!(notification.userInfo?["external"] as! Bool)) {
+            return;
+        }
+        
+        for change in notification.userInfo?["changes"] as! Array<CBLDatabaseChange> {
+            if(!change.isCurrentRevision) {
+                continue;
+            }
+            
+            let changedDoc = database.existingDocument(withID: change.documentID);
+            if(changedDoc == nil) {
+                return;
+            }
+            
+            let docType = changedDoc?.properties?["type"] as! String?;
+            if(docType == nil) {
+                continue;
+            }
+            
+            if(docType != "task-list.user") {
+                continue;
+            }
+            
+            let username = changedDoc?.properties?["username"] as! String?;
+            if(username != database.name) {
+                continue;
+            }
+            
+            accessDocuments.append(changedDoc!);
+            NotificationCenter.default.addObserver(self, selector: #selector(AppDelegate.handleAccessChange), name: NSNotification.Name.cblDocumentChange, object: changedDoc);
+        }
+    }
+    
+    func handleAccessChange(notification: Notification) throws {
+        let change = notification.userInfo?["change"] as! CBLDatabaseChange;
+        let changedDoc = database.document(withID: change.documentID);
+        if(changedDoc == nil || !(changedDoc?.isDeleted)!) {
+            return;
+        }
+        
+        let deletedRev = try changedDoc?.getLeafRevisions()[0];
+        let listId = (deletedRev?["taskList"] as! Dictionary<String, NSObject>)["id"] as! String?;
+        if(listId == nil) {
+            return;
+        }
+        
+        accessDocuments.remove(at: accessDocuments.index(of: changedDoc!)!);
+        let listDoc = database.existingDocument(withID: listId!);
+        try listDoc?.purgeDocument();
+        try changedDoc?.purgeDocument()
     }
     
     func closeDatabase() throws {
