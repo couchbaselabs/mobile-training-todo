@@ -270,12 +270,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         
         // TRAINING: Start push/pull replications
         pusher = database.createPushReplication(kSyncGatewayUrl)
-        pusher.continuous = true
+        pusher.continuous = true  // Runs forever in background
         NotificationCenter.default.addObserver(self, selector: #selector(replicationProgress(notification:)),
             name: NSNotification.Name.cblReplicationChange, object: pusher)
 
         puller = database.createPullReplication(kSyncGatewayUrl)
-        puller.continuous = true
+        puller.continuous = true  // Runs forever in background
         NotificationCenter.default.addObserver(self, selector: #selector(replicationProgress(notification:)),
                                                name: NSNotification.Name.cblReplicationChange, object: puller)
 
