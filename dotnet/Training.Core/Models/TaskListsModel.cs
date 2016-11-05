@@ -158,7 +158,7 @@ namespace Training.Core
             _byNameQuery = view.CreateQuery().ToLiveQuery();
             _byNameQuery.Changed += (sender, args) =>
             {
-                TasksList.Replace(args.Rows.Select(x => new TaskListCellModel(x.DocumentId)));
+                TasksList.Replace(args.Rows.Select(x => new TaskListCellModel(x.DocumentId, x.Key as string)));
             };
             _byNameQuery.Start();
 
