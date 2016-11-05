@@ -77,7 +77,6 @@ public class ListsActivity extends AppCompatActivity {
         });
 
         Application application = (Application) getApplication();
-
         mDatabase = application.getDatabase();
         mUsername = application.getUsername();
 
@@ -122,8 +121,16 @@ public class ListsActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the logout_menu items for use in the action bar
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.logout_menu, menu);
+
+        Bundle bundle = this.getIntent().getExtras();
+        if(bundle != null) {
+            Boolean loginFlowEnabled = bundle.getBoolean(Application.LOGIN_FLOW_ENABLED);
+            if(loginFlowEnabled) {
+                MenuInflater inflater = getMenuInflater();
+                inflater.inflate(R.menu.logout_menu, menu);
+            }
+        }
+
         return super.onCreateOptionsMenu(menu);
     }
 

@@ -47,6 +47,7 @@ import static java.lang.Math.min;
 
 public class Application extends android.app.Application {
     public static final String TAG = "Todo";
+    public static final String LOGIN_FLOW_ENABLED = "login_flow_enabled";
 
     private Boolean mLoginFlowEnabled = false;
     private Boolean mEncryptionEnabled = false;
@@ -80,7 +81,7 @@ public class Application extends android.app.Application {
                             .build());
         }
 
-        if (LoginFlowEnabled) {
+        if (mLoginFlowEnabled) {
             login();
         } else {
             startSession("todo", null, null);
@@ -244,6 +245,7 @@ public class Application extends android.app.Application {
         Intent intent = new Intent();
         intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
         intent.setClass(getApplicationContext(), ListsActivity.class);
+        intent.putExtra(LOGIN_FLOW_ENABLED, mLoginFlowEnabled);
         startActivity(intent);
     }
 
@@ -277,7 +279,7 @@ public class Application extends android.app.Application {
         puller = database.createPullReplication(url);
         puller.setContinuous(true);
 
-        if (LoginFlowEnabled) {
+        if (mLoginFlowEnabled) {
             Authenticator authenticator = AuthenticatorFactory.createBasicAuthenticator(username, password);
             pusher.setAuthenticator(authenticator);
             puller.setAuthenticator(authenticator);
