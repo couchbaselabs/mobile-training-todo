@@ -31,6 +31,8 @@ import com.couchbase.lite.Emitter;
 import com.couchbase.lite.LiveQuery;
 import com.couchbase.lite.Mapper;
 import com.couchbase.lite.Query;
+import com.couchbase.lite.SavedRevision;
+import com.couchbase.lite.UnsavedRevision;
 import com.couchbase.lite.util.Log;
 import com.couchbase.todo.util.LiveQueryAdapter;
 
@@ -297,14 +299,10 @@ public class TasksFragment extends Fragment {
 
         alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-                try {
                     String title = input.getText().toString();
                     if (title.length() == 0)
                         return;
                     createTask(title);
-                } catch (CouchbaseLiteException e) {
-                    Log.e(Application.TAG, "Cannot create a new task", e);
-                }
             }
         });
 
@@ -315,7 +313,7 @@ public class TasksFragment extends Fragment {
         alert.show();
     }
 
-    private Document createTask(String title) throws CouchbaseLiteException {
+    private SavedRevision createTask(String title) {
         Map<String, Object> taskListInfo = new HashMap<String, Object>();
         taskListInfo.put("id", mTaskList.getId());
         taskListInfo.put("owner", mTaskList.getProperty("owner"));
@@ -328,8 +326,32 @@ public class TasksFragment extends Fragment {
         properties.put("complete", false);
 
         Document document = mDatabase.createDocument();
-        document.putProperties(properties);
-        return document;
+        try {
+            return document.putProperties(properties);
+        } catch (CouchbaseLiteException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private void createTaskConflict() {
+        SavedRevision savedRevision = createTask("Text");
+        UnsavedRevision newRev1 = savedRevision.createRevision();
+        Map<String, Object> propsRev1 = newRev1.getProperties();
+        propsRev1.put("task", "Text Changed");
+        UnsavedRevision newRev2 = savedRevision.createRevision();
+        Map<String, Object> propsRev2 = newRev2.getProperties();
+        propsRev2.put("complete", true);
+        try {
+            newRev1.save(true);
+        } catch (CouchbaseLiteException e) {
+            e.printStackTrace();
+        }
+        try {
+            newRev2.save(true);
+        } catch (CouchbaseLiteException e) {
+            e.printStackTrace();
+        }
     }
 
 }

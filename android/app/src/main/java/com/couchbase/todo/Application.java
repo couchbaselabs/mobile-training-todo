@@ -6,13 +6,21 @@ import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.couchbase.lite.Attachment;
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.DatabaseOptions;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.DocumentChange;
+import com.couchbase.lite.LiveQuery;
 import com.couchbase.lite.Manager;
+import com.couchbase.lite.Query;
+import com.couchbase.lite.QueryEnumerator;
+import com.couchbase.lite.QueryRow;
+import com.couchbase.lite.Revision;
 import com.couchbase.lite.SavedRevision;
+import com.couchbase.lite.TransactionalTask;
+import com.couchbase.lite.UnsavedRevision;
 import com.couchbase.lite.android.AndroidContext;
 import com.couchbase.lite.auth.Authenticator;
 import com.couchbase.lite.auth.AuthenticatorFactory;
@@ -30,9 +38,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static android.R.attr.value;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+import static java.lang.Math.min;
 
 public class Application extends android.app.Application {
     public static final String TAG = "Todo";
@@ -103,6 +114,7 @@ public class Application extends android.app.Application {
         mUsername = username;
         startReplication(username, password);
         showApp();
+        startConflictLiveQuery();
     }
 
     private void installPrebuiltDb() {
@@ -301,4 +313,183 @@ public class Application extends android.app.Application {
         Handler mainHandler = new Handler(getApplicationContext().getMainLooper());
         mainHandler.post(runnable);
     }
+
+    private void startConflictLiveQuery() {
+        if (!mConflictResolution) {
+            return;
+        }
+
+        LiveQuery conflictsLiveQuery = database.createAllDocumentsQuery().toLiveQuery();
+        conflictsLiveQuery.setAllDocsMode(Query.AllDocsMode.ONLY_CONFLICTS);
+        conflictsLiveQuery.addChangeListener(new LiveQuery.ChangeListener() {
+            @Override
+            public void changed(LiveQuery.ChangeEvent event) {
+                resolveConflicts(event.getRows());
+            }
+        });
+        conflictsLiveQuery.start();
+    }
+
+    private void resolveConflicts(QueryEnumerator rows) {
+        for (QueryRow row : rows) {
+            List<SavedRevision> revs = row.getConflictingRevisions();
+            if (revs.size() > 1) {
+                SavedRevision defaultWinning = revs.get(0);
+                String type = (String) defaultWinning.getProperty("type");
+                switch (type) {
+                    // TRAINING: Automatic conflict resolution
+                    case "task-list":
+                    case "task-list.user":
+                        Map<String, Object> props = defaultWinning.getUserProperties();
+                        Attachment image = defaultWinning.getAttachment("image");
+                        resolveConflicts(revs, props, image);
+                        break;
+                    // TRAINING: N-way merge conflict resolution
+                    case "task":
+                        List<Object> mergedPropsAndImage = nWayMergeConflicts(revs);
+                        resolveConflicts(revs, (Map<String, Object>) mergedPropsAndImage.get(0), (Attachment) mergedPropsAndImage.get(1));
+                        break;
+                }
+            }
+        }
+    }
+
+    private void resolveConflicts(final List<SavedRevision> revs, final Map<String, Object> props, final Attachment image) {
+        database.runInTransaction(new TransactionalTask() {
+            @Override
+            public boolean run() {
+                int i = 0;
+                for (SavedRevision rev : revs) {
+                    UnsavedRevision newRev = rev.createRevision();
+                    if (i == 0) { // Default winning revision
+                        newRev.setUserProperties(props);
+                        if (image != null) {
+                            try {
+                                newRev.setAttachment("image", "image/jpg", image.getContent());
+                            } catch (CouchbaseLiteException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    } else {
+                        newRev.setIsDeletion(true);
+                    }
+
+                    try {
+                        newRev.save(true);
+                    } catch (CouchbaseLiteException e) {
+                        e.printStackTrace();
+                        return false;
+                    }
+                    i++;
+                }
+                return true;
+            }
+        });
+    }
+
+    private List<Object> nWayMergeConflicts(List<SavedRevision> revs) {
+        SavedRevision parent = findCommonParent(revs);
+        if (parent == null) {
+            SavedRevision defaultWinning = revs.get(0);
+            Map<String, Object> props = defaultWinning.getUserProperties();
+            Attachment image = defaultWinning.getAttachment("image");
+            List<Object> propsAndImage = new ArrayList<>();
+            propsAndImage.add(props);
+            propsAndImage.add(image);
+            return propsAndImage;
+        }
+
+        Map<String, Object> mergedProps = parent.getUserProperties();
+        if (mergedProps == null) mergedProps = new HashMap<>();
+        Attachment mergedImage = parent.getAttachment("image");
+        boolean gotTask = false;
+        boolean gotComplete = false;
+        boolean gotImage = false;
+        for (SavedRevision rev : revs) {
+            Map<String, Object> props = rev.getUserProperties();
+            if (props != null) {
+                if (!gotTask) {
+                    String task = (String) props.get("task");
+                    if (!task.equals(mergedProps.get("task"))) {
+                        mergedProps.put("task", task);
+                        gotTask = true;
+                    }
+                }
+
+                if (!gotComplete) {
+                    boolean complete = (boolean) props.get("complete");
+                    if (complete != (boolean) mergedProps.get("complete")) {
+                        mergedProps.put("complete", complete);
+                        gotComplete = true;
+                    }
+                }
+            }
+
+            if (!gotImage) {
+//                Attachment attachment = rev.getAttachment("image");
+//                String attachmentDigest = (String) attachment.getMetadata().get("digest");
+//                if (attachmentDigest != mergedImage.getMetadata().get("digest")) {
+//                    mergedImage = attachment;
+//                    gotImage = true;
+//                }
+                gotImage = true;
+            }
+
+            if (gotTask && gotComplete && gotImage) {
+                break;
+            }
+        }
+
+        List<Object> propsAndImage = new ArrayList<>();
+        propsAndImage.add(mergedProps);
+        propsAndImage.add(mergedImage);
+        return propsAndImage;
+    }
+
+    private SavedRevision findCommonParent(List<SavedRevision> revisions) {
+        int minHistoryCount = 0;
+        ArrayList<List<SavedRevision>> histories = new ArrayList<>();
+        for (SavedRevision rev : revisions) {
+            List<SavedRevision> history = null;
+            try {
+                history = rev.getRevisionHistory();
+            } catch (CouchbaseLiteException e) {
+                e.printStackTrace();
+            }
+            if (history == null) history = new ArrayList<>();
+            histories.add(history);
+            if (minHistoryCount > 0) {
+                minHistoryCount = min(minHistoryCount, history.size());
+            } else {
+                minHistoryCount = history.size();
+            }
+        }
+
+        if (minHistoryCount == 0) {
+            return null;
+        }
+
+        SavedRevision commonParent = null;
+        for (int i = 0; i < minHistoryCount; i++) {
+            SavedRevision rev = null;
+            for (List<SavedRevision> history : histories) {
+                if (rev == null) {
+                    rev = history.get(i);
+                } else if (!rev.getId().equals(history.get(i).getId())) {
+                    rev = null;
+                    break;
+                }
+            }
+            if (rev == null) {
+                break;
+            }
+            commonParent = rev;
+        }
+
+        if (commonParent.isDeletion()) {
+            commonParent = null;
+        }
+        return commonParent;
+    }
+
 }

@@ -30,7 +30,9 @@ import com.couchbase.lite.Query;
 import com.couchbase.lite.QueryEnumerator;
 import com.couchbase.lite.QueryRow;
 import com.couchbase.lite.Reducer;
+import com.couchbase.lite.SavedRevision;
 import com.couchbase.lite.TransactionalTask;
+import com.couchbase.lite.UnsavedRevision;
 import com.couchbase.lite.util.Log;
 import com.couchbase.todo.util.LiveQueryAdapter;
 
@@ -293,7 +295,7 @@ public class ListsActivity extends AppCompatActivity {
         }
     }
 
-    private void createTaskList(String title) throws CouchbaseLiteException {
+    private SavedRevision createTaskList(String title) throws CouchbaseLiteException {
         Map<String, Object> properties = new HashMap<String, Object>();
         properties.put("type", "task-list");
         properties.put("name", title);
@@ -302,7 +304,32 @@ public class ListsActivity extends AppCompatActivity {
         String docId = mUsername + "." + UUID.randomUUID();
 
         Document document = mDatabase.getDocument(docId);
-        document.putProperties(properties);
+        return document.putProperties(properties);
+    }
+
+    private void createListConflict() {
+        SavedRevision savedRevision = null;
+        try {
+            savedRevision = createTaskList("Text");
+        } catch (CouchbaseLiteException e) {
+            e.printStackTrace();
+        }
+        UnsavedRevision newRev1 = savedRevision.createRevision();
+        Map<String, Object> propsRev1 = newRev1.getProperties();
+        propsRev1.put("name", "Update 1");
+        UnsavedRevision newRev2 = savedRevision.createRevision();
+        Map<String, Object> propsRev2 = newRev2.getProperties();
+        propsRev2.put("name", "Update 2");
+        try {
+            newRev1.save(true);
+        } catch (CouchbaseLiteException e) {
+            e.printStackTrace();
+        }
+        try {
+            newRev2.save(true);
+        } catch (CouchbaseLiteException e) {
+            e.printStackTrace();
+        }
     }
 
 }
