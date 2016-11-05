@@ -10,10 +10,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.support.design.widget.FloatingActionButton;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.PopupMenu;
@@ -113,6 +116,36 @@ public class ListsActivity extends AppCompatActivity {
                 return true;
             }
         });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the logout_menu items for use in the action bar
+
+        Bundle bundle = this.getIntent().getExtras();
+        if(bundle != null) {
+            Boolean loginFlowEnabled = bundle.getBoolean(Application.LOGIN_FLOW_ENABLED);
+            if(loginFlowEnabled) {
+                MenuInflater inflater = getMenuInflater();
+                inflater.inflate(R.menu.logout_menu, menu);
+            }
+        }
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.logout:
+                Application application = (Application) getApplication();
+                application.logout();
+                return true;
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     // Database

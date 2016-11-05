@@ -47,6 +47,7 @@ import static java.lang.Math.min;
 
 public class Application extends android.app.Application {
     public static final String TAG = "Todo";
+    public static final String LOGIN_FLOW_ENABLED = "login_flow_enabled";
 
     private Boolean mLoginFlowEnabled = false;
     private Boolean mEncryptionEnabled = false;
@@ -227,8 +228,8 @@ public class Application extends android.app.Application {
     }
 
     private void closeDatabase() {
-        // stop live query
-        // close the database
+        // TODO: stop conflicts live query
+        database.close();
     }
 
     // Login
@@ -244,6 +245,7 @@ public class Application extends android.app.Application {
         Intent intent = new Intent();
         intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
         intent.setClass(getApplicationContext(), ListsActivity.class);
+        intent.putExtra(LOGIN_FLOW_ENABLED, mLoginFlowEnabled);
         startActivity(intent);
     }
 
@@ -252,14 +254,13 @@ public class Application extends android.app.Application {
         startSession(username, password, null);
     }
 
-    private void logout() {
-
+    public void logout() {
+        stopReplication();
+        closeDatabase();
+        login();
     }
 
-    // LoginActivity
-
     // Replication
-
     private void startReplication(String username, String password) {
         if (!mSyncEnabled) {
             return;
@@ -286,6 +287,15 @@ public class Application extends android.app.Application {
 
         pusher.start();
         puller.start();
+    }
+
+    private void stopReplication() {
+        if (!mSyncEnabled) {
+            return;
+        }
+
+        pusher.stop();
+        puller.stop();
     }
 
 
