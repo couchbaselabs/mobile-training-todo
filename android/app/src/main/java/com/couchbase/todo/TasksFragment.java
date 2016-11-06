@@ -82,6 +82,13 @@ public class TasksFragment extends Fragment {
                 displayCreateDialog();
             }
         });
+        fab.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                createTaskConflict();
+                return true;
+            }
+        });
 
         Application application = (Application) getActivity().getApplication();
         mDatabase = application.getDatabase();

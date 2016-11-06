@@ -65,6 +65,14 @@ public class ListsActivity extends AppCompatActivity {
             }
         });
 
+        fab.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                createListConflict();
+                return true;
+            }
+        });
+
         Application application = (Application) getApplication();
         mDatabase = application.getDatabase();
         mUsername = application.getUsername();
