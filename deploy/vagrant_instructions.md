@@ -39,7 +39,13 @@
     |VM4|nginx|192.168.34.14|
     |VM5|sync-gateway3|192.168.34.15|
 
-1. Start the Deploy lesson of the Training.
+1. Start the Deploy lesson of the Training. Throughout the training you will need to SSH on different VMs.
+
+   ```bash
+   ssh centos@<IP>
+   ```
+   
+   The password is "vagrant".
 
 ### Links to resources
 
