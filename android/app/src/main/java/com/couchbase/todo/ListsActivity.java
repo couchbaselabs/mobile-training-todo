@@ -303,15 +303,19 @@ public class ListsActivity extends AppCompatActivity {
         alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-            Map<String, Object> updatedProperties = new HashMap<String, Object>();
-            updatedProperties.putAll(list.getProperties());
-            updatedProperties.put("name", input.getText().toString());
-
-            try {
-                list.putProperties(updatedProperties);
-            } catch (CouchbaseLiteException e) {
-                e.printStackTrace();
-            }
+                try {
+                    list.update(new Document.DocumentUpdater() {
+                        @Override
+                        public boolean update(UnsavedRevision newRevision) {
+                            Map<String, Object> props = newRevision.getUserProperties();
+                            props.put("name", input.getText().toString());
+                            newRevision.setUserProperties(props);
+                            return true;
+                        }
+                    });
+                } catch (CouchbaseLiteException e) {
+                    e.printStackTrace();
+                }
             }
         });
         alert.show();
