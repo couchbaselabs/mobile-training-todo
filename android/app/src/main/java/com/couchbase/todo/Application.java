@@ -274,10 +274,10 @@ public class Application extends android.app.Application {
         }
 
         pusher = database.createPushReplication(url);
-        pusher.setContinuous(true);
+        pusher.setContinuous(true); // Runs forever in the background
 
         puller = database.createPullReplication(url);
-        puller.setContinuous(true);
+        puller.setContinuous(true); // Runs forever in the background
 
         if (mLoginFlowEnabled) {
             Authenticator authenticator = AuthenticatorFactory.createBasicAuthenticator(username, password);
@@ -364,28 +364,28 @@ public class Application extends android.app.Application {
         }
     }
 
-    private void resolveConflicts(final List<SavedRevision> revs, final Map<String, Object> props, final Attachment image) {
+    private void resolveConflicts(final List<SavedRevision> revs, final Map<String, Object> desiredProps, final Attachment desiredImage) {
         database.runInTransaction(new TransactionalTask() {
             @Override
             public boolean run() {
                 int i = 0;
                 for (SavedRevision rev : revs) {
-                    UnsavedRevision newRev = rev.createRevision();
-                    if (i == 0) { // Default winning revision
-                        newRev.setUserProperties(props);
-                        if (image != null) {
+                    UnsavedRevision newRev = rev.createRevision(); // Create new revision
+                    if (i == 0) { // That's the current/winning revision
+                        newRev.setUserProperties(desiredProps);
+                        if (desiredImage != null) {
                             try {
-                                newRev.setAttachment("image", "image/jpg", image.getContent());
+                                newRev.setAttachment("image", "image/jpg", desiredImage.getContent());
                             } catch (CouchbaseLiteException e) {
                                 e.printStackTrace();
                             }
                         }
-                    } else {
+                    } else { // That's a conflicting revision, delete it
                         newRev.setIsDeletion(true);
                     }
 
                     try {
-                        newRev.save(true);
+                        newRev.save(true); // Persist the new revision
                     } catch (CouchbaseLiteException e) {
                         e.printStackTrace();
                         return false;
