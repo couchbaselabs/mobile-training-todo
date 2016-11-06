@@ -344,16 +344,16 @@ public class ListsActivity extends AppCompatActivity {
     private void createListConflict() {
         SavedRevision savedRevision = null;
         try {
-            savedRevision = createTaskList("Text");
+            savedRevision = createTaskList("Test Conflicts List");
         } catch (CouchbaseLiteException e) {
             e.printStackTrace();
         }
         UnsavedRevision newRev1 = savedRevision.createRevision();
         Map<String, Object> propsRev1 = newRev1.getProperties();
-        propsRev1.put("name", "Update 1");
+        propsRev1.put("name", "Foosball");
         UnsavedRevision newRev2 = savedRevision.createRevision();
         Map<String, Object> propsRev2 = newRev2.getProperties();
-        propsRev2.put("name", "Update 2");
+        propsRev2.put("name", "Table Football");
         try {
             newRev1.save(true);
         } catch (CouchbaseLiteException e) {
