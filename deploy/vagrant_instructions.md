@@ -42,7 +42,7 @@
 1. Start the Deploy lesson of the Training. Throughout the training you will need to SSH on different VMs.
 
    ```bash
-   ssh centos@<IP>
+   ssh vagrant@<IP>
    ```
    
    The password is "vagrant".
