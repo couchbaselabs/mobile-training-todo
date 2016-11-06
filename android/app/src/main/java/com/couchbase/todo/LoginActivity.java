@@ -35,6 +35,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.couchbase.lite.Manager;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,7 +64,7 @@ public class LoginActivity extends AppCompatActivity {
         String pass = passwordInput.getText().toString();
 
         // Since we are naming the database as the user name, make sure it is a valid db name
-        if(!application.getManager().isValidDatabaseName(name)) {
+        if(!Manager.isValidDatabaseName(name)) {
             showToast("Make sure user name is not empty and is a valid database name");
             return;
         }

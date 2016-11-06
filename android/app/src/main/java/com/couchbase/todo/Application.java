@@ -59,7 +59,6 @@ public class Application extends android.app.Application {
     public Database getDatabase() {
         return database;
     }
-    public Manager getManager() { return manager; }
 
     private Manager manager;
     private Database database;
