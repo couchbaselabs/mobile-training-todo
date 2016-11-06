@@ -88,11 +88,11 @@ namespace Training.Core
             var savedRevision = CreateTaskList("Test Conflicts List");
             var newRev1 = savedRevision.CreateRevision();
             var propsRev1 = newRev1.Properties;
-            propsRev1["name"] = "Update 1";
+            propsRev1["name"] = "Foosball";
             newRev1.SetProperties(propsRev1);
             var newRev2 = savedRevision.CreateRevision();
             var propsRev2 = newRev2.Properties;
-            propsRev2["name"] = "Update 2";
+            propsRev2["name"] = "Table Football";
             newRev2.SetProperties(propsRev2);
             try {
                 newRev1.Save(true);
