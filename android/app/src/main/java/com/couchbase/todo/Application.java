@@ -41,7 +41,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static android.R.attr.value;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static java.lang.Math.min;
 
