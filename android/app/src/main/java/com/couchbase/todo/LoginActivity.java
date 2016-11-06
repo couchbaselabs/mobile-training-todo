@@ -3,6 +3,7 @@ package com.couchbase.todo;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
@@ -56,7 +57,29 @@ public class LoginActivity extends AppCompatActivity {
 
     public void login(View view) {
         Application application = (Application) getApplication();
-        application.login(nameInput.getText().toString(), passwordInput.getText().toString());
+
+        String name = nameInput.getText().toString();
+        String pass = passwordInput.getText().toString();
+
+        // Since we are naming the database as the user name, make sure it is a valid db name
+        if(!application.getManager().isValidDatabaseName(name)) {
+            showToast("Make sure user name is not empty and is a valid database name");
+            return;
+        }
+
+        if(pass.length() == 0) {
+            showToast("Make sure the password is not empty");
+            return;
+        }
+
+        application.login(name, pass);
+    }
+
+    private void showToast(String text) {
+        Context context = getApplicationContext();
+        int duration = Toast.LENGTH_SHORT;
+        Toast toast = Toast.makeText(context, text, duration);
+        toast.show();
     }
 }
 
