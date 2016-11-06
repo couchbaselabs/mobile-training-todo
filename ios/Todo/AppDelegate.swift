@@ -377,24 +377,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         }
     }
 
-    func resolveConflicts(revisions revs: [CBLRevision], withProps props: [String: Any]?,
-        andImage image: CBLAttachment?) {
+    func resolveConflicts(revisions revs: [CBLRevision], withProps desiredProps: [String: Any]?,
+        andImage desiredImage: CBLAttachment?) {
             database.inTransaction {
                 var i = 0
                 for rev in revs as! [CBLSavedRevision] {
-                    let newRev = rev.createRevision()
-                    if (i == 0) { // Default winning revision
-                        newRev.userProperties = props
-                        if rev.attachmentNamed("image") != image {
+                    let newRev = rev.createRevision()  // Create new revision
+                    if (i == 0) { // That's the current / winning revision
+                        
+                        
+                        newRev.userProperties = desiredProps // Set properties to desired properties
+                        if rev.attachmentNamed("image") != desiredImage {
                             newRev.setAttachmentNamed("image", withContentType: "image/jpg",
-                                content: image?.content)
+                                content: desiredImage?.content)
                         }
                     } else {
+                        // That's a conflicting revision, delete it
                         newRev.isDeletion = true
                     }
 
                     do {
-                        try newRev.saveAllowingConflict()
+                        try newRev.saveAllowingConflict()  // Persist the new revisions
                     } catch let error as NSError {
                         NSLog("Cannot resolve conflicts with error: %@", error)
                         return false
