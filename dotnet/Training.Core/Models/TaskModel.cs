@@ -64,12 +64,17 @@ namespace Training.Core
             }
             set {
                 try {
+                    var currentAttachment = _document.CurrentRevision.GetAttachment("image");
                     _document.Update(rev =>
                     {
                         var existing = (bool)rev.GetProperty("complete");
                         var props = rev.UserProperties;
                         props["complete"] = value;
                         rev.SetUserProperties(props);
+                        if (currentAttachment != null)
+                        {
+                            rev.SetAttachment("image", currentAttachment.ContentType, currentAttachment.ContentStream);
+                        }
                         var saved = existing != value;
                         return saved;
                     });
@@ -175,12 +180,17 @@ namespace Training.Core
         public void Edit(string name)
         {
             try {
+                var currentAttachment = _document.CurrentRevision.GetAttachment("image");
                 _document.Update(rev =>
                 {
                     var props = rev.UserProperties;
                     var oldName = props["task"];
                     props["task"] = name;
                     rev.SetUserProperties(props);
+                    if(currentAttachment != null)
+                    {
+                        rev.SetAttachment("image", currentAttachment.ContentType, currentAttachment.ContentStream);
+                    }
                     return !String.Equals(oldName, name);
                 });
             } catch(Exception e) {
