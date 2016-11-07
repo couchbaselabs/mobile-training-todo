@@ -17,7 +17,7 @@
       },
       "sync": `
 function(doc, oldDoc){
-  /* Validate */
+  /* Type validation */
   if (isCreate()) {
     // Don't allow creating a document without a type.
     validateNotEmpty("type", doc.type);
@@ -66,32 +66,32 @@ function(doc, oldDoc){
     }
     // Grant user access to their channel.
     access(doc.username, doc.username);
-  } else if (getType() == "task-list") {
-    /* Control Write Access */
+  } else if (getType() == "task-list") { // Task List access control
+    /* Write Access */
     var owner = doc._deleted ? oldDoc.owner : doc.owner;
     try {
-      // Users can create/update lists for themselves.
-      requireUser(owner);
-    } catch (e) {
       // Moderators can create/update lists for other users.
       requireRole("moderator");
+    } catch (e) {
+      // Users can create/update lists for themselves.
+      requireUser(owner);
     }
 
     /* Validate */
     if (!isDelete()) {
-        // Validate required fields.
-        validateNotEmpty("name", doc.name);
-        validateNotEmpty("owner", doc.owner);
+      // Validate required fields.
+      validateNotEmpty("name", doc.name);
+      validateNotEmpty("owner", doc.owner);
 
-        if (isCreate()) {
-          // Validate that the _id is prefixed by owner.
-          if (!hasPrefix(doc._id, doc.owner + ".")) {
-              throw({forbidden: "task-list id must be prefixed by list owner"});
-          }
-        } else {
-          // Don’t allow task-list ownership to be changed.
-          validateReadOnly("owner", doc.owner, oldDoc.owner);
+      if (isCreate()) {
+        // Validate that the _id is prefixed by owner.
+        if (!hasPrefix(doc._id, doc.owner + ".")) {
+            throw({forbidden: "task-list id must be prefixed by list owner"});
         }
+      } else {
+        // Don’t allow task-list ownership to be changed.
+        validateReadOnly("owner", doc.owner, oldDoc.owner);
+      }
     }
 
     /* Route */
