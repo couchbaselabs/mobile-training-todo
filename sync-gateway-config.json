@@ -77,7 +77,7 @@ function(doc, oldDoc){
       requireUser(owner);
     }
 
-    /* Validate */
+    /* Validation */
     if (!isDelete()) {
       // Validate required fields.
       validateNotEmpty("name", doc.name);
@@ -94,12 +94,12 @@ function(doc, oldDoc){
       }
     }
 
-    /* Route */
+    /* Routing */
     // Add doc to task-list's channel.
     channel("task-list." + doc._id);
     channel("moderators");
 
-    /* Grant Read Access */
+    /* Read Access */
     // Grant task-list owner access to the task-list, its tasks, and its users.
     access(owner, "task-list." + doc._id);
     access(owner, "task-list." + doc._id + ".users");
