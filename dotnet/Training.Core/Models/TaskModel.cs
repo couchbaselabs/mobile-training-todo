@@ -71,6 +71,8 @@ namespace Training.Core
                         var props = rev.UserProperties;
                         props["complete"] = value;
                         rev.SetUserProperties(props);
+                        // WORKAROUND: There is some kind of issue with the attachment not being on the 
+                        // current revision.  Usually there is no need to set the attachment each time.
                         if (currentAttachment != null)
                         {
                             rev.SetAttachment("image", currentAttachment.ContentType, currentAttachment.ContentStream);
@@ -187,7 +189,9 @@ namespace Training.Core
                     var oldName = props["task"];
                     props["task"] = name;
                     rev.SetUserProperties(props);
-                    if(currentAttachment != null)
+                    // WORKAROUND: There is some kind of issue with the attachment not being on the 
+                    // current revision.  Usually there is no need to set the attachment each time.
+                    if (currentAttachment != null)
                     {
                         rev.SetAttachment("image", currentAttachment.ContentType, currentAttachment.ContentStream);
                     }
