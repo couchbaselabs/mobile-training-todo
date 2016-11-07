@@ -45,6 +45,10 @@ public class LiveQueryAdapter extends BaseAdapter {
         return enumerator != null ? enumerator.getRow(i).getDocument() : null;
     }
 
+    public Object getKey(int i) {
+        return enumerator != null ? enumerator.getRow(i).getKey() : null;
+    }
+
     @Override
     public long getItemId(int i) {
         return enumerator.getRow(i).getSequenceNumber();

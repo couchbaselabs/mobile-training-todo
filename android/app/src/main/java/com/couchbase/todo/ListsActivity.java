@@ -245,8 +245,9 @@ public class ListsActivity extends AppCompatActivity {
             }
 
             final Document list = (Document) getItem(position);
+            String key = (String) getKey(position);
             TextView text = (TextView) convertView.findViewById(R.id.text);
-            text.setText((String) list.getProperty("name"));
+            text.setText(key);
 
 
             TextView countText = (TextView) convertView.findViewById(R.id.task_count);
