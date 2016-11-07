@@ -10,8 +10,8 @@ new Swagger({
   .then(function (res) {
     client = res;
     
-    // Start getting changes at seq: 2
-    getChanges(2);
+    // Start getting changes at seq: 0
+    getChanges(0);
     
     function getChanges(seq) {
       // Use the Swagger client to connect to the changes feed
@@ -32,7 +32,7 @@ new Swagger({
       for (var i = 0; i < results.length; i++) {
         var doc = results[i].doc;
         var img;
-        if (!doc._deleted && doc.type == 'task' && !doc._attachments) {
+        if (doc && !doc._deleted && doc.type == 'task' && !doc._attachments) {
           switch (doc.task.toLowerCase()) {
             case 'apple':
               img = fs.readFileSync('apple.png');
@@ -53,8 +53,8 @@ new Swagger({
               }
             };
             client.database.post_db_bulk_docs({db: 'todo', BulkDocsBody: {docs: [doc]}})
-              .then(function (res) {
-                getChanges(results[i].seq);
+              .then(function (res) { 
+                console.log('1 change posted');
               })
               .catch(function (err) {
                 console.log(err);
