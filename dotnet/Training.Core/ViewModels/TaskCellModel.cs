@@ -40,7 +40,7 @@ namespace Training.Core
         #region Variables
 
         private IUserDialogs _dialogs = Mvx.Resolve<IUserDialogs>();
-        private Lazy<string> _imageDigest;
+        private string _imageDigest;
 
         #endregion
 
@@ -77,11 +77,8 @@ namespace Training.Core
         /// </summary>
         public string Name
         {
-            get {
-                return _name.Value;
-            }
+            get;
         }
-        private Lazy<string> _name;
 
         /// <summary>
         /// Gets the thumbnail of the image stored with the task, if it exists
@@ -156,8 +153,8 @@ namespace Training.Core
         {
             DocumentID = documentID;
             Model = new TaskModel(documentID);
-            _name = new Lazy<string>(() => Model.Name, LazyThreadSafetyMode.None);
-            _imageDigest = new Lazy<string>(() => Model.GetImageDigest(), LazyThreadSafetyMode.None);
+            Name = Model.Name;
+            _imageDigest = Model.GetImageDigest();
             _checked = Model.IsChecked;
             GenerateThumbnail();
         }
@@ -192,7 +189,7 @@ namespace Training.Core
                 if(fullImage == null) {
                     Thumbnail = service.GenerateSolidColor(44, Color.LightGray, "defaultTaskCell");
                 } else {
-                    Thumbnail = await service.Square(fullImage, 44, _imageDigest.Value);
+                    Thumbnail = await service.Square(fullImage, 44, _imageDigest);
                 }
             }
         }
@@ -235,12 +232,12 @@ namespace Training.Core
             }
 
             return DocumentID.Equals(other.DocumentID) && Name.Equals(other.Name) && IsChecked == other.IsChecked
-                             && String.Equals(_imageDigest.Value, other._imageDigest.Value);
+                             && String.Equals(_imageDigest, other._imageDigest);
         }
 
         public override int GetHashCode()
         {
-            var digest = _imageDigest.Value;
+            var digest = _imageDigest;
             var b = DocumentID.GetHashCode() ^ Name.GetHashCode() ^ IsChecked.GetHashCode();
             return digest == null ? b : (b ^ digest.GetHashCode());
         }
