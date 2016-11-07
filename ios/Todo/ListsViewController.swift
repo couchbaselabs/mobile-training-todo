@@ -297,10 +297,10 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
             let savedRevision = createTaskList(name: "Test Conflicts List")
             let newRev1 = savedRevision?.createRevision()
             let propsRev1 = newRev1?.properties
-            propsRev1?.setValue("Update 1", forKey: "name")
+            propsRev1?.setValue("Foosball", forKey: "name")
             let newRev2 = savedRevision?.createRevision()
             let propsRev2 = newRev2?.properties
-            propsRev2?.setValue("Update 2", forKey: "name")
+            propsRev2?.setValue("Table Football", forKey: "name")
             do {
                 try newRev1?.saveAllowingConflict()
                 try newRev2?.saveAllowingConflict()

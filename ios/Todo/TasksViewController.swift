@@ -356,10 +356,10 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     override func motionEnded(_ motion: UIEventSubtype, with event: UIEvent?) {
         if motion == .motionShake {
             // TRAINING: Create task conflict (for development only)
-            let savedRevision = createTask(task: "Test Conflicts Task")
+            let savedRevision = createTask(task: "Text")
             let newRev1 = savedRevision?.createRevision()
             let propsRev1 = newRev1?.properties
-            propsRev1?.setValue("Update 1", forKey: "task")
+            propsRev1?.setValue("Text Changed", forKey: "task")
             let newRev2 = savedRevision?.createRevision()
             let propsRev2 = newRev2?.properties
             propsRev2?.setValue(true, forKey: "complete")
