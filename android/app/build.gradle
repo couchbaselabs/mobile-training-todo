@@ -37,7 +37,6 @@ dependencies {
     testCompile 'junit:junit:4.12'
 
     compile 'com.couchbase.lite:couchbase-lite-android:1.3.1'
-    compile 'com.couchbase.lite:couchbase-lite-java-listener:1.3.1'
 
     compile 'com.facebook.stetho:stetho:1.4.1'
     compile 'com.robotpajamas.stetho:stetho-couchbase:0.1.0'
