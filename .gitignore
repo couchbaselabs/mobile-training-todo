@@ -74,3 +74,5 @@ obj/
 
 # Ignore node_modules in /test/
 /test/node_modules
+
+/bot/node_modules

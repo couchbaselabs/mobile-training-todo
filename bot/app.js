@@ -1,9 +1,10 @@
 var Swagger = require('swagger-client')
-  , fs = require('fs');
+  , fs = require('fs')
+  , spec = require('./spec');
 
 // Use the SwaggerJS module to dynamically load the Swagger spec
 new Swagger({
-  url: 'http://developer.couchbase.com/mobile/swagger/sync-gateway-admin/spec.json',
+  spec: spec,
   usePromise: true
 })
   .then(function (res) {
