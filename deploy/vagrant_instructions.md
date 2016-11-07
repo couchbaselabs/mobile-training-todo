@@ -49,11 +49,11 @@
 
 ### Links to resources
 
-- http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/putty-0.67-installer.msi
-- http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/vcredist_x86.exe
-- http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/vagrant_1.8.1.dmg
-- http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/vagrant_1.8.1.msi
-- http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/Vagrantfile
-- http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/VirtualBox-5.0.26-108824-OSX.dmg
-- http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/VirtualBox-5.0.26-108824-Win.exe
-- http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/couchbase-mobile-training.box
+- http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/Deploy/putty-0.67-installer.msi
+- http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/Deploy/vcredist_x86.exe
+- http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/Deploy/vagrant_1.8.1.dmg
+- http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/Deploy/vagrant_1.8.1.msi
+- http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/Deploy/Vagrantfile
+- http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/Deploy/VirtualBox-5.0.26-108824-OSX.dmg
+- http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/Deploy/VirtualBox-5.0.26-108824-Win.exe
+- http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/Deploy/couchbase-mobile-training.box
