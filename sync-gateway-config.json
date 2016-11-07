@@ -206,7 +206,8 @@ function(doc, oldDoc){
   }
 
   function isCreate() {
-    return ((oldDoc == null || oldDoc._deleted) && !isDelete());
+    // Checking false for the Admin UI to work
+    return ((oldDoc == false) || (oldDoc == null || oldDoc._deleted) && !isDelete());
   }
 
   function isUpdate() {
