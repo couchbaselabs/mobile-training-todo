@@ -1,6 +1,5 @@
 package com.couchbase.todo;
 
-import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Handler;
 import android.util.Log;
@@ -17,23 +16,18 @@ import com.couchbase.lite.Manager;
 import com.couchbase.lite.Query;
 import com.couchbase.lite.QueryEnumerator;
 import com.couchbase.lite.QueryRow;
-import com.couchbase.lite.Revision;
 import com.couchbase.lite.SavedRevision;
 import com.couchbase.lite.TransactionalTask;
 import com.couchbase.lite.UnsavedRevision;
 import com.couchbase.lite.android.AndroidContext;
 import com.couchbase.lite.auth.Authenticator;
 import com.couchbase.lite.auth.AuthenticatorFactory;
-import com.couchbase.lite.auth.LoginAuthorizer;
-import com.couchbase.lite.listener.Credentials;
-import com.couchbase.lite.listener.LiteListener;
 import com.couchbase.lite.replicator.Replication;
 import com.couchbase.lite.util.ZipUtils;
 import com.facebook.stetho.Stetho;
 import com.robotpajamas.stetho.couchbase.CouchbaseInspectorModulesProvider;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
