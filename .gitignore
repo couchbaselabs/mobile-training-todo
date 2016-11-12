@@ -76,3 +76,5 @@ obj/
 /test/node_modules
 
 /bot/node_modules
+
+*.key
