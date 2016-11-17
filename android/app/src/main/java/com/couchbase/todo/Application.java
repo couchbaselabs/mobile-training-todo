@@ -45,7 +45,7 @@ public class Application extends android.app.Application {
     private Boolean mLoginFlowEnabled = false;
     private Boolean mEncryptionEnabled = false;
     private Boolean mSyncEnabled = false;
-    private String mSyncGatewayUrl = "http://localhost:4984/todo/";
+    private String mSyncGatewayUrl = "http://10.0.2.2:4984/todo/";
     private Boolean mLoggingEnabled = false;
     private Boolean mUsePrebuiltDb = false;
     private Boolean mConflictResolution = false;
