@@ -1,6 +1,6 @@
-## Install XCode 8.1
+## Getting Started
 
-## Installing Couchbase Lite
+### Installing Couchbase Lite
 
 1. Change to ios directory.
 
@@ -14,7 +14,21 @@
   ./install.sh
   ```
 
-## Building
+### Configuration
+
+You can enable functionalities individually. By default, they are all disabled and can be modified in **AppDelegate.swift**.
+
+```swift
+let kLoginFlowEnabled = true
+let kEncryptionEnabled = false
+let kSyncEnabled = true
+let kSyncGatewayUrl = URL(string: "http://localhost:4984/todo/")!
+let kLoggingEnabled = false
+let kUsePrebuiltDb = false
+let kConflictResolution = false
+```
+
+### Building
 
 1. Open **Todo.xcodeproj** in Xcode.
 2. Build and run.

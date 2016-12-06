@@ -1,4 +1,24 @@
-## .NET Training
+## Getting Started
+
+### Configuration
+
+You can enable functionalities individually. By default, they are all disabled and can be modified in **CoreApp.cs**.
+
+```swift
+var retVal = new CoreAppStartHint {
+    LoginEnabled = false,
+    EncryptionEnabled = false,
+    SyncEnabled = false,
+    UsePrebuiltDB = false,
+    ConflictResolution = false,
+    Username = "todo"
+};
+```
+
+### Building
+
+1. Open **dotnet/Training.WPF** in Visual Studio.
+2. Build and run.
 
 ### Architecture
 
