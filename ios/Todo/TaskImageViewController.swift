@@ -79,10 +79,9 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
     
     // MARK: - UIImagePickerControllerDelegate
     
-    func imagePickerController(picker: UIImagePickerController,
-        didFinishPickingImage image: UIImage, editingInfo: [String : AnyObject]?) {
-            updateImage(image: image)
-            picker.presentingViewController?.dismiss(animated: true, completion: nil)
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        updateImage(image: info["UIImagePickerControllerOriginalImage"] as! UIImage)
+        picker.presentingViewController?.dismiss(animated: true, completion: nil)
     }
     
     // MARK: - Database
