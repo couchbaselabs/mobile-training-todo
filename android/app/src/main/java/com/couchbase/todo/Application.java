@@ -305,8 +305,8 @@ public class Application extends android.app.Application {
             @Override
             public void run() {
                 android.util.Log.e(TAG, errorMessage, throwable);
-                String msg = String.format("%s: %s",
-                        errorMessage, throwable != null ? throwable : "");
+                String msg = String.format("%s",
+                        errorMessage);
                 Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
             }
         });

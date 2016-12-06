@@ -102,10 +102,13 @@ public class ListsActivity extends AppCompatActivity {
                         Document list = (Document) mAdapter.getItem(pos);
                         String owner = (String) list.getProperties().get("owner");
                         Application application = (Application) getApplication();
+                        String moderatorDocId = "moderator." + application.getUsername();
                         if (owner == null || owner.equals(application.getUsername()))
                             handleListPopupAction(item, list);
+                        else if (application.getDatabase().getExistingDocument(moderatorDocId) != null)
+                            handleListPopupAction(item, list);
                         else
-                            application.showErrorMessage("Only owner can delete the list", null);
+                            application.showErrorMessage("Only the owner or a moderator can update/delete the list", null);
                         return true;
                     }
                 });
