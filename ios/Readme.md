@@ -1,26 +1,20 @@
 ## Install XCode 8.1
 
-## Dependencies required to build
-Install CocoaPods
+## Installing Couchbase Lite
 
-```
-sudo gem install cocoapods
-```
+1. Change to ios directory.
 
-Change to ios directory
+  ```
+  cd ios
+  ```
 
-```
-cd ios
-```
+2. Run installation script (downloads Couchbase Lite to **Frameworks** folder).
 
-Install dependencies
-
-```
-pod install
-```
+  ```
+  ./install.sh
+  ```
 
 ## Building
 
-Open Todo.xcworkspace in Xcode. 
-
-Do not open Todo.xcodeproj (This will fail to build due to CocoaPods)
+1. Open **Todo.xcodeproj** in Xcode.
+2. Build and run.
