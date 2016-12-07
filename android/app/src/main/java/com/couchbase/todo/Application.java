@@ -180,17 +180,13 @@ public class Application extends android.app.Application {
                         return;
                     }
 
-                    Object docType = changedDoc.getProperty("type");
-                    if(docType == null || !String.class.isInstance(docType)) {
+                    String docType = (String) changedDoc.getProperty("type");
+                    if(!docType.equals("task-list.user")) {
                         continue;
                     }
 
-                    if((String)docType != "task-list.user") {
-                        continue;
-                    }
-
-                    Object username = changedDoc.getProperty("username");
-                    if(username == null || !String.class.isInstance(username)) {
+                    String username = (String) changedDoc.getProperty("username");
+                    if(!username.equals(getUsername())) {
                         continue;
                     }
 
