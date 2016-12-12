@@ -4,7 +4,7 @@ Vagrant instructions targeted towards the folks who are helping end users follow
 ## Download the Vagrant centos box
 
 ```
-$ wget http://cbmobile-bucket.s3.amazonaws.com/training-virtual-machines/couchbase-mobile-training.box
+$ wget http://cbmobile-bucket.s3.amazonaws.com/connect-2016-training/Deploy/couchbase-mobile-training.box
 ```
 
 ## Add it to Vagrant
