@@ -52,7 +52,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
     
     // MARK: - Logging
     func enableLogging() {
-        CBLManager.enableLogging("CBLDatabase")
+        CBLManager.enableLogging("Database")
         CBLManager.enableLogging("View")
         CBLManager.enableLogging("ViewVerbose")
         CBLManager.enableLogging("Query")
