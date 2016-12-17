@@ -23,7 +23,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
     var database: CBLDatabase!
     var pusher: CBLReplication!
     var puller: CBLReplication!
-    var syncError: NSError?
     var conflictsLiveQuery: CBLLiveQuery?
     var accessDocuments: Array<CBLDocument> = [];
 
@@ -265,9 +264,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         guard kSyncEnabled else {
             return
         }
-        
-        syncError = nil
-        
+                
         // TRAINING: Start push/pull replications
         pusher = database.createPushReplication(kSyncGatewayUrl)
         pusher.continuous = true  // Runs forever in background
@@ -307,21 +304,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         UIApplication.shared.isNetworkActivityIndicatorVisible =
             (pusher.status == .active || puller.status == .active)
         
-        let error = pusher.lastError as? NSError;
-        if (error != syncError) {
-            syncError = error
-            if let errorCode = error?.code {
-                NSLog("Replication Error: \(error!)")
-                if errorCode == 401 {
-                    Ui.showMessageDialog(
-                        onController: self.window!.rootViewController!,
-                        withTitle: "Authentication Error",
-                        withMessage:"Your username or password is not correct.",
-                        withError: nil,
-                        onClose: {
-                            self.logout()
-                    })
-                }
+        let error = (pusher.lastError ?? puller.lastError) as? NSError;
+        if let errorCode = error?.code {
+            NSLog("Replication Error: \(error!)")
+            if errorCode == 401 {
+                Ui.showMessageDialog(
+                    onController: self.window!.rootViewController!,
+                    withTitle: "Authentication Error",
+                    withMessage:"Your username or password is not correct.",
+                    withError: nil,
+                    onClose: {
+                        self.logout()
+                })
             }
         }
     }
