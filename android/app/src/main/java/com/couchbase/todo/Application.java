@@ -2,6 +2,7 @@ package com.couchbase.todo;
 
 import android.content.Intent;
 import android.os.Handler;
+import android.os.StrictMode;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -65,6 +66,9 @@ public class Application extends android.app.Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+        StrictMode.setVmPolicy(builder.build());
 
         if (BuildConfig.DEBUG) {
             Stetho.initialize(
