@@ -3,7 +3,7 @@ var spec = require('./spec')
   , request = require('request-promise');
 
 var options = {
-  url: 'http://user1:pass@138.68.159.166:8000/',
+  url: 'http://localhost:4985/',
   // url: 'http://localhost:7357/',
   concurrency: 20
 };
@@ -132,10 +132,6 @@ var Operation = function (client, callback) {
       .then(function (res) {
         return client.document.get({db: 'todo', doc: list._id});
       });
-  }
-
-  function GetSimple() {
-    return request(options.url);
   }
 
 };
