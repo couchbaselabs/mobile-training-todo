@@ -39,7 +39,7 @@ This folder contains the scripts for the Couchbase Mobile Training on performanc
       99%      1248 ms
     ```
 
-- Open the Sync Gateway Admin UI ((http://localhost:4985/_admin/db/todo)[http://localhost:4985/_admin/db/todo]) to browse the documents that were inserted.
+- Open the Sync Gateway Admin UI ([http://localhost:4985/_admin/db/todo](http://localhost:4985/_admin/db/todo)) to browse the documents that were inserted.
 
 ## Writing scenarios
 
