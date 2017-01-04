@@ -53,7 +53,7 @@ var exports = module.exports = {
     this.startSession(username, password, null);
   },
 
-  startSession(username, password, newPassword) {
+  startSession(username, password) {
     this.installPrebuiltDb();
     global.DB_NAME = username;
     this.startDatabaseOperations()
