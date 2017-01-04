@@ -1,7 +1,7 @@
 'use strict';
 
 import React, {Component} from "react";
-import {View, Text, StyleSheet, ListView, TouchableWithoutFeedback} from "react-native";
+import {View, Text, StyleSheet, ListView, TouchableOpacity} from "react-native";
 import Prompt from "react-native-prompt";
 import Swipeout from "rc-swipeout/lib/Swipeout";
 import AddButton from "./AddButton";
@@ -47,9 +47,9 @@ export default class CommonList extends Component {
                   style: {backgroundColor: 'red', color: 'white'}
                 }
               ]}>
-              <TouchableWithoutFeedback key={rowID} onPress={() => this.props.onRowPressed(data)}>
+              <TouchableOpacity key={rowID} onPress={() => this.props.onRowPressed(data)}>
                 {this.props.renderRow(data, sectionID, rowID, highlightRow)}
-              </TouchableWithoutFeedback>
+              </TouchableOpacity>
             </Swipeout>
           }
           enableEmptySections={true}
