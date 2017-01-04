@@ -44,7 +44,7 @@ const VIEWS = {
   }
 };
 
-var exports = module.exports = {
+module.exports = {
   init(client) {
     global.manager = client;
   },
