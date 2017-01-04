@@ -47,7 +47,7 @@ export default class CommonList extends Component {
                   style: {backgroundColor: 'red', color: 'white'}
                 }
               ]}>
-              <TouchableOpacity key={rowID} onPress={() => this.props.onRowPressed(data)}>
+              <TouchableOpacity key={rowID} onPress={() => console.log("on press",data)}>
                 {this.props.renderRow(data, sectionID, rowID, highlightRow)}
               </TouchableOpacity>
             </Swipeout>
