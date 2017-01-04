@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import {View, Text, StyleSheet, ListView, TouchableWithoutFeedback} from 'react-native';
 import Prompt from 'react-native-prompt';
-import Swipeout from 'rc-swipeout/lib/Swipeout';
+import Swipeout from 'rc-swipeout/lib';
 import AddButton from './AddButton';
 
 export default class CommonList extends Component {
