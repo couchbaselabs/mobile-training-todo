@@ -92,9 +92,6 @@ var exports = module.exports = {
           manager.query.put_db_design_ddoc({ddoc: 'main', db: DB_NAME, body: VIEWS})
             .catch(e => console.warn(e));
         }
-      })
-      .then(() => {
-        this.setupQuery()
       });
   },
 
