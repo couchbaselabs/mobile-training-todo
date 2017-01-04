@@ -7,6 +7,7 @@ import List from './List/index';
 import Users from './Users/index';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Feed from './../../Feed';
+import ScrollableTabView from 'react-native-scrollable-tab-view';
 
 export default class ListDetail extends Component {
   constructor() {
@@ -18,7 +19,6 @@ export default class ListDetail extends Component {
       tasks: [],
       usersDataSource: ds.cloneWithRows([]),
       users: [],
-      selectedTab: 'tasks'
     };
   }
 
@@ -79,36 +79,21 @@ export default class ListDetail extends Component {
   render() {
     return (
       <View style={styles.container}>
-        <TabBarIOS>
-          <Icon.TabBarItemIOS
-            title="Tasks"
-            iconName="tasks"
-            selected={this.state.selectedTab === 'tasks'}
-            onPress={() => {
-              this.setState({
-                selectedTab: 'tasks'
-              });
-            }}>
-            <List
-              id={this.props.list_id}
-              owner={this.props.list_owner}
-              data={this.state.tasksDataSource} />
-          </Icon.TabBarItemIOS>
-          <Icon.TabBarItemIOS
-            title="Users"
-            iconName="users"
-            selected={this.state.selectedTab === 'users'}
-            onPress={() => {
-              this.setState({
-                selectedTab: 'users'
-              });
-            }}>
-            <Users
-              id={this.props.list_id}
-              owner={this.props.list_owner}
-              data={this.state.usersDataSource} />
-          </Icon.TabBarItemIOS>
-        </TabBarIOS>
+        <ScrollableTabView
+          tabBarActiveTextColor='#D63B30'
+          tabBarUnderlineStyle={{backgroundColor: '#D63B30'}}
+          locked={true}>
+          <List
+            tabLabel="Tasks"
+            id={this.props.list_id}
+            owner={this.props.list_owner}
+            data={this.state.tasksDataSource} />
+          <Users
+            tabLabel="Users"
+            id={this.props.list_id}
+            owner={this.props.list_owner}
+            data={this.state.usersDataSource} />
+        </ScrollableTabView>
       </View>
     )
   }
