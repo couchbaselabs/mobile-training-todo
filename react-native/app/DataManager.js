@@ -64,7 +64,7 @@ var exports = module.exports = {
   setupDatabase() {
     manager.database.put_db({db: DB_NAME})
       .then(res => this.startDatabaseOperations())
-      .catch(e => console.log('ERROR', e));
+      .catch(e => console.warn(e));
   },
 
   installPrebuiltDb() {
@@ -90,7 +90,7 @@ var exports = module.exports = {
       .catch(e => {
         if (e.status == 404) {
           manager.query.put_db_design_ddoc({ddoc: 'main', db: DB_NAME, body: VIEWS})
-            .catch(e => console.log('ERROR', e));
+            .catch(e => console.warn(e));
         }
       })
       .then(() => {
@@ -102,6 +102,6 @@ var exports = module.exports = {
     const SG_URL = `http://${username}:${password}@${SG_HOST}`;
     return manager.server.post_replicate({body: {source: SG_URL, target: DB_NAME, continuous: true}})
       .then(res => manager.server.post_replicate({body: {source: DB_NAME, target: SG_URL, continuous: true}}))
-      .catch(e => console.log('ERROR', e));
+      .catch(e => console.warn(e));
   }
 };
