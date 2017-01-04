@@ -9,10 +9,9 @@
 _(Optional)_ Start Sync Gateway with the configuration in the root of this repository.
 
     ```bash
-    cd mobile-training-todo/react-native
+    cd mobile-training-todo
     $ ~/Downloads/couchbase-sync-gateway/bin/sync_gateway sync-gateway-config.json
     ```
-
     
 ### iOS
     
