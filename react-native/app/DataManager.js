@@ -57,13 +57,15 @@ module.exports = {
     this.installPrebuiltDb();
     global.DB_NAME = username;
     this.startDatabaseOperations()
-      .then(res => this.setupReplications(username, password))
+      .then(() => {
+        this.setupReplications(username, password)
+      })
       .then(res => Actions.lists({owner: username}));
   },
 
   setupDatabase() {
     manager.database.put_db({db: DB_NAME})
-      .then(res => this.startDatabaseOperations())
+      .then(() => this.startDatabaseOperations())
       .catch(e => console.warn(e));
   },
 
@@ -75,7 +77,7 @@ module.exports = {
 
   startDatabaseOperations() {
     return manager.database.get_db({db: DB_NAME})
-      .then(res => {
+      .then(() => {
         this.setupViews();
       })
       .catch(e => {
@@ -96,9 +98,12 @@ module.exports = {
   },
 
   setupReplications(username, password) {
-    const SG_URL = `http://${username}:${password}@${SG_HOST}`;
-    return manager.server.post_replicate({body: {source: SG_URL, target: DB_NAME, continuous: true}})
-      .then(res => manager.server.post_replicate({body: {source: DB_NAME, target: SG_URL, continuous: true}}))
-      .catch(e => console.warn(e));
+    if(SYNC_ENABLED) {
+      const sgUrl = `http://${username}:${password}@${SG_HOST}`;
+
+      return manager.server.post_replicate({body: {source: sgUrl, target: DB_NAME, continuous: true}})
+        .then(res => manager.server.post_replicate({body: {source: DB_NAME, target: sgUrl, continuous: true}}))
+        .catch(e => console.warn(e));
+    }
   }
 };
