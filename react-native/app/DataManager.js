@@ -57,9 +57,7 @@ module.exports = {
     this.installPrebuiltDb();
     global.DB_NAME = username;
     this.startDatabaseOperations()
-      .then(() => {
-        this.setupReplications(username, password)
-      })
+      .then(() => this.setupReplications(username, password))
       .then(res => Actions.lists({owner: username}));
   },
 
