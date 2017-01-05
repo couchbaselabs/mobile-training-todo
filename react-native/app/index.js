@@ -3,7 +3,7 @@
 import React, {Component} from "react";
 import {StyleSheet, Text, View, Image, ListView, TabBarIOS} from "react-native";
 import Couchbase from "react-native-couchbase-lite";
-import {Router, Scene} from 'react-native-router-flux';
+import {Router, Scene, ActionConst} from 'react-native-router-flux';
 import Login from './components/Login/index';
 import Lists from './components/Lists/index';
 import ListDetail from './components/ListDetail/index';
@@ -48,17 +48,29 @@ class App extends Component {
     }
   }
 
+  isLoginEnabled() {
+    return LOGIN_FLOW_ENABLED ? "Log out" : " ";
+  }
+
+  logout() {
+    DataManager.logout();
+  }
+
   render() {
     return (
       <Router>
         <Scene key="root">
           <Scene
             hideNavBar={true}
+            type={ActionConst.REPLACE}
             key="login"
             component={Login}
             title="Login" initial />
           <Scene
             hideNavBar={false}
+            leftTitle={this.isLoginEnabled()}
+            onLeft={() => this.logout()}
+            type={ActionConst.REPLACE}
             key="lists"
             component={Lists}
             title="Lists" />

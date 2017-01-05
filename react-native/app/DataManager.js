@@ -44,12 +44,17 @@ const VIEWS = {
   }
 };
 
+let username;
+let password;
+
 module.exports = {
   init(client) {
     global.manager = client;
   },
 
-  login(username, password) {
+  login(user, pass) {
+    username = user;
+    password = pass;
     this.startSession(username, password, null);
   },
 
@@ -103,5 +108,20 @@ module.exports = {
         .then(res => manager.server.post_replicate({body: {source: DB_NAME, target: sgUrl, continuous: true}}))
         .catch(e => console.warn(e));
     }
+  },
+
+  stopReplications() {
+    const sgUrl = `http://${username}:${password}@${SG_HOST}`;
+
+    return manager.server.post_replicate({body: {source: sgUrl, target: DB_NAME, continuous: true, cancel: true}})
+      .then(res => manager.server.post_replicate({body: {source: DB_NAME, target: sgUrl, continuous: true, cancel: true}}))
+      .catch(e => console.warn(e));
+  },
+
+  logout() {
+    this.stopReplications();
+    username = '';
+    password = '';
+    Actions.login();
   }
 };
