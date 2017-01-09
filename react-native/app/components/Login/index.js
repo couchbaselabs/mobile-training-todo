@@ -1,8 +1,9 @@
 'use strict'
 
 import React, {Component} from 'react';
-import {View, Text, StyleSheet, TextInput, TouchableHighlight} from 'react-native';
+import {View, Text, StyleSheet, TextInput, TouchableHighlight, Alert} from 'react-native';
 import DataManager from './../../DataManager';
+import Session from './../../Session';
 
 export default class Login extends Component {
   constructor() {
@@ -13,7 +14,30 @@ export default class Login extends Component {
     };
   }
   _onLoginButtonPressed() {
-    DataManager.login(this.state.username, this.state.password);
+    Session.createSyncGatewaySession(this.state.username, this.state.password)
+    .then(res => {
+      DataManager.login(this.state.username, this.state.password);
+    })
+    .catch(e => {
+      console.log(e);
+      if (e.status == 401) {
+        Alert.alert(
+          'Oops',
+          'There doesn\'t seem to be any user for the credentials you provided.',
+          [
+            {text: 'Try again',},
+          ]
+        );
+      } else if (e.status == 0) {
+        Alert.alert(
+          'Oops',
+          'Could not connect to server.',
+          [
+            {text: 'Try again',},
+          ]
+        );
+      }
+    });
   }
   render () {
     return (

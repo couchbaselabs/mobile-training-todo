@@ -2,10 +2,11 @@
 
 import {Actions} from "react-native-router-flux";
 import Couchbase from "react-native-couchbase-lite";
+import Session from './Session';
 
 global.LOGIN_FLOW_ENABLED = false;
 const SYNC_ENABLED = false;
-const SG_HOST = 'localhost:4984/todo';
+global.SG_HOST = 'localhost:4984/todo';
 const USE_PREBUILT_DB = false;
 
 const VIEWS = {
@@ -119,7 +120,8 @@ module.exports = {
   },
 
   logout() {
-    this.stopReplications();
+    this.stopReplications()
+      .then(res => Session.deleteSyncGatewaySession(username))
     username = '';
     password = '';
     Actions.login();
