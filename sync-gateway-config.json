@@ -1,6 +1,7 @@
 {
   "interface":":4984",
   "log": ["HTTP", "Auth"],
+  "facebook" : { "register" : true },
   "databases": {
     "todo": {
       "server": "walrus:",

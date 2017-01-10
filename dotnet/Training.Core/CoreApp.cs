@@ -36,6 +36,13 @@ using XLabs.Platform.Services.Media;
 
 namespace Training.Core
 {
+    public enum AuthenticationType
+    {
+        None,
+        Basic,
+        Facebook
+    }
+
     /// <summary>
     /// This is the first location to be reached in the actual shared application
     /// </summary>
@@ -80,7 +87,7 @@ namespace Training.Core
         /// <param name="username">The username to use for the session</param>
         /// <param name="password">The password to use for the session (optional)</param>
         /// <param name="newPassword">The new password for the database (optional)</param>
-        public static void StartSession(string username, string password, string newPassword)
+        public static void StartSession(AuthenticationType authType, string username, string password, string newPassword)
         {
             if(Hint.UsePrebuiltDB) {
                 InstallPrebuiltDB();
@@ -91,7 +98,7 @@ namespace Training.Core
             OpenDatabase(username, p, np);
 
             if(Hint.SyncEnabled) {
-                StartReplication(username, newPassword ?? password);
+                StartReplication(authType, username, newPassword ?? password);
             }
 
             if(Hint.ConflictResolution) {
@@ -211,11 +218,13 @@ namespace Training.Core
         /// </summary>
         /// <param name="username">The username to use for the replication</param>
         /// <param name="password">The password to use for replication auth (optional)</param>
-        public static void StartReplication(string username, string password = null)
+        public static void StartReplication(AuthenticationType authType, string username, string password = null)
         {
             var authenticator = default(IAuthenticator);
-            if(username != null && password != null) {
+            if(authType == AuthenticationType.Basic && username != null && password != null) {
                 authenticator = AuthenticatorFactory.CreateBasicAuthenticator(username, password);
+            } else if(authType == AuthenticationType.Facebook && password != null) {
+                authenticator = AuthenticatorFactory.CreateFacebookAuthenticator(password);
             }
 
             var db = AppWideManager.GetDatabase(username);
@@ -539,9 +548,9 @@ namespace Training.Core
         public static CoreAppStartHint CreateHint()
         {
             var retVal = new CoreAppStartHint {
-                LoginEnabled = false,
+                LoginEnabled = true,
                 EncryptionEnabled = false,
-                SyncEnabled = false,
+                SyncEnabled = true,
                 UsePrebuiltDB = false,
                 ConflictResolution = false,
                 Username = "todo"
@@ -562,7 +571,7 @@ namespace Training.Core
             if(CoreApp.Hint.LoginEnabled) {
                 ShowViewModel<LoginViewModel>();
             } else {
-                CoreApp.StartSession(CoreApp.Hint.Username, null, null);
+                CoreApp.StartSession(AuthenticationType.None, CoreApp.Hint.Username, null, null);
                 ShowViewModel<TaskListsViewModel>(new { loginEnabled = false });
             }
 

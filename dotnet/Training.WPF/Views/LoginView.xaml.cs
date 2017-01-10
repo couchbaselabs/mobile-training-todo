@@ -19,10 +19,14 @@
 //  limitations under the License.
 //
 
+using System;
+using System.Net;
 using System.Windows;
 
 using MvvmCross.Wpf.Views;
 using Training.Core;
+using Training.WPF.Services;
+using Training.WPF.Views;
 
 namespace Training
 {
@@ -54,7 +58,42 @@ namespace Training
             (ViewModel as LoginViewModel).LoginCommand.Execute(_passBox.Password);
         }
 
-        #endregion
+        private async void OnFacebookLoginClick(object sender, RoutedEventArgs e)
+        {
+            var savedToken = FacebookInfoManager.LoadAccessToken();
+            if(String.IsNullOrEmpty(savedToken)) {
+                PerformLoginSteps();
+            } else {
+                var check = WebRequest.CreateHttp("https://graph.facebook.com/me");
+                check.Headers["Authorization"] = $"OAuth {FacebookInfoManager.LoadAccessToken()}";
+                var response = (HttpWebResponse)await check.GetResponseAsync();
+                if(response.StatusCode == HttpStatusCode.Unauthorized) {
+                    PerformLoginSteps();
+                } else if(response.StatusCode == HttpStatusCode.OK) {
+                    CompleteLogin();
+                }
+            }
+        }
 
+        private void PerformLoginSteps()
+        {
+            var fb = new FacebookLoginDialog();
+            fb.LoginCompleted += (fbSender, fbArgs) =>
+            {
+                if(fbArgs.Result == FacebookLoginCompleteEventArgs.LoginResult.Success) {
+                    CompleteLogin();
+                }
+            };
+            fb.ShowDialog();
+        }
+
+        private void CompleteLogin()
+        {
+            var savedToken = FacebookInfoManager.LoadAccessToken();
+            (ViewModel as LoginViewModel).Username = $"fb_{FacebookInfoManager.LoadId()}";
+            (ViewModel as LoginViewModel).FacebookLoginCommand.Execute(savedToken);
+        }
+
+        #endregion
     }
 }

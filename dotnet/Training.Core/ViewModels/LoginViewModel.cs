@@ -63,6 +63,16 @@ namespace Training.Core
             }
         }
 
+        /// <summary>
+        /// Gets the command to execute for login
+        /// </summary>
+        public ICommand FacebookLoginCommand
+        {
+            get {
+                return new MvxCommand<string>(FacebookLogin);
+            }
+        }
+
         #endregion
 
         #region Constructors
@@ -80,6 +90,18 @@ namespace Training.Core
 
         #region Private API
 
+        private void FacebookLogin(string accessToken)
+        {
+            try {
+                CoreApp.StartSession(AuthenticationType.Facebook, Username, accessToken, null);
+            } catch(Exception e) {
+                _dialogs.ShowError($"Login has an error occurred, code = {e}");
+                return;
+            }
+
+            ShowViewModel<TaskListsViewModel>(new { loginEnabled = true });
+        }
+
         private async Task Login(string password)
         {
             if(String.IsNullOrWhiteSpace(Username) || String.IsNullOrWhiteSpace(password)) {
@@ -93,7 +115,7 @@ namespace Training.Core
             }
 
             try {
-                CoreApp.StartSession(Username, password, null);
+                CoreApp.StartSession(AuthenticationType.Basic, Username, password, null);
             } catch(CouchbaseLiteException e) {
                 if(e.CBLStatus.Code == StatusCode.Unauthorized) {
                     var result = await _dialogs.PromptAsync(new PromptConfig {
@@ -105,7 +127,7 @@ namespace Training.Core
                     });
 
                     if(result.Ok) {
-                        CoreApp.StartSession(Username, result.Text, password);
+                        CoreApp.StartSession(AuthenticationType.Basic, Username, result.Text, password);
                     } else {
                         Model.DeleteDatabase(Username);
                         Login(password);
