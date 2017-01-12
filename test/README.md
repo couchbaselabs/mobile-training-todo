@@ -20,7 +20,7 @@ This folder contains the scripts for the Couchbase Mobile Training on performanc
     node loadtest.js
     ```
 
-    By default, the script executes the **WriteAndReadDocument** scenario which inserts as many documents as possible in 20 concurrent processes for 6 seconds on a Sync Gateway running locally ([http://localhost:4985](http://localhost:4985)). Once the test has finished you will see the results in the console.
+    By default, the script creates lists for each user specified in the `users` option. Then it inserts as many tasks as possible concurrently and during the specified time. Once the test has finished you will see the results in the console.
 
     ```bash
     Requests: 210
@@ -40,6 +40,12 @@ This folder contains the scripts for the Couchbase Mobile Training on performanc
     ```
 
 - Open the Sync Gateway Admin UI ([http://localhost:4985/_admin/db/todo](http://localhost:4985/_admin/db/todo)) to browse the documents that were inserted.
+
+- Run the app on the platform of your choice against the same Sync Gateway instance and login as a moderator (**mod/pass**) to view all the lists.
+
+<img src="https://cloud.githubusercontent.com/assets/2589337/21888924/57c55c84-d8be-11e6-8436-409afdc2d79a.png" width="25%" />
+<img src="https://cloud.githubusercontent.com/assets/2589337/21888850/01c0a848-d8be-11e6-8b2d-72566bf5cb2a.png" width="25%" />
+<img src="https://cloud.githubusercontent.com/assets/2589337/21889017/c4089aa0-d8be-11e6-9eb1-5bef4f202bbb.png" width="25%" />
 
 ## Writing scenarios
 

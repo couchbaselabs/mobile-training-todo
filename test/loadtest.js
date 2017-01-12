@@ -4,8 +4,9 @@ var spec = require('./spec')
 
 var options = {
   url: 'http://localhost:4985/',
-  // url: 'http://localhost:7357/',
-  concurrency: 20
+  db: 'todo',
+  concurrency: 20,
+  users: ['user1', 'user2', 'mod', 'admin'],
 };
 
 var client = new SwaggerClient({
@@ -14,7 +15,7 @@ var client = new SwaggerClient({
 })
   .then(function (client) {
     client.setHost(options.url.split('/')[2]);
-    
+
     var operation = new Operation(client);
     operation.start();
   })
@@ -42,28 +43,40 @@ var results = {
 var Operation = function (client, callback) {
   // self-reference
   var self = this;
-  
+
   self.instanceIndex = operationInstanceIndex++;
-  
+
   /**
    * Start the operation.
    */
   self.start = function() {
-    
+
     // time interval to print the result
     var timer = setInterval(function () {
       console.log('Requests: %s', results.totalRequests)
     }, 2000);
-    
-    startClients();
-  
+
+    /**
+     * Create a list for each user, then start the clients.
+     */
+    var docs = options.users.map(function(user) {
+      return {'_id': user + '.123', 'name': user, 'owner': user, 'type': 'task-list'};
+    });
+    client.database.post_db_bulk_docs({db: options.db, body: {docs: docs}})
+      .then(function(res) {
+        startClients();
+      })
+      .catch(function(err) {
+        startClients();
+      });
+
     // time out to stop the test
     setTimeout(function () {
       clearInterval(timer);
       self.stop();
       process.exit();
     }, 6000);
-    
+
   };
 
   /**
@@ -90,7 +103,7 @@ var Operation = function (client, callback) {
     for (var i = 0; i < options.concurrency; i++) {
 
       makeRequest();
-      
+
     }
   }
 
@@ -119,19 +132,21 @@ var Operation = function (client, callback) {
         makeRequest();
       })
       .catch(function (err) {console.log(err)});
-    
+
   }
 
   function GetDatabaseEndpoint () {
     return client.database.get_db({db: 'todo'});
   }
-  
+
   function WriteAndReadDocument() {
-    var list = {"_id": "user1." + guid(), "name": "Groceries", "owner": "user1", "type": "task-list"};
-    return client.document.post({db: 'todo', body: list})
-      .then(function (res) {
-        return client.document.get({db: 'todo', doc: list._id});
-      });
+    var user = randomUser();
+    var task = {task: 'some text', complete: false, createdAt: new Date(), type: 'task', taskList: {id: user + '.123', owner: user}};
+    return client.document.post({db: 'todo', body: task});
+
+    function randomUser() {
+      return options.users[Math.floor(Math.random() * options.users.length)];
+    }
   }
 
 };
