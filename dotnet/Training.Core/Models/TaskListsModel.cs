@@ -108,13 +108,14 @@ namespace Training.Core
         /// <param name="name">The name of the task list.</param>
         public SavedRevision CreateTaskList(string name)
         {
+            var safeUsername = Username.Replace("fb_", String.Empty);
             var properties = new Dictionary<string, object> {
                 ["type"] = TaskListType,
                 ["name"] = name,
-                ["owner"] = Username
+                ["owner"] = safeUsername
             };
 
-            var docId = $"{Username}.{Guid.NewGuid()}";
+            var docId = $"{safeUsername}.{Guid.NewGuid()}";
             var doc = default(Document);
             try {
                 doc = _db.GetDocument(docId);

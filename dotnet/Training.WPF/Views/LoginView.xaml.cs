@@ -66,11 +66,17 @@ namespace Training
             } else {
                 var check = WebRequest.CreateHttp("https://graph.facebook.com/me");
                 check.Headers["Authorization"] = $"OAuth {FacebookInfoManager.LoadAccessToken()}";
-                var response = (HttpWebResponse)await check.GetResponseAsync();
-                if(response.StatusCode == HttpStatusCode.Unauthorized) {
-                    PerformLoginSteps();
-                } else if(response.StatusCode == HttpStatusCode.OK) {
-                    CompleteLogin();
+                try {
+                    var response = (HttpWebResponse)await check.GetResponseAsync();
+                    if(response.StatusCode == HttpStatusCode.OK) {
+                        CompleteLogin();
+                    }
+                } catch(WebException ex) {
+                    if(((HttpWebResponse)ex.Response).StatusCode == HttpStatusCode.Unauthorized) {
+                        PerformLoginSteps();
+                    } else {
+                        throw;
+                    }
                 }
             }
         }
