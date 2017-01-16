@@ -248,9 +248,14 @@ public class Application extends android.app.Application {
     }
 
     public void logout() {
-        stopReplication();
-        closeDatabase();
-        login();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                stopReplication();
+                closeDatabase();
+                login();
+            }
+        });
     }
 
     // Replication
@@ -266,11 +271,15 @@ public class Application extends android.app.Application {
             e.printStackTrace();
         }
 
+        ReplicationChangeListener changeListener = new ReplicationChangeListener(this);
+
         pusher = database.createPushReplication(url);
         pusher.setContinuous(true); // Runs forever in the background
+        pusher.addChangeListener(changeListener);
 
         puller = database.createPullReplication(url);
         puller.setContinuous(true); // Runs forever in the background
+        puller.addChangeListener(changeListener);
 
         if (mLoginFlowEnabled) {
             Authenticator authenticator = AuthenticatorFactory.createBasicAuthenticator(username, password);
