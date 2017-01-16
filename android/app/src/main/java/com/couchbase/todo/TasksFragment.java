@@ -1,13 +1,18 @@
 package com.couchbase.todo;
 
 import android.app.AlertDialog;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.ThumbnailUtils;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -36,17 +41,21 @@ import com.couchbase.lite.UnsavedRevision;
 import com.couchbase.lite.util.Log;
 import com.couchbase.todo.util.LiveQueryAdapter;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.Inflater;
 
+import static android.app.Activity.RESULT_OK;
 import static com.couchbase.todo.ListDetailActivity.INTENT_LIST_ID;
-import static com.couchbase.todo.R.id.update;
 
 
 public class TasksFragment extends Fragment {
@@ -58,10 +67,14 @@ public class TasksFragment extends Fragment {
     public Document mTaskList;
 
     private android.view.LayoutInflater mInflater;
+    private View mainView;
 
     private static final int REQUEST_TAKE_PHOTO = 1;
     private static final int REQUEST_CHOOSE_PHOTO = 2;
     private static final int THUMBNAIL_SIZE = 150;
+
+    private String mImagePathToBeAttached;
+    private Document mCurrentTaskToAttachImage;
 
     public TasksFragment() {
     }
@@ -71,11 +84,11 @@ public class TasksFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         mInflater = inflater;
-        View main = inflater.inflate(R.layout.fragment_tasks, null);
+        mainView = inflater.inflate(R.layout.fragment_tasks, null);
 
-        mListView = (ListView) main.findViewById(R.id.list);
+        mListView = (ListView) mainView.findViewById(R.id.list);
 
-        FloatingActionButton fab = (FloatingActionButton) main.findViewById(R.id.fab);
+        FloatingActionButton fab = (FloatingActionButton) mainView.findViewById(R.id.fab);
         fab.setOnClickListener(new android.view.View.OnClickListener() {
             @Override
             public void onClick(android.view.View view) {
@@ -98,7 +111,7 @@ public class TasksFragment extends Fragment {
 
         setupViewAndQuery();
 
-        return main;
+        return mainView;
     }
 
     private void setupViewAndQuery() {
@@ -228,13 +241,7 @@ public class TasksFragment extends Fragment {
             imageView.setOnClickListener(new android.view.View.OnClickListener() {
                 @Override
                 public void onClick(android.view.View v) {
-//                    if (task.getCurrentRevision().getAttachment("image") != null) {
-//                        Intent intent = new Intent(TaskActivity.this, ImageActivity.class);
-//                        intent.putExtra(ImageActivity.INTENT_TASK_DOC_ID, task.getId());
-//                        startActivity(intent);
-//                    } else
-//
-//                        displayAttachImageDialog(task);
+                    displayAttachImageDialog(task);
                 }
             });
 
@@ -361,4 +368,124 @@ public class TasksFragment extends Fragment {
         }
     }
 
+    private void attachImage(Document task, Bitmap image) {
+        UnsavedRevision revision = task.createRevision();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.JPEG, 50, out);
+        ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+        revision.setAttachment("image", "image/jpg", in);
+
+        try {
+            revision.save();
+        } catch (CouchbaseLiteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void dispatchTakePhotoIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(this.getActivity().getPackageManager()) != null) {
+            File photoFile = null;
+            try {
+                photoFile = createImageFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            if (photoFile != null) {
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
+                startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+            }
+        }
+    }
+
+    private File createImageFile() throws IOException {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String fileName = "TODO_LITE-" + timeStamp + "_";
+        File storageDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(fileName, ".jpg", storageDir);
+        mImagePathToBeAttached = image.getAbsolutePath();
+        return image;
+    }
+
+    private void dispatchChoosePhotoIntent() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
+        intent.setType("image/*");
+        startActivityForResult(Intent.createChooser(intent, "Select File"), REQUEST_CHOOSE_PHOTO);
+    }
+
+    private void deleteCurrentPhoto(Document task) {
+        UnsavedRevision unsavedRevision = task.getCurrentRevision().createRevision();
+        unsavedRevision.removeAttachment("image");
+        try {
+            unsavedRevision.save();
+        } catch (CouchbaseLiteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void displayAttachImageDialog(final Document task) {
+        CharSequence[] items;
+        items = new CharSequence[]{ "Take photo", "Choose photo", "Delete photo" };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle("Add picture");
+        builder.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int item) {
+                if (item == 0) {
+                    mCurrentTaskToAttachImage = task;
+                    dispatchTakePhotoIntent();
+                } else if (item == 1) {
+                    mCurrentTaskToAttachImage = task;
+                    dispatchChoosePhotoIntent();
+                } else {
+                    deleteCurrentPhoto(task);
+                }
+            }
+        });
+        builder.show();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode != RESULT_OK) {
+            return;
+        }
+
+        final int size = THUMBNAIL_SIZE;
+        Bitmap thumbnail = null;
+        if (requestCode == REQUEST_TAKE_PHOTO) {
+            File file = new File(mImagePathToBeAttached);
+            if (file.exists()) {
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inJustDecodeBounds = true;
+                BitmapFactory.decodeFile(mImagePathToBeAttached, options);
+                options.inJustDecodeBounds = false;
+                Bitmap mImage = BitmapFactory.decodeFile(mImagePathToBeAttached, options);
+                thumbnail = ThumbnailUtils.extractThumbnail(mImage, size, size);
+                file.delete();
+            }
+        } else if (requestCode == REQUEST_CHOOSE_PHOTO) {
+            Uri uri = data.getData();
+            ContentResolver resolver = getActivity().getContentResolver();
+            Bitmap mImage = null;
+            try {
+                mImage = MediaStore.Images.Media.getBitmap(resolver, uri);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            AssetFileDescriptor asset = null;
+            try {
+                asset = resolver.openAssetFileDescriptor(uri, "r");
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            thumbnail = ThumbnailUtils.extractThumbnail(mImage, size, size);
+        }
+
+        attachImage(mCurrentTaskToAttachImage, thumbnail);
+    }
 }
