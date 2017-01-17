@@ -72,6 +72,11 @@ namespace Training
         private void ListViewItem_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             var lvi = sender as ListViewItem;
+            var pos = e.GetPosition(lvi);
+            if(pos.X < 44) {
+                return;
+            }
+
             var viewModel = DataContext as TasksViewModel;
             viewModel.SelectedItem = lvi.DataContext as TaskCellModel;
         }
