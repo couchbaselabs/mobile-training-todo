@@ -44,7 +44,7 @@ class App extends Component {
     if (LOGIN_FLOW_ENABLED) {
 
     } else {
-      DataManager.startSession("todos", null, null);
+      DataManager.startSession("todo", null, null);
     }
   }
 
