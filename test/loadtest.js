@@ -136,13 +136,13 @@ var Operation = function (client, callback) {
   }
 
   function GetDatabaseEndpoint () {
-    return client.database.get_db({db: 'todo'});
+    return client.database.get_db({db: options.db});
   }
 
   function WriteAndReadDocument() {
     var user = randomUser();
     var task = {task: 'some text', complete: false, createdAt: new Date(), type: 'task', taskList: {id: user + '.123', owner: user}};
-    return client.document.post({db: 'todo', body: task});
+    return client.document.post({db: options.db, body: task});
 
     function randomUser() {
       return options.users[Math.floor(Math.random() * options.users.length)];
