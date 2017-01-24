@@ -24,9 +24,9 @@ export default class Lists extends Component {
   componentDidMount() {
     manager.database.get_db({db: DB_NAME})
       .then(res => {
-        this.setupQuery();
+        this.setupViewAndQuery();
         this.feed = new Feed(res.obj.update_seq, () => {
-          this.setupQuery();
+          this.setupViewAndQuery();
         });
       });
   }
@@ -35,7 +35,7 @@ export default class Lists extends Component {
     this.feed.stop();
   }
 
-  setupQuery() {
+  setupViewAndQuery() {
     manager.query.get_db_design_ddoc_view_view({
       db: DB_NAME,
       ddoc: 'main',
@@ -72,7 +72,12 @@ export default class Lists extends Component {
   }
 
   createList(text) {
-    var doc = {owner: this.props.owner, name: text, type: 'task-list', _id: `${this.props.owner}.${Math.random().toString(36).substring(7)}`};
+    var doc = {
+      type: 'task-list',
+      name: text,
+      _id: `${this.props.owner}.${Math.random().toString(36).substring(7)}`,
+      owner: this.props.owner
+    };
     manager.document.post({db: DB_NAME, body: doc});
   }
 
