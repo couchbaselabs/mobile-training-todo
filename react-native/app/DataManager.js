@@ -60,11 +60,12 @@ module.exports = {
   },
 
   startSession(username, password) {
-    this.installPrebuiltDb();
     global.DB_NAME = username;
-    this.startDatabaseOperations()
-      .then(() => this.setupReplications(username, password))
-      .then(res => Actions.lists({owner: username}));
+    this.installPrebuiltDb(() => {
+      this.startDatabaseOperations()
+        .then(() => this.setupReplications(username, password))
+        .then(res => Actions.lists({owner: username}));
+    });
   },
 
   setupDatabase() {
@@ -73,9 +74,11 @@ module.exports = {
       .catch(e => console.warn(e));
   },
 
-  installPrebuiltDb() {
+  installPrebuiltDb(callback) {
     if (USE_PREBUILT_DB) {
-      Couchbase.installPrebuiltDatabase(DB_NAME);
+      Couchbase.installPrebuiltDatabase(DB_NAME, callback);
+    } else {
+      callback();
     }
   },
 
