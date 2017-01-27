@@ -1,4 +1,4 @@
 target 'Todo' do
   use_frameworks!
-  pod 'CouchbaseLite', :podspec => '/Users/pasin/Git/couchbase/couchbase-lite-ios-v2/CouchbaseLite.podspec'
+  pod 'CouchbaseLite', :git => 'https://github.com/couchbase/couchbase-lite-ios.git', :branch => 'feature/2.0', :submodules => true
 end
