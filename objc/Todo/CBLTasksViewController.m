@@ -13,12 +13,16 @@
 #import "CBLTaskTableViewCell.h"
 #import "CBLTaskImageViewController.h"
 
-@interface CBLTasksViewController () <UIImagePickerControllerDelegate, UINavigationControllerDelegate> {
+@interface CBLTasksViewController () <UISearchResultsUpdating,
+                                      UIImagePickerControllerDelegate,
+                                      UINavigationControllerDelegate>
+{
+    UISearchController *_searchController;
+    
     CBLDatabase *_database;
-    
     CBLQuery *_taskQuery;
+    CBLQuery *_searchQuery;
     NSArray* _taskRows;
-    
     CBLDocument *_taskForImage;
 }
 
@@ -31,10 +35,13 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    // Setup Search Controller:
+    _searchController = [[UISearchController alloc] initWithSearchResultsController:nil];
+    _searchController.searchResultsUpdater = self;
+    self.tableView.tableHeaderView = _searchController.searchBar;
+    
     AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
     _database = app.database;
-    
-    [self setupQuery];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -54,23 +61,27 @@
 
 #pragma mark - Database
 
-- (void)setupQuery {
-    NSError *error;
-    _taskQuery = [_database createQueryWhere:@"type == 'task' AND taskList.id == $LISTID"
-                                     orderBy:@[@"createdAt", @"task"]
-                                   returning:nil
-                                       error:&error];
-    _taskQuery.parameters = @{@"LISTID": self.taskList.documentID};
-    if (!_taskQuery)
-        NSLog(@"Error creating a query: %@", error);
-}
-
 - (void)reload {
-    NSError* error;
-    NSEnumerator *rows = [_taskQuery run: &error];
-    if (!rows) {
-        NSLog(@"Error querying task list: %@", error);
+    NSError *error;
+    if (!_taskQuery) {
+        // Create an index: including task for search feature
+        [_database createIndexOn:@[@"type", @"taskList.id", @"task"] error:nil];
+        
+        // Create a query:
+        NSString *where = [NSString stringWithFormat:@"type == 'task' AND taskList.id == '%@'",
+                           self.taskList.documentID];
+        _taskQuery = [_database createQueryWhere:where orderBy:@[@"createdAt", @"task"]
+                                       returning:nil error:&error];
+        if (!_taskQuery) {
+            NSLog(@"Error creating a query: %@", error);
+            return;
+        }
     }
+    
+    NSEnumerator *rows = [_taskQuery run: &error];
+    if (!rows)
+        NSLog(@"Error querying task list: %@", error);
+    
     _taskRows = [rows allObjects];
     [self.tableView reloadData];
 }
@@ -125,6 +136,29 @@
     NSError *error;
     if (![task save: &error])
         [CBLUi showErrorDialog:self withMessage:@"Couldn't update task" withError:error];
+}
+
+- (void)searchTask: (NSString*)name {
+    NSError *error;
+    if (!_searchQuery) {
+        NSString *where = [NSString stringWithFormat:
+                           @"type == 'task' AND taskList.id == '%@' AND task contains[c] $NAME",
+                           self.taskList.documentID];
+        _searchQuery = [_database createQueryWhere:where orderBy:@[@"createdAt", @"task"]
+                                         returning:nil error:&error];
+        if (!_searchQuery) {
+            NSLog(@"Error creating a query: %@", error);
+            return;
+        }
+    }
+    
+    _searchQuery.parameters = @{@"NAME": name};
+    NSEnumerator *rows = [_searchQuery run: &error];
+    if (!rows)
+        NSLog(@"Error searching tasks: %@", error);
+    
+    _taskRows = [rows allObjects];
+    [self.tableView reloadData];
 }
 
 #pragma mark - Actions
@@ -247,6 +281,17 @@
     
     return @[delete, update];
 }
+
+#pragma mark - UISearchController
+
+- (void)updateSearchResultsForSearchController:(UISearchController *)searchController {
+    NSString *text = searchController.searchBar.text ?: @"";
+    if ([text length] > 0)
+        [self searchTask:text];
+    else
+        [self reload];
+}
+
 
 #pragma mark - UIImagePickerControllerDelegate
 

@@ -12,10 +12,13 @@
 #import "CBLUi.h"
 #import "CBLTasksViewController.h"
 
-@interface CBLListsViewController () {
+@interface CBLListsViewController () <UISearchResultsUpdating> {
+    UISearchController *_searchController;
+    
     CBLDatabase *_database;
     NSString *_username;
     CBLQuery *_listQuery;
+    CBLQuery *_searchQuery;
     NSArray* _listRows;
 }
 
@@ -28,11 +31,14 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    // Setup Search Controller:
+    _searchController = [[UISearchController alloc] initWithSearchResultsController:nil];
+    _searchController.searchResultsUpdater = self;
+    self.tableView.tableHeaderView = _searchController.searchBar;
+    
     AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
     _database = app.database;
     _username = app.username;
-    
-    [self setupQuery];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -46,22 +52,25 @@
 
 #pragma mark - Database
 
-- (void)setupQuery {
-    NSError *error;
-    _listQuery = [_database createQueryWhere:@"type == 'task-list'"
-                                     orderBy:@[@"name"]
-                                   returning:nil
-                                       error:&error];
-    if (!_listQuery)
-        NSLog(@"Error creating a query: %@", error);
-}
-
 - (void)reload {
-    NSError* error;
-    NSEnumerator *rows = [_listQuery run: &error];
-    if (!rows) {
-        NSLog(@"Error querying task list: %@", error);
+    NSError *error;
+    if (!_listQuery) {
+        // Create an index: including task for search feature
+        [_database createIndexOn:@[@"type", @"name"] error:nil];
+        
+        // Create a query
+        _listQuery = [_database createQueryWhere:@"type == 'task-list'" orderBy:@[@"name"]
+                                       returning:nil error:&error];
+        if (!_listQuery) {
+            NSLog(@"Error creating a query: %@", error);
+            return;
+        }
     }
+    
+    NSEnumerator *rows = [_listQuery run: &error];
+    if (!rows)
+        NSLog(@"Error querying task list: %@", error);
+    
     _listRows = [rows allObjects];
     [self.tableView reloadData];
 }
@@ -94,12 +103,30 @@
     [self reload];
 }
 
+- (void)searchList: (NSString*)name {
+    NSError *error;
+    if (!_searchQuery) {
+        NSString *where = [NSString stringWithFormat:@"type == 'task-list' AND name contains[c] $NAME"];
+        _searchQuery = [_database createQueryWhere:where orderBy:@[@"name"] returning:nil error:&error];
+        if (!_searchQuery) {
+            NSLog(@"Error creating a query: %@", error);
+            return;
+        }
+    }
+    
+    _searchQuery.parameters = @{@"NAME": name};
+    NSEnumerator *rows = [_searchQuery run: &error];
+    if (!rows)
+        NSLog(@"Error searching task list: %@", error);
+    
+    _listRows = [rows allObjects];
+    [self.tableView reloadData];
+}
+
 #pragma mark - Actions
 
 - (IBAction)addAction:(id)sender {
-    [CBLUi showTextInputDialog:self
-                     withTitle:@"New Task List"
-                   withMessage:nil
+    [CBLUi showTextInputDialog:self withTitle:@"New Task List" withMessage:nil
            withTextFeildConfig:^(UITextField * _Nonnull textField) {
                textField.placeholder = @"List name";
                textField.autocapitalizationType = UITextAutocapitalizationTypeWords;
@@ -107,7 +134,6 @@
                [self createTaskList:name];
            }];
 }
-
 
 #pragma mark - Table view data source
 
@@ -173,6 +199,16 @@
     update.backgroundColor = [UIColor colorWithRed:0.0 green:0.48 blue:1.0 alpha:1.0];
     
     return @[delete, update];
+}
+
+#pragma mark - UISearchController
+
+- (void)updateSearchResultsForSearchController:(UISearchController *)searchController {
+    NSString *text = searchController.searchBar.text ?: @"";
+    if ([text length] > 0)
+        [self searchList:text];
+    else
+        [self reload];
 }
 
 #pragma mark - Navigation

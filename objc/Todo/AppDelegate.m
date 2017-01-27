@@ -27,9 +27,6 @@
         return false;
     }
     
-    // Create database indexes:
-    [_database createIndexOn:@[@"type", @"name"] error:nil];
-    
     _username = kUserName;
     return YES;
 }
