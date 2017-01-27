@@ -1,0 +1,4 @@
+target 'Todo' do
+  use_frameworks!
+  pod 'CouchbaseLite', :podspec => '/Users/pasin/Git/couchbase/couchbase-lite-ios-v2/CouchbaseLite.podspec'
+end

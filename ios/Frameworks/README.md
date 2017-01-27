@@ -1,1 +1,0 @@
-Put CouchbaseLite.framework and libsqlcipher.a here.

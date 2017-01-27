@@ -1,0 +1,22 @@
+PODS:
+  - CouchbaseLite (2.0-dp.1)
+
+DEPENDENCIES:
+  - CouchbaseLite (from `/Users/pasin/Git/couchbase/couchbase-lite-ios-v2/CouchbaseLite.podspec`)
+
+EXTERNAL SOURCES:
+  CouchbaseLite:
+    :podspec: /Users/pasin/Git/couchbase/couchbase-lite-ios-v2/CouchbaseLite.podspec
+
+CHECKOUT OPTIONS:
+  CouchbaseLite:
+    :commit: c1697434a5f081e35bb069f8983cae6f283802d5
+    :git: https://github.com/couchbase/couchbase-lite-ios.git
+    :submodules: true
+
+SPEC CHECKSUMS:
+  CouchbaseLite: abf04b1baa9ca040364c3cde7c6c818392518cf3
+
+PODFILE CHECKSUM: 7f2cb05b076347cf0ca6909afd265079da287ce2
+
+COCOAPODS: 1.1.1
