@@ -15,7 +15,8 @@
                   withTitle:(nullable NSString*)title
                 withMessage:(nullable NSString*)message
         withTextFeildConfig:(void (^_Nullable)(UITextField *textField))textFieldConfig
-                       onOk:(void (^_Nullable)(NSString *name))onOkAction {
+                       onOk:(void (^_Nullable)(NSString *name))onOkAction
+{
     CBLTextDialog *dialog = [[CBLTextDialog alloc] init];
     dialog.title = title;
     dialog.message = message;
@@ -28,7 +29,8 @@
                 withTitle:(nullable NSString *)title
               withMessage:(nullable NSString *)message
                 withError:(nullable NSError *)error
-                  onClose:(void (^_Nullable)(void))oncloseAction {
+                  onClose:(void (^_Nullable)(void))onCloseAction
+{
     NSString *mesg = nil;
     if (error) {
         mesg = [NSString stringWithFormat:@"%@\n\n%@", message, error.localizedDescription];
@@ -44,8 +46,8 @@
                                               style:UIAlertActionStyleCancel
                                             handler:
     ^(UIAlertAction * _Nonnull action) {
-        if (oncloseAction)
-            oncloseAction();
+        if (onCloseAction)
+            onCloseAction();
     }]];
     [controller presentViewController:alert animated:YES completion:nil];
 }
@@ -58,6 +60,68 @@
                  withMessage:message
                    withError:nil
                      onClose:nil];
+}
+
++ (void)showErrorDialog:(UIViewController*)controller
+            withMessage:(nullable NSString *)message
+              withError:(nullable NSError *)error
+{
+    [CBLUi showMessageDialog:controller
+                   withTitle:@"Error"
+                 withMessage:message
+                   withError:error
+                     onClose:nil];
+}
+
++ (void)showImageActionSheet:(UIViewController *)controller
+     wihtImagePickerDelegate:(id<UIImagePickerControllerDelegate, UINavigationControllerDelegate>)delegate
+                    onDelete:(void (^_Nullable)(void))onDeleteAction
+{
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil
+                                                                   message:nil
+                                                            preferredStyle:UIAlertControllerStyleActionSheet];
+    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+        
+        [alert addAction:[UIAlertAction actionWithTitle:@"Take Photo"
+                                                  style:UIAlertActionStyleDefault
+                                                handler:^(UIAlertAction *action) {
+            [self showImagePicker:controller
+                   withSourceType:UIImagePickerControllerSourceTypeCamera
+               withPickerDelegate:delegate];
+        }]];
+    }
+    
+    [alert addAction:[UIAlertAction actionWithTitle:@"Choose Existing"
+                                              style:UIAlertActionStyleDefault
+                                            handler:^(UIAlertAction *action) {
+            [self showImagePicker:controller
+                   withSourceType:UIImagePickerControllerSourceTypePhotoLibrary
+               withPickerDelegate:delegate];
+    }]];
+    
+    if (onDeleteAction ) {
+        [alert addAction:[UIAlertAction actionWithTitle:@"Delete"
+                                                  style:UIAlertActionStyleDestructive
+                                                handler:^(UIAlertAction *action) {
+            onDeleteAction();
+        }]];
+    }
+    
+    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel"
+                                              style:UIAlertActionStyleCancel
+                                            handler:^(UIAlertAction *action) { }]];
+    
+    [controller presentViewController:alert animated:YES completion:nil];
+}
+
++ (void)showImagePicker:(UIViewController *)controller
+         withSourceType:(UIImagePickerControllerSourceType)sourceType
+     withPickerDelegate: (id<UIImagePickerControllerDelegate, UINavigationControllerDelegate>)delegate
+{
+    UIImagePickerController *imagePicker = [[UIImagePickerController alloc] init];
+    imagePicker.sourceType = sourceType;
+    imagePicker.delegate = delegate;
+    [controller presentViewController:imagePicker animated:YES completion:nil];
 }
 
 @end

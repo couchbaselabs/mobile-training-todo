@@ -9,7 +9,8 @@
 #import "AppDelegate.h"
 
 #define kDatabaseName @"todo"
-#define kUserName @"todo"       // Hardcode Application username used for constructing some document ids
+
+#define kUserName @"todo"
 
 @interface AppDelegate ()
 

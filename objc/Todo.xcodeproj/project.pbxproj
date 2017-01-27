@@ -16,6 +16,10 @@
 		937EAC3E1E3ABF4C00133693 /* CBLListsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 937EAC3D1E3ABF4C00133693 /* CBLListsViewController.m */; };
 		937EAC461E3ADCBE00133693 /* CBLUi.m in Sources */ = {isa = PBXBuildFile; fileRef = 937EAC451E3ADCBE00133693 /* CBLUi.m */; };
 		937EAC491E3AE0ED00133693 /* CBLTextDialog.m in Sources */ = {isa = PBXBuildFile; fileRef = 937EAC481E3AE0ED00133693 /* CBLTextDialog.m */; };
+		93A8432D1E3B13E100B4AF2D /* CBLTasksViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 93A8432C1E3B13E100B4AF2D /* CBLTasksViewController.m */; };
+		93A843301E3B154200B4AF2D /* CBLTaskTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 93A8432F1E3B154200B4AF2D /* CBLTaskTableViewCell.m */; };
+		93A843371E3B307D00B4AF2D /* CBLImage.m in Sources */ = {isa = PBXBuildFile; fileRef = 93A843361E3B307D00B4AF2D /* CBLImage.m */; };
+		93A8433A1E3B420B00B4AF2D /* CBLTaskImageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 93A843391E3B420B00B4AF2D /* CBLTaskImageViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,6 +39,14 @@
 		937EAC451E3ADCBE00133693 /* CBLUi.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CBLUi.m; sourceTree = "<group>"; };
 		937EAC471E3AE0ED00133693 /* CBLTextDialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBLTextDialog.h; sourceTree = "<group>"; };
 		937EAC481E3AE0ED00133693 /* CBLTextDialog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CBLTextDialog.m; sourceTree = "<group>"; };
+		93A8432B1E3B13E100B4AF2D /* CBLTasksViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBLTasksViewController.h; sourceTree = "<group>"; };
+		93A8432C1E3B13E100B4AF2D /* CBLTasksViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CBLTasksViewController.m; sourceTree = "<group>"; };
+		93A8432E1E3B154200B4AF2D /* CBLTaskTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBLTaskTableViewCell.h; sourceTree = "<group>"; };
+		93A8432F1E3B154200B4AF2D /* CBLTaskTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CBLTaskTableViewCell.m; sourceTree = "<group>"; };
+		93A843351E3B307D00B4AF2D /* CBLImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBLImage.h; sourceTree = "<group>"; };
+		93A843361E3B307D00B4AF2D /* CBLImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CBLImage.m; sourceTree = "<group>"; };
+		93A843381E3B420B00B4AF2D /* CBLTaskImageViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBLTaskImageViewController.h; sourceTree = "<group>"; };
+		93A843391E3B420B00B4AF2D /* CBLTaskImageViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CBLTaskImageViewController.m; sourceTree = "<group>"; };
 		E2086E2DE1AD013BAAA2DB2B /* Pods-Todo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Todo.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Todo/Pods-Todo.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -76,6 +88,10 @@
 				937EAC0D1E3AB72200133693 /* AppDelegate.m */,
 				937EAC3C1E3ABF4C00133693 /* CBLListsViewController.h */,
 				937EAC3D1E3ABF4C00133693 /* CBLListsViewController.m */,
+				93A8432B1E3B13E100B4AF2D /* CBLTasksViewController.h */,
+				93A8432C1E3B13E100B4AF2D /* CBLTasksViewController.m */,
+				93A843381E3B420B00B4AF2D /* CBLTaskImageViewController.h */,
+				93A843391E3B420B00B4AF2D /* CBLTaskImageViewController.m */,
 				937EAC121E3AB72200133693 /* Main.storyboard */,
 				937EAC151E3AB72200133693 /* Assets.xcassets */,
 				937EAC171E3AB72200133693 /* LaunchScreen.storyboard */,
@@ -100,6 +116,10 @@
 				937EAC451E3ADCBE00133693 /* CBLUi.m */,
 				937EAC471E3AE0ED00133693 /* CBLTextDialog.h */,
 				937EAC481E3AE0ED00133693 /* CBLTextDialog.m */,
+				93A8432E1E3B154200B4AF2D /* CBLTaskTableViewCell.h */,
+				93A8432F1E3B154200B4AF2D /* CBLTaskTableViewCell.m */,
+				93A843351E3B307D00B4AF2D /* CBLImage.h */,
+				93A843361E3B307D00B4AF2D /* CBLImage.m */,
 			);
 			name = UI;
 			sourceTree = "<group>";
@@ -245,10 +265,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				937EAC0E1E3AB72200133693 /* AppDelegate.m in Sources */,
+				93A843371E3B307D00B4AF2D /* CBLImage.m in Sources */,
+				93A8433A1E3B420B00B4AF2D /* CBLTaskImageViewController.m in Sources */,
+				93A843301E3B154200B4AF2D /* CBLTaskTableViewCell.m in Sources */,
 				937EAC461E3ADCBE00133693 /* CBLUi.m in Sources */,
 				937EAC0B1E3AB72200133693 /* main.m in Sources */,
 				937EAC3E1E3ABF4C00133693 /* CBLListsViewController.m in Sources */,
 				937EAC491E3AE0ED00133693 /* CBLTextDialog.m in Sources */,
+				93A8432D1E3B13E100B4AF2D /* CBLTasksViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

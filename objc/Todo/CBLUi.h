@@ -22,11 +22,15 @@ NS_ASSUME_NONNULL_BEGIN
                 withTitle:(nullable NSString *)title
               withMessage:(nullable NSString *)message
                 withError:(nullable NSError *)error
-                  onClose:(void (^_Nullable)(void))oncloseAction;
+                  onClose:(void (^_Nullable)(void))onCloseAction;
 
-+ (void)showMessageDialog:(UIViewController *)controller
-                withTitle:(NSString *)title
-              withMessage:(NSString *)message;
++ (void)showErrorDialog:(UIViewController*)controller
+            withMessage:(nullable NSString *)message
+              withError:(nullable NSError *)error;
+
++ (void)showImageActionSheet:(UIViewController *)controller
+     wihtImagePickerDelegate:(id<UIImagePickerControllerDelegate, UINavigationControllerDelegate>)delegate
+                    onDelete:(void (^_Nullable)(void))onDeleteAction;
 
 @end
 
