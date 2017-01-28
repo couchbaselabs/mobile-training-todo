@@ -27,6 +27,8 @@
     
     AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
     _database = app.database;
+    
+    [self reload];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -53,13 +55,14 @@
     self.task[@"image"] = [[CBLBlob alloc] initWithContentType:@"image/jpg" data:imageData error:nil];
     
     NSError *error;
-    if (![self.task save:&error])
+    if ([self.task save:&error])
+        [self reload];
+    else
         [CBLUi showErrorDialog:self withMessage:@"Couldn't update image" withError:error];
 }
 
 - (void)deleteImage {
     self.task[@"image"] = nil;
-    
     NSError *error;
     if (![self.task save:&error])
         [CBLUi showErrorDialog:self withMessage:@"Couldn't delete image" withError:error];

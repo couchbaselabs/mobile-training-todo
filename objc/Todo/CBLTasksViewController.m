@@ -95,25 +95,28 @@
     doc[@"complete"] = @NO;
     
     NSError *error;
-    if (![doc save: &error])
+    if ([doc save: &error])
+        [self reload];
+    else
         [CBLUi showErrorDialog:self withMessage:@"Couldn't save task" withError:error];
-    [self reload];
 }
 
 - (void)updateTask:(CBLDocument *)task withTitle:(NSString *)title {
     task[@"task"] = title;
     NSError *error;
-    if (![task save: &error])
+    if ([task save: &error])
+        [self reload];
+    else
         [CBLUi showErrorDialog:self withMessage:@"Couldn't update task" withError:error];
-    [self reload];
 }
 
 - (void)updateTask:(CBLDocument *)task withComplete:(BOOL)complete {
     task[@"complete"] = @(complete);
     NSError *error;
-    if (![task save: &error])
+    if ([task save: &error])
+        [self reload];
+    else
         [CBLUi showErrorDialog:self withMessage:@"Couldn't update complete status" withError:error];
-    [self reload];
 }
 
 - (void)updateTask:(CBLDocument *)task withImage:(UIImage *)image {
@@ -122,20 +125,20 @@
     if (!imageData)
         return;
     
-    CBLBlob *blob = [[CBLBlob alloc] initWithContentType:@"image/jpg" data: imageData error: &error];
-    if (blob) {
-        task[@"image"] = blob;
-        if (![task save: &error])
-            [CBLUi showErrorDialog:self withMessage:@"Couldn't update task" withError:error];
-    } else
-        NSLog(@"Error creating blob: %@", error);
-    [self reload];
+    CBLBlob *blob = [[CBLBlob alloc] initWithContentType:@"image/jpg" data:imageData error:nil];
+    task[@"image"] = blob;
+    if ([task save: &error])
+        [self reload];
+    else
+        [CBLUi showErrorDialog:self withMessage:@"Couldn't update task" withError:error];
 }
 
 - (void)deleteTask:(CBLDocument *)task {
     NSError *error;
-    if (![task save: &error])
-        [CBLUi showErrorDialog:self withMessage:@"Couldn't update task" withError:error];
+    if ([task deleteDocument:&error])
+        [self reload];
+    else
+        [CBLUi showErrorDialog:self withMessage:@"Couldn't delete task" withError:error];
 }
 
 - (void)searchTask: (NSString*)name {
@@ -197,6 +200,10 @@
     cell.accessoryType = complete ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
     
     CBLBlob *imageBlob = doc[@"image"];
+    if ([imageBlob isKindOfClass:[NSDictionary class]]) {
+        NSLog(@"%@", doc[@"image"]);
+    }
+    
     if (imageBlob) {
         UIImage *image = [UIImage imageWithData:imageBlob.content scale:[UIScreen mainScreen].scale];
         NSString *digest = imageBlob.digest;

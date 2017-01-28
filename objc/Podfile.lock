@@ -12,7 +12,7 @@ EXTERNAL SOURCES:
 
 CHECKOUT OPTIONS:
   CouchbaseLite:
-    :commit: 21969ed6b259271a2452cf9bd28c19b483e9e2a8
+    :commit: 20591e8c960cf67d38434f78d5510b11a52ef0ce
     :git: https://github.com/couchbase/couchbase-lite-ios.git
     :submodules: true
 

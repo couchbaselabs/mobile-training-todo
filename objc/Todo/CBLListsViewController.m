@@ -83,24 +83,27 @@
     doc[@"owner"] = _username;
     
     NSError *error;
-    if (![doc save: &error])
+    if ([doc save: &error])
+        [self reload];
+    else
         [CBLUi showErrorDialog:self withMessage:@"Couldn't save task list" withError:error];
-    [self reload];
 }
 
 - (void)updateTaskList:(CBLDocument *)doc withName:(NSString *)name {
     doc[@"name"] = name;
     NSError *error;
-    if (![doc save: &error])
+    if ([doc save: &error])
+        [self reload];
+    else
         [CBLUi showErrorDialog:self withMessage:@"Couldn't update task list" withError:error];
-    [self reload];
 }
 
 - (void)deleteTaskList:(CBLDocument *)list {
     NSError *error;
-    if (![list deleteDocument: &error])
+    if ([list deleteDocument: &error])
+        [self reload];
+    else
         [CBLUi showErrorDialog:self withMessage:@"Couldn't delete task list" withError:error];
-    [self reload];
 }
 
 - (void)searchList: (NSString*)name {
