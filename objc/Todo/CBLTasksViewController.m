@@ -40,23 +40,12 @@
     _searchController.searchResultsUpdater = self;
     self.tableView.tableHeaderView = _searchController.searchBar;
     
+    // Get database:
     AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
     _database = app.database;
-}
-
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
     
-    self.navigationController.navigationItem.rightBarButtonItem =
-        [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd
-                                                      target:self
-                                                      action:@selector(addAction:)];
-    
+    // Load data:
     [self reload];
-}
-
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
 }
 
 #pragma mark - Database
@@ -64,14 +53,12 @@
 - (void)reload {
     NSError *error;
     if (!_taskQuery) {
-        // Create an index: including task for search feature
-        [_database createIndexOn:@[@"type", @"taskList.id", @"task"] error:nil];
-        
-        // Create a query:
         NSString *where = [NSString stringWithFormat:@"type == 'task' AND taskList.id == '%@'",
-                           self.taskList.documentID];
-        _taskQuery = [_database createQueryWhere:where orderBy:@[@"createdAt", @"task"]
-                                       returning:nil error:&error];
+                       self.taskList.documentID];
+        _taskQuery = [_database createQueryWhere:where
+                                         orderBy:@[@"createdAt", @"task"]
+                                       returning:nil
+                                           error:&error];
         if (!_taskQuery) {
             NSLog(@"Error creating a query: %@", error);
             return;
@@ -80,9 +67,9 @@
     
     NSEnumerator *rows = [_taskQuery run: &error];
     if (!rows)
-        NSLog(@"Error querying task list: %@", error);
-    
+        NSLog(@"Error querying tasks: %@", error);
     _taskRows = [rows allObjects];
+    
     [self.tableView reloadData];
 }
 
@@ -147,8 +134,10 @@
         NSString *where = [NSString stringWithFormat:
                            @"type == 'task' AND taskList.id == '%@' AND task contains[c] $NAME",
                            self.taskList.documentID];
-        _searchQuery = [_database createQueryWhere:where orderBy:@[@"createdAt", @"task"]
-                                         returning:nil error:&error];
+        _searchQuery = [_database createQueryWhere:where
+                                           orderBy:@[@"createdAt", @"task"]
+                                         returning:nil
+                                             error:&error];
         if (!_searchQuery) {
             NSLog(@"Error creating a query: %@", error);
             return;
@@ -200,10 +189,6 @@
     cell.accessoryType = complete ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
     
     CBLBlob *imageBlob = doc[@"image"];
-    if ([imageBlob isKindOfClass:[NSDictionary class]]) {
-        NSLog(@"%@", doc[@"image"]);
-    }
-    
     if (imageBlob) {
         UIImage *image = [UIImage imageWithData:imageBlob.content scale:[UIScreen mainScreen].scale];
         NSString *digest = imageBlob.digest;

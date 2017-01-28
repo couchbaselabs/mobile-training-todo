@@ -31,23 +31,20 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    // Setup Search Controller:
+    // Setup SearchController:
     _searchController = [[UISearchController alloc] initWithSearchResultsController:nil];
     _searchController.searchResultsUpdater = self;
     self.tableView.tableHeaderView = _searchController.searchBar;
     
+    // Get username:
     AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
-    _database = app.database;
     _username = app.username;
-}
-
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
+    
+    // Get database:
+    _database = app.database;
+    
+    // Load data:
     [self reload];
-}
-
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
 }
 
 #pragma mark - Database
@@ -55,9 +52,6 @@
 - (void)reload {
     NSError *error;
     if (!_listQuery) {
-        // Create an index: including task for search feature
-        [_database createIndexOn:@[@"type", @"name"] error:nil];
-        
         // Create a query
         _listQuery = [_database createQueryWhere:@"type == 'task-list'" orderBy:@[@"name"]
                                        returning:nil error:&error];
@@ -89,10 +83,10 @@
         [CBLUi showErrorDialog:self withMessage:@"Couldn't save task list" withError:error];
 }
 
-- (void)updateTaskList:(CBLDocument *)doc withName:(NSString *)name {
-    doc[@"name"] = name;
+- (void)updateTaskList:(CBLDocument *)list withName:(NSString *)name {
+    list[@"name"] = name;
     NSError *error;
-    if ([doc save: &error])
+    if ([list save: &error])
         [self reload];
     else
         [CBLUi showErrorDialog:self withMessage:@"Couldn't update task list" withError:error];
@@ -106,13 +100,13 @@
         [CBLUi showErrorDialog:self withMessage:@"Couldn't delete task list" withError:error];
 }
 
-- (void)searchList: (NSString*)name {
+- (void)searchTaskList: (NSString*)name {
     NSError *error;
     if (!_searchQuery) {
         NSString *where = [NSString stringWithFormat:@"type == 'task-list' AND name contains[c] $NAME"];
         _searchQuery = [_database createQueryWhere:where orderBy:@[@"name"] returning:nil error:&error];
         if (!_searchQuery) {
-            NSLog(@"Error creating a query: %@", error);
+            NSLog(@"Error creating a search query: %@", error);
             return;
         }
     }
@@ -207,9 +201,9 @@
 #pragma mark - UISearchController
 
 - (void)updateSearchResultsForSearchController:(UISearchController *)searchController {
-    NSString *text = searchController.searchBar.text ?: @"";
-    if ([text length] > 0)
-        [self searchList:text];
+    NSString *name = searchController.searchBar.text ?: @"";
+    if ([name length] > 0)
+        [self searchTaskList:name];
     else
         [self reload];
 }
