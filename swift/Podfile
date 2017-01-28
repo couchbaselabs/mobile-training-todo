@@ -1,0 +1,4 @@
+target 'Todo' do
+  use_frameworks!
+  pod 'CouchbaseLite', :git => 'https://github.com/couchbase/couchbase-lite-ios.git', :branch => 'feature/2.0-objc-swift', :submodules => true
+end
