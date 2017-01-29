@@ -13,9 +13,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface CBLImage : NSObject
 
 + (nullable UIImage *)square:(UIImage *)image
-           withSize:(CGFloat)size
-      withCacheName:(NSString *)name
-         onComplete:(void (^_Nullable)(UIImage *result))completeAction;
+                    withSize:(CGFloat)size
+               withCacheName:(NSString *)name
+                  onComplete:(void (^_Nullable)(UIImage *result))completeAction;
 
 @end
 

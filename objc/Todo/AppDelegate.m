@@ -21,7 +21,7 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     NSError *error;
     _username = kUserName;
-    _database = [[CBLDatabase alloc] initWithName: kDatabaseName error: &error];
+    _database = [[CBLDatabase alloc] initWithName:kDatabaseName error:&error];
     if (!_database) {
         NSLog(@"Cannot open the database: %@", error);
         return NO;

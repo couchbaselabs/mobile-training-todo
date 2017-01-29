@@ -48,7 +48,7 @@
 - (void)updateImage:(UIImage *)image {
     NSData *imageData = UIImageJPEGRepresentation(image, 0.5);
     if (!imageData) {
-        [CBLUi showErrorDialog:self withMessage:@"Invalid image format" withError:nil];
+        [CBLUi showErrorOn:self message:@"Invalid image format" error:nil];
         return;
     }
     
@@ -58,20 +58,20 @@
     if ([self.task save:&error])
         [self reload];
     else
-        [CBLUi showErrorDialog:self withMessage:@"Couldn't update image" withError:error];
+        [CBLUi showErrorOn:self message:@"Couldn't update image" error:error];
 }
 
 - (void)deleteImage {
     self.task[@"image"] = nil;
     NSError *error;
     if (![self.task save:&error])
-        [CBLUi showErrorDialog:self withMessage:@"Couldn't delete image" withError:error];
+        [CBLUi showErrorOn:self message:@"Couldn't delete image" error:error];
 }
 
 #pragma mark - Actions
 
 - (IBAction)editAction:(id)sender {
-    [CBLUi showImageActionSheet:self wihtImagePickerDelegate:self onDelete:^{
+    [CBLUi showImageActionSheet:self imagePickerDelegate:self onDelete:^{
         [self deleteImage];
         [self dismissViewControllerAnimated:YES completion:nil];
     }];

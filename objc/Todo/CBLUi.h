@@ -12,24 +12,24 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface CBLUi : NSObject
 
-+ (void)showTextInputDialog:(UIViewController*)controller
-                  withTitle:(nullable NSString*)title
-                withMessage:(nullable NSString*)message
-        withTextFeildConfig:(void (^_Nullable)(UITextField *textField))textFieldConfig
-                       onOk:(void (^_Nullable)(NSString *name))onOkAction;
++ (void)showTextInputOn:(UIViewController *)controller
+                  title:(nullable NSString *)title
+                message:(nullable NSString *)message
+              textField:(void (^_Nullable)(UITextField *textField))config
+                   onOk:(void (^_Nullable)(NSString *name))onOkAction;
 
-+ (void)showMessageDialog:(UIViewController*)controller
-                withTitle:(nullable NSString *)title
-              withMessage:(nullable NSString *)message
-                withError:(nullable NSError *)error
-                  onClose:(void (^_Nullable)(void))onCloseAction;
++ (void)showMessageOn:(UIViewController *)controller
+                title:(nullable NSString *)title
+              message:(nullable NSString *)message
+                error:(nullable NSError *)error
+              onClose:(void (^_Nullable)(void))onCloseAction;
 
-+ (void)showErrorDialog:(UIViewController*)controller
-            withMessage:(nullable NSString *)message
-              withError:(nullable NSError *)error;
++ (void)showErrorOn:(UIViewController *)controller
+            message:(nullable NSString *)message
+              error:(nullable NSError *)error;
 
 + (void)showImageActionSheet:(UIViewController *)controller
-     wihtImagePickerDelegate:(id<UIImagePickerControllerDelegate, UINavigationControllerDelegate>)delegate
+         imagePickerDelegate:(id<UIImagePickerControllerDelegate, UINavigationControllerDelegate>)delegate
                     onDelete:(void (^_Nullable)(void))onDeleteAction;
 
 @end

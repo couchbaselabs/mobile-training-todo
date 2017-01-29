@@ -13,8 +13,8 @@
 
 @property (strong, nonatomic) UIWindow *window;
 
-@property (readonly, nonatomic) CBLDatabase* database;
-@property (readonly, nonatomic) NSString* username;
+@property (readonly, nonatomic) CBLDatabase *database;
+@property (readonly, nonatomic) NSString *username;
 
 @end
 

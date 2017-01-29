@@ -85,7 +85,7 @@
     if ([doc save: &error])
         [self reload];
     else
-        [CBLUi showErrorDialog:self withMessage:@"Couldn't save task" withError:error];
+        [CBLUi showErrorOn:self message:@"Couldn't save task" error:error];
 }
 
 - (void)updateTask:(CBLDocument *)task withTitle:(NSString *)title {
@@ -94,7 +94,7 @@
     if ([task save: &error])
         [self reload];
     else
-        [CBLUi showErrorDialog:self withMessage:@"Couldn't update task" withError:error];
+        [CBLUi showErrorOn:self message:@"Couldn't update task" error:error];
 }
 
 - (void)updateTask:(CBLDocument *)task withComplete:(BOOL)complete {
@@ -103,7 +103,7 @@
     if ([task save: &error])
         [self reload];
     else
-        [CBLUi showErrorDialog:self withMessage:@"Couldn't update complete status" withError:error];
+        [CBLUi showErrorOn:self message:@"Couldn't update complete status" error:error];
 }
 
 - (void)updateTask:(CBLDocument *)task withImage:(UIImage *)image {
@@ -117,7 +117,7 @@
     if ([task save: &error])
         [self reload];
     else
-        [CBLUi showErrorDialog:self withMessage:@"Couldn't update task" withError:error];
+        [CBLUi showErrorOn:self message:@"Couldn't update task" error:error];
 }
 
 - (void)deleteTask:(CBLDocument *)task {
@@ -125,7 +125,7 @@
     if ([task deleteDocument:&error])
         [self reload];
     else
-        [CBLUi showErrorDialog:self withMessage:@"Couldn't delete task" withError:error];
+        [CBLUi showErrorOn:self message:@"Couldn't delete task" error:error];
 }
 
 - (void)searchTask: (NSString*)name {
@@ -156,15 +156,12 @@
 #pragma mark - Actions
 
 - (IBAction)addAction:(id)sender {
-    [CBLUi showTextInputDialog:self
-                     withTitle:@"New Task"
-                   withMessage:nil
-           withTextFeildConfig:^(UITextField *textField) {
-               textField.placeholder = @"Task";
-               textField.autocapitalizationType = UITextAutocapitalizationTypeSentences;
-           } onOk:^(NSString *name) {
-               [self createTask:name];
-           }];
+    [CBLUi showTextInputOn:self title:@"New Task" message:nil textField:^(UITextField *text) {
+        text.placeholder = @"Task";
+        text.autocapitalizationType = UITextAutocapitalizationTypeSentences;
+    } onOk:^(NSString *name) {
+        [self createTask:name];
+    }];
 }
 
 #pragma mark - Table view data source
@@ -207,7 +204,7 @@
         cell.taskImage = nil;
         cell.taskImageAction = ^() {
             _taskForImage = doc;
-            [CBLUi showImageActionSheet:self wihtImagePickerDelegate:self onDelete:nil];
+            [CBLUi showImageActionSheet:self imagePickerDelegate:self onDelete:nil];
         };
     }
     
@@ -260,11 +257,10 @@
         // Display update list dialog:
         CBLDocument *doc = ((CBLQueryRow *)_taskRows[indexPath.row]).document;
         
-        [CBLUi showTextInputDialog:self withTitle:@"Edit Task"
-                       withMessage:nil withTextFeildConfig:^(UITextField *textField) {
-            textField.placeholder = @"Task";
-            textField.text = doc[@"task"];
-            textField.autocorrectionType = UITextAutocapitalizationTypeSentences;
+        [CBLUi showTextInputOn:self title:@"Edit Task" message:nil textField:^(UITextField *text) {
+            text.placeholder = @"Task";
+            text.text = doc[@"task"];
+            text.autocorrectionType = UITextAutocapitalizationTypeSentences;
         } onOk:^(NSString * name) {
             [self updateTask:doc withTitle:name];
         }];

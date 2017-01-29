@@ -21,30 +21,28 @@
     UIAlertAction *okAction = [UIAlertAction actionWithTitle:okTitle
                                                        style:self.okButtonStyle
                                                      handler:
-    ^(UIAlertAction * _Nonnull action) {
-        UITextField *textField = alert.textFields[0];
-        if(observer)
-            [[NSNotificationCenter defaultCenter] removeObserver:observer];
-        
-        NSString *text = textField.text;
-        if (self.onOkAction && text) {
-            self.onOkAction(text);
-        }
-    }];
+                               ^(UIAlertAction * _Nonnull action) {
+                                   UITextField *textField = alert.textFields[0];
+                                   if(observer)
+                                       [[NSNotificationCenter defaultCenter] removeObserver:observer];
+                                   NSString *text = textField.text;
+                                   if (self.onOkAction && text)
+                                       self.onOkAction(text);
+                               }];
     [okAction setEnabled:NO];
     [alert addAction:okAction];
     
     // Cancel:
     NSString *cancelTitle = self.cancelButtonTitle ?: @"Cancel";
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:cancelTitle
-                                                       style:self.cancelButtonStyle
-                                                     handler:
-    ^(UIAlertAction * _Nonnull action) {
-        if(observer)
-            [[NSNotificationCenter defaultCenter] removeObserver:observer];
-        if (self.onCancelAction)
-            self.onCancelAction();
-    }];
+                                                           style:self.cancelButtonStyle
+                                                         handler:
+                                   ^(UIAlertAction * _Nonnull action) {
+                                       if(observer)
+                                           [[NSNotificationCenter defaultCenter] removeObserver:observer];
+                                       if (self.onCancelAction)
+                                           self.onCancelAction();
+                                   }];
     [okAction setEnabled:NO];
     [alert addAction:cancelAction];
     
@@ -57,7 +55,7 @@
                                                       usingBlock:
          ^(NSNotification * _Nonnull note) {
              [okAction setEnabled:(textField.text != nil)];
-        }];
+         }];
     }];
     
     [alert.view setNeedsLayout];

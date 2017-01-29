@@ -80,7 +80,7 @@
     if ([doc save: &error])
         [self reload];
     else
-        [CBLUi showErrorDialog:self withMessage:@"Couldn't save task list" withError:error];
+        [CBLUi showErrorOn:self message:@"Couldn't save task list" error:error];
 }
 
 - (void)updateTaskList:(CBLDocument *)list withName:(NSString *)name {
@@ -89,7 +89,7 @@
     if ([list save: &error])
         [self reload];
     else
-        [CBLUi showErrorDialog:self withMessage:@"Couldn't update task list" withError:error];
+        [CBLUi showErrorOn:self message:@"Couldn't update task list" error:error];
 }
 
 - (void)deleteTaskList:(CBLDocument *)list {
@@ -97,7 +97,7 @@
     if ([list deleteDocument: &error])
         [self reload];
     else
-        [CBLUi showErrorDialog:self withMessage:@"Couldn't delete task list" withError:error];
+        [CBLUi showErrorOn:self message:@"Couldn't delete task list" error:error];
 }
 
 - (void)searchTaskList: (NSString*)name {
@@ -123,13 +123,12 @@
 #pragma mark - Actions
 
 - (IBAction)addAction:(id)sender {
-    [CBLUi showTextInputDialog:self withTitle:@"New Task List" withMessage:nil
-           withTextFeildConfig:^(UITextField * _Nonnull textField) {
-               textField.placeholder = @"List name";
-               textField.autocapitalizationType = UITextAutocapitalizationTypeWords;
-           } onOk:^(NSString * _Nonnull name) {
-               [self createTaskList:name];
-           }];
+    [CBLUi showTextInputOn:self title:@"New Task List" message:nil textField:^(UITextField *text) {
+         text.placeholder = @"List name";
+         text.autocapitalizationType = UITextAutocapitalizationTypeWords;
+     } onOk:^(NSString * _Nonnull name) {
+         [self createTaskList:name];
+     }];
 }
 
 #pragma mark - Table view data source
@@ -172,10 +171,9 @@
     delete.backgroundColor = [UIColor colorWithRed:1.0 green:0.23 blue:0.19 alpha:1.0];
     
     // Update action:
-    UITableViewRowAction *update =
-        [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleNormal
-                                           title:@"Edit"
-                                         handler:
+    UITableViewRowAction *update = [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleNormal
+                                                                      title:@"Edit"
+                                                                    handler:
      ^(UITableViewRowAction *action, NSIndexPath *indexPath) {
          // Dismiss row actions:
          [tableView setEditing:NO animated:YES];
@@ -184,14 +182,13 @@
          CBLDocument *doc = ((CBLQueryRow *)_listRows[indexPath.row]).document;
          
          // Display update list dialog:
-         [CBLUi showTextInputDialog:self withTitle:@"Edit List" withMessage:nil
-                withTextFeildConfig:^(UITextField *textField) {
-                    textField.placeholder = @"List name";
-                    textField.text = doc[@"name"];
-                } onOk:^(NSString *name) {
-                    // Update task list with a new name:
-                    [self updateTaskList:doc withName:name];
-                }];
+         [CBLUi showTextInputOn:self title:@"Edit List" message:nil textField:^(UITextField *text) {
+             text.placeholder = @"List name";
+             text.text = doc[@"name"];
+         } onOk:^(NSString *name) {
+             // Update task list with a new name:
+             [self updateTaskList:doc withName:name];
+         }];
     }];
     update.backgroundColor = [UIColor colorWithRed:0.0 green:0.48 blue:1.0 alpha:1.0];
     
