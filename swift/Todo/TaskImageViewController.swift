@@ -29,13 +29,9 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
     // MARK: - Action
     
     @IBAction func editAction(_ sender: AnyObject) {
-        Ui.showImageActionSheet(
-            onController: self,
-            withImagePickerDelegate: self,
-            onDelete: {
-                self.deleteImage()
-            }
-        )
+        Ui.showImageActionSheet(on: self, imagePickerDelegate: self, onDelete: {
+            self.deleteImage()
+        })
     }
     
     @IBAction func closeAction(_ sender: AnyObject) {
@@ -65,8 +61,7 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
     
     func updateImage(image: UIImage) {
         guard let imageData = UIImageJPEGRepresentation(image, 0.5) else {
-            Ui.showMessageDialog(onController: self, withTitle: "Error",
-                                 withMessage: "Invalid image format")
+            Ui.showMessage(on: self, title: "Error", message: "Invalid image format")
             return
         }
         
@@ -75,7 +70,7 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
             try task.save()
             reload()
         } catch let error as NSError {
-            Ui.showErrorDialog(onController: self, withMessage: "Couldn't update image", withError: error)
+            Ui.showError(on: self, message: "Couldn't update image", error: error)
         }
     }
     
@@ -84,7 +79,7 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
             task["image"] = nil
             try task.save()
         } catch let error as NSError {
-            Ui.showErrorDialog(onController: self, withMessage: "Couldn't delete image", withError: error)
+            Ui.showError(on: self, message: "Couldn't delete image", error: error)
         }
     }
 }

@@ -56,11 +56,10 @@ class TextDialog {
             if let config = self.textFieldConfig {
                 config(textField)
             }
-            observer =  NotificationCenter.default.addObserver(
-                forName: NSNotification.Name.UITextFieldTextDidChange,
-                object: textField,
-                queue: OperationQueue.main) { note in
-                    okAction.isEnabled = textField.text != ""
+            observer =  NotificationCenter.default.addObserver(forName: NSNotification.Name.UITextFieldTextDidChange,
+                                                               object: textField,
+                                                               queue: OperationQueue.main) { note in
+                okAction.isEnabled = textField.text != ""
             }
         }
 

@@ -46,9 +46,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         if (taskQuery == nil) {
             do {
                 let w = "type == 'task' AND taskList.id == '\(taskList.documentID)'"
-                taskQuery = try database.createQueryWhere(w,
-                                                          orderBy: ["createdAt", "task"],
-                                                          returning: nil)
+                taskQuery = try database.createQueryWhere(w, orderBy: ["createdAt", "task"], returning: nil)
             } catch let error as NSError {
                 NSLog("Error creating a query: %@", error)
                 return
@@ -76,7 +74,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
             try doc.save()
             reload()
         } catch let error as NSError {
-            Ui.showErrorDialog(onController: self, withMessage: "Couldn't save task", withError: error)
+            Ui.showError(on: self, message: "Couldn't save task", error: error)
         }
     }
     
@@ -86,7 +84,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
             try task.save()
             reload()
         } catch let error as NSError {
-            Ui.showErrorDialog(onController: self, withMessage: "Couldn't update task", withError: error)
+            Ui.showError(on: self, message: "Couldn't update task", error: error)
         }
     }
     
@@ -96,13 +94,13 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
             try task.save()
             reload()
         } catch let error as NSError {
-            Ui.showErrorDialog(onController: self, withMessage: "Couldn't update task", withError: error)
+            Ui.showError(on: self, message: "Couldn't update task", error: error)
         }
     }
     
     func updateTask(task: CBLDocument, withImage image: UIImage) {
         guard let imageData = UIImageJPEGRepresentation(image, 0.5) else {
-            Ui.showErrorDialog(onController: self, withMessage: "Invalid image format")
+            Ui.showError(on: self, message: "Invalid image format")
             return
         }
         
@@ -112,7 +110,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
             try task.save()
             reload()
         } catch let error as NSError {
-            Ui.showErrorDialog(onController: self, withMessage: "Couldn't update task", withError: error)
+            Ui.showError(on: self, message: "Couldn't update task", error: error)
         }
     }
     
@@ -121,7 +119,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
             try task.delete()
             reload()
         } catch let error as NSError {
-            Ui.showErrorDialog(onController: self, withMessage: "Couldn't delete task", withError: error)
+            Ui.showError(on: self, message: "Couldn't delete task", error: error)
         }
     }
     
@@ -130,9 +128,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
             do {
                 let listID = taskList.documentID
                 let w = "type == 'task' AND taskList.id == '\(listID)' AND task contains[c] $NAME"
-                searchQuery = try database.createQueryWhere(w,
-                                                            orderBy: ["createdAt", "task"],
-                                                            returning: nil)
+                searchQuery = try database.createQueryWhere(w, orderBy: ["createdAt", "task"], returning: nil)
             } catch let error as NSError {
                 NSLog("Error creating a query: %@", error)
                 return
@@ -152,16 +148,11 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     // MARK: - Action
     
     @IBAction func addAction(_ sender: Any) {
-        Ui.showTextInputDialog(
-            onController: self,
-            withTitle: "New Task",
-            withMessage: nil,
-            withTextFieldConfig: { textField in
-                textField.placeholder = "Task"
-                textField.autocapitalizationType = .sentences
-        },
-            onOk: { task in
-                self.createTask(task: task)
+        Ui.showTextInput(on: self, title: "New Task", message: nil, textFieldConfig: { text in
+            text.placeholder = "Task"
+            text.autocapitalizationType = .sentences
+        }, onOk: { task in
+            self.createTask(task: task)
         })
     }
     
@@ -198,7 +189,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
             cell.taskImage = nil
             cell.taskImageAction = {
                 self.taskForImage = doc
-                Ui.showImageActionSheet(onController: self, withImagePickerDelegate: self)
+                Ui.showImageActionSheet(on: self, imagePickerDelegate: self)
             }
         }
         
@@ -245,19 +236,13 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
             // Display update list dialog:
             let document = self.taskRows![indexPath.row].document
             
-            Ui.showTextInputDialog(
-                onController: self,
-                withTitle: "Edit Task",
-                withMessage:  nil,
-                withTextFieldConfig: { textField in
-                    textField.placeholder = "Task"
-                    textField.text = document["task"] as? String
-                    textField.autocapitalizationType = .sentences
-                },
-                onOk: { task in
-                    self.updateTask(task: document, withTitle: task)
-                }
-            )
+            Ui.showTextInput(on: self, title: "Edit Task", message:  nil, textFieldConfig: { text in
+                text.placeholder = "Task"
+                text.text = document["task"] as? String
+                text.autocapitalizationType = .sentences
+            }, onOk: { task in
+                self.updateTask(task: document, withTitle: task)
+            })
         }
         update.backgroundColor = UIColor(red: 0.0, green: 0.48, blue: 1.0, alpha: 1.0)
         

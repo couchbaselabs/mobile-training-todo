@@ -15,6 +15,7 @@ let kUserName = "todo"
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
+    
     var database: CBLDatabase!
     let username = kUserName
     

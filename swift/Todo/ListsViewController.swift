@@ -69,8 +69,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
             try doc.save()
             reload()
         } catch let error as NSError {
-            Ui.showErrorDialog(onController: self,
-                               withMessage: "Couldn't save task list", withError: error)
+            Ui.showError(on: self, message: "Couldn't save task list", error: error)
         }
     }
     
@@ -80,8 +79,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
             try list.save()
             reload()
         } catch let error as NSError {
-            Ui.showErrorDialog(onController: self,
-                               withMessage: "Couldn't update task list", withError: error)
+            Ui.showError(on: self, message: "Couldn't update task list", error: error)
         }
     }
     
@@ -90,8 +88,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
             try list.delete()
             reload()
         } catch let error as NSError {
-            Ui.showErrorDialog(onController: self,
-                               withMessage: "Couldn't delete task list", withError: error)
+            Ui.showError(on: self, message: "Couldn't delete task list", error: error)
         }
     }
     
@@ -119,19 +116,13 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     // MARK: - Action
     
     @IBAction func addAction(sender: AnyObject) {
-        Ui.showTextInputDialog(
-            onController: self,
-            withTitle: "New Task List",
-            withMessage:  nil,
-            withTextFieldConfig: { textField in
-                textField.placeholder = "List name"
-                textField.autocapitalizationType = .words
-        },
-            onOk: { name in
-                self.createTaskList(name: name)
+        Ui.showTextInput(on: self, title: "New Task List", message:  nil, textFieldConfig: { text in
+            text.placeholder = "List name"
+            text.autocapitalizationType = .words
+        }, onOk: { name in
+            self.createTaskList(name: name)
         })
     }
-
    
     // MARK: - UITableViewController
     
@@ -139,8 +130,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
         return listRows?.count ?? 0
     }
     
-    override func tableView(_ tableView: UITableView,
-                            cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TaskListCell", for: indexPath)
         let row = listRows![indexPath.row] as CBLQueryRow
         cell.textLabel?.text = row.document.string(forKey: "name")
@@ -148,8 +138,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
         return cell
     }
     
-    override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath)
-        -> [UITableViewRowAction]? {
+    override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
         let delete = UITableViewRowAction(style: .normal, title: "Delete") {
             (action, indexPath) -> Void in
             // Dismiss row actions:
@@ -170,19 +159,13 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
             let doc = self.listRows![indexPath.row].document
             
             // Display update list dialog:
-            Ui.showTextInputDialog(
-                onController: self,
-                withTitle: "Edit List",
-                withMessage:  nil,
-                withTextFieldConfig: { textField in
-                    textField.placeholder = "List name"
-                    textField.text = doc["name"] as? String
-                    textField.autocapitalizationType = .words
-                },
-                onOk: { (name) -> Void in
-                    self.updateTaskList(list: doc, withName: name)
-                }
-            )
+            Ui.showTextInput(on: self, title: "Edit List", message:  nil, textFieldConfig: { text in
+                text.placeholder = "List name"
+                text.text = doc["name"] as? String
+                text.autocapitalizationType = .words
+            }, onOk: { (name) -> Void in
+                self.updateTaskList(list: doc, withName: name)
+            })
         }
         update.backgroundColor = UIColor(red: 0.0, green: 0.48, blue: 1.0, alpha: 1.0)
         
