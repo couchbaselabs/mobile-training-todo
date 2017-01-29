@@ -33,6 +33,138 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         database = app.database
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        // Load tasks:
+        reload()
+    }
+    
+    // MARK: - Database
+    
+    func reload() {
+        if (taskQuery == nil) {
+            do {
+                let w = "type == 'task' AND taskList.id == '\(taskList.documentID)'"
+                taskQuery = try database.createQueryWhere(w,
+                                                          orderBy: ["createdAt", "task"],
+                                                          returning: nil)
+            } catch let error as NSError {
+                NSLog("Error creating a query: %@", error)
+                return
+            }
+        }
+        
+        do {
+            let rows = try taskQuery.run()
+            taskRows = rows.allObjects as? [CBLQueryRow]
+            tableView.reloadData()
+        } catch let error as NSError {
+            NSLog("Error quering tasks: %@", error)
+        }
+    }
+    
+    func createTask(task: String) {
+        let doc = database.document()
+        doc["type"] = "task";
+        doc["taskList"] = ["id": taskList.documentID, "owner": taskList["owner"]];
+        doc["createdAt"] = Date()
+        doc["task"] = task;
+        doc["complete"] = false
+        
+        do {
+            try doc.save()
+            reload()
+        } catch let error as NSError {
+            Ui.showErrorDialog(onController: self, withMessage: "Couldn't save task", withError: error)
+        }
+    }
+    
+    func updateTask(task: CBLDocument, withTitle title: String) {
+        do {
+            task["task"] = title
+            try task.save()
+            reload()
+        } catch let error as NSError {
+            Ui.showErrorDialog(onController: self, withMessage: "Couldn't update task", withError: error)
+        }
+    }
+    
+    func updateTask(task: CBLDocument, withComplete complete: Bool) {
+        do {
+            task["complete"] = complete
+            try task.save()
+            reload()
+        } catch let error as NSError {
+            Ui.showErrorDialog(onController: self, withMessage: "Couldn't update task", withError: error)
+        }
+    }
+    
+    func updateTask(task: CBLDocument, withImage image: UIImage) {
+        guard let imageData = UIImageJPEGRepresentation(image, 0.5) else {
+            Ui.showErrorDialog(onController: self, withMessage: "Invalid image format")
+            return
+        }
+        
+        do {
+            let blob = try CBLBlob.init(contentType: "image/jpg", data: imageData)
+            task["image"] = blob
+            try task.save()
+            reload()
+        } catch let error as NSError {
+            Ui.showErrorDialog(onController: self, withMessage: "Couldn't update task", withError: error)
+        }
+    }
+    
+    func deleteTask(task: CBLDocument) {
+        do {
+            try task.delete()
+            reload()
+        } catch let error as NSError {
+            Ui.showErrorDialog(onController: self, withMessage: "Couldn't delete task", withError: error)
+        }
+    }
+    
+    func searchTask(task: String) {
+        if (searchQuery == nil) {
+            do {
+                let listID = taskList.documentID
+                let w = "type == 'task' AND taskList.id == '\(listID)' AND task contains[c] $NAME"
+                searchQuery = try database.createQueryWhere(w,
+                                                            orderBy: ["createdAt", "task"],
+                                                            returning: nil)
+            } catch let error as NSError {
+                NSLog("Error creating a query: %@", error)
+                return
+            }
+        }
+        
+        do {
+            searchQuery.parameters = ["NAME": task]
+            let rows = try searchQuery.run()
+            taskRows = rows.allObjects as? [CBLQueryRow]
+            tableView.reloadData()
+        } catch let error as NSError {
+            NSLog("Error searching tasks: %@", error)
+        }
+    }
+    
+    // MARK: - Action
+    
+    @IBAction func addAction(_ sender: Any) {
+        Ui.showTextInputDialog(
+            onController: self,
+            withTitle: "New Task",
+            withMessage: nil,
+            withTextFieldConfig: { textField in
+                textField.placeholder = "Task"
+                textField.autocapitalizationType = .sentences
+        },
+            onOk: { task in
+                self.createTask(task: task)
+        })
+    }
+    
     // MARK: - UITableViewController
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -152,129 +284,6 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         picker.presentingViewController?.dismiss(animated: true, completion: nil)
     }
     
-    // MARK: - Action
-    
-    func addAction(sender: AnyObject) {
-        Ui.showTextInputDialog(
-            onController: self,
-            withTitle: "New Task",
-            withMessage: nil,
-            withTextFieldConfig: { textField in
-                textField.placeholder = "Task"
-                textField.autocapitalizationType = .sentences
-            },
-            onOk: { task in
-                self.createTask(task: task)
-            }
-        )
-    }
-    
-    // MARK: - Database
-    
-    func reload() {
-        if (taskQuery == nil) {
-            do {
-                let w = "type == 'task' AND taskList.id == '\(taskList.documentID)'"
-                taskQuery = try database.createQueryWhere(w,
-                                                          orderBy: ["createdAt", "task"],
-                                                          returning: nil)
-            } catch let error as NSError {
-                NSLog("Error creating a query: %@", error)
-                return
-            }
-        }
-        
-        do {
-            let rows = try taskQuery.run()
-            taskRows = rows.allObjects as? [CBLQueryRow]
-            tableView.reloadData()
-        } catch let error as NSError {
-            NSLog("Error quering tasks: %@", error)
-        }
-    }
-    
-    func createTask(task: String) {
-        let doc = database.document()
-        doc["type"] = "task";
-        doc["taskList"] = ["id": taskList.documentID, "owner": taskList["owner"]];
-        doc["createdAt"] = Date()
-        doc["task"] = task;
-        doc["complete"] = false
-        
-        do {
-            try doc.save()
-        } catch let error as NSError {
-            Ui.showErrorDialog(onController: self, withMessage: "Couldn't save task", withError: error)
-        }
-    }
-    
-    func updateTask(task: CBLDocument, withTitle title: String) {
-        do {
-            task["task"] = title
-            try task.save()
-            reload()
-        } catch let error as NSError {
-            Ui.showErrorDialog(onController: self, withMessage: "Couldn't update task", withError: error)
-        }
-    }
-    
-    func updateTask(task: CBLDocument, withComplete complete: Bool) {
-        do {
-            task["complete"] = complete
-            try task.save()
-            reload()
-        } catch let error as NSError {
-            Ui.showErrorDialog(onController: self, withMessage: "Couldn't update task", withError: error)
-        }
-    }
-    
-    func updateTask(task: CBLDocument, withImage image: UIImage) {
-        guard let imageData = UIImageJPEGRepresentation(image, 0.5) else {
-            Ui.showErrorDialog(onController: self, withMessage: "Invalid image format")
-            return
-        }
-        
-        do {
-            let blob = try CBLBlob.init(contentType: "image/jpg", data: imageData)
-            task["image"] = blob
-            try task.save()
-            reload()
-        } catch let error as NSError {
-            Ui.showErrorDialog(onController: self, withMessage: "Couldn't update task", withError: error)
-        }
-    }
-    
-    func deleteTask(task: CBLDocument) {
-        do {
-            try task.delete()
-        } catch let error as NSError {
-            Ui.showErrorDialog(onController: self, withMessage: "Couldn't delete task", withError: error)
-        }
-    }
-    
-    func searchTask(task: String) {
-        if (searchQuery == nil) {
-            do {
-                let listID = taskList.documentID
-                let w = "type == 'task' AND taskList.id == '\(listID)' AND task contains[c] $NAME"
-                searchQuery = try database.createQueryWhere(w,
-                                                          orderBy: ["createdAt", "task"],
-                                                          returning: nil)
-            } catch let error as NSError {
-                NSLog("Error creating a query: %@", error)
-                return
-            }
-        }
-        
-        do {
-            let rows = try searchQuery.run()
-            taskRows = rows.allObjects as? [CBLQueryRow]
-            tableView.reloadData()
-        } catch let error as NSError {
-            NSLog("Error searching tasks: %@", error)
-        }
-    }
-    
     // MARK: - Navigation
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -284,5 +293,12 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
             controller.task = taskForImage
             taskForImage = nil
         }
+    }
+    
+    // MARK: - Deinit
+    
+    deinit {
+        // Fix "... load the view of a view controller while it is deallocating" warning.
+        searchController?.view.removeFromSuperview()
     }
 }

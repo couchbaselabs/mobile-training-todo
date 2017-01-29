@@ -122,7 +122,11 @@
                     <extendedEdge key="edgesForExtendedLayout" top="YES"/>
                     <tabBarItem key="tabBarItem" title="Tasks" image="Tasks" id="DS0-od-W6M"/>
                     <navigationItem key="navigationItem" title="Tasks" id="1MR-NE-Bb7">
-                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="tJZ-3K-jgX"/>
+                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="tJZ-3K-jgX">
+                            <connections>
+                                <action selector="addAction:" destination="H2V-85-BBg" id="o74-kW-Kk5"/>
+                            </connections>
+                        </barButtonItem>
                     </navigationItem>
                     <connections>
                         <segue destination="FxE-I0-R1m" kind="modal" identifier="showTaskImage" id="zlz-mt-6US"/>

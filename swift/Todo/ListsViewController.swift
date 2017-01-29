@@ -31,6 +31,8 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
         
         // Get username:
         username = app.username
+        
+        reload()
     }
     
     // MARK: - Database
@@ -96,7 +98,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     func searchTaskList(name: String) {
         if (searchQuery == nil) {
             do {
-                let w = "type == 'task-list' AND name contain[c] $NAME"
+                let w = "type == 'task-list' AND name contains[c] $NAME"
                 try searchQuery = database.createQueryWhere(w, orderBy: ["name"], returning: nil)
             } catch let error as NSError {
                 NSLog("Error creating a search query: %@", error)
@@ -104,9 +106,8 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
             }
         }
         
-        searchQuery.parameters = ["NAME": name]
-        
         do {
+            searchQuery.parameters = ["NAME": name]
             let rows = try searchQuery.run()
             listRows = rows.allObjects as? [CBLQueryRow]
             tableView.reloadData()
