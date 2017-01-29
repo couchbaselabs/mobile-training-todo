@@ -2,23 +2,23 @@ PODS:
   - CouchbaseLite (2.0-dp.1)
 
 DEPENDENCIES:
-  - CouchbaseLite (from `https://github.com/couchbase/couchbase-lite-ios.git`, branch `feature/2.0-objc-swift`)
+  - CouchbaseLite (from `https://github.com/couchbase/couchbase-lite-ios.git`, branch `feature/2.0`)
 
 EXTERNAL SOURCES:
   CouchbaseLite:
-    :branch: feature/2.0-objc-swift
+    :branch: feature/2.0
     :git: https://github.com/couchbase/couchbase-lite-ios.git
     :submodules: true
 
 CHECKOUT OPTIONS:
   CouchbaseLite:
-    :commit: 913b2afd05218ab9013476c109deabae630239ed
+    :commit: b33c813f5ad640c1fd9705c6035d35b7310340bd
     :git: https://github.com/couchbase/couchbase-lite-ios.git
     :submodules: true
 
 SPEC CHECKSUMS:
   CouchbaseLite: abf04b1baa9ca040364c3cde7c6c818392518cf3
 
-PODFILE CHECKSUM: 46a9b22d05d04571b7be218531ae5d67fa31b321
+PODFILE CHECKSUM: 2ed60c2a5b9e2b8c0046a4ef1a048eb72404bf02
 
 COCOAPODS: 1.1.1
