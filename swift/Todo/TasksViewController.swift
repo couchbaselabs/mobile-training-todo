@@ -44,13 +44,9 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     func reload() {
         if (taskQuery == nil) {
-            do {
-                let w = "type == 'task' AND taskList.id == '\(taskList.documentID)'"
-                taskQuery = try database.createQueryWhere(w, orderBy: ["createdAt", "task"], returning: nil)
-            } catch let error as NSError {
-                NSLog("Error creating a query: %@", error)
-                return
-            }
+            let listID = taskList.documentID
+            taskQuery = database.createQueryWhere("type == 'task' AND taskList.id == '\(listID)'")
+            taskQuery.orderBy = ["createdAt", "task"]
         }
         
         do {
@@ -125,14 +121,10 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     func searchTask(task: String) {
         if (searchQuery == nil) {
-            do {
-                let listID = taskList.documentID
-                let w = "type == 'task' AND taskList.id == '\(listID)' AND task contains[c] $NAME"
-                searchQuery = try database.createQueryWhere(w, orderBy: ["createdAt", "task"], returning: nil)
-            } catch let error as NSError {
-                NSLog("Error creating a query: %@", error)
-                return
-            }
+            let listID = taskList.documentID
+            let w = "type == 'task' AND taskList.id == '\(listID)' AND task contains[c] $NAME"
+            searchQuery = database.createQueryWhere(w)
+            searchQuery.orderBy = ["createdAt", "task"]
         }
         
         do {

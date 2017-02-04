@@ -17,9 +17,14 @@
     
     CBLDatabase *_database;
     NSString *_username;
+    
     CBLQuery *_listQuery;
     CBLQuery *_searchQuery;
     NSArray* _listRows;
+    
+    CBLQuery *_incompTasksCountsQuery;
+    NSMutableDictionary *_incompTasksCounts;
+    BOOL shouldUpdateIncompTasksCount;
 }
 
 @end
@@ -47,25 +52,54 @@
     [self reload];
 }
 
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    
+    if (shouldUpdateIncompTasksCount)
+        [self updateIncompleteTasksCounts];
+}
+
 #pragma mark - Database
 
 - (void)reload {
-    NSError *error;
     if (!_listQuery) {
-        // Create a query
-        _listQuery = [_database createQueryWhere:@"type == 'task-list'" orderBy:@[@"name"]
-                                       returning:nil error:&error];
-        if (!_listQuery) {
-            NSLog(@"Error creating a query: %@", error);
-            return;
-        }
+        _listQuery = [_database createQueryWhere:@"type == 'task-list'"];
+        _listQuery.orderBy = @[@"name"];
     }
     
+    NSError *error;
     NSEnumerator *rows = [_listQuery run: &error];
     if (!rows)
         NSLog(@"Error querying task list: %@", error);
     
     _listRows = [rows allObjects];
+    
+    [self updateIncompleteTasksCounts];
+    
+    [self.tableView reloadData];
+}
+
+- (void)updateIncompleteTasksCounts {
+    shouldUpdateIncompTasksCount = NO;
+    
+    if (!_incompTasksCountsQuery) {
+        _incompTasksCountsQuery = [_database createQueryWhere:@"type == 'task' AND complete == false"];
+        _incompTasksCountsQuery.groupBy = @[@"taskList.id"];
+        _incompTasksCountsQuery.returning = @[@"taskList.id", @"count(1)"];
+    }
+    
+    NSError *error;
+    NSEnumerator *rows = [_incompTasksCountsQuery run: &error];
+    if (!rows)
+        NSLog(@"Error querying incomplete tasks counts: %@", error);
+    
+    if (!_incompTasksCounts)
+        _incompTasksCounts = [NSMutableDictionary dictionary];
+    
+    [_incompTasksCounts removeAllObjects];
+    for (CBLQueryRow *row in rows) {
+        _incompTasksCounts[row[0]] = row[1];
+    }
     [self.tableView reloadData];
 }
 
@@ -101,17 +135,14 @@
 }
 
 - (void)searchTaskList: (NSString*)name {
-    NSError *error;
     if (!_searchQuery) {
-        NSString *where = [NSString stringWithFormat:@"type == 'task-list' AND name contains[c] $NAME"];
-        _searchQuery = [_database createQueryWhere:where orderBy:@[@"name"] returning:nil error:&error];
-        if (!_searchQuery) {
-            NSLog(@"Error creating a search query: %@", error);
-            return;
-        }
+        _searchQuery = [_database createQueryWhere:@"type == 'task-list' AND name contains[c] $NAME"];
+        _searchQuery.orderBy = @[@"name"];
     }
     
     _searchQuery.parameters = @{@"NAME": name};
+    
+    NSError *error;
     NSEnumerator *rows = [_searchQuery run: &error];
     if (!rows)
         NSLog(@"Error searching task list: %@", error);
@@ -148,7 +179,10 @@
                                                             forIndexPath:indexPath];
     CBLQueryRow *row = _listRows[indexPath.row];
     cell.textLabel.text = row.document[@"name"];
-    cell.detailTextLabel.text = nil;
+    
+    NSInteger count = [_incompTasksCounts[row.documentID] integerValue];
+    cell.detailTextLabel.text = count > 0 ? [NSString stringWithFormat:@"%ld", (long)count] : @"";
+    
     return cell;
 }
 
@@ -211,6 +245,7 @@
     CBLQueryRow *row = (CBLQueryRow *)_listRows[[self.tableView indexPathForSelectedRow].row];
     CBLTasksViewController *controller = (CBLTasksViewController*)segue.destinationViewController;
     controller.taskList = row.document;
+    shouldUpdateIncompTasksCount = YES;
 }
 
 @end

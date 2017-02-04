@@ -51,20 +51,14 @@
 #pragma mark - Database
 
 - (void)reload {
-    NSError *error;
     if (!_taskQuery) {
-        NSString *where = [NSString stringWithFormat:@"type == 'task' AND taskList.id == '%@'",
-                       self.taskList.documentID];
-        _taskQuery = [_database createQueryWhere:where
-                                         orderBy:@[@"createdAt", @"task"]
-                                       returning:nil
-                                           error:&error];
-        if (!_taskQuery) {
-            NSLog(@"Error creating a query: %@", error);
-            return;
-        }
+        NSString *where = [NSString stringWithFormat: @"type == 'task' AND taskList.id == '%@'",
+                           self.taskList.documentID];
+        _taskQuery = [_database createQueryWhere:where];
+        _taskQuery.orderBy = @[@"createdAt", @"task"];
     }
     
+    NSError *error;
     NSEnumerator *rows = [_taskQuery run: &error];
     if (!rows)
         NSLog(@"Error querying tasks: %@", error);
@@ -129,22 +123,17 @@
 }
 
 - (void)searchTask: (NSString*)name {
-    NSError *error;
     if (!_searchQuery) {
         NSString *where = [NSString stringWithFormat:
                            @"type == 'task' AND taskList.id == '%@' AND task contains[c] $NAME",
                            self.taskList.documentID];
-        _searchQuery = [_database createQueryWhere:where
-                                           orderBy:@[@"createdAt", @"task"]
-                                         returning:nil
-                                             error:&error];
-        if (!_searchQuery) {
-            NSLog(@"Error creating a query: %@", error);
-            return;
-        }
+        _searchQuery = [_database createQueryWhere: where];
+        _searchQuery.orderBy = @[@"createdAt", @"task"];
     }
     
     _searchQuery.parameters = @{@"NAME": name};
+    
+    NSError *error;
     NSEnumerator *rows = [_searchQuery run: &error];
     if (!rows)
         NSLog(@"Error searching tasks: %@", error);
