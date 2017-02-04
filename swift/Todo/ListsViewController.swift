@@ -11,11 +11,17 @@ import CouchbaseLite
 
 class ListsViewController: UITableViewController, UISearchResultsUpdating {
     var searchController: UISearchController!
+    
     var database: CBLDatabase!
     var username: String!
+    
     var listQuery: CBLQuery!
     var searchQuery: CBLQuery!
     var listRows : [CBLQueryRow]?
+    
+    var incompTasksCountsQuery: CBLQuery!
+    var incompTasksCounts: [String:Int] = [:]
+    var shouldUpdateIncompTasksCount: Bool = true
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,26 +41,51 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
         reload()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        if (shouldUpdateIncompTasksCount) {
+            updateIncompleteTasksCounts()
+        }
+    }
+    
     // MARK: - Database
     
     func reload() {
         if (listQuery == nil) {
-            try! database.createIndex(on: ["type", "name"])
-            do {
-                listQuery = try database.createQueryWhere("type == 'task-list'", orderBy: ["name"],
-                                                          returning: nil)
-            } catch let error as NSError {
-                NSLog("Error creating a query: %@", error)
-                return
-            }
+            listQuery = database.createQueryWhere("type == 'task-list'")
+            listQuery.orderBy = ["name"]
         }
         
         do {
             let rows = try listQuery.run()
             listRows = rows.allObjects as? [CBLQueryRow]
+            
+            updateIncompleteTasksCounts()
             tableView.reloadData()
         } catch let error as NSError {
             NSLog("Error querying task list: %@", error)
+        }
+    }
+    
+    func updateIncompleteTasksCounts() {
+        shouldUpdateIncompTasksCount = false;
+        
+        if (incompTasksCountsQuery == nil) {
+            incompTasksCountsQuery = database.createQueryWhere("type == 'task' AND complete == false")
+            incompTasksCountsQuery.groupBy = ["taskList.id"]
+            incompTasksCountsQuery.returning = ["taskList.id", "count(1)"]
+        }
+        
+        do {
+            incompTasksCounts.removeAll()
+            let rows = try incompTasksCountsQuery.run()
+            while let row = rows.nextObject() as? CBLQueryRow {
+                incompTasksCounts[row.string(at: 0)!] = row.integer(at: 1);
+            }
+            tableView.reloadData()
+        } catch let error as NSError {
+            NSLog("Error querying incomplete tasks counts: %@", error)
         }
     }
     
@@ -94,13 +125,8 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     
     func searchTaskList(name: String) {
         if (searchQuery == nil) {
-            do {
-                let w = "type == 'task-list' AND name contains[c] $NAME"
-                try searchQuery = database.createQueryWhere(w, orderBy: ["name"], returning: nil)
-            } catch let error as NSError {
-                NSLog("Error creating a search query: %@", error)
-                return
-            }
+            searchQuery = database.createQueryWhere("type == 'task-list' AND name contains[c] $NAME")
+            searchQuery.orderBy = ["name"]
         }
         
         do {
@@ -135,6 +161,10 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
         let row = listRows![indexPath.row] as CBLQueryRow
         cell.textLabel?.text = row.document.string(forKey: "name")
         cell.detailTextLabel?.text = nil
+        
+        let count = incompTasksCounts[row.documentID] ?? 0
+        cell.detailTextLabel?.text = count > 0 ? "\(count)" : ""
+        
         return cell
     }
     
@@ -188,5 +218,6 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
         let row = listRows![self.tableView.indexPathForSelectedRow!.row]
         let controller = segue.destination as! TasksViewController
         controller.taskList = row.document
+        shouldUpdateIncompTasksCount = true
     }
 }

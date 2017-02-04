@@ -1,5 +1,5 @@
 PODS:
-  - CouchbaseLite (2.0-dp.1)
+  - CouchbaseLite (2.0DP001)
 
 DEPENDENCIES:
   - CouchbaseLite (from `https://github.com/couchbase/couchbase-lite-ios.git`, branch `feature/2.0`)
@@ -12,12 +12,12 @@ EXTERNAL SOURCES:
 
 CHECKOUT OPTIONS:
   CouchbaseLite:
-    :commit: b33c813f5ad640c1fd9705c6035d35b7310340bd
+    :commit: 77b5629c98a193d352a38f0eb2db68053b240b66
     :git: https://github.com/couchbase/couchbase-lite-ios.git
     :submodules: true
 
 SPEC CHECKSUMS:
-  CouchbaseLite: abf04b1baa9ca040364c3cde7c6c818392518cf3
+  CouchbaseLite: 59385661eca9da32232710401015b48faa806fba
 
 PODFILE CHECKSUM: 2ed60c2a5b9e2b8c0046a4ef1a048eb72404bf02
 
