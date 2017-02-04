@@ -128,7 +128,8 @@ public class TasksFragment extends Fragment {
                         ArrayList<String> key = new ArrayList<String>();
                         key.add(listId);
                         key.add(task);
-                        emitter.emit(key, null);
+                        String value = (String) document.get("_rev");
+                        emitter.emit(key, value);
                     }
                 }
             }, "5.0");
