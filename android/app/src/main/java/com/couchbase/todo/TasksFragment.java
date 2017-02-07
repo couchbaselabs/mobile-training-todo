@@ -125,16 +125,14 @@ public class TasksFragment extends Fragment {
                         Map<String, Object> taskList = (Map<String, Object>) document.get("taskList");
                         String listId = (String) taskList.get("id");
                         String task = (String) document.get("task");
-                        Long createdAt = (Long) document.get("createdAt");
-                        ArrayList<Object> key = new ArrayList<Object>();
+                        ArrayList<String> key = new ArrayList<String>();
                         key.add(listId);
-                        key.add(createdAt);
                         key.add(task);
                         String value = (String) document.get("_rev");
                         emitter.emit(key, value);
                     }
                 }
-            }, "1.0");
+            }, "5.0");
         }
 
         Query query = view.createQuery();
