@@ -200,7 +200,7 @@ namespace Training.Core
 
         #region Public API
 
-        public void Replace(IEnumerable<T> newItems)
+        public void Replace(IEnumerable<T> newItems, bool log = false)
         {
             var index = 0;
             foreach(T item in newItems) {
@@ -208,11 +208,20 @@ namespace Training.Core
                     var existing = IndexOf(item);
 
                     if(existing == -1) {
+                        if(log) {
+                            Console.WriteLine($"Setting index #{index} to the new item");
+                        }
                         SetItem(index, item);
                     } else if(existing != index) {
+                        if(log) {
+                            Console.WriteLine($"Moving existing index #{existing} to #{index}");
+                        }
                         Move(existing, index);
                     }
                 } else {
+                    if(log) {
+                        Console.WriteLine($"Adding #{index} to the end of the collection");
+                    }
                     Add(item);
                 }
 
@@ -220,6 +229,9 @@ namespace Training.Core
             }
 
             while(index < Count) {
+                if(log) {
+                    Console.WriteLine($"Removing index #{index}");
+                }
                 RemoveAt(index);
             }
         }

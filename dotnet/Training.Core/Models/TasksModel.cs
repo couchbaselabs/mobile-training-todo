@@ -191,7 +191,7 @@ namespace Training.Core
                 ListData.Replace(e.Rows.Select(x => {
                     Console.WriteLine($"    ...Found #{x.SequenceNumber} ({x.DocumentId})");
                     return new TaskCellModel(x.DocumentId);
-                }));
+                }), true);
             };
             _tasksLiveQuery.Start();
         }
