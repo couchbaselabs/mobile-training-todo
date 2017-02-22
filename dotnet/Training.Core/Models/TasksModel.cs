@@ -187,7 +187,11 @@ namespace Training.Core
             _tasksLiveQuery.Descending = false;
             _tasksLiveQuery.Changed += (sender, e) =>
             {
-                ListData.Replace(e.Rows.Select(x => new TaskCellModel(x.DocumentId)));
+                Console.WriteLine("_tasksLiveQuery changed...");
+                ListData.Replace(e.Rows.Select(x => {
+                    Console.WriteLine($"    ...Found #{x.SequenceNumber} ({x.DocumentId})");
+                    return new TaskCellModel(x.DocumentId);
+                }));
             };
             _tasksLiveQuery.Start();
         }
