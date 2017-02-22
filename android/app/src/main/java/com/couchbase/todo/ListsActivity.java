@@ -46,6 +46,7 @@ public class ListsActivity extends AppCompatActivity {
     private Map<String, Object> incompCounts;
 
     private LiveQuery listsLiveQuery = null;
+    private LiveQuery incompTasksCountLiveQuery = null;
     private ListAdapter mAdapter;
 
     @Override
@@ -54,6 +55,10 @@ public class ListsActivity extends AppCompatActivity {
         if (listsLiveQuery != null) {
             listsLiveQuery.stop();
             listsLiveQuery = null;
+        }
+        if (incompTasksCountLiveQuery != null) {
+            incompTasksCountLiveQuery.stop();
+            incompTasksCountLiveQuery = null;
         }
     }
 
@@ -201,9 +206,10 @@ public class ListsActivity extends AppCompatActivity {
             }, "1.0");
         }
 
-        final LiveQuery incompTasksCountLiveQuery = incompTasksCountView.createQuery().toLiveQuery();
+        incompTasksCountLiveQuery = incompTasksCountView.createQuery().toLiveQuery();
         incompTasksCountLiveQuery.setGroupLevel(1);
 
+        final LiveQuery finalIncompTasksCountLiveQuery = incompTasksCountLiveQuery;
         incompTasksCountLiveQuery.addChangeListener(new LiveQuery.ChangeListener() {
             @Override
             public void changed(LiveQuery.ChangeEvent event) {
@@ -211,7 +217,7 @@ public class ListsActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         Map<String, Object> counts = new HashMap<String, Object>();
-                        QueryEnumerator rows = incompTasksCountLiveQuery.getRows();
+                        QueryEnumerator rows = finalIncompTasksCountLiveQuery.getRows();
                         for (QueryRow row : rows) {
                             String listId = (String) row.getKey();
                             int count = (int) row.getValue();
