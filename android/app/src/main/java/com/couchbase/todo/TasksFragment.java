@@ -66,6 +66,8 @@ public class TasksFragment extends Fragment {
     private String mUsername;
     public Document mTaskList;
 
+    LiveQuery listsLiveQuery = null;
+
     private android.view.LayoutInflater mInflater;
     private View mainView;
 
@@ -77,6 +79,15 @@ public class TasksFragment extends Fragment {
     private Document mCurrentTaskToAttachImage;
 
     public TasksFragment() {
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (listsLiveQuery != null) {
+            listsLiveQuery.stop();
+            listsLiveQuery = null;
+        }
     }
 
     @Nullable
@@ -143,7 +154,7 @@ public class TasksFragment extends Fragment {
         query.setEndKey(key);
         query.setPrefixMatchLevel(1);
         query.setDescending(false);
-        LiveQuery listsLiveQuery = query.toLiveQuery();
+        listsLiveQuery = query.toLiveQuery();
 
         final TasksFragment.TaskAdapter mAdapter = new TasksFragment.TaskAdapter(getActivity(), listsLiveQuery);
 
