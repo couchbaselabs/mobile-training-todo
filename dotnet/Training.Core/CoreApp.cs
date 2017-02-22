@@ -141,6 +141,27 @@ namespace Training.Core
                 Database.ChangeEncryptionKey(new SymmetricKey(newKey));
             }
 
+            var currentUsersView = Database.GetView("currentUsers");
+            currentUsersView.SetMap((doc, emit) =>
+            {
+                if (!NeedsMonitoringFor(doc, Database.Name)) {
+                    return;
+                }
+
+                emit(doc["_id"], null);
+            }, "1.0");
+
+            var currentUsers = currentUsersView.CreateQuery().Run();
+            foreach (var currentUser in currentUsers) {
+                var doc = Database.GetExistingDocument(currentUser.Key as string);
+                if (doc == null) {
+                    continue;
+                }
+
+                _accessDocuments.Add(doc);
+                doc.Change += HandleAccessChanged;
+            }
+
             Database.Changed += (sender, args) =>
             {
                 if (!args.IsExternal)
@@ -162,19 +183,7 @@ namespace Training.Core
                         continue;
                     }
 
-                    object docType;
-                    if (!changedDoc.Properties.TryGetValue("type", out docType))
-                    {
-                        continue;
-                    }
-
-                    if ((docType as string) != "task-list.user")
-                    {
-                        continue;
-                    }
-
-                    if (changedDoc.UserProperties["username"] as string != db.Name)
-                    {
+                    if (!NeedsMonitoringFor(changedDoc.Properties, db.Name)) {
                         continue;
                     }
 
@@ -273,6 +282,24 @@ namespace Training.Core
         #endregion
 
         #region Private API
+
+        private static bool NeedsMonitoringFor(IDictionary<string, object> userAccessDoc, string user)
+        {
+            object docType;
+            if(!userAccessDoc.TryGetValue("type", out docType)) {
+                return false;
+            }
+
+            if((docType as string) != "task-list.user") {
+                return false;
+            }
+
+            if(userAccessDoc["username"] as string != user) {
+                return false;
+            }
+
+            return true;
+        }
 
         private static void HandleAccessChanged(object sender, Document.DocumentChangeEventArgs args)
         {
