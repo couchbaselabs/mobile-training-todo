@@ -30,12 +30,10 @@ import com.couchbase.lite.util.Log;
 import com.couchbase.todo.util.LiveQueryAdapter;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import static com.couchbase.todo.ListDetailActivity.INTENT_LIST_ID;
-import static com.couchbase.todo.R.id.fab;
 
 public class UsersFragment extends Fragment {
     private LayoutInflater mInflater;
@@ -44,8 +42,18 @@ public class UsersFragment extends Fragment {
     private Database mDatabase;
     private String mUsername;
     public Document mTaskList;
+    LiveQuery usersLiveQuery = null;
 
     public UsersFragment() {
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (usersLiveQuery != null) {
+            usersLiveQuery.stop();
+            usersLiveQuery = null;
+        }
     }
 
     @Nullable
@@ -99,7 +107,7 @@ public class UsersFragment extends Fragment {
 
         Query query = view.createQuery();
 
-        LiveQuery usersLiveQuery = query.toLiveQuery();
+        usersLiveQuery = query.toLiveQuery();
         ArrayList<String> startKey = new ArrayList<String>();
         startKey.add(mTaskList.getId());
         usersLiveQuery.setStartKey(startKey);

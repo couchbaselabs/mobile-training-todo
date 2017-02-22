@@ -45,8 +45,17 @@ public class ListsActivity extends AppCompatActivity {
     private String mUsername;
     private Map<String, Object> incompCounts;
 
-    private LiveQuery listsLiveQuery;
+    private LiveQuery listsLiveQuery = null;
     private ListAdapter mAdapter;
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (listsLiveQuery != null) {
+            listsLiveQuery.stop();
+            listsLiveQuery = null;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
