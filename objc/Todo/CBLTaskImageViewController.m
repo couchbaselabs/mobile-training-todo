@@ -52,7 +52,7 @@
         return;
     }
     
-    self.task[@"image"] = [[CBLBlob alloc] initWithContentType:@"image/jpg" data:imageData error:nil];
+    self.task[@"image"] = [[CBLBlob alloc] initWithContentType:@"image/jpg" data:imageData];
     
     NSError *error;
     if ([self.task save:&error])
