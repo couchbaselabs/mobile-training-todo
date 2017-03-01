@@ -7,19 +7,19 @@
 //
 
 import UIKit
-import CouchbaseLite
+import CouchbaseLiteSwift
 
 class ListsViewController: UITableViewController, UISearchResultsUpdating {
     var searchController: UISearchController!
     
-    var database: CBLDatabase!
+    var database: Database!
     var username: String!
     
-    var listQuery: CBLQuery!
-    var searchQuery: CBLQuery!
-    var listRows : [CBLQueryRow]?
+    var listQuery: Query!
+    var searchQuery: Query!
+    var listRows : [QueryRow]?
     
-    var incompTasksCountsQuery: CBLQuery!
+    var incompTasksCountsQuery: Query!
     var incompTasksCounts: [String:Int] = [:]
     var shouldUpdateIncompTasksCount: Bool = true
     
@@ -53,14 +53,12 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     
     func reload() {
         if (listQuery == nil) {
-            listQuery = database.createQueryWhere("type == 'task-list'")
-            listQuery.orderBy = ["name"]
+            listQuery = database.createQuery(where: "type == 'task-list'", orderBy: ["name"])
         }
         
         do {
             let rows = try listQuery.run()
-            listRows = rows.allObjects as? [CBLQueryRow]
-            
+            listRows = Array(rows)            
             updateIncompleteTasksCounts()
             tableView.reloadData()
         } catch let error as NSError {
@@ -72,16 +70,17 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
         shouldUpdateIncompTasksCount = false;
         
         if (incompTasksCountsQuery == nil) {
-            incompTasksCountsQuery = database.createQueryWhere("type == 'task' AND complete == false")
-            incompTasksCountsQuery.groupBy = ["taskList.id"]
-            incompTasksCountsQuery.returning = ["taskList.id", "count(1)"]
+            incompTasksCountsQuery = database.createQuery(
+                where: "type == 'task' AND complete == false",
+                groupBy: ["taskList.id"],
+                returning: ["taskList.id", "count(1)"])
         }
         
         do {
             incompTasksCounts.removeAll()
             let rows = try incompTasksCountsQuery.run()
-            while let row = rows.nextObject() as? CBLQueryRow {
-                incompTasksCounts[row.string(at: 0)!] = row.integer(at: 1);
+            for row in rows {
+                incompTasksCounts[row[0]!] = row[1]
             }
             tableView.reloadData()
         } catch let error as NSError {
@@ -104,7 +103,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
         }
     }
     
-    func updateTaskList(list: CBLDocument, withName name: String) {
+    func updateTaskList(list: Document, withName name: String) {
         list["name"] = name
         do {
             try list.save()
@@ -114,7 +113,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
         }
     }
     
-    func deleteTaskList(list: CBLDocument) {
+    func deleteTaskList(list: Document) {
         do {
             try list.delete()
             reload()
@@ -125,14 +124,14 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     
     func searchTaskList(name: String) {
         if (searchQuery == nil) {
-            searchQuery = database.createQueryWhere("type == 'task-list' AND name contains[c] $NAME")
-            searchQuery.orderBy = ["name"]
+            searchQuery = database.createQuery(
+                where: "type == 'task-list' AND name contains[c] $NAME", orderBy: ["name"])
         }
         
         do {
             searchQuery.parameters = ["NAME": name]
             let rows = try searchQuery.run()
-            listRows = rows.allObjects as? [CBLQueryRow]
+            listRows = Array(rows)
             tableView.reloadData()
         } catch let error as NSError {
             NSLog("Error searching task list: %@", error)
@@ -158,8 +157,8 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TaskListCell", for: indexPath)
-        let row = listRows![indexPath.row] as CBLQueryRow
-        cell.textLabel?.text = row.document.string(forKey: "name")
+        let row = listRows![indexPath.row]
+        cell.textLabel?.text = row.document["name"]
         cell.detailTextLabel?.text = nil
         
         let count = incompTasksCounts[row.documentID] ?? 0
@@ -191,7 +190,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
             // Display update list dialog:
             Ui.showTextInput(on: self, title: "Edit List", message:  nil, textFieldConfig: { text in
                 text.placeholder = "List name"
-                text.text = doc["name"] as? String
+                text.text = doc["name"]
                 text.autocapitalizationType = .words
             }, onOk: { (name) -> Void in
                 self.updateTaskList(list: doc, withName: name)

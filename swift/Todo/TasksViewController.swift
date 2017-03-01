@@ -7,18 +7,18 @@
 //
 
 import UIKit
-import CouchbaseLite
+import CouchbaseLiteSwift
 
 class TasksViewController: UITableViewController, UISearchResultsUpdating,
     UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     var searchController: UISearchController!
     
-    var database: CBLDatabase!
-    var taskList: CBLDocument!
-    var taskQuery: CBLQuery!
-    var searchQuery: CBLQuery!
-    var taskRows : [CBLQueryRow]?
-    var taskForImage: CBLDocument?
+    var database: Database!
+    var taskList: Document!
+    var taskQuery: Query!
+    var searchQuery: Query!
+    var taskRows : [QueryRow]?
+    var taskForImage: Document?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -45,13 +45,14 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     func reload() {
         if (taskQuery == nil) {
             let listID = taskList.documentID
-            taskQuery = database.createQueryWhere("type == 'task' AND taskList.id == '\(listID)'")
-            taskQuery.orderBy = ["createdAt", "task"]
+            taskQuery = database.createQuery(
+                where: "type == 'task' AND taskList.id == '\(listID)'",
+                orderBy: ["createdAt", "task"])
         }
         
         do {
             let rows = try taskQuery.run()
-            taskRows = rows.allObjects as? [CBLQueryRow]
+            taskRows = Array(rows)
             tableView.reloadData()
         } catch let error as NSError {
             NSLog("Error quering tasks: %@", error)
@@ -61,7 +62,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     func createTask(task: String) {
         let doc = database.document()
         doc["type"] = "task";
-        doc["taskList"] = ["id": taskList.documentID, "owner": taskList["owner"]];
+        doc["taskList"] = ["id": taskList.documentID, "owner": taskList.property("owner")];
         doc["createdAt"] = Date()
         doc["task"] = task;
         doc["complete"] = false
@@ -74,7 +75,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         }
     }
     
-    func updateTask(task: CBLDocument, withTitle title: String) {
+    func updateTask(task: Document, withTitle title: String) {
         do {
             task["task"] = title
             try task.save()
@@ -84,7 +85,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         }
     }
     
-    func updateTask(task: CBLDocument, withComplete complete: Bool) {
+    func updateTask(task: Document, withComplete complete: Bool) {
         do {
             task["complete"] = complete
             try task.save()
@@ -94,14 +95,14 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         }
     }
     
-    func updateTask(task: CBLDocument, withImage image: UIImage) {
+    func updateTask(task: Document, withImage image: UIImage) {
         guard let imageData = UIImageJPEGRepresentation(image, 0.5) else {
             Ui.showError(on: self, message: "Invalid image format")
             return
         }
         
         do {
-            let blob = try CBLBlob.init(contentType: "image/jpg", data: imageData)
+            let blob = Blob(contentType: "image/jpg", data: imageData)
             task["image"] = blob
             try task.save()
             reload()
@@ -110,7 +111,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         }
     }
     
-    func deleteTask(task: CBLDocument) {
+    func deleteTask(task: Document) {
         do {
             try task.delete()
             reload()
@@ -123,14 +124,13 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         if (searchQuery == nil) {
             let listID = taskList.documentID
             let w = "type == 'task' AND taskList.id == '\(listID)' AND task contains[c] $NAME"
-            searchQuery = database.createQueryWhere(w)
-            searchQuery.orderBy = ["createdAt", "task"]
+            searchQuery = database.createQuery(where: w, orderBy: ["createdAt", "task"])
         }
         
         do {
             searchQuery.parameters = ["NAME": task]
             let rows = try searchQuery.run()
-            taskRows = rows.allObjects as? [CBLQueryRow]
+            taskRows = Array(rows)
             tableView.reloadData()
         } catch let error as NSError {
             NSLog("Error searching tasks: %@", error)
@@ -158,12 +158,12 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         let cell = tableView.dequeueReusableCell(withIdentifier: "TaskCell") as! TaskTableViewCell
         
         let doc = taskRows![indexPath.row].document
-        cell.taskLabel.text = doc.string(forKey: "task")
+        cell.taskLabel.text = doc["task"]
         
-        let complete = doc.boolean(forKey: "complete")
+        let complete: Bool = doc["complete"]
         cell.accessoryType = complete ? .checkmark : .none
         
-        if let imageBlob = doc["image"] as? CBLBlob {
+        if let imageBlob = doc.property("image") as? Blob {
             let digest = imageBlob.digest!
             let image = UIImage(data: imageBlob.content!, scale: UIScreen.main.scale)
             let thumbnail = Image.square(image: image,
@@ -194,7 +194,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         }
         
         let doc = taskRows![indexPath.row].document
-        if let imageBlob = doc["image"] as? CBLBlob, let d = imageBlob.digest, d == digest {
+        if let imageBlob = doc.property("image") as? Blob, let d = imageBlob.digest, d == digest {
             let cell = tableView.cellForRow(at: indexPath) as! TaskTableViewCell
             cell.taskImage = image
         }
@@ -202,7 +202,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let doc = taskRows![indexPath.row].document
-        let complete = !doc.boolean(forKey: "complete")
+        let complete: Bool = !doc["complete"]
         updateTask(task: doc, withComplete: complete)
         
         // Optimistically update the UI:
@@ -230,7 +230,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
             
             Ui.showTextInput(on: self, title: "Edit Task", message:  nil, textFieldConfig: { text in
                 text.placeholder = "Task"
-                text.text = document["task"] as? String
+                text.text = document["task"]
                 text.autocapitalizationType = .sentences
             }, onOk: { task in
                 self.updateTask(task: document, withTitle: task)
