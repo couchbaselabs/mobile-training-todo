@@ -106,7 +106,7 @@
     if (!imageData)
         return;
     
-    CBLBlob *blob = [[CBLBlob alloc] initWithContentType:@"image/jpg" data:imageData error:nil];
+    CBLBlob *blob = [[CBLBlob alloc] initWithContentType:@"image/jpg" data:imageData];
     task[@"image"] = blob;
     if ([task save: &error])
         [self reload];

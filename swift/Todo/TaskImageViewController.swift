@@ -7,14 +7,14 @@
 //
 
 import UIKit
-import CouchbaseLite
+import CouchbaseLiteSwift
 
 class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate,
     UINavigationControllerDelegate {
     @IBOutlet weak var imageView: UIImageView!
     
-    var database: CBLDatabase!
-    var task: CBLDocument!
+    var database: Database!
+    var task: Document!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -52,7 +52,7 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
     // MARK: - Database
     
     func reload() {
-        if let blob = task["image"] as? CBLBlob, let content = blob.content {
+        if let blob = task.property("image") as? Blob, let content = blob.content {
             imageView.image = UIImage(data: content)
         } else {
             imageView.image = nil
@@ -66,7 +66,7 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
         }
         
         do {
-            task["image"] = try! CBLBlob.init(contentType: "image/jpg", data: imageData)
+            task["image"] = Blob(contentType: "image/jpg", data: imageData)
             try task.save()
             reload()
         } catch let error as NSError {

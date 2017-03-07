@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import CouchbaseLite
+import CouchbaseLiteSwift
 
 let kDatabaseName = "todo"
 let kUserName = "todo"
@@ -16,35 +16,35 @@ let kUserName = "todo"
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
     
-    var database: CBLDatabase!
+    var database: Database!
     let username = kUserName
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions
         launchOptions: [UIApplicationLaunchOptionsKey : Any]? = nil) -> Bool {
         // Open a database:
-        var error: NSError?
-        database = CBLDatabase(name: kDatabaseName, error: &error)
-        if let err = error {
-            NSLog("Cannot open the database: %@", err);
+        
+        do {
+            database = try Database(name: kDatabaseName)
+        } catch let error as NSError {
+            NSLog("Cannot open the database: %@", error);
             return false;
         }
         
         createDatabaseIndex();
-        
         return true
     }
     
     func createDatabaseIndex() {
         // For task list query:
         do {
-            try database.createIndex(on: ["type", "name"])
+            try database.createIndex(["type", "name"])
         } catch let error as NSError {
             NSLog("Couldn't create index (type, name): %@", error);
         }
         
         // For tasks query:
         do {
-            try database.createIndex(on: ["type", "taskList.id", "task"])
+            try database.createIndex(["type", "taskList.id", "task"])
         } catch let error as NSError {
             NSLog("Couldn't create index (type, taskList.id, task): %@", error);
         }
