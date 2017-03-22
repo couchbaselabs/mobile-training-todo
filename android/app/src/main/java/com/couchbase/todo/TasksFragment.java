@@ -1,10 +1,12 @@
 package com.couchbase.todo;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -13,9 +15,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -71,12 +75,13 @@ public class TasksFragment extends Fragment {
     private android.view.LayoutInflater mInflater;
     private View mainView;
 
+    private static final int PERMISSION_REQUESTS = 1010;
     private static final int REQUEST_TAKE_PHOTO = 1;
     private static final int REQUEST_CHOOSE_PHOTO = 2;
     private static final int THUMBNAIL_SIZE = 150;
 
     private String mImagePathToBeAttached;
-    private Document mCurrentTaskToAttachImage;
+    private Document selectedTask;
 
     public TasksFragment() {
     }
@@ -436,7 +441,27 @@ public class TasksFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_REQUESTS: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    showImagePickerDialog();
+                }
+            }
+        }
+    }
+
     private void displayAttachImageDialog(final Document task) {
+        selectedTask = task;
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA}, PERMISSION_REQUESTS);
+        } else {
+            showImagePickerDialog();
+        }
+    }
+
+    private void showImagePickerDialog() {
         CharSequence[] items;
         items = new CharSequence[]{ "Take photo", "Choose photo", "Delete photo" };
 
@@ -446,13 +471,11 @@ public class TasksFragment extends Fragment {
             @Override
             public void onClick(DialogInterface dialog, int item) {
                 if (item == 0) {
-                    mCurrentTaskToAttachImage = task;
                     dispatchTakePhotoIntent();
                 } else if (item == 1) {
-                    mCurrentTaskToAttachImage = task;
                     dispatchChoosePhotoIntent();
                 } else {
-                    deleteCurrentPhoto(task);
+                    deleteCurrentPhoto(selectedTask);
                 }
             }
         });
@@ -498,6 +521,6 @@ public class TasksFragment extends Fragment {
             thumbnail = ThumbnailUtils.extractThumbnail(mImage, size, size);
         }
 
-        attachImage(mCurrentTaskToAttachImage, thumbnail);
+        attachImage(selectedTask, thumbnail);
     }
 }
