@@ -22,6 +22,6 @@ npm install && react-native start
 
 	<img width="25%" src="https://cloud.githubusercontent.com/assets/2589337/21619809/3fc4c4fc-d1e9-11e6-9ed0-5bd8a9baead5.gif" />
 
-4. [Start Sync Gateway](../README.md#starting-sync-gateway) with the configuration file in this repository.
+4. [Start Sync Gateway](../README.md#starting-sync-gateway) with the configuration file in this repository. Once logged into the app with a user that is defined in the [configuration file](https://github.com/couchbaselabs/mobile-training-todo/blob/master/sync-gateway-config.json#L9-L12), documents should be replicated to Sync Gateway.
 
 > Android only: the sync URL is `localhost:4984` by default. Since Android emulators run in a separate VM you'll need to setup a reverse port forwarding rule (from the command line, run `adb reverse tcp:4984 tcp:4984`).
