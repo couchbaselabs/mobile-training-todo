@@ -21,3 +21,7 @@ npm install && react-native start
 	Build and run. This time you can login.
 
 	<img width="25%" src="https://cloud.githubusercontent.com/assets/2589337/21619809/3fc4c4fc-d1e9-11e6-9ed0-5bd8a9baead5.gif" />
+
+4. [Start Sync Gateway](../README.md#starting-sync-gateway) with the configuration file in this repository.
+
+> Android only: the sync URL is `localhost:4984` by default. Since Android emulators run in a separate VM you'll need to setup a reverse port forwarding rule (from the command line, run `adb reverse tcp:4984 tcp:4984`).
