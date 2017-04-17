@@ -52,9 +52,7 @@ namespace Training
         /// <value>The selected item.</value>
         public TaskCellModel SelectedItem
         {
-            get {
-                return _selectedItem;
-            }
+            get => _selectedItem;
             set {
                 if(_selectedItem == value) {
                     return;
@@ -71,12 +69,7 @@ namespace Training
         /// Gets the list of tasks for display in the list view
         /// </summary>
         /// <value>The list data.</value>
-        public ObservableCollection<TaskCellModel> ListData
-        {
-            get {
-                return Model.ListData;
-            }
-        }
+        public ObservableCollection<TaskCellModel> ListData => Model.ListData;
 
         /// <summary>
         /// Gets or sets the current text being searched for in the list
@@ -98,12 +91,7 @@ namespace Training
         /// Gets the command that is fired when the add button is pressed
         /// </summary>
         /// <value>The add command.</value>
-        public ICommand AddCommand
-        {
-            get {
-                return new MvxCommand(AddNewItem);
-            }
-        }
+        public ICommand AddCommand => new MvxCommand(AddNewItem);
 
         #endregion
 
@@ -137,11 +125,6 @@ namespace Training
         #endregion
 
         #region Internal API
-
-        internal void TestConflict()
-        {
-            Model.TestConfict();
-        }
 
         internal async Task ShowOrChooseImage(TaskCellModel taskDocument)
         {

@@ -49,22 +49,12 @@ namespace Training.Core
         /// <summary>
         /// Gets the command that handles a delete request
         /// </summary>
-        public ICommand DeleteCommand
-        {
-            get {
-                return new MvxCommand(Delete);
-            }
-        }
+        public ICommand DeleteCommand => new MvxCommand(Delete);
 
         /// <summary>
         /// Gets the command that handles an edit request
         /// </summary>
-        public ICommand EditCommand
-        {
-            get {
-                return new MvxAsyncCommand(Edit);
-            }
-        }
+        public ICommand EditCommand => new MvxAsyncCommand(Edit);
 
         /// <summary>
         /// Gets the ID of the document being tracked
@@ -85,12 +75,8 @@ namespace Training.Core
         /// </summary>
         public byte[] Thumbnail
         {
-            get {
-                return _thumbnail;
-            }
-            private set {
-                SetProperty(ref _thumbnail, value);
-            }
+            get => _thumbnail;
+            private set => SetProperty(ref _thumbnail, value);
         }
         private byte[] _thumbnail;
 
@@ -120,24 +106,15 @@ namespace Training.Core
         /// <summary>
         /// Gets the image to use for the checked portion of a table view row
         /// </summary>
-        public string CheckedImage
-        {
-            get {
-                return IsChecked ? "Checkmark.png" : null;
-            }
-        }
+        public string CheckedImage => IsChecked ? "Checkmark.png" : null;
 
         /// <summary>
         /// Gets or sets the command to process an add image request
         /// </summary>
         public ICommand AddImageCommand
         {
-            get {
-                return _addImageCommand;
-            }
-            set {
-                SetProperty(ref _addImageCommand, value);
-            }
+            get => _addImageCommand;
+            set => SetProperty(ref _addImageCommand, value);
         }
         private ICommand _addImageCommand;
 

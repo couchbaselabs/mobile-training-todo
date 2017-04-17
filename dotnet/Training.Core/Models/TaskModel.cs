@@ -35,7 +35,7 @@ namespace Training.Core
 
         #region Variables
 
-        private readonly Document _document;
+        private readonly IDocument _document;
 
         #endregion
 
@@ -60,28 +60,18 @@ namespace Training.Core
         public bool IsChecked
         {
             get {
-                return _document.GetProperty<bool>("complete");
+                return _document.DoSync(() => _document.GetBoolean("complete"));
             }
             set {
                 try {
-                    var currentAttachment = _document.CurrentRevision.GetAttachment("image");
-                    _document.Update(rev =>
+                    
+                    _document.DoSync(() =>
                     {
-                        var existing = (bool)rev.GetProperty("complete");
-                        var props = rev.UserProperties;
-                        props["complete"] = value;
-                        rev.SetUserProperties(props);
-                        // WORKAROUND: There is some kind of issue with the attachment not being on the 
-                        // current revision.  Usually there is no need to set the attachment each time.
-                        if (currentAttachment != null)
-                        {
-                            rev.SetAttachment("image", currentAttachment.ContentType, currentAttachment.ContentStream);
-                        }
-                        var saved = existing != value;
-                        return saved;
+                        _document["complete"] = value;
+                        _document.Save();
                     });
                 } catch(Exception e) {
-                    throw new ApplicationException("Failed to edit task", e);
+                    throw new Exception("Failed to edit task", e);
                 }
             }
         }
@@ -97,15 +87,15 @@ namespace Training.Core
         /// this task</param>
         public TaskModel(string documentID)
         {
-            _document = CoreApp.Database.GetExistingDocument(documentID);
-            _name = new Lazy<string>(() => _document.GetProperty<string>("task"), LazyThreadSafetyMode.None);
+            _document = CoreApp.Database[documentID];
+            _name = new Lazy<string>(() => _document.GetString("task"), LazyThreadSafetyMode.None);
             _imageDigest = new Lazy<string>(() => {
-                var metadata = _document.CurrentRevision?.GetAttachment("image")?.Metadata;
+                var metadata = _document.GetBlob("image")?.Properties;
                 if(metadata?.ContainsKey("digest") != true) {
                     return null;
                 }
 
-                return _document.CurrentRevision.GetAttachment("image")?.Metadata?["digest"] as string;
+                return _document.GetBlob ("image")?.Digest;
             }, LazyThreadSafetyMode.None);
         }
 
@@ -129,7 +119,7 @@ namespace Training.Core
         /// <returns><c>true</c>, if the task has an image, <c>false</c> otherwise.</returns>
         public bool HasImage()
         {
-            return _document.CurrentRevision.AttachmentNames.Contains("image");
+            return _document.GetBlob("image") != null;
         }
 
         /// <summary>
@@ -138,7 +128,7 @@ namespace Training.Core
         /// <returns>The image associated with this task</returns>
         public Stream GetImage()
         {
-            return _document.CurrentRevision.GetAttachment("image")?.ContentStream;
+            return _document.GetBlob("image")?.ContentStream;
         }
 
         /// <summary>
@@ -148,18 +138,18 @@ namespace Training.Core
         public void SetImage(Stream image)
         {
             try {
-                _document.Update(rev =>
+                _document.DoSync(() =>
                 {
                     if(image == null) {
-                        rev.RemoveAttachment("image");
+                        _document.Remove("image");
                     } else {
-                        rev.SetAttachment("image", "image/png", image);
+                        _document["image"] = BlobFactory.Create("image/png", image);
                     }
 
                     return true;
                 });
             } catch(Exception e) {
-                throw new ApplicationException("Failed to save image", e);
+                throw new Exception("Failed to save image", e);
             }
         }
 
@@ -171,7 +161,7 @@ namespace Training.Core
             try {
                 _document.Delete();
             } catch(Exception e) {
-                throw new ApplicationException("Failed to delete task", e);
+                throw new Exception("Failed to delete task", e);
             }
         }
 
@@ -182,23 +172,13 @@ namespace Training.Core
         public void Edit(string name)
         {
             try {
-                var currentAttachment = _document.CurrentRevision.GetAttachment("image");
-                _document.Update(rev =>
+                _document.DoSync(() =>
                 {
-                    var props = rev.UserProperties;
-                    var oldName = props["task"];
-                    props["task"] = name;
-                    rev.SetUserProperties(props);
-                    // WORKAROUND: There is some kind of issue with the attachment not being on the 
-                    // current revision.  Usually there is no need to set the attachment each time.
-                    if (currentAttachment != null)
-                    {
-                        rev.SetAttachment("image", currentAttachment.ContentType, currentAttachment.ContentStream);
-                    }
-                    return !String.Equals(oldName, name);
+                    _document["task"] = name;
+                    _document.Save();
                 });
             } catch(Exception e) {
-                throw new ApplicationException("Failed to edit task", e);
+                throw new Exception("Failed to edit task", e);
             }
         }
 

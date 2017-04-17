@@ -32,7 +32,7 @@ namespace Training.Core
 
         #region Variables
 
-        private Document _document;
+        private IDocument _document;
 
         #endregion
 
@@ -41,12 +41,7 @@ namespace Training.Core
         /// <summary>
         /// Gets the name of the list
         /// </summary>
-        public string Name
-        {
-            get {
-                return _document.GetProperty<string>("name");
-            }
-        }
+        public string Name => _document.GetString("name");
 
         #endregion
 
@@ -58,7 +53,7 @@ namespace Training.Core
         /// <param name="documentId">The ID of the document containing information for this entry</param>
         public TaskListModel(string documentId)
         {
-            _document = CoreApp.Database.GetExistingDocument(documentId);
+            _document = CoreApp.Database[documentId];
         }
 
         #endregion
@@ -71,7 +66,7 @@ namespace Training.Core
         public bool Delete()
         {
             var db = _document.Database;
-            if (_document.UserProperties["owner"] as string != db.Name && !HasModerator(db))
+            if (_document.GetString("owner") != db.Name && !HasModerator(db))
             {
                 return false;
             }
@@ -82,7 +77,7 @@ namespace Training.Core
             }
             catch (Exception e)
             {
-                throw new ApplicationException("Couldn't delete task list", e);
+                throw new Exception("Couldn't delete task list", e);
             }
 
             return true;
@@ -95,17 +90,12 @@ namespace Training.Core
         public void Edit(string name)
         {
             try {
-                _document.Update(rev =>
+                _document.DoSync(() =>
                 {
-                    var props = rev.UserProperties;
-                    var lastName = props["name"];
-                    props["name"] = name;
-                    rev.SetUserProperties(props);
-
-                    return !String.Equals(name, lastName);
+                    _document["name"] = name;
                 });
             } catch(Exception e) {
-                throw new ApplicationException("Couldn't edit task list", e);
+                throw new Exception("Couldn't edit task list", e);
             }
         }
 
@@ -113,10 +103,10 @@ namespace Training.Core
 
         #region Private API
 
-        private bool HasModerator(Database db)
+        private bool HasModerator(IDatabase db)
         {
             var moderatorDocId = $"moderator.{db.Name}";
-            return db.GetExistingDocument(moderatorDocId) != null;
+            return db.DocumentExists(moderatorDocId);
         }
 
         #endregion

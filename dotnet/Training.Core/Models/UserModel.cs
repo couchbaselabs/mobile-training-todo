@@ -30,7 +30,7 @@ namespace Training.Core
 
         #region Variables
 
-        private Document _document;
+        private IDocument _document;
 
         #endregion
 
@@ -39,12 +39,7 @@ namespace Training.Core
         /// <summary>
         /// Gets the name of the user
         /// </summary>
-        public string Name
-        {
-            get {
-                return _document.GetProperty<string>("username");
-            }
-        }
+        public string Name => _document.GetString("username");
 
         #endregion
 
@@ -57,7 +52,7 @@ namespace Training.Core
         /// the user</param>
         public UserModel(string documentId)
         {
-            _document = CoreApp.Database.GetExistingDocument(documentId);
+            _document = CoreApp.Database[documentId];
         }
 
         #endregion
@@ -69,12 +64,9 @@ namespace Training.Core
         /// </summary>
         public void Delete()
         {
-            _document.Update(rev =>
+            _document.DoSync(() =>
             {
-                var props = rev.Properties;
-                props["_deleted"] = true;
-                rev.SetProperties(props);
-                return true;
+                _document["_deleted"] = true;
             });
         }
 

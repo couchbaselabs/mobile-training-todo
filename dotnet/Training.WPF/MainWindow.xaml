@@ -8,9 +8,6 @@
         x:Name="_self"
         Icon="appicon.ico"
         Title="Todo" Height="480" Width="720">
-    <Window.InputBindings>
-        <KeyBinding Modifiers="Control" Key="C" Command="{Binding CreateConflictCommand, ElementName=_self}" />
-    </Window.InputBindings>
     <Grid>
         
     </Grid>

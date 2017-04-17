@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Couchbase.Lite;
+using Couchbase.Lite.Query;
 
 namespace Training.Core
 {
@@ -40,9 +41,9 @@ namespace Training.Core
 
         #region Variables
 
-        private LiveQuery _tasksLiveQuery;
-        private Database _db;
-        private Document _taskList;
+        //private LiveQuery _tasksLiveQuery;
+        private IDatabase _db;
+        private IDocument _taskList;
 
         #endregion
 
@@ -57,12 +58,7 @@ namespace Training.Core
         /// <summary>
         /// Gets the name of the database being worked on
         /// </summary>
-        public string DatabaseName
-        {
-            get {
-                return _db.Name;
-            }
-        }
+        public string DatabaseName => _db.Name;
 
         #endregion
 
@@ -76,36 +72,22 @@ namespace Training.Core
         {
             _db = CoreApp.Database;
             _taskList = _db.GetDocument(listId);
-            SetupViewAndQuery();
+            Filter(null);
         }
 
         #endregion
 
         #region Public API
 
-        public void TestConfict()
-        {
-            // TRAINING: Create task conflict (for development only)
-            var savedRevision = CreateNewTask("Text");
-            var newRev1 = savedRevision.CreateRevision();
-            var propsRev1 = newRev1.Properties;
-            propsRev1["task"] = "Text Changed";
-            var newRev2 = savedRevision.CreateRevision();
-            var propsRev2 = newRev2.Properties;
-            propsRev2["complete"] = true;
-            newRev1.Save(true);
-            newRev2.Save(true);
-        }
-
         /// <summary>
         /// Creates a new task in the current list
         /// </summary>
         /// <param name="taskName">The name of the task</param>
-        public SavedRevision CreateNewTask(string taskName)
+        public IDocument CreateNewTask(string taskName)
         {
             var taskListInfo = new Dictionary<string, object> {
                 ["id"] = _taskList.Id,
-                ["owner"] = _taskList.GetProperty<string>("owner")
+                ["owner"] = _taskList.GetString("owner")
             };
 
             var properties = new Dictionary<string, object> {
@@ -117,9 +99,17 @@ namespace Training.Core
             };
 
             try {
-                return _db.CreateDocument().PutProperties(properties);
+                var retVal = _db.DoSync(() =>
+                {
+                    var doc = _db.CreateDocument();
+                    doc.Properties = properties;
+                    doc.Save();
+                    return doc;
+                });
+                Filter(null);
+                return retVal;
             } catch(Exception e) {
-                throw new ApplicationException("Couldn't save task", e);
+                throw new Exception("Couldn't save task", e);
             }
         }
 
@@ -129,71 +119,23 @@ namespace Training.Core
         /// <param name="searchString">The search string to filter on.</param>
         public void Filter(string searchString)
         {
+            var query = default(IQuery);
             if(!String.IsNullOrEmpty(searchString)) {
-                _tasksLiveQuery.PostFilter = row => {
-                    var key = JsonUtility.ConvertToNetList<object>(row.Key);
-                    var name = key[2] as string;
-                    if(name == null) {
-                        return false;
-                    }
-
-                    return name.ToLower().Contains(searchString.ToLower());
-                };
+                query = QueryFactory.Select()
+                    .From(DataSourceFactory.Database(_db))
+                    .Where(ExpressionFactory.Property("type").EqualTo(TaskType)
+                    .And(ExpressionFactory.Property("taskList").EqualTo(_taskList.Id))
+                    .And(ExpressionFactory.Property("task").Like($"%{searchString}%")))
+                    .OrderBy(OrderByFactory.Property("createdAt"));
             } else {
-                _tasksLiveQuery.PostFilter = null;
+                query = QueryFactory.Select()
+                    .From(DataSourceFactory.Database(_db))
+                    .Where(ExpressionFactory.Property("type").EqualTo(TaskType));
+                //.And(ExpressionFactory.Property("taskList").EqualTo(_taskList.Id)))
+                //.OrderBy(OrderByFactory.Property("createdAt"));
             }
 
-            _tasksLiveQuery.QueryOptionsChanged();
-        }
-
-        #endregion
-
-        #region Private API
-
-        private void SetupViewAndQuery()
-        {
-            var view = _db.GetView("tasksByCreatedAt");
-            view.SetMap((doc, emit) =>
-            {
-                if(!doc.ContainsKey("type")) {
-                    return;
-                }
-
-                var type = doc["type"] as string;
-                if(type != "task") {
-                    return;
-                }
-
-
-                var elements = new List<object>();
-                if(!doc.Extract(elements, "taskList", "createdAt", "task")) {
-                    return;
-                }
-
-                var listInfo = JsonUtility.ConvertToNetObject<IDictionary<string, object>>(elements[0]);
-                if(!listInfo.ContainsKey("id")) {
-                    return;
-                }
-
-                elements[0] = listInfo["id"];
-
-                emit(elements.ToArray(), null);
-            }, "1.0");
-
-            _tasksLiveQuery = view.CreateQuery().ToLiveQuery();
-            _tasksLiveQuery.StartKey = new[] { _taskList.Id };
-            _tasksLiveQuery.EndKey = new[] { _taskList.Id };
-            _tasksLiveQuery.PrefixMatchLevel = 1;
-            _tasksLiveQuery.Descending = false;
-            _tasksLiveQuery.Changed += (sender, e) =>
-            {
-                Console.WriteLine("_tasksLiveQuery changed...");
-                ListData.Replace(e.Rows.Select(x => {
-                    Console.WriteLine($"    ...Found #{x.SequenceNumber} ({x.DocumentId})");
-                    return new TaskCellModel(x.DocumentId);
-                }), true);
-            };
-            _tasksLiveQuery.Start();
+            ListData.Replace(query.Run().Select(x => new TaskCellModel(x.DocumentID)));
         }
 
         #endregion
@@ -202,7 +144,6 @@ namespace Training.Core
 
         public void Dispose()
         {
-            _tasksLiveQuery.Stop();
             ListData.Clear();
         }
 

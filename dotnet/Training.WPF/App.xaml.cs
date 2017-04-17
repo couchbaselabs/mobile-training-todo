@@ -23,6 +23,7 @@ using System;
 using System.Windows;
 
 using Acr.UserDialogs;
+using Couchbase.Lite;
 using MvvmCross.Platform;
 using Training.Core;
 using Training.WPF.Services;
@@ -78,7 +79,7 @@ namespace Training.WPF
         private void OnStartup(object sender, StartupEventArgs e)
         {
             if(e.Args.Length > 0 && e.Args[0].ToLowerInvariant() == "/clean") {
-                CoreApp.AppWideManager.DeleteDatabase("todo");
+                DatabaseFactory.DeleteDatabase("todo", null);
             }
         }
 

@@ -51,34 +51,20 @@ namespace Training.Core
         /// <summary>
         /// Gets the handler for an edit request
         /// </summary>
-        public ICommand EditCommand
-        {
-            get {
-                return new MvxAsyncCommand(Edit);
-            }
-        }
+        public ICommand EditCommand => new MvxAsyncCommand(Edit);
 
         /// <summary>
         /// Gets the handler for a delete request
         /// </summary>
-        public ICommand DeleteCommand
-        {
-            get {
-                return new MvxCommand(Delete);
-            }
-        }
+        public ICommand DeleteCommand => new MvxCommand(Delete);
 
         /// <summary>
         /// Gets or sets the incomplete count for this row
         /// </summary>
         public int IncompleteCount 
         {
-            get {
-                return _incompleteCount;
-            }
-            set {
-                SetProperty(ref _incompleteCount, value);
-            }
+            get => _incompleteCount;
+            set => SetProperty(ref _incompleteCount, value);
         }
         private int _incompleteCount;
 

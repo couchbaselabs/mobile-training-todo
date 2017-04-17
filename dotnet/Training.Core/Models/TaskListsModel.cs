@@ -23,7 +23,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Couchbase.Lite;
-using Couchbase.Lite.Views;
+using Couchbase.Lite.Query;
 
 namespace Training.Core
 {
@@ -41,9 +41,9 @@ namespace Training.Core
 
         #region Variables
 
-        private Database _db;
-        private LiveQuery _byNameQuery;
-        private LiveQuery _incompleteQuery;
+        private IDatabase _db;
+        //private LiveQuery _byNameQuery;
+        //private LiveQuery _incompleteQuery;
 
         #endregion
 
@@ -58,12 +58,7 @@ namespace Training.Core
         /// <summary>
         /// Gets the username of the user using the app
         /// </summary>
-        public string Username
-        {
-            get {
-                return _db?.Name;
-            }
-        }
+        public string Username => _db?.Name;
 
         #endregion
 
@@ -73,130 +68,90 @@ namespace Training.Core
         /// Constructor
         /// </summary>
         /// <param name="db">The database to use</param>
-        public TaskListsModel(Database db)
+        public TaskListsModel(IDatabase db)
         {
             _db = db;
-            SetupViewAndQuery();
+            SetupQuery();
         }
 
         #endregion
 
         #region Public API
 
-        public void TestConflict()
-        {
-            var savedRevision = CreateTaskList("Test Conflicts List");
-            var newRev1 = savedRevision.CreateRevision();
-            var propsRev1 = newRev1.Properties;
-            propsRev1["name"] = "Foosball";
-            newRev1.SetProperties(propsRev1);
-            var newRev2 = savedRevision.CreateRevision();
-            var propsRev2 = newRev2.Properties;
-            propsRev2["name"] = "Table Football";
-            newRev2.SetProperties(propsRev2);
-            try {
-                newRev1.Save(true);
-                newRev2.Save(true);
-            } catch(Exception e) {
-                throw new ApplicationException("Could not create document", e);
-            }
-        }
+        //public void TestConflict()
+        //{
+        //    var savedRevision = CreateTaskList("Test Conflicts List");
+        //    var newRev1 = savedRevision.CreateRevision();
+        //    var propsRev1 = newRev1.Properties;
+        //    propsRev1["name"] = "Foosball";
+        //    newRev1.SetProperties(propsRev1);
+        //    var newRev2 = savedRevision.CreateRevision();
+        //    var propsRev2 = newRev2.Properties;
+        //    propsRev2["name"] = "Table Football";
+        //    newRev2.SetProperties(propsRev2);
+        //    try {
+        //        newRev1.Save(true);
+        //        newRev2.Save(true);
+        //    } catch(Exception e) {
+        //        throw new Exception("Could not create document", e);
+        //    }
+        //}
 
         /// <summary>
         /// Creates a new task list
         /// </summary>
         /// <param name="name">The name of the task list.</param>
-        public SavedRevision CreateTaskList(string name)
+        public IDocument CreateTaskList(string name)
         {
-            var properties = new Dictionary<string, object> {
-                ["type"] = TaskListType,
-                ["name"] = name,
-                ["owner"] = Username
-            };
-
             var docId = $"{Username}.{Guid.NewGuid()}";
-            var doc = default(Document);
             try {
-                doc = _db.GetDocument(docId);
-                return doc.PutProperties(properties);
+                var returnVal = _db.DoSync(() =>
+                {
+                    var doc = _db.GetDocument(docId);
+                    doc["type"] = TaskListType;
+                    doc["name"] = name;
+                    doc["owner"] = Username;
+                    doc.Save();
+                    return doc;
+                });
+                Filter(null);
+                return returnVal;
             } catch(Exception e) {
-                var newException = new ApplicationException("Couldn't save task list", e);
+                var newException = new Exception("Couldn't save task list", e);
                 throw newException;
             }
         }
 
         public void Filter(string searchText)
         {
+            var query = default(IQuery);
             if(!String.IsNullOrEmpty(searchText)) {
-                _byNameQuery.StartKey = searchText;
-                _byNameQuery.PrefixMatchLevel = 1;
+                query = QueryFactory.Select("name")
+                    .From(DataSourceFactory.Database(_db))
+                    .Where(ExpressionFactory.Property("name")
+                        .Like($"%{searchText}%")
+                        .And(ExpressionFactory.Property("type").EqualTo("task-list")))
+                    .OrderBy(OrderByFactory.Property("name"));
             } else {
-                _byNameQuery.StartKey = null;
-                _byNameQuery.PrefixMatchLevel = 0;
+                query = QueryFactory.Select("name")
+                    .From(DataSourceFactory.Database(_db))
+                    .Where(ExpressionFactory.Property("name")
+                        .NotNull()
+                        .And(ExpressionFactory.Property("type").EqualTo("task-list")))
+                    .OrderBy(OrderByFactory.Property("name"));
             }
 
-            _byNameQuery.EndKey = _byNameQuery.StartKey;
-            _byNameQuery.QueryOptionsChanged();
+            TasksList.Replace(query.Run().Select(x => new TaskListCellModel(x.DocumentID, x.Document["name"] as string)));
         }
 
         #endregion
 
         #region Private API
 
-        private void SetupViewAndQuery()
+        private void SetupQuery()
         {
-            var view = _db.GetView("list/listsByName");
-            view.SetMap((doc, emit) =>
-            {
-                if(!doc.ContainsKey("type") || doc["type"] as string != "task-list" || !doc.ContainsKey("name")) {
-                    return;
-                }
-
-                emit(doc["name"], null);
-            }, "1.0");
-
-            _byNameQuery = view.CreateQuery().ToLiveQuery();
-            _byNameQuery.Changed += (sender, args) =>
-            {
-                TasksList.Replace(args.Rows.Select(x => new TaskListCellModel(x.DocumentId, x.Key as string)));
-            };
-            _byNameQuery.Start();
-
-            var incompleteTasksView = _db.GetView("list/incompleteTasksCount");
-            incompleteTasksView.SetMapReduce((doc, emit) =>
-            {
-                if(!doc.ContainsKey("type") || doc["type"] as string != "task") {
-                    return;
-                }
-
-                if(!doc.ContainsKey("taskList")) {
-                    return;
-                }
-
-                var list = JsonUtility.ConvertToNetObject<IDictionary<string, object>>(doc["taskList"]);
-                if(!list.ContainsKey("id") || (doc.ContainsKey("complete") && (bool)doc["complete"])) {
-                    return;
-                }
-
-                emit(list["id"], null);
-
-             }, BuiltinReduceFunctions.Count, "1.0");
-
-            _incompleteQuery = incompleteTasksView.CreateQuery().ToLiveQuery();
-            _incompleteQuery.GroupLevel = 1;
-            _incompleteQuery.Changed += (sender, e) => 
-            {
-                var newItems = TasksList.ToList();
-                foreach(var row in e.Rows) {
-                    var item = newItems.FirstOrDefault(x => x.DocumentID == row.Key as string);
-                    if(item != null) {
-                        item.IncompleteCount = (int)row.Value;
-                    }
-                }
-
-                TasksList.Replace(newItems);
-            };
-            _incompleteQuery.Start();
+            _db.CreateIndex(new[] { ExpressionFactory.Property("name") });
+            Filter(null);
         }
 
         #endregion
@@ -205,8 +160,6 @@ namespace Training.Core
 
         public void Dispose()
         {
-            _byNameQuery.Stop();
-            _incompleteQuery.Stop();
             _db.Close();
         }
 

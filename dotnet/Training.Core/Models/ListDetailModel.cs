@@ -33,8 +33,8 @@ namespace Training.Core
 
         #region Variables
 
-        private Database _db;
-        private Document _document;
+        private IDatabase _db;
+        private IDocument _document;
         private string _username;
 
         /// <summary>
@@ -50,12 +50,7 @@ namespace Training.Core
         /// <summary>
         /// Gets the owner of the list being shown
         /// </summary>
-        public string Owner
-        {
-            get {
-                return _document.GetProperty<string>("owner");
-            }
-        }
+        public string Owner => _document.GetString("owner");
 
         #endregion
 
@@ -68,7 +63,7 @@ namespace Training.Core
         public ListDetailModel(string documentId)
         {
             _db = CoreApp.Database;
-            _document = _db.GetExistingDocument(documentId);
+            _document = _db[documentId];
         }
 
         #endregion
@@ -84,7 +79,7 @@ namespace Training.Core
         public bool HasModerator(string username)
         {
             var moderatorDocId = $"moderator.{username}";
-            return _db.GetExistingDocument(moderatorDocId) != null;
+            return _db.DocumentExists(moderatorDocId);
         }
 
         /// <summary>
@@ -92,45 +87,45 @@ namespace Training.Core
         /// that enabled moderator access for the given user
         /// </summary>
         /// <param name="username">The username to track.</param>
-        public void TrackModeratorStatus(string username)
-        {
-            if(_username == null && username == null) {
-                return;
-            }
+        //public void TrackModeratorStatus(string username)
+        //{
+        //    if(_username == null && username == null) {
+        //        return;
+        //    }
 
-            if(_username == null) {
-                _db.Changed += MonitorModeratorStatus;
-            } else if(username == null) {
-                _db.Changed -= MonitorModeratorStatus;
-            }
+        //    if(_username == null) {
+        //        _db.Changed += MonitorModeratorStatus;
+        //    } else if(username == null) {
+        //        _db.Changed -= MonitorModeratorStatus;
+        //    }
 
-            _username = username;
+        //    _username = username;
 
-        }
+        //}
 
         #endregion
 
         #region Private API
 
-        private void MonitorModeratorStatus(object sender, DatabaseChangeEventArgs e)
-        {
-            if(_username == null) {
-                return;
-            }
+        //private void MonitorModeratorStatus(object sender, DatabaseChangedEventArgs e)
+        //{
+        //    if(_username == null) {
+        //        return;
+        //    }
 
-            foreach(var change in e.Changes) {
-                if(change.SourceUrl == null) {
-                    continue;
-                }
+        //    foreach(var change in e.Changes) {
+        //        if(change.SourceUrl == null) {
+        //            continue;
+        //        }
 
-                var moderatorDocId = $"moderator.{_username}";
-                if(change.DocumentId == moderatorDocId) {
-                    ModeratorStatusGained?.Invoke(this, null);
-                    _username = null;
-                    _db.Changed -= MonitorModeratorStatus;
-                }
-            }
-        }
+        //        var moderatorDocId = $"moderator.{_username}";
+        //        if(change.DocumentId == moderatorDocId) {
+        //            ModeratorStatusGained?.Invoke(this, null);
+        //            _username = null;
+        //            _db.Changed -= MonitorModeratorStatus;
+        //        }
+        //    }
+        //}
 
         #endregion
 
@@ -142,7 +137,7 @@ namespace Training.Core
                 return;
             }
 
-            _db.Changed -= MonitorModeratorStatus;
+           // _db.Changed -= MonitorModeratorStatus;
         }
 
         #endregion

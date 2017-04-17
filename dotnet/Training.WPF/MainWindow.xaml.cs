@@ -33,28 +33,6 @@ namespace Training.WPF
     public partial class MainWindow : Window
     {
 
-        #region Properties
-
-        public ICommand CreateConflictCommand
-        {
-            get {
-                //HACK: MvxCommand is not available at this point because IoC is not prepared yet
-                return new RelayCommand(() =>
-                {
-                    var listsPage = Content as TaskListsView;
-                    if(listsPage != null) {
-                        var vm = listsPage?.DataContext as TaskListsViewModel;
-                        vm?.TestConflict();
-                    } else {
-                        var tasksPage = Content as ListDetailView;
-                        tasksPage?.TestConflict();
-                    }
-                });
-            }
-        }
-
-        #endregion
-
         #region Constructors
 
         /// <summary>

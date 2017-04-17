@@ -138,10 +138,10 @@ namespace Training
             LoginEnabled = loginEnabled;
         }
 
-        public void TestConflict()
-        {
-            Model.TestConflict();
-        }
+        //public void TestConflict()
+        //{
+        //    Model.TestConflict();
+        //}
 
         #endregion
 
@@ -158,7 +158,7 @@ namespace Training
 
         private void Logout()
         {
-            CoreApp.StopReplication();
+            //CoreApp.StopReplication();
             Model.Dispose();
             Close(this);
         }

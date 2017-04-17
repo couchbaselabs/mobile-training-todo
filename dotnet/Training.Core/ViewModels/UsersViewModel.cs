@@ -32,7 +32,7 @@ namespace Training.Core
     /// <summary>
     /// The view model for the users page
     /// </summary>
-    public class UsersViewModel : BaseViewModel<UsersModel>, IDisposable
+    public class UsersViewModel : BaseViewModel<UsersModel>
     {
 
         #region Variables
@@ -111,15 +111,6 @@ namespace Training.Core
                     _dialogs.ShowError(e.Message);
                 }
             }
-        }
-
-        #endregion
-
-        #region IDisposable
-
-        public void Dispose()
-        {
-            Model.Dispose();
         }
 
         #endregion

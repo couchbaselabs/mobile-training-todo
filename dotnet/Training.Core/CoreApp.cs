@@ -26,8 +26,6 @@ using System.Threading;
 
 using Acr.UserDialogs;
 using Couchbase.Lite;
-using Couchbase.Lite.Auth;
-using Couchbase.Lite.Store;
 using MvvmCross.Core.ViewModels;
 using MvvmCross.Platform;
 using MvvmCross.Platform.IoC;
@@ -43,21 +41,17 @@ namespace Training.Core
     {
         #region Constants
 
-        /// <summary>
-        /// Gets the manager for use in the application
-        /// </summary>
-        public static readonly Manager AppWideManager = Manager.SharedInstance;
         private static readonly Uri SyncGatewayUrl = new Uri("http://localhost:4984/todo/");
 
         #endregion
 
         #region Variables
 
-        private static Replication _pusher;
-        private static Replication _puller;
+        //private static Replication _pusher;
+        //private static Replication _puller;
         private static Exception _syncError;
-        private static LiveQuery _conflictsLiveQuery;
-        private static HashSet<Document> _accessDocuments = new HashSet<Document>();
+        //private static LiveQuery _conflictsLiveQuery;
+        private static HashSet<IDocument> _accessDocuments = new HashSet<IDocument>();
 
         #endregion
 
@@ -66,7 +60,7 @@ namespace Training.Core
         /// <summary>
         /// Gets the database for the current session
         /// </summary>
-        public static Database Database { get; private set; }
+        public static IDatabase Database { get; private set; }
 
         internal static CoreAppStartHint Hint { get; set; }
 
@@ -82,40 +76,36 @@ namespace Training.Core
         /// <param name="newPassword">The new password for the database (optional)</param>
         public static void StartSession(string username, string password, string newPassword)
         {
-            if(Hint.UsePrebuiltDB) {
-                InstallPrebuiltDB();
-            }
+            //if(Hint.UsePrebuiltDB) {
+            //    InstallPrebuiltDB();
+            //}
 
             var p = Hint.EncryptionEnabled ? password : null;
             var np = Hint.EncryptionEnabled ? newPassword : null;
             OpenDatabase(username, p, np);
 
-            if(Hint.SyncEnabled) {
-                StartReplication(username, newPassword ?? password);
-            }
-
-            if(Hint.ConflictResolution) {
-                StartConflictLiveQuery();
-            }
+            //if(Hint.SyncEnabled) {
+            //    StartReplication(username, newPassword ?? password);
+            //}
         }
 
         /// <summary>
         /// Installs a premade database for use in the application
         /// </summary>
-        public static void InstallPrebuiltDB()
-        {
-            // TRAINING: Install pre-built database
-            var db = AppWideManager.GetExistingDatabase("todo");
-            if(db == null) {
-                try {
-                    using(var asset = typeof(CoreApp).Assembly.GetManifestResourceStream("todo.zip")) {
-                        AppWideManager.ReplaceDatabase("todo", asset, false);
-                    }
-                } catch(Exception e) {
-                    Debug.WriteLine($"Cannot replicate the database: {e}");
-                }
-            }
-        }
+        //public static void InstallPrebuiltDB()
+        //{
+        //    // TRAINING: Install pre-built database
+        //    var db = AppWideManager.GetExistingDatabase("todo");
+        //    if(db == null) {
+        //        try {
+        //            using(var asset = typeof(CoreApp).Assembly.GetManifestResourceStream("todo.zip")) {
+        //                AppWideManager.ReplaceDatabase("todo", asset, false);
+        //            }
+        //        } catch(Exception e) {
+        //            Debug.WriteLine($"Cannot replicate the database: {e}");
+        //        }
+        //    }
+        //}
 
         /// <summary>
         /// Opens a given database by name for the session
@@ -126,71 +116,35 @@ namespace Training.Core
         public static void OpenDatabase(string dbName, string key, string newKey)
         {
             // TRAINING: Create a database
-            var encryptionKey = default(SymmetricKey);
-            if(key != null) {
-                encryptionKey = new SymmetricKey(key);
-            }
+            //var encryptionKey = default(SymmetricKey);
+            //if(key != null) {
+            //    encryptionKey = new SymmetricKey(key);
+            //}
 
-            var options = new DatabaseOptions {
-                Create = true,
-                EncryptionKey = encryptionKey
-            };
+            Database = DatabaseFactory.Create(dbName);
+            //if(newKey != null) {
+            //    Database.ChangeEncryptionKey(new SymmetricKey(newKey));
+            //}
 
-            Database = AppWideManager.OpenDatabase(dbName, options);
-            if(newKey != null) {
-                Database.ChangeEncryptionKey(new SymmetricKey(newKey));
-            }
+            //Database.Changed += (sender, args) =>
+            //{
+            //    if (!args.External)
+            //    {
+            //        return;
+            //    }
 
-            var currentUsersView = Database.GetView("currentUsers");
-            currentUsersView.SetMap((doc, emit) =>
-            {
-                if (!NeedsMonitoringFor(doc, Database.Name)) {
-                    return;
-                }
+            //    var db = (IDatabase)sender;
+            //    foreach(var change in args.DocIDs)
+            //    {
+            //        var changedDoc = db[change];
+            //        if (!NeedsMonitoringFor(changedDoc.Properties, db.Name)) {
+            //            continue;
+            //        }
 
-                emit(doc["_id"], null);
-            }, "1.0");
-
-            var currentUsers = currentUsersView.CreateQuery().Run();
-            foreach (var currentUser in currentUsers) {
-                var doc = Database.GetExistingDocument(currentUser.Key as string);
-                if (doc == null) {
-                    continue;
-                }
-
-                _accessDocuments.Add(doc);
-                doc.Change += HandleAccessChanged;
-            }
-
-            Database.Changed += (sender, args) =>
-            {
-                if (!args.IsExternal)
-                {
-                    return;
-                }
-
-                var db = (Database)sender;
-                foreach(var change in args.Changes)
-                {
-                    if(!change.IsCurrentRevision)
-                    {
-                        continue;
-                    }
-
-                    var changedDoc = db.GetExistingDocument(change.DocumentId);
-                    if (changedDoc == null)
-                    {
-                        continue;
-                    }
-
-                    if (!NeedsMonitoringFor(changedDoc.Properties, db.Name)) {
-                        continue;
-                    }
-
-                    _accessDocuments.Add(changedDoc);
-                    changedDoc.Change += HandleAccessChanged;
-                }
-            };
+            //        _accessDocuments.Add(changedDoc);
+            //        changedDoc.Saved += HandleAccessChanged;
+            //    }
+            //};
         }
 
         /// <summary>
@@ -198,7 +152,6 @@ namespace Training.Core
         /// </summary>
         public static void CloseDatabase()
         {
-            StopConflictLiveQuery();
             try {
                 Database.Close();
             } catch(Exception e) {
@@ -211,73 +164,50 @@ namespace Training.Core
         /// </summary>
         /// <param name="username">The username to use for the replication</param>
         /// <param name="password">The password to use for replication auth (optional)</param>
-        public static void StartReplication(string username, string password = null)
-        {
-            var authenticator = default(IAuthenticator);
-            if(username != null && password != null) {
-                authenticator = AuthenticatorFactory.CreateBasicAuthenticator(username, password);
-            }
+        //public static void StartReplication(string username, string password = null)
+        //{
+        //    var authenticator = default(IAuthenticator);
+        //    if(username != null && password != null) {
+        //        authenticator = AuthenticatorFactory.CreateBasicAuthenticator(username, password);
+        //    }
 
-            var db = AppWideManager.GetDatabase(username);
-            var pusher = db.CreatePushReplication(SyncGatewayUrl);
-            pusher.Continuous = true;
-            pusher.Authenticator = authenticator;
-            pusher.Changed += HandleReplicationChanged;
+        //    var db = AppWideManager.GetDatabase(username);
+        //    var pusher = db.CreatePushReplication(SyncGatewayUrl);
+        //    pusher.Continuous = true;
+        //    pusher.Authenticator = authenticator;
+        //    pusher.Changed += HandleReplicationChanged;
             
 
-            var puller = db.CreatePullReplication(SyncGatewayUrl);
-            puller.Continuous = true;
-            puller.Authenticator = authenticator;
-            puller.Changed += HandleReplicationChanged;
+        //    var puller = db.CreatePullReplication(SyncGatewayUrl);
+        //    puller.Continuous = true;
+        //    puller.Authenticator = authenticator;
+        //    puller.Changed += HandleReplicationChanged;
 
-            pusher.Start();
-            puller.Start();
+        //    pusher.Start();
+        //    puller.Start();
 
-            _pusher = pusher;
-            _puller = puller;
-        }
+        //    _pusher = pusher;
+        //    _puller = puller;
+        //}
 
         /// <summary>
         /// Stops the session replication
         /// </summary>
-        public static void StopReplication()
-        {
-            var pusher = Interlocked.Exchange(ref _pusher, null);
-            var puller = Interlocked.Exchange(ref _puller, null);
+        //public static void StopReplication()
+        //{
+        //    var pusher = Interlocked.Exchange(ref _pusher, null);
+        //    var puller = Interlocked.Exchange(ref _puller, null);
 
-            if(pusher != null) {
-                pusher.Changed -= HandleReplicationChanged;
-                pusher.Stop();
-            }
+        //    if(pusher != null) {
+        //        pusher.Changed -= HandleReplicationChanged;
+        //        pusher.Stop();
+        //    }
 
-            if(puller != null) {
-                puller.Changed -= HandleReplicationChanged;
-                puller.Stop();
-            }
-        }
-
-        /// <summary>
-        /// Starts a live query to watch for conflicts
-        /// </summary>
-        public static void StartConflictLiveQuery()
-        {
-            // TRAINING: Detecting when conflicts occur
-            _conflictsLiveQuery = Database.CreateAllDocumentsQuery().ToLiveQuery();
-            _conflictsLiveQuery.AllDocsMode = AllDocsMode.OnlyConflicts;
-            _conflictsLiveQuery.Changed += ResolveConflicts;
-
-            _conflictsLiveQuery.Start();
-        }
-
-        /// <summary>
-        /// Stops the live query that is watching for conflicts
-        /// </summary>
-        public static void StopConflictLiveQuery()
-        {
-            var q = Interlocked.Exchange(ref _conflictsLiveQuery, null);
-            q?.Stop();
-            q?.Dispose();
-        }
+        //    if(puller != null) {
+        //        puller.Changed -= HandleReplicationChanged;
+        //        puller.Stop();
+        //    }
+        //}
 
         #endregion
 
@@ -299,189 +229,6 @@ namespace Training.Core
             }
 
             return true;
-        }
-
-        private static void HandleAccessChanged(object sender, Document.DocumentChangeEventArgs args)
-        {
-            var changedDoc = Database.GetDocument(args.Change.DocumentId);
-            if(!changedDoc.Deleted)
-            {
-                return;
-            }
-
-            _accessDocuments.Remove(changedDoc);
-            var deletedRev = changedDoc.LeafRevisions.FirstOrDefault();
-            var listId = (JsonUtility.ConvertToNetObject<IDictionary<string, object>>(deletedRev?.UserProperties?["taskList"]))?["id"] as string;
-            if(listId == null)
-            {
-                return;
-            }
-
-            var listDoc = Database.GetExistingDocument(listId);
-            listDoc?.Purge();
-            changedDoc.Purge();
-        }
-
-        private static void HandleReplicationChanged(object sender, ReplicationChangeEventArgs args)
-        {
-            var error = Interlocked.Exchange(ref _syncError, args.LastError);
-            if(error != args.LastError) {
-                var errorCode = (args.LastError as CouchbaseLiteException)?.CBLStatus?.Code
-                    ?? (StatusCode?)(args.LastError as HttpResponseException)?.StatusCode;
-                if(errorCode == StatusCode.Unauthorized) {
-                    Mvx.Resolve<IUserDialogs>().AlertAsync("Your username or password is not correct.", "Authorization failed");
-                }
-            }
-        }
-
-        private static void ResolveConflicts(object sender, QueryChangeEventArgs e)
-        {
-            var rows = _conflictsLiveQuery?.Rows;
-            if(rows == null) {
-                return;
-            }
-
-            foreach(var row in rows) {
-                var conflicts = row.GetConflictingRevisions().ToArray();
-                if(conflicts.Length > 1) {
-                    var defaultWinning = conflicts[0];
-                    var type = defaultWinning.GetProperty("type") as string ?? "";
-                    switch(type) {
-                        // TRAINING: Automatic conflict resolution
-                        case "task-list":
-                        case "task-list.user":
-                            var props = defaultWinning.UserProperties;
-                            var image = defaultWinning.GetAttachment("image");
-                            ResolveConflicts(conflicts, props, image);
-                            break;
-                        // TRAINING: N-way merge conflict resolution
-                        case "task":
-                            var merged = NWayMergeConflicts(conflicts);
-                            ResolveConflicts(conflicts, merged.Item1, merged.Item2);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            }
-        }
-
-        private static void ResolveConflicts(SavedRevision[] revs, IDictionary<string, object> props, Attachment image)
-        {
-            Database.RunInTransaction(() =>
-            {
-                var i = 0;
-                foreach(var rev in revs) {
-                    var newRev = rev.CreateRevision();
-                    if(i == 0) { // Default winning revision
-                        newRev.SetUserProperties(props);
-                        if(newRev.GetAttachment("image") != image) {
-                            newRev.SetAttachment("image", "image/jpg", image?.Content);
-                        }
-                    } else {
-                        newRev.IsDeletion = true;
-                    }
-
-                    try {
-                        newRev.Save(true);
-                    } catch(Exception e) {
-                        Debug.WriteLine($"Cannot resolve conflicts with error: {e}");
-                        return false;
-                    }
-
-                    i += 1;
-                }
-
-                return true;
-            });
-        }
-
-        private static Tuple<IDictionary<string, object>, Attachment> NWayMergeConflicts(SavedRevision[] revs)
-        {
-            var parent = FindCommonParent(revs);
-            if(parent == null) {
-                var defaultWinning = revs[0];
-                var props = defaultWinning.UserProperties;
-                var image = defaultWinning.GetAttachment("image");
-                return Tuple.Create(props, image);
-            }
-
-            var mergedProps = parent.UserProperties ?? new Dictionary<string, object>();
-            var mergedImage = parent.GetAttachment("image");
-            var gotTask = false;
-            var gotComplete = false;
-            var gotImage = false;
-            foreach(var rev in revs) {
-                var props = rev.UserProperties;
-                if(props != null) {
-                    if(!gotTask) {
-                        var task = Lookup<string>(props, "task");
-                        if(task != Lookup<string>(mergedProps, "task")) {
-                            mergedProps["task"] = task;
-                            gotTask = true;
-                        }
-                    }
-
-                    if(!gotComplete) {
-                        var complete = LookupNullable<bool>(props, "complete");
-                        if(complete != LookupNullable<bool>(mergedProps, "complete")) {
-                            mergedProps["complete"] = complete.Value;
-                            gotComplete = true;
-                        }
-                    }
-
-                    if(!gotImage) {
-                        var attachment = rev.GetAttachment("image");
-                        var attachmentDigest = attachment?.Metadata[AttachmentMetadataDictionaryKeys.Digest] as string;
-                        if(attachmentDigest != mergedImage?.Metadata?["digest"] as string) {
-                            mergedImage = attachment;
-                            gotImage = true;
-                        }
-                    }
-
-                    if(gotTask && gotComplete && gotImage) {
-                        break;
-                    }
-                }
-            }
-
-            return Tuple.Create(mergedProps, mergedImage);
-        }
-
-        private static Revision FindCommonParent(SavedRevision[] revs)
-        {
-            var minHistoryCount = 0;
-            var histories = new List<SavedRevision[]>();
-            foreach(var rev in revs) {
-                var history = rev.RevisionHistory?.ToArray() ?? new SavedRevision[0];
-                histories.Add(history);
-                minHistoryCount = minHistoryCount > 0 ? Math.Min(minHistoryCount, history.Length) : history.Length;
-            }
-
-            if(minHistoryCount == 0) {
-                return null;
-            }
-
-            var commonParent = default(Revision);
-            for(int i = 0; i < minHistoryCount; i++) {
-                var rev = default(Revision);
-                foreach(var history in histories) {
-                    if(rev == null) {
-                        rev = history[i];
-                    } else if(rev.Id != history[i].Id) {
-                        rev = null;
-                        break;
-                    }
-                }
-
-                if(rev == null) {
-                    break;
-                }
-
-                commonParent = rev;
-            }
-
-            return commonParent.IsDeletion ? null : commonParent;
         }
 
         private static T Lookup<T>(IDictionary<string, object> dic, string key) where T : class
@@ -543,7 +290,6 @@ namespace Training.Core
                 EncryptionEnabled = false,
                 SyncEnabled = false,
                 UsePrebuiltDB = false,
-                ConflictResolution = false,
                 Username = "todo"
             };
 
@@ -556,8 +302,6 @@ namespace Training.Core
         /// <param name="hint">The hint object to use (See <see cref="CoreAppStart"/>) </param>
         public void Start(object hint = null)
         {
-            Couchbase.Lite.Storage.SQLCipher.Plugin.Register();
-
             CoreApp.Hint = (CoreAppStartHint)hint;
             if(CoreApp.Hint.LoginEnabled) {
                 ShowViewModel<LoginViewModel>();
@@ -597,11 +341,6 @@ namespace Training.Core
         /// Gets or sets whether or not to seed the app with a prepopulated database
         /// </summary>
         public bool UsePrebuiltDB { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether or not to handle conflict resolution automatically
-        /// </summary>
-        public bool ConflictResolution { get; set; }
 
         /// <summary>
         /// Gets or sets the username to use for the session

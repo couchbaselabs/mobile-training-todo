@@ -38,7 +38,7 @@ namespace Training.Core
         /// <returns><c>true</c> if the username is valid, <c>false</c> otherwise</returns>
         public static bool IsValidUsername(string username)
         {
-            return Manager.IsValidDatabaseName(username);
+            return true;
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace Training.Core
         /// <param name="dbName">The name of the database to delete</param>
         public void DeleteDatabase(string dbName)
         {
-            CoreApp.AppWideManager.DeleteDatabase(dbName);
+            DatabaseFactory.DeleteDatabase(dbName, null);
         }
 
         #endregion

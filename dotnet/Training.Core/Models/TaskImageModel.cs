@@ -32,7 +32,7 @@ namespace Training.Core
 
         #region Variables
 
-        private Document _taskDocument;
+        private IDocument _taskDocument;
 
         #endregion
 
@@ -45,18 +45,16 @@ namespace Training.Core
         public Stream Image
         {
             get {
-                return _taskDocument.CurrentRevision.GetAttachment("image")?.ContentStream;
+                return _taskDocument.GetBlob("image")?.ContentStream;
             }
             set {
-                _taskDocument.Update(rev =>
+                _taskDocument.DoSync(() =>
                 {
                     if(value == null) {
-                        rev.RemoveAttachment("image");
+                        _taskDocument["image"] = null;
                     } else {
-                        rev.SetAttachment("image", "image/png", value);
+                        _taskDocument["image"] = BlobFactory.Create("image/png", value);
                     }
-
-                    return true;
                 });
             }
         }
