@@ -146,7 +146,7 @@ namespace Training.Core
                         _document["image"] = BlobFactory.Create("image/png", image);
                     }
 
-                    return true;
+                    _document.Save();
                 });
             } catch(Exception e) {
                 throw new Exception("Failed to save image", e);

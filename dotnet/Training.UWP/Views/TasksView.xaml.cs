@@ -19,6 +19,8 @@
 // limitations under the License.
 // 
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Training.Core;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -51,5 +53,11 @@ namespace Training.UWP.Views
         }
 
         #endregion
+
+        private void OnItemClick(object sender, ItemClickEventArgs e)
+        {
+            var viewModel = DataContext as TasksViewModel;
+            viewModel.SelectedItem = e.ClickedItem as TaskCellModel;
+        }
     }
 }

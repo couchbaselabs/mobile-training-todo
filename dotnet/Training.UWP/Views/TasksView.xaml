@@ -20,7 +20,9 @@
         <ListView
             Name="_listView"
             Grid.Row="1"
-            ItemsSource="{Binding ListData}">
+            ItemsSource="{Binding ListData}"
+            ItemClick="OnItemClick"
+            IsItemClickEnabled="True">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -41,7 +43,7 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <Image Source="{Binding Thumbnail, Converter={StaticResource ImageSourceConverter}}" Width="44" Height="44" VerticalAlignment="Center" />
-                        <Button Command="{Binding AddImageCommand}" CommandParameter="{Binding this}" Width="44" Height="44" VerticalAlignment="Center" Background="Transparent" />
+                        <Button x:Name="_btn" Command="{Binding AddImageCommand}" CommandParameter="{Binding}" Grid.Column="0" Width="44" Height="44" VerticalAlignment="Center" Background="Transparent" />
                         <TextBlock Text="{Binding Name}" Grid.Column="1" VerticalAlignment="Center" />
                         <CheckBox IsChecked="{Binding IsChecked}" IsHitTestVisible="False" Grid.Column="2" VerticalAlignment="Center" />
                     </Grid>

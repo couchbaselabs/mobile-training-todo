@@ -7,6 +7,8 @@ using Windows.UI.Xaml.Navigation;
 using MvvmCross.Core.ViewModels;
 using MvvmCross.Platform;
 using Training.Core;
+using Training.UWP.Services;
+using XLabs.Platform.Device;
 
 namespace Training.UWP
 {
@@ -59,7 +61,10 @@ namespace Training.UWP
                 if (rootFrame.Content == null) {
                     var setup = new Setup(rootFrame);
                     setup.Initialize();
-                    
+
+                    Mvx.RegisterSingleton<IDevice>(() => new Device());
+                    Mvx.RegisterSingleton<IImageService>(() => new ImageService());
+
                     var start = new CoreAppStart();
                     var hint = CoreAppStart.CreateHint();
                     start.Start(hint);

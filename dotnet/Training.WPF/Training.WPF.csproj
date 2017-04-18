@@ -276,7 +276,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Training.Core2\Training.Core.csproj">
+    <ProjectReference Include="..\Training.Core\Training.Core.csproj">
       <Project>{b8545a2e-0a45-4965-a86f-be35142c6158}</Project>
       <Name>Training.Core</Name>
     </ProjectReference>

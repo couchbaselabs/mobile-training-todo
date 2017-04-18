@@ -19,6 +19,7 @@
 // limitations under the License.
 //
 using System;
+using System.Collections;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading.Tasks;
@@ -114,12 +115,10 @@ namespace Training
                     return;
                 }
 
-                foreach(TaskCellModel item in e.NewItems) {
-                    if(item.AddImageCommand == null) {
-                        item.AddImageCommand = new MvxAsyncCommand<TaskCellModel>(ShowOrChooseImage);
-                    }
-                }
+                UpdateButtons(e.NewItems);
             };
+
+            UpdateButtons(ListData);
         }
 
         #endregion
@@ -138,6 +137,15 @@ namespace Training
         #endregion
 
         #region Private API
+
+        private void UpdateButtons(IList newItems)
+        {
+            foreach (TaskCellModel item in newItems) {
+                if (item.AddImageCommand == null) {
+                    item.AddImageCommand = new MvxAsyncCommand<TaskCellModel>(ShowOrChooseImage);
+                }
+            }
+        }
 
         private async Task ChooseImage(TaskCellModel taskCellModel)
         {
