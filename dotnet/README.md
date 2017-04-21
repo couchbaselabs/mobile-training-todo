@@ -56,7 +56,7 @@ This interface allows the conversion of any type of object to another and it is 
 
 ### Frameworks Used
 
-- [Couchbase Lite .NET](https://github.com/couchbase/couchbase-ite-net)
+- [Couchbase Lite .NET](https://github.com/couchbase/couchbase-lite-net)
  - For reasons which I hope are obvious
 - [MvvmCross](https://github.com/MvvmCross/MvvmCross)
  - This framework allows application of MVVM in a cross platform way
