@@ -32,5 +32,5 @@ dependencies {
     compile "com.android.support:design:${SUPPORT_LIBRARY_VERSION}"
     testCompile 'junit:junit:4.12'
 
-    compile 'com.couchbase.lite:couchbase-lite-android:2.0.0-DB005'
+    compile 'com.couchbase.lite:couchbase-lite-android:2.0.0-DB006'
 }
