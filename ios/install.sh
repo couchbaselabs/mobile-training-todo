@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 cd Frameworks
-curl http://packages.couchbase.com/releases/couchbase-lite/ios/1.3.1/couchbase-lite-ios-community_1.3.1-6.zip > cbl.zip
+curl https://packages.couchbase.com/releases/couchbase-lite/ios/1.4.0/couchbase-lite-ios-enterprise_1.4.0-3.zip > cbl.zip
 unzip -n cbl.zip
 rm -rf cbl.zip
 rm -rf cbl
