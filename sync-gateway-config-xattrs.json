@@ -9,6 +9,7 @@
       },
       "server": "http://localhost:8091",
       "bucket": "todo",
+      "password": "password",
       "users": {
         "user1": {"password": "pass", "admin_channels": ["user1"]},
         "user2": {"password": "pass", "admin_channels": ["user2"]},
