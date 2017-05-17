@@ -1,7 +1,7 @@
 package com.couchbase.todo;
 
 import com.couchbase.lite.Database;
-import com.couchbase.lite.DatabaseOptions;
+import com.couchbase.lite.DatabaseConfiguration;
 
 public class Application extends android.app.Application {
     private final String DATABASE_NAME = "todo";
@@ -34,9 +34,9 @@ public class Application extends android.app.Application {
     // -------------------------
 
     private void openDatabase(String dbname) {
-        DatabaseOptions options = new DatabaseOptions();
-        options.setDirectory(getFilesDir());
-        db = new Database(dbname, options);
+        DatabaseConfiguration config = new DatabaseConfiguration();
+        config.setDirectory(getFilesDir());
+        db = new Database(dbname, config);
     }
 
     private void closeDatabase() {

@@ -100,7 +100,7 @@ public class ListsActivity extends AppCompatActivity {
 
     private void showTaskListView(Document list) {
         Intent intent = new Intent(this, ListDetailActivity.class);
-        intent.putExtra(INTENT_LIST_ID, list.getID());
+        intent.putExtra(INTENT_LIST_ID, list.getId());
         startActivity(intent);
     }
 
@@ -155,11 +155,11 @@ public class ListsActivity extends AppCompatActivity {
     // create list
     private Document createList(String title) {
         String docId = username + "." + UUID.randomUUID();
-        Document doc = db.getDocument(docId);
+        Document doc = new Document(docId);
         doc.set("type", "task-list");
         doc.set("name", title);
         doc.set("owner", username);
-        doc.save();
+        db.save(doc);
 
         // update UI
         adapter.reload();
@@ -170,7 +170,7 @@ public class ListsActivity extends AppCompatActivity {
     // update list
     private Document updateList(final Document list, String title) {
         list.set("name", title);
-        list.save();
+        db.save(list);
 
         // update UI
         adapter.reload();
@@ -180,7 +180,7 @@ public class ListsActivity extends AppCompatActivity {
 
     // delete list
     private Document deleteList(final Document list) {
-        list.delete();
+        db.delete(list);
 
         // update UI
         adapter.reload();

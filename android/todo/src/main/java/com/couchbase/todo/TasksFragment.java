@@ -47,7 +47,7 @@ public class TasksFragment extends Fragment {
         db = ((Application) getActivity().getApplication()).getDatabase();
         taskList = db.getDocument(getActivity().getIntent().getStringExtra(ListsActivity.INTENT_LIST_ID));
 
-        adapter = new TasksAdapter(getContext(), db, taskList.getID(), new ArrayList<Document>());
+        adapter = new TasksAdapter(getContext(), db, taskList.getId(), new ArrayList<Document>());
         listView = (ListView) view.findViewById(R.id.list);
         listView.setAdapter(adapter);
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
@@ -132,16 +132,16 @@ public class TasksFragment extends Fragment {
 
     // create task
     private void createTask(String title) {
-        Document doc = db.getDocument();
+        Document doc = new Document();
         doc.set("type", "task");
         Map<String, Object> taskListInfo = new HashMap<String, Object>();
-        taskListInfo.put("id", taskList.getID());
+        taskListInfo.put("id", taskList.getId());
         taskListInfo.put("owner", taskList.getString("owner"));
         doc.set("taskList", taskListInfo);
         doc.set("createdAt", new Date());
         doc.set("task", title);
         doc.set("complete", false);
-        doc.save();
+        db.save(doc);
 
         adapter.reload();
     }
@@ -149,14 +149,14 @@ public class TasksFragment extends Fragment {
     // update task
     private void updateTask(final Document task, String text) {
         task.set("task", text);
-        task.save();
+        db.save(task);
 
         adapter.reload();
     }
 
     // delete task
     private void deleteTask(final Document task) {
-        task.delete();
+        db.delete(task);
 
         adapter.reload();
     }

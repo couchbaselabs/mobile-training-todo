@@ -88,6 +88,6 @@ public class TasksAdapter extends ArrayAdapter<Document> {
     // -------------------------
     private void updateCheckedStatus(Document task, boolean checked) {
         task.set("complete", checked);
-        task.save();
+        db.save(task);
     }
 }
