@@ -15,11 +15,11 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     var database: Database!
     var username: String!
     
-    var listQuery: Query!
-    var searchQuery: Query!
+    var listQuery: PredicateQuery!
+    var searchQuery: PredicateQuery!
     var listRows : [QueryRow]?
     
-    var incompTasksCountsQuery: Query!
+    var incompTasksCountsQuery: PredicateQuery!
     var incompTasksCounts: [String:Int] = [:]
     var shouldUpdateIncompTasksCount: Bool = true
     
@@ -90,13 +90,13 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     
     func createTaskList(name: String) {
         let docId = username + "." + NSUUID().uuidString
-        let doc = database.document(withID: docId)
-        doc["type"] = "task-list"
-        doc["name"] = name
-        doc["owner"] = username
+        let doc = Document(docId)
+        doc.set("task-list", forKey: "type")
+        doc.set(name, forKey: "name")
+        doc.set(username, forKey: "owner")
         
         do {
-            try doc.save()
+            try database.save(doc)
             reload()
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't save task list", error: error)
@@ -104,9 +104,9 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     }
     
     func updateTaskList(list: Document, withName name: String) {
-        list["name"] = name
+        list.set(name, forKey: "name")
         do {
-            try list.save()
+            try database.save(list)
             reload()
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't update task list", error: error)
@@ -115,7 +115,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     
     func deleteTaskList(list: Document) {
         do {
-            try list.delete()
+            try database.delete(list)
             reload()
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't delete task list", error: error)
@@ -158,7 +158,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TaskListCell", for: indexPath)
         let row = listRows![indexPath.row]
-        cell.textLabel?.text = row.document["name"]
+        cell.textLabel?.text = row.document.getString("name")
         cell.detailTextLabel?.text = nil
         
         let count = incompTasksCounts[row.documentID] ?? 0
@@ -190,7 +190,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
             // Display update list dialog:
             Ui.showTextInput(on: self, title: "Edit List", message:  nil, textFieldConfig: { text in
                 text.placeholder = "List name"
-                text.text = doc["name"]
+                text.text = doc.getString("name")
                 text.autocapitalizationType = .words
             }, onOk: { (name) -> Void in
                 self.updateTaskList(list: doc, withName: name)

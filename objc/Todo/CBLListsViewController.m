@@ -18,11 +18,11 @@
     CBLDatabase *_database;
     NSString *_username;
     
-    CBLQuery *_listQuery;
-    CBLQuery *_searchQuery;
+    CBLPredicateQuery *_listQuery;
+    CBLPredicateQuery *_searchQuery;
     NSArray* _listRows;
     
-    CBLQuery *_incompTasksCountsQuery;
+    CBLPredicateQuery *_incompTasksCountsQuery;
     NSMutableDictionary *_incompTasksCounts;
     BOOL shouldUpdateIncompTasksCount;
 }
@@ -105,22 +105,22 @@
 
 - (void)createTaskList:(NSString*)name {
     NSString *docId = [NSString stringWithFormat:@"%@.%@", _username, [NSUUID UUID].UUIDString];
-    CBLDocument *doc = [_database documentWithID:docId];
-    doc[@"type"] = @"task-list";
-    doc[@"name"] = name;
-    doc[@"owner"] = _username;
+    CBLDocument *doc = [[CBLDocument alloc] initWithID: docId];
+    [doc setObject:@"task-list" forKey:@"type"];
+    [doc setObject:name forKey:@"name"];
+    [doc setObject:_username forKey:@"owner"];
     
     NSError *error;
-    if ([doc save: &error])
+    if ([_database saveDocument:doc error:&error])
         [self reload];
     else
         [CBLUi showErrorOn:self message:@"Couldn't save task list" error:error];
 }
 
 - (void)updateTaskList:(CBLDocument *)list withName:(NSString *)name {
-    list[@"name"] = name;
+    [list setObject:name forKey:@"name"];
     NSError *error;
-    if ([list save: &error])
+    if ([_database saveDocument:list error:&error])
         [self reload];
     else
         [CBLUi showErrorOn:self message:@"Couldn't update task list" error:error];
@@ -128,7 +128,7 @@
 
 - (void)deleteTaskList:(CBLDocument *)list {
     NSError *error;
-    if ([list deleteDocument: &error])
+    if ([_database deleteDocument:list error:&error])
         [self reload];
     else
         [CBLUi showErrorOn:self message:@"Couldn't delete task list" error:error];
@@ -178,7 +178,7 @@
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"TaskListCell"
                                                             forIndexPath:indexPath];
     CBLQueryRow *row = _listRows[indexPath.row];
-    cell.textLabel.text = row.document[@"name"];
+    cell.textLabel.text = [row.document stringForKey:@"name"];
     
     NSInteger count = [_incompTasksCounts[row.documentID] integerValue];
     cell.detailTextLabel.text = count > 0 ? [NSString stringWithFormat:@"%ld", (long)count] : @"";
@@ -218,7 +218,7 @@
          // Display update list dialog:
          [CBLUi showTextInputOn:self title:@"Edit List" message:nil textField:^(UITextField *text) {
              text.placeholder = @"List name";
-             text.text = doc[@"name"];
+             text.text = [doc stringForKey:@"name"];
          } onOk:^(NSString *name) {
              // Update task list with a new name:
              [self updateTaskList:doc withName:name];

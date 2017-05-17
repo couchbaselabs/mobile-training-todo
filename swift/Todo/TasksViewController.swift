@@ -15,8 +15,8 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     var database: Database!
     var taskList: Document!
-    var taskQuery: Query!
-    var searchQuery: Query!
+    var taskQuery: PredicateQuery!
+    var searchQuery: PredicateQuery!
     var taskRows : [QueryRow]?
     var taskForImage: Document?
     
@@ -44,7 +44,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     func reload() {
         if (taskQuery == nil) {
-            let listID = taskList.documentID
+            let listID = taskList.id
             taskQuery = database.createQuery(
                 where: "type == 'task' AND taskList.id == '\(listID)'",
                 orderBy: ["createdAt", "task"])
@@ -60,15 +60,16 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     }
     
     func createTask(task: String) {
-        let doc = database.document()
-        doc["type"] = "task";
-        doc["taskList"] = ["id": taskList.documentID, "owner": taskList.property("owner")];
-        doc["createdAt"] = Date()
-        doc["task"] = task;
-        doc["complete"] = false
+        let doc = Document()
+        doc.set("task", forKey: "type")
+        let taskListInfo = ["id": taskList.id, "owner": taskList.getString("owner")]
+        doc.set(taskListInfo, forKey: "taskList")
+        doc.set(Date(), forKey: "createdAt")
+        doc.set(task, forKey: "task")
+        doc.set(false, forKey: "complete")
         
         do {
-            try doc.save()
+            try database.save(doc)
             reload()
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't save task", error: error)
@@ -77,8 +78,8 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     func updateTask(task: Document, withTitle title: String) {
         do {
-            task["task"] = title
-            try task.save()
+            task.set(title, forKey: "task")
+            try database.save(task)
             reload()
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't update task", error: error)
@@ -87,8 +88,8 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     func updateTask(task: Document, withComplete complete: Bool) {
         do {
-            task["complete"] = complete
-            try task.save()
+            task.set(complete, forKey: "complete")
+            try database.save(task)
             reload()
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't update task", error: error)
@@ -103,8 +104,8 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         
         do {
             let blob = Blob(contentType: "image/jpg", data: imageData)
-            task["image"] = blob
-            try task.save()
+            task.set(blob, forKey: "image")
+            try database.save(task)
             reload()
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't update task", error: error)
@@ -113,7 +114,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     func deleteTask(task: Document) {
         do {
-            try task.delete()
+            try database.delete(task)
             reload()
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't delete task", error: error)
@@ -122,7 +123,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     func searchTask(task: String) {
         if (searchQuery == nil) {
-            let listID = taskList.documentID
+            let listID = taskList.id
             let w = "type == 'task' AND taskList.id == '\(listID)' AND task contains[c] $NAME"
             searchQuery = database.createQuery(where: w, orderBy: ["createdAt", "task"])
         }
@@ -158,12 +159,12 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         let cell = tableView.dequeueReusableCell(withIdentifier: "TaskCell") as! TaskTableViewCell
         
         let doc = taskRows![indexPath.row].document
-        cell.taskLabel.text = doc["task"]
+        cell.taskLabel.text = doc.getString("task")
         
-        let complete: Bool = doc["complete"]
+        let complete: Bool = doc.getBoolean("complete")
         cell.accessoryType = complete ? .checkmark : .none
         
-        if let imageBlob = doc.property("image") as? Blob {
+        if let imageBlob = doc.getBlob("image") {
             let digest = imageBlob.digest!
             let image = UIImage(data: imageBlob.content!, scale: UIScreen.main.scale)
             let thumbnail = Image.square(image: image,
@@ -194,7 +195,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         }
         
         let doc = taskRows![indexPath.row].document
-        if let imageBlob = doc.property("image") as? Blob, let d = imageBlob.digest, d == digest {
+        if let imageBlob = doc.getBlob("image"), let d = imageBlob.digest, d == digest {
             let cell = tableView.cellForRow(at: indexPath) as! TaskTableViewCell
             cell.taskImage = image
         }
@@ -202,7 +203,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let doc = taskRows![indexPath.row].document
-        let complete: Bool = !doc["complete"]
+        let complete: Bool = !doc.getBoolean("complete")
         updateTask(task: doc, withComplete: complete)
         
         // Optimistically update the UI:
@@ -230,7 +231,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
             
             Ui.showTextInput(on: self, title: "Edit Task", message:  nil, textFieldConfig: { text in
                 text.placeholder = "Task"
-                text.text = document["task"]
+                text.text = document.getString("task")
                 text.autocapitalizationType = .sentences
             }, onOk: { task in
                 self.updateTask(task: document, withTitle: task)

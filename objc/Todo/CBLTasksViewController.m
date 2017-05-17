@@ -20,8 +20,8 @@
     UISearchController *_searchController;
     
     CBLDatabase *_database;
-    CBLQuery *_taskQuery;
-    CBLQuery *_searchQuery;
+    CBLPredicateQuery *_taskQuery;
+    CBLPredicateQuery *_searchQuery;
     NSArray* _taskRows;
     CBLDocument *_taskForImage;
 }
@@ -59,7 +59,7 @@
     }
     
     NSError *error;
-    NSEnumerator *rows = [_taskQuery run: &error];
+    NSEnumerator *rows = [_taskQuery run:&error];
     if (!rows)
         NSLog(@"Error querying tasks: %@", error);
     _taskRows = [rows allObjects];
@@ -68,33 +68,36 @@
 }
 
 - (void)createTask:(NSString *)task {
-    CBLDocument *doc = [_database document];
-    doc[@"type"] = @"task";
-    doc[@"taskList"] = @{@"id": _taskList.documentID, @"owner": _taskList[@"owner"]};
-    doc[@"createdAt"] = [NSDate date];
-    doc[@"task"] = task;
-    doc[@"complete"] = @NO;
+    CBLDocument *doc = [[CBLDocument alloc] init];
+    [doc setObject:@"task" forKey:@"type"];
+    NSDictionary* taskList = @{@"id": _taskList.documentID,
+                               @"owner": [_taskList stringForKey: @"owner"]};
+    [doc setObject:taskList forKey:@"taskList"];
+    [doc setObject:[NSDate date] forKey:@"createdAt"];
+    [doc setObject:task forKey:@"task"];
+    [doc setObject:@NO forKey:@"complete"];
     
     NSError *error;
-    if ([doc save: &error])
+    if ([_database saveDocument:doc error:&error])
         [self reload];
     else
         [CBLUi showErrorOn:self message:@"Couldn't save task" error:error];
 }
 
 - (void)updateTask:(CBLDocument *)task withTitle:(NSString *)title {
-    task[@"task"] = title;
+    [task setObject:title forKey:@"task"];
+    
     NSError *error;
-    if ([task save: &error])
+    if ([_database saveDocument:task error:&error])
         [self reload];
     else
         [CBLUi showErrorOn:self message:@"Couldn't update task" error:error];
 }
 
 - (void)updateTask:(CBLDocument *)task withComplete:(BOOL)complete {
-    task[@"complete"] = @(complete);
+    [task setObject:@(complete) forKey:@"complete"];
     NSError *error;
-    if ([task save: &error])
+    if ([_database saveDocument:task error:&error])
         [self reload];
     else
         [CBLUi showErrorOn:self message:@"Couldn't update complete status" error:error];
@@ -107,8 +110,8 @@
         return;
     
     CBLBlob *blob = [[CBLBlob alloc] initWithContentType:@"image/jpg" data:imageData];
-    task[@"image"] = blob;
-    if ([task save: &error])
+    [task setObject:blob forKey:@"image"];
+    if ([_database saveDocument:task error:&error])
         [self reload];
     else
         [CBLUi showErrorOn:self message:@"Couldn't update task" error:error];
@@ -116,7 +119,7 @@
 
 - (void)deleteTask:(CBLDocument *)task {
     NSError *error;
-    if ([task deleteDocument:&error])
+    if ([_database deleteDocument:task error:&error])
         [self reload];
     else
         [CBLUi showErrorOn:self message:@"Couldn't delete task" error:error];
@@ -169,12 +172,12 @@
                                                                 forIndexPath:indexPath];
     
     CBLDocument *doc = ((CBLQueryRow *)_taskRows[indexPath.row]).document;
-    cell.taskLabel.text = doc[@"task"];
+    cell.taskLabel.text = [doc stringForKey: @"task"];
     
     BOOL complete = [doc booleanForKey:@"complete"];
     cell.accessoryType = complete ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
     
-    CBLBlob *imageBlob = doc[@"image"];
+    CBLBlob *imageBlob = [doc blobForKey: @"image"];
     if (imageBlob) {
         UIImage *image = [UIImage imageWithData:imageBlob.content scale:[UIScreen mainScreen].scale];
         NSString *digest = imageBlob.digest;
@@ -205,7 +208,7 @@
         return;
     
     CBLDocument *doc = ((CBLQueryRow *)_taskRows[indexPath.row]).document;
-    CBLBlob *imageBlob = doc[@"image"];
+    CBLBlob *imageBlob = [doc blobForKey: @"image"];
     if ([imageBlob.digest isEqualToString:digest]) {
         CBLTaskTableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
         cell.taskImage = image;
@@ -248,7 +251,7 @@
         
         [CBLUi showTextInputOn:self title:@"Edit Task" message:nil textField:^(UITextField *text) {
             text.placeholder = @"Task";
-            text.text = doc[@"task"];
+            text.text = [doc stringForKey:@"task"];
             text.autocorrectionType = UITextAutocapitalizationTypeSentences;
         } onOk:^(NSString * name) {
             [self updateTask:doc withTitle:name];
