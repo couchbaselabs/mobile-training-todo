@@ -109,7 +109,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
                 self.performSegue(withIdentifier: "showTaskImage", sender: self)
             }
         } else {
-            cell.taskImage = nil
+            cell.taskImage = UIImage(named: "Task")
             cell.taskImageAction = {
                 self.taskForImage = doc
                 Ui.showImageActionSheet(onController: self, withImagePickerDelegate: self)
