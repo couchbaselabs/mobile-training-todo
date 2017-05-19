@@ -253,7 +253,8 @@ public class TasksFragment extends Fragment {
             if (thumbnail != null)
                 imageView.setImageBitmap(thumbnail);
             else
-                imageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_camera_light));
+                //imageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_camera_light));
+                imageView.setImageDrawable(getResources().getDrawable(R.drawable.ic_note));
 
             imageView.setOnClickListener(new android.view.View.OnClickListener() {
                 @Override

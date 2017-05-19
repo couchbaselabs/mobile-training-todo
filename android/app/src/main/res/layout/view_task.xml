@@ -12,7 +12,7 @@
         android:id="@+id/photo"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:src="@drawable/ic_camera" />
+        android:src="@drawable/ic_note" />
 
     <LinearLayout
         android:layout_width="0dp"
