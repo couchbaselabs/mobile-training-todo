@@ -1,6 +1,6 @@
 ## Getting Started
 
-To run the app, open the folder for the platform of your choice (**android**, **dotnet** or **ios**) and follow the instructions in the respective README.
+To run the app, open the folder for the platform of your choice (**android**, **dotnet** or **ios**) and follow the instructions in the respective README. 
 
 ### Starting Sync Gateway
 
