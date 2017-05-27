@@ -34,9 +34,7 @@ public class Application extends android.app.Application {
     // -------------------------
 
     private void openDatabase(String dbname) {
-        DatabaseConfiguration config = new DatabaseConfiguration();
-        config.setDirectory(getFilesDir());
-        db = new Database(dbname, config);
+        db = new Database(dbname, new DatabaseConfiguration(getApplicationContext()));
     }
 
     private void closeDatabase() {
