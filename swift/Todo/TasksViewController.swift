@@ -62,7 +62,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     func createTask(task: String) {
         let doc = Document()
         doc.set("task", forKey: "type")
-        let taskListInfo = ["id": taskList.id, "owner": taskList.getString("owner")]
+        let taskListInfo = ["id": taskList.id, "owner": taskList.string(forKey: "owner")]
         doc.set(taskListInfo, forKey: "taskList")
         doc.set(Date(), forKey: "createdAt")
         doc.set(task, forKey: "task")
@@ -159,12 +159,12 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         let cell = tableView.dequeueReusableCell(withIdentifier: "TaskCell") as! TaskTableViewCell
         
         let doc = taskRows![indexPath.row].document
-        cell.taskLabel.text = doc.getString("task")
+        cell.taskLabel.text = doc.string(forKey: "task")
         
-        let complete: Bool = doc.getBoolean("complete")
+        let complete: Bool = doc.boolean(forKey: "complete")
         cell.accessoryType = complete ? .checkmark : .none
         
-        if let imageBlob = doc.getBlob("image") {
+        if let imageBlob = doc.blob(forKey: "image") {
             let digest = imageBlob.digest!
             let image = UIImage(data: imageBlob.content!, scale: UIScreen.main.scale)
             let thumbnail = Image.square(image: image,
@@ -195,7 +195,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         }
         
         let doc = taskRows![indexPath.row].document
-        if let imageBlob = doc.getBlob("image"), let d = imageBlob.digest, d == digest {
+        if let imageBlob = doc.blob(forKey: "image"), let d = imageBlob.digest, d == digest {
             let cell = tableView.cellForRow(at: indexPath) as! TaskTableViewCell
             cell.taskImage = image
         }
@@ -203,7 +203,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let doc = taskRows![indexPath.row].document
-        let complete: Bool = !doc.getBoolean("complete")
+        let complete: Bool = !doc.boolean(forKey: "complete")
         updateTask(task: doc, withComplete: complete)
         
         // Optimistically update the UI:
@@ -231,7 +231,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
             
             Ui.showTextInput(on: self, title: "Edit Task", message:  nil, textFieldConfig: { text in
                 text.placeholder = "Task"
-                text.text = document.getString("task")
+                text.text = document.string(forKey: "task")
                 text.autocapitalizationType = .sentences
             }, onOk: { task in
                 self.updateTask(task: document, withTitle: task)

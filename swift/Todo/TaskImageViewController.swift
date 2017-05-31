@@ -52,7 +52,7 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
     // MARK: - Database
     
     func reload() {
-        if let blob = task.getBlob("image"), let content = blob.content {
+        if let blob = task.blob(forKey: "image"), let content = blob.content {
             imageView.image = UIImage(data: content)
         } else {
             imageView.image = nil
