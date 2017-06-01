@@ -6,7 +6,7 @@ The application has both Objective-C and Swift version.
 - [Carthage](https://github.com/Carthage/Carthage)
 - XCode 8.3
 
-## How to build and run
+## How to build and run?
 1. Clone the project and checkout `feature/2.0` branch.
 
  ```
@@ -26,7 +26,7 @@ The application has both Objective-C and Swift version.
 
 5. Select `Todo` scheme and Run.
 
-## How to use replication feature
+## How to use the replication feature?
 
 1. [Download Sync Gateway 1.5 beta](https://developer.couchbase.com/documentation/mobile/2.0/whatsnew.html?language=ios)
 2. Start Sync Gateway with the configuration file in the root of this project.
