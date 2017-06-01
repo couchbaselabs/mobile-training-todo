@@ -3,8 +3,8 @@ ToDo iOS sample app built with [CouchbaseLite 2.0 Developer Preview](https://git
 The application has both Objective-C and Swift version.
 
 ## Requirements
-- [CocoaPods](https://cocoapods.org)
-- XCode 8
+- [Carthage](https://github.com/Carthage/Carthage)
+- XCode 8.3
 
 ## How to build and run
 1. Clone the project and checkout `feature/2.0` branch
@@ -16,10 +16,10 @@ The application has both Objective-C and Swift version.
  
 2. cd into the project either `objc` or `swift`.
 
-3. Use CocoaPods to download and install CouchbaseLite
+3. Use Carthage to download the library
 
  ```
- $ pod install
+ $ carthage update
  ```
  
 4. Open Todo.xcworkspace with your XCode
