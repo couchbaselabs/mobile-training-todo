@@ -7,7 +7,7 @@ The application has both Objective-C and Swift version.
 - XCode 8.3
 
 ## How to build and run
-1. Clone the project and checkout `feature/2.0` branch
+1. Clone the project and checkout `feature/2.0` branch.
 
  ```
  $ git clone https://github.com/couchbaselabs/mobile-training-todo.git
@@ -16,12 +16,24 @@ The application has both Objective-C and Swift version.
  
 2. cd into the project either `objc` or `swift`.
 
-3. Use Carthage to download the library
+3. Use Carthage to download the library.
 
  ```
  $ carthage update
  ```
  
-4. Open Todo.xcworkspace with your XCode
+4. Open Todo.xcodeproj with your XCode.
 
-5. Select `Todo` scheme and Run
+5. Select `Todo` scheme and Run.
+
+## How to use replication feature
+
+1. [Download Sync Gateway 1.5 beta](https://developer.couchbase.com/documentation/mobile/2.0/whatsnew.html?language=ios)
+2. Start Sync Gateway with the configuration file in the root of this project.
+
+ ```
+~/Downloads/couchbase-sync-gateway/bin/sync_gateway sync-gateway-config.json
+ ```
+3. From the AppDelegate in the XCode project, change kLoginFlowEnabled and kSyncEnabled variables to YES or true.
+4. From the AppDelegate in the XCode project, change the hostname of the kSyncGatewayUrl variable as appropriate.
+5. Rerun the Todo app.
