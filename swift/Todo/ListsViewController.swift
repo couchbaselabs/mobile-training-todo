@@ -36,7 +36,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
         database = app.database
         
         // Get username:
-        username = app.username
+        username = Session.username
         
         reload()
     }
@@ -158,7 +158,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TaskListCell", for: indexPath)
         let row = listRows![indexPath.row]
-        cell.textLabel?.text = row.document.getString("name")
+        cell.textLabel?.text = row.document.string(forKey: "name")
         cell.detailTextLabel?.text = nil
         
         let count = incompTasksCounts[row.documentID] ?? 0
@@ -190,7 +190,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
             // Display update list dialog:
             Ui.showTextInput(on: self, title: "Edit List", message:  nil, textFieldConfig: { text in
                 text.placeholder = "List name"
-                text.text = doc.getString("name")
+                text.text = doc.string(forKey: "name")
                 text.autocapitalizationType = .words
             }, onOk: { (name) -> Void in
                 self.updateTaskList(list: doc, withName: name)

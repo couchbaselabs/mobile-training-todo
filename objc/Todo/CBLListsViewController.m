@@ -9,8 +9,10 @@
 #import "CBLListsViewController.h"
 #import <CouchbaseLite/CouchbaseLite.h>
 #import "AppDelegate.h"
-#import "CBLUi.h"
+#import "CBLSession.h"
 #import "CBLTasksViewController.h"
+#import "CBLUi.h"
+
 
 @interface CBLListsViewController () <UISearchResultsUpdating> {
     UISearchController *_searchController;
@@ -41,12 +43,12 @@
     _searchController.searchResultsUpdater = self;
     self.tableView.tableHeaderView = _searchController.searchBar;
     
+    
+    // Get database and username:
     // Get username:
     AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
-    _username = app.username;
-    
-    // Get database:
     _database = app.database;
+    _username = [CBLSession sharedInstance].username;
     
     // Load data:
     [self reload];

@@ -1,0 +1,247 @@
+{
+  "interface":":4984",
+  "log": ["*"],
+  "databases": {
+    "todo": {
+      "server": "walrus:",
+      "users": {
+        "user1": {"password": "pass", "admin_channels": ["user1"]},
+        "user2": {"password": "pass", "admin_channels": ["user2"]},
+        "mod": {"password": "pass", "admin_roles": ["moderator"]},
+        "admin": {"password": "pass", "admin_roles": ["admin"]}
+      },
+      "roles": {
+        "moderator": {},
+        "admin": {}
+      },
+      "unsupported": {
+        "replicator_2":true
+      },
+      "sync": `
+function(doc, oldDoc){
+  /* Type validation */
+  if (isCreate()) {
+    // Don't allow creating a document without a type.
+    validateNotEmpty("type", doc.type);
+  } else if (isUpdate()) {
+    // Don't allow changing the type of any document.
+    validateReadOnly("type", doc.type, oldDoc.type);
+  }
+
+  if (getType() == "moderator") {
+    /* Control Write Access */
+    // Only allow admins to add/remove moderators.
+    requireRole("admin");
+
+    /* Validate */
+    if (!isDelete()) {
+      // Validate required fields.
+      validateNotEmpty("username", doc.username);
+
+      if (isCreate()) {
+        // We use a key pattern to ensure unique moderators within the system,
+        // so we need to ensure that doc._id matches the pattern
+        // moderator.{username}.
+        if (doc._id != "moderator." + doc.username) {
+          throw({forbidden: "_id must match the pattern moderator.{username}."});
+        }
+      } else {
+        // doc._id is tied to username, validated during create, and must remain this
+        // way to ensure unique moderators within the system.
+        validateReadOnly("username", doc.username, oldDoc.username);
+      }
+    }
+
+    /* Route */
+    if (!isDelete()) {
+      // Add user to moderator role.
+      role(doc.username, "role:moderator");
+    }
+    // Add doc to the user's channel.
+    var username = doc._deleted ? oldDoc.username : doc.username;
+    channel(username);
+
+    /* Grant Read Access */
+    if (!isDelete()) {
+      // Grant user access to moderators channel.
+      access(doc.username, "moderators");
+    }
+    // Grant user access to their channel.
+    access(doc.username, doc.username);
+  } else if (getType() == "task-list") { // Task List access control
+    /* Write Access */
+    var owner = doc._deleted ? oldDoc.owner : doc.owner;
+    try {
+      // Moderators can create/update lists for other users.
+      requireRole("moderator");
+    } catch (e) {
+      // Users can create/update lists for themselves.
+      requireUser(owner);
+    }
+
+    /* Validation */
+    if (!isDelete()) {
+      // Validate required fields.
+      validateNotEmpty("name", doc.name);
+      validateNotEmpty("owner", doc.owner);
+
+      if (isCreate()) {
+        // Validate that the _id is prefixed by owner.
+        if (!hasPrefix(doc._id, doc.owner + ".")) {
+            throw({forbidden: "task-list id must be prefixed by list owner"});
+        }
+      } else {
+        // Don’t allow task-list ownership to be changed.
+        validateReadOnly("owner", doc.owner, oldDoc.owner);
+      }
+    }
+
+    /* Routing */
+    // Add doc to task-list's channel.
+    channel("task-list." + doc._id);
+    channel("moderators");
+
+    /* Read Access */
+    // Grant task-list owner access to the task-list, its tasks, and its users.
+    access(owner, "task-list." + doc._id);
+    access(owner, "task-list." + doc._id + ".users");
+    access("role:moderator", "task-list." + doc._id);
+  } else if (getType() == "task") {
+    /* Write Access */
+    if (!isDelete()) {
+      validateNotEmpty("taskList", doc.taskList);
+    }
+    var owner = doc._deleted ? oldDoc.taskList.owner : doc.taskList.owner;
+    var listId = doc._deleted ? oldDoc.taskList.id : doc.taskList.id;
+    try {
+      requireAccess("task-list." + listId);
+    } catch (e) {
+      requireUser(owner);
+    }
+
+    /* Validate */
+    if (!isDelete()) {
+      // Validate required fields.
+      validateNotEmpty("taskList.id", doc.taskList.id);
+      validateNotEmpty("taskList.owner", doc.taskList.owner);
+      validateNotEmpty("task", doc.task);
+
+      if (isCreate()) {
+        // Validate that the taskList.id is prefixed by taskList.owner.  We only need to
+        // validate this during create because these fields are read-only after create.
+        if (!hasPrefix(doc.taskList.id, doc.taskList.owner + ".")) {
+            throw({forbidden: "task-list id must be prefixed by task-list owner"});
+        }
+      } else {
+        // Don’t allow tasks to be moved to another task-list.
+        validateReadOnly("taskList.id", doc.taskList.id, oldDoc.taskList.id);
+        validateReadOnly("taskList.owner", doc.taskList.owner, oldDoc.taskList.owner);
+      }
+    }
+
+    /* Route */
+    // Add doc to task-list and moderators channel.
+    channel("task-list." + listId);
+    channel("moderators");
+  } else if (getType() == "task-list.user") {
+    /* Control Write Access */
+    if (!isDelete()) {
+      validateNotEmpty("taskList", doc.taskList);
+    }
+    var owner = doc._deleted ? oldDoc.taskList.owner : doc.taskList.owner;
+    var username = doc._deleted ? oldDoc.username : doc.username;
+    try {
+      requireUser(owner);
+    } catch (e) {
+      requireRole("moderator");
+    }
+
+    /* Validate */
+    if (!isDelete()) {
+        // Validate required fields.
+        validateNotEmpty("taskList.id", doc.taskList.id);
+        validateNotEmpty("taskList.owner", doc.taskList.owner);
+        validateNotEmpty("username", doc.username);
+
+        if (isCreate()) {
+          // We use a key pattern to ensure unique users w/in a list, so we need to
+          // ensure that doc._id matches the pattern {taskList.id}.{username}.
+          if (doc._id != doc.taskList.id + "." + doc.username) {
+            throw({forbidden: "_id must match the pattern {taskList.id}.{username}."});
+          }
+
+          // Validate that the taskList.id is prefixed by taskList.owner.
+          if (!hasPrefix(doc.taskList.id, doc.taskList.owner + ".")) {
+              throw({forbidden: "task-list id must be prefixed by task-list owner"});
+          }
+        } else {
+          // Don’t allow users to be moved to another task-list.  Also, doc._id is tied to
+          // these values, validated during create, and must remain this way to ensure
+          // uniqueness within a list.
+          validateReadOnly("taskList.id", doc.taskList.id, oldDoc.taskList.id);
+          validateReadOnly("taskList.owner", doc.taskList.owner, oldDoc.taskList.owner);
+        }
+    }
+
+    /* Route */
+    // Add doc to task-list users and moderators channel.
+    var listId = doc._deleted ? oldDoc.taskList.id : doc.taskList.id;
+    channel("task-list." + listId + ".users");
+    channel("moderators");
+
+    /* Grant Read Access */
+    // Grant the user access to the task-list and its tasks.
+    if (!isDelete()) {
+      access(doc.username, "task-list." + listId);
+    }
+
+    channel(username);
+  } else {
+    // Log invalid document type error.
+    log("Invalid document type: " + doc.type);
+
+    throw({forbidden: "Invalid document type: " + doc.type});
+  }
+
+  function getType() {
+    return (isDelete() ? oldDoc.type : doc.type);
+  }
+
+  function isCreate() {
+    // Checking false for the Admin UI to work
+    return ((oldDoc == false) || (oldDoc == null || oldDoc._deleted) && !isDelete());
+  }
+
+  function isUpdate() {
+    return (!isCreate() && !isDelete());
+  }
+
+  function isDelete() {
+    return (doc._deleted == true);
+  }
+
+  function validateNotEmpty(key, value) {
+    if (!value) {
+      throw({forbidden: key + " is not provided."});
+    }
+  }
+
+  function validateReadOnly(name, value, oldValue) {
+    if (value != oldValue) {
+      throw({forbidden: name + " is read-only."});
+    }
+  }
+
+  // Checks whether the provided value starts with the specified prefix
+  function hasPrefix(value, prefix) {
+    if (value && prefix) {
+      return value.substring(0, prefix.length) == prefix
+    } else {
+      return false
+    }
+  }
+}
+      `
+    }
+  }
+}
