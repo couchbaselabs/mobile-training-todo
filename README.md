@@ -1,6 +1,6 @@
 ## Getting Started
 
-To run the app, open the folder for the platform of your choice (**android**, **dotnet** or **ios**) and follow the instructions in the respective README.
+To run the app, open the folder for the platform of your choice (**android**, **dotnet** or **ios**) and follow the instructions in the respective README.  If you are looking for an example that uses the [CouchbaseLite 2.0 Developer Preview](https://github.com/couchbase/couchbase-lite-ios/tree/feature/2.0), then check the version of this repo on the [feature/2.0](https://github.com/couchbaselabs/mobile-training-todo/tree/feature/2.0) branch  
 
 ### Starting Sync Gateway
 
