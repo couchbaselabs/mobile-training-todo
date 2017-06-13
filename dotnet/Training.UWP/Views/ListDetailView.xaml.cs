@@ -91,7 +91,8 @@ namespace Training.UWP.Views
             }
 
             _initialized = true;
-            _tasksView.ViewModel = new TasksViewModel(viewModel);
+            _tasksView.DataContext = new TasksViewModel(viewModel);
+            _tasksView.ViewModel = (TasksViewModel) _tasksView.DataContext;
             //_usersView.DataContext = _usersView.ViewModel = new UsersViewModel(viewModel);
 
             //if (!viewModel.HasModeratorStatus) {
@@ -100,7 +101,7 @@ namespace Training.UWP.Views
             //    _viewMenu.Visibility = Visibility.Visible;
             //}
 
-            
+
         }
 
         private void UpdateView(object sender, RoutedEventArgs e)

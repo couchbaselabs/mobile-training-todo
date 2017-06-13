@@ -33,8 +33,8 @@ namespace Training.Core
 
         #region Variables
 
-        private IDatabase _db;
-        private IDocument _document;
+        private Database _db;
+        private Document _document;
         private string _username;
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace Training.Core
         public ListDetailModel(string documentId)
         {
             _db = CoreApp.Database;
-            _document = _db[documentId];
+            _document = _db.GetDocument(documentId);
         }
 
         #endregion

@@ -40,9 +40,9 @@ namespace Training.Core
 
         #region Variables
 
-        private IDatabase _db;
+        private Database _db;
         //private LiveQuery _usersLiveQuery;
-        private IDocument _taskList;
+        private Document _taskList;
 
         #endregion
 
@@ -91,12 +91,8 @@ namespace Training.Core
 
             var docId = $"{_taskList.Id}.{username}";
             try {
-                _db.DoSync(() =>
-                {
-                    var doc = _db.GetDocument(docId);
-                    doc.Properties = properties;
-                    doc.Save();
-                });
+                var doc = new Document(docId, properties);
+                _db.Save(doc);
             } catch(Exception e) {
                 throw new Exception("Couldn't create user", e);
             }

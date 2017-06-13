@@ -47,7 +47,7 @@ namespace Training.Core
         /// <param name="dbName">The name of the database to delete</param>
         public void DeleteDatabase(string dbName)
         {
-            DatabaseFactory.DeleteDatabase(dbName, null);
+            Database.Delete(dbName, null);
         }
 
         #endregion

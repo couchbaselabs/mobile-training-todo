@@ -41,7 +41,7 @@ namespace Training.Core
 
         #region Variables
 
-        private IDatabase _db;
+        private Database _db;
         //private LiveQuery _byNameQuery;
         //private LiveQuery _incompleteQuery;
 
@@ -68,7 +68,7 @@ namespace Training.Core
         /// Constructor
         /// </summary>
         /// <param name="db">The database to use</param>
-        public TaskListsModel(IDatabase db)
+        public TaskListsModel(Database db)
         {
             _db = db;
             SetupQuery();
@@ -101,21 +101,17 @@ namespace Training.Core
         /// Creates a new task list
         /// </summary>
         /// <param name="name">The name of the task list.</param>
-        public IDocument CreateTaskList(string name)
+        public Document CreateTaskList(string name)
         {
             var docId = $"{Username}.{Guid.NewGuid()}";
             try {
-                var returnVal = _db.DoSync(() =>
-                {
-                    var doc = _db.GetDocument(docId);
-                    doc["type"] = TaskListType;
-                    doc["name"] = name;
-                    doc["owner"] = Username;
-                    doc.Save();
-                    return doc;
-                });
+                var doc = new Document(docId);
+                doc["type"].Value = TaskListType;
+                doc["name"].Value = name;
+                doc["owner"].Value = Username;
+                _db.Save(doc);
                 Filter(null);
-                return returnVal;
+                return doc;
             } catch(Exception e) {
                 var newException = new Exception("Couldn't save task list", e);
                 throw newException;
@@ -141,7 +137,7 @@ namespace Training.Core
                     .OrderBy(OrderByFactory.Property("name"));
             }
 
-            TasksList.Replace(query.Run().Select(x => new TaskListCellModel(x.DocumentID, x.Document["name"] as string)));
+            TasksList.Replace(query.Run().Select(x => new TaskListCellModel(x.DocumentID, x.Document["name"].ToString())));
         }
 
         #endregion

@@ -3,6 +3,9 @@
   "log": ["HTTP", "Auth"],
   "databases": {
     "todo": {
+      "unsupported": {
+         "replicator_2": true
+     },
       "server": "walrus:",
       "bucket": "todo",
       "users": {

@@ -32,7 +32,7 @@ namespace Training.Core
 
         #region Variables
 
-        private IDocument _document;
+        private readonly Document _document;
 
         #endregion
 
@@ -53,7 +53,7 @@ namespace Training.Core
         /// <param name="documentId">The ID of the document containing information for this entry</param>
         public TaskListModel(string documentId)
         {
-            _document = CoreApp.Database[documentId];
+            _document = CoreApp.Database.GetDocument(documentId);
         }
 
         #endregion
@@ -65,15 +65,14 @@ namespace Training.Core
         /// </summary>
         public bool Delete()
         {
-            var db = _document.Database;
+            var db = CoreApp.Database;
             if (_document.GetString("owner") != db.Name && !HasModerator(db))
             {
                 return false;
             }
 
-            try
-            {
-                _document.Delete();
+            try {
+                db.Delete(_document);
             }
             catch (Exception e)
             {
@@ -90,10 +89,7 @@ namespace Training.Core
         public void Edit(string name)
         {
             try {
-                _document.DoSync(() =>
-                {
-                    _document["name"] = name;
-                });
+                _document.Set("name", name);
             } catch(Exception e) {
                 throw new Exception("Couldn't edit task list", e);
             }
@@ -103,7 +99,7 @@ namespace Training.Core
 
         #region Private API
 
-        private bool HasModerator(IDatabase db)
+        private bool HasModerator(Database db)
         {
             var moderatorDocId = $"moderator.{db.Name}";
             return db.DocumentExists(moderatorDocId);

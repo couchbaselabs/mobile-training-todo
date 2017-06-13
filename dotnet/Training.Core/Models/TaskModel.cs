@@ -35,7 +35,7 @@ namespace Training.Core
 
         #region Variables
 
-        private readonly IDocument _document;
+        private readonly Document _document;
 
         #endregion
 
@@ -45,13 +45,8 @@ namespace Training.Core
         /// Gets the name of the task (cached)
         /// </summary>
         /// <value>The name.</value>
-        public string Name
-        {
-            get {
-                return _name.Value;
-            }
-        }
-        private Lazy<string> _name;
+        public string Name => _name.Value;
+        private readonly Lazy<string> _name;
 
         /// <summary>
         /// Gets or sets whether or not this document is "checked off" (i.e. finished)
@@ -59,17 +54,11 @@ namespace Training.Core
         /// <value><c>true</c> if the entry is checked off; otherwise, <c>false</c>.</value>
         public bool IsChecked
         {
-            get {
-                return _document.DoSync(() => _document.GetBoolean("complete"));
-            }
+            get => _document.GetBoolean("complete");
             set {
                 try {
-                    
-                    _document.DoSync(() =>
-                    {
-                        _document["complete"] = value;
-                        _document.Save();
-                    });
+                    _document["complete"].Value = value;
+                    CoreApp.Database.Save(_document);
                 } catch(Exception e) {
                     throw new Exception("Failed to edit task", e);
                 }
@@ -87,7 +76,7 @@ namespace Training.Core
         /// this task</param>
         public TaskModel(string documentID)
         {
-            _document = CoreApp.Database[documentID];
+            _document = CoreApp.Database.GetDocument(documentID);
             _name = new Lazy<string>(() => _document.GetString("task"), LazyThreadSafetyMode.None);
             _imageDigest = new Lazy<string>(() => {
                 var metadata = _document.GetBlob("image")?.Properties;
@@ -138,16 +127,13 @@ namespace Training.Core
         public void SetImage(Stream image)
         {
             try {
-                _document.DoSync(() =>
-                {
-                    if(image == null) {
-                        _document.Remove("image");
-                    } else {
-                        _document["image"] = BlobFactory.Create("image/png", image);
-                    }
+                if(image == null) {
+                    _document.Remove("image");
+                } else {
+                    _document["image"].Value = new Blob("image/png", image);
+                }
 
-                    _document.Save();
-                });
+                CoreApp.Database.Save(_document);
             } catch(Exception e) {
                 throw new Exception("Failed to save image", e);
             }
@@ -159,7 +145,7 @@ namespace Training.Core
         public void Delete()
         {
             try {
-                _document.Delete();
+                CoreApp.Database.Delete(_document);
             } catch(Exception e) {
                 throw new Exception("Failed to delete task", e);
             }
@@ -172,11 +158,8 @@ namespace Training.Core
         public void Edit(string name)
         {
             try {
-                _document.DoSync(() =>
-                {
-                    _document["task"] = name;
-                    _document.Save();
-                });
+                _document["task"].Value = name;
+                CoreApp.Database.Save(_document);
             } catch(Exception e) {
                 throw new Exception("Failed to edit task", e);
             }

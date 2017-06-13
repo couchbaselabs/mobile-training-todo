@@ -30,7 +30,7 @@ namespace Training.Core
 
         #region Variables
 
-        private IDocument _document;
+        private readonly Document _document;
 
         #endregion
 
@@ -52,7 +52,7 @@ namespace Training.Core
         /// the user</param>
         public UserModel(string documentId)
         {
-            _document = CoreApp.Database[documentId];
+            _document = CoreApp.Database.GetDocument(documentId);
         }
 
         #endregion
@@ -64,10 +64,7 @@ namespace Training.Core
         /// </summary>
         public void Delete()
         {
-            _document.DoSync(() =>
-            {
-                _document["_deleted"] = true;
-            });
+            CoreApp.Database.Delete(_document);
         }
 
         #endregion

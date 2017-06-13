@@ -94,27 +94,27 @@ namespace Training.Core
 
             try {
                 CoreApp.StartSession(Username, password, null);
-            } catch(CouchbaseLiteException e) {
-                if(e.CBLStatus.Code == StatusCode.Unauthorized) {
-                    var result = await _dialogs.PromptAsync(new PromptConfig {
-                        Title = "Password Changed",
-                        OkText = "Migrate",
-                        CancelText = "Delete",
-                        IsCancellable = true,
-                        InputType = Acr.UserDialogs.InputType.Password
-                    });
+            //} catch(CouchbaseLiteException e) {
+            //    if(e.Status == StatusCode.Unauthorized) {
+            //        var result = await _dialogs.PromptAsync(new PromptConfig {
+            //            Title = "Password Changed",
+            //            OkText = "Migrate",
+            //            CancelText = "Delete",
+            //            IsCancellable = true,
+            //            InputType = Acr.UserDialogs.InputType.Password
+            //        });
 
-                    if(result.Ok) {
-                        CoreApp.StartSession(Username, result.Text, password);
-                    } else {
-                        Model.DeleteDatabase(Username);
-                        Login(password);
-                        return;
-                    }
-                } else {
-                    _dialogs.ShowError($"Login has an error occurred, code = {e.CBLStatus.Code}");
-                    return;
-                }
+            //        if(result.Ok) {
+            //            CoreApp.StartSession(Username, result.Text, password);
+            //        } else {
+            //            Model.DeleteDatabase(Username);
+            //            Login(password);
+            //            return;
+            //        }
+            //    } else {
+            //        _dialogs.ShowError($"Login has an error occurred, code = {e.Code}");
+            //        return;
+            //    }
             } catch(Exception e) {
                 _dialogs.ShowError($"Login has an error occurred, code = {e}");
                 return;

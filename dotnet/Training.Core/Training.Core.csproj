@@ -7,9 +7,10 @@
 
   <ItemGroup>
     <PackageReference Include="Acr.UserDialogs" Version="6.3.10" />
-    <PackageReference Include="Couchbase.Lite" Version="2.0.0-b0056" />
+    <PackageReference Include="Couchbase.Lite" Version="2.0.0-b0125" />
     <PackageReference Include="MvvmCross" Version="4.4.0" />
     <PackageReference Include="XLabs.Platform" Version="2.0.5782" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.2" />
   </ItemGroup>
 
 </Project>

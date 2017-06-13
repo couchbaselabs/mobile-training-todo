@@ -42,8 +42,8 @@ namespace Training.Core
         #region Variables
 
         //private LiveQuery _tasksLiveQuery;
-        private IDatabase _db;
-        private IDocument _taskList;
+        private Database _db;
+        private Document _taskList;
 
         #endregion
 
@@ -83,7 +83,7 @@ namespace Training.Core
         /// Creates a new task in the current list
         /// </summary>
         /// <param name="taskName">The name of the task</param>
-        public IDocument CreateNewTask(string taskName)
+        public Document CreateNewTask(string taskName)
         {
             var taskListInfo = new Dictionary<string, object> {
                 ["id"] = _taskList.Id,
@@ -99,15 +99,10 @@ namespace Training.Core
             };
 
             try {
-                var retVal = _db.DoSync(() =>
-                {
-                    var doc = _db.CreateDocument();
-                    doc.Properties = properties;
-                    doc.Save();
-                    return doc;
-                });
+                var doc = new Document(properties);
+                _db.Save(doc);
                 Filter(null);
-                return retVal;
+                return doc;
             } catch(Exception e) {
                 throw new Exception("Couldn't save task", e);
             }

@@ -79,7 +79,7 @@ namespace Training.WPF
         private void OnStartup(object sender, StartupEventArgs e)
         {
             if(e.Args.Length > 0 && e.Args[0].ToLowerInvariant() == "/clean") {
-                DatabaseFactory.DeleteDatabase("todo", null);
+                Database.Delete("todo", null);
             }
         }
 

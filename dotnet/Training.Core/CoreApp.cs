@@ -26,6 +26,7 @@ using System.Threading;
 
 using Acr.UserDialogs;
 using Couchbase.Lite;
+using Couchbase.Lite.Sync;
 using MvvmCross.Core.ViewModels;
 using MvvmCross.Platform;
 using MvvmCross.Platform.IoC;
@@ -41,17 +42,15 @@ namespace Training.Core
     {
         #region Constants
 
-        private static readonly Uri SyncGatewayUrl = new Uri("http://localhost:4984/todo/");
+        private static readonly Uri SyncGatewayUrl = new Uri("blip://localhost:4984/todo/");
 
         #endregion
 
         #region Variables
-
-        //private static Replication _pusher;
-        //private static Replication _puller;
+        
+        private static Replicator _replication;
         private static Exception _syncError;
-        //private static LiveQuery _conflictsLiveQuery;
-        private static HashSet<IDocument> _accessDocuments = new HashSet<IDocument>();
+        private static HashSet<Document> _accessDocuments = new HashSet<Document>();
 
         #endregion
 
@@ -60,7 +59,7 @@ namespace Training.Core
         /// <summary>
         /// Gets the database for the current session
         /// </summary>
-        public static IDatabase Database { get; private set; }
+        public static Database Database { get; private set; }
 
         internal static CoreAppStartHint Hint { get; set; }
 
@@ -84,9 +83,9 @@ namespace Training.Core
             var np = Hint.EncryptionEnabled ? newPassword : null;
             OpenDatabase(username, p, np);
 
-            //if(Hint.SyncEnabled) {
-            //    StartReplication(username, newPassword ?? password);
-            //}
+            if(Hint.SyncEnabled) {
+                StartReplication(username, newPassword ?? password);
+            }
         }
 
         /// <summary>
@@ -121,30 +120,17 @@ namespace Training.Core
             //    encryptionKey = new SymmetricKey(key);
             //}
 
-            Database = DatabaseFactory.Create(dbName);
+            Database =new Database(dbName);
             //if(newKey != null) {
             //    Database.ChangeEncryptionKey(new SymmetricKey(newKey));
             //}
 
-            //Database.Changed += (sender, args) =>
-            //{
-            //    if (!args.External)
-            //    {
-            //        return;
-            //    }
-
-            //    var db = (IDatabase)sender;
-            //    foreach(var change in args.DocIDs)
-            //    {
-            //        var changedDoc = db[change];
-            //        if (!NeedsMonitoringFor(changedDoc.Properties, db.Name)) {
-            //            continue;
-            //        }
-
-            //        _accessDocuments.Add(changedDoc);
-            //        changedDoc.Saved += HandleAccessChanged;
-            //    }
-            //};
+            Database.Changed += (sender, args) =>
+            {
+                foreach (var id in args.DocumentIDs) {
+                    MonitorIfNeeded(id, args.Database.Name);
+                }
+            };
         }
 
         /// <summary>
@@ -164,91 +150,63 @@ namespace Training.Core
         /// </summary>
         /// <param name="username">The username to use for the replication</param>
         /// <param name="password">The password to use for replication auth (optional)</param>
-        //public static void StartReplication(string username, string password = null)
-        //{
-        //    var authenticator = default(IAuthenticator);
-        //    if(username != null && password != null) {
-        //        authenticator = AuthenticatorFactory.CreateBasicAuthenticator(username, password);
-        //    }
+        public static void StartReplication(string username, string password = null)
+        {
+            var options = new ReplicatorOptionsDictionary();
+            if (username != null && password != null) {
+                options.Auth = new AuthOptionsDictionary {
+                    Type = AuthType.HttpBasic,
+                    Username = username,
+                    Password = password
+                };
+            }
 
-        //    var db = AppWideManager.GetDatabase(username);
-        //    var pusher = db.CreatePushReplication(SyncGatewayUrl);
-        //    pusher.Continuous = true;
-        //    pusher.Authenticator = authenticator;
-        //    pusher.Changed += HandleReplicationChanged;
-            
+            var config = new ReplicatorConfiguration {
+                ReplicatorType = ReplicatorType.PushAndPull,
+                Continuous = true,
+                Database = Database,
+                Target = new ReplicatorTarget(SyncGatewayUrl),
+                Options = options
+            };
 
-        //    var puller = db.CreatePullReplication(SyncGatewayUrl);
-        //    puller.Continuous = true;
-        //    puller.Authenticator = authenticator;
-        //    puller.Changed += HandleReplicationChanged;
-
-        //    pusher.Start();
-        //    puller.Start();
-
-        //    _pusher = pusher;
-        //    _puller = puller;
-        //}
+            _replication = new Replicator(config);
+            _replication.StatusChanged += (sender, args) =>
+            {
+                Console.WriteLine(args.Status.Activity);
+            };
+            _replication.Start();
+        }
 
         /// <summary>
         /// Stops the session replication
         /// </summary>
-        //public static void StopReplication()
-        //{
-        //    var pusher = Interlocked.Exchange(ref _pusher, null);
-        //    var puller = Interlocked.Exchange(ref _puller, null);
-
-        //    if(pusher != null) {
-        //        pusher.Changed -= HandleReplicationChanged;
-        //        pusher.Stop();
-        //    }
-
-        //    if(puller != null) {
-        //        puller.Changed -= HandleReplicationChanged;
-        //        puller.Stop();
-        //    }
-        //}
+        public static void StopReplication()
+        {
+            var old = Interlocked.Exchange(ref _replication, null);
+            old?.Stop();
+        }
 
         #endregion
 
         #region Private API
 
-        private static bool NeedsMonitoringFor(IDictionary<string, object> userAccessDoc, string user)
+        private static void MonitorIfNeeded(string docID, string user)
         {
-            object docType;
-            if(!userAccessDoc.TryGetValue("type", out docType)) {
-                return false;
+            var userAccessDoc = Database.GetDocument(docID);
+            if(!userAccessDoc.Contains("type")) {
+                return;
             }
 
-            if((docType as string) != "task-list.user") {
-                return false;
+            var docType = userAccessDoc["type"].ToString();
+            if(docType != "task-list.user") {
+                return;
             }
 
-            if(userAccessDoc["username"] as string != user) {
-                return false;
+            if(userAccessDoc["username"].ToString() != user) {
+                return;
             }
 
-            return true;
-        }
-
-        private static T Lookup<T>(IDictionary<string, object> dic, string key) where T : class
-        {
-            object val;
-            if(dic.TryGetValue(key, out val)) {
-                return val as T;
-            }
-
-            return null;
-        }
-
-        private static T? LookupNullable<T>(IDictionary<string, object> dic, string key) where T : struct
-        {
-            object val;
-            if(dic.TryGetValue(key, out val)) {
-                return val as T?;
-            }
-
-            return null;
+            _accessDocuments.Add(userAccessDoc);
         }
 
         #endregion
@@ -286,9 +244,9 @@ namespace Training.Core
         public static CoreAppStartHint CreateHint()
         {
             var retVal = new CoreAppStartHint {
-                LoginEnabled = false,
+                LoginEnabled = true,
                 EncryptionEnabled = false,
-                SyncEnabled = false,
+                SyncEnabled = true,
                 UsePrebuiltDB = false,
                 Username = "todo"
             };
