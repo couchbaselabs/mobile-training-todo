@@ -5,7 +5,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
 public class ListDetailFragmentPagerAdapter extends FragmentPagerAdapter {
-    private String tabTitles[] = new String[]{"Tasks"};
+    private String tabTitles[] = new String[]{"Tasks", "Users"};
 
     public ListDetailFragmentPagerAdapter(FragmentManager fm) {
         super(fm);
@@ -21,6 +21,8 @@ public class ListDetailFragmentPagerAdapter extends FragmentPagerAdapter {
         switch (position) {
             case 0:
                 return new TasksFragment();
+            case 1:
+                return new UsersFragment();
             default:
                 return null;
         }
