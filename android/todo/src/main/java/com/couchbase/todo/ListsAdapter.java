@@ -36,6 +36,7 @@ public class ListsAdapter extends ArrayAdapter<Document> {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.view_list, parent, false);
         TextView text = convertView.findViewById(R.id.text);
         text.setText(list.getString("name"));
+        Log.e(TAG, "getView(): pos -> %d, docID -> %s, name -> %s, name2 -> %s, all -> %s", position, list.getId(), list.getString("name"), list.getObject("name"), list.toMap());
         return convertView;
     }
 
