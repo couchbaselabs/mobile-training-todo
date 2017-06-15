@@ -47,12 +47,11 @@
 
         <Button
             style="?android:attr/borderlessButtonStyle"
+            android:id="@+id/btnLogin"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="login"
             android:text="Sign In"
             android:textColor="#1E91D6" />
-
     </LinearLayout>
 
 </RelativeLayout>
