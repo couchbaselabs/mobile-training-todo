@@ -55,7 +55,7 @@
     [self reload];
     
     // Display or hide users:
-    //[self displayOrHideUsers];
+    [self displayOrHideUsers];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
