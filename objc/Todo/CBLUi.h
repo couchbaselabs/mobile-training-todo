@@ -32,6 +32,8 @@ NS_ASSUME_NONNULL_BEGIN
          imagePickerDelegate:(id<UIImagePickerControllerDelegate, UINavigationControllerDelegate>)delegate
                     onDelete:(void (^_Nullable)(void))onDeleteAction;
 
++ (void)displayOrHideTabbar:(UIViewController*)controller display:(BOOL)display;
+
 @end
 
 NS_ASSUME_NONNULL_END

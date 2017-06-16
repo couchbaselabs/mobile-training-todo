@@ -11,6 +11,7 @@
 #import "AppDelegate.h"
 #import "CBLSession.h"
 #import "CBLTasksViewController.h"
+#import "CBLUsersViewController.h"
 #import "CBLUi.h"
 
 
@@ -20,8 +21,8 @@
     CBLDatabase *_database;
     NSString *_username;
     
-    CBLPredicateQuery *_listQuery;
-    CBLPredicateQuery *_searchQuery;
+    CBLQuery *_listQuery;
+    CBLQuery *_searchQuery;
     NSArray* _listRows;
     
     CBLPredicateQuery *_incompTasksCountsQuery;
@@ -41,6 +42,7 @@
     // Setup SearchController:
     _searchController = [[UISearchController alloc] initWithSearchResultsController:nil];
     _searchController.searchResultsUpdater = self;
+    _searchController.dimsBackgroundDuringPresentation = NO;
     self.tableView.tableHeaderView = _searchController.searchBar;
     
     
@@ -65,8 +67,10 @@
 
 - (void)reload {
     if (!_listQuery) {
-        _listQuery = [_database createQueryWhere:@"type == 'task-list'"];
-        _listQuery.orderBy = @[@"name"];
+        _listQuery = [CBLQuery select:[CBLQuerySelect all]
+                                 from:[CBLQueryDataSource database:_database]
+                                where:[[CBLQueryExpression property:@"type"] equalTo:@"task-list"]
+                              orderBy:[CBLQueryOrderBy property:@"name"]];
     }
     
     NSError *error;
@@ -137,12 +141,13 @@
 }
 
 - (void)searchTaskList: (NSString*)name {
-    if (!_searchQuery) {
-        _searchQuery = [_database createQueryWhere:@"type == 'task-list' AND name contains[c] $NAME"];
-        _searchQuery.orderBy = @[@"name"];
-    }
+    CBLQueryExpression* exp1 = [[CBLQueryExpression property:@"type"] equalTo:@"task-list"];
+    CBLQueryExpression* exp2 = [[CBLQueryExpression property:@"name"] like:[NSString stringWithFormat:@"%%%@%%", name]];
     
-    _searchQuery.parameters = @{@"NAME": name};
+    _searchQuery = [CBLQuery select:[CBLQuerySelect all]
+                               from:[CBLQueryDataSource database:_database]
+                              where:[exp1 and: exp2]
+                            orderBy:[CBLQueryOrderBy property:@"name"]];
     
     NSError *error;
     NSEnumerator *rows = [_searchQuery run: &error];
@@ -245,8 +250,15 @@
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     CBLQueryRow *row = (CBLQueryRow *)_listRows[[self.tableView indexPathForSelectedRow].row];
-    CBLTasksViewController *controller = (CBLTasksViewController*)segue.destinationViewController;
-    controller.taskList = row.document;
+    CBLDocument* taskList = [_database documentWithID:row.documentID];
+    
+    UITabBarController *tabBarController = (UITabBarController*)segue.destinationViewController;
+    CBLTasksViewController *tasksController = tabBarController.viewControllers[0];
+    tasksController.taskList = taskList;
+    
+    CBLUsersViewController *usersController = tabBarController.viewControllers[1];
+    usersController.taskList = taskList;
+    
     shouldUpdateIncompTasksCount = YES;
 }
 

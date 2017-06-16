@@ -114,4 +114,34 @@
     [controller presentViewController:imagePicker animated:YES completion:nil];
 }
 
++ (void)displayOrHideTabbar:(UIViewController*)controller display:(BOOL)display {
+    UITabBar* tabBar = controller.tabBarController.tabBar;
+    if (!tabBar)
+        return;
+    
+    if (display == tabBar.isHidden) {
+        tabBar.hidden = !display;
+        if (tabBar.isHidden) {
+            controller.tabBarController.selectedIndex = 0;
+        }
+        
+        // Workaround for resizing table view:
+        if ([controller isKindOfClass: [UITableViewController class]]) {
+            UITableViewController* tableViewController = (UITableViewController*)controller;
+            UITableView* tableView = tableViewController.tableView;
+            if (display) {
+                tableView.frame = CGRectMake(tableView.frame.origin.x,
+                                             tableView.frame.origin.y,
+                                             tableView.frame.size.width,
+                                             tableView.frame.size.height - tabBar.frame.size.height);
+            } else {
+                tableView.frame = CGRectMake(tableView.frame.origin.x,
+                                             tableView.frame.origin.y,
+                                             tableView.frame.size.width,
+                                             tableView.frame.size.height + tabBar.frame.size.height);
+            }
+        }
+    }
+}
+
 @end

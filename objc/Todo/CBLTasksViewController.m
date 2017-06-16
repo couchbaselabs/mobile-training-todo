@@ -12,18 +12,22 @@
 #import "CBLImage.h"
 #import "CBLTaskTableViewCell.h"
 #import "CBLTaskImageViewController.h"
+#import "CBLSession.h"
 
 @interface CBLTasksViewController () <UISearchResultsUpdating,
+                                      UISearchBarDelegate,
                                       UIImagePickerControllerDelegate,
                                       UINavigationControllerDelegate>
 {
     UISearchController *_searchController;
     
+    NSString *_username;
     CBLDatabase *_database;
-    CBLPredicateQuery *_taskQuery;
-    CBLPredicateQuery *_searchQuery;
-    NSArray* _taskRows;
+    CBLQuery *_taskQuery;
+    CBLQuery *_searchQuery;
+    NSArray *_taskRows;
     CBLDocument *_taskForImage;
+    id _dbChangeObserver;
 }
 
 @end
@@ -38,24 +42,48 @@
     // Setup Search Controller:
     _searchController = [[UISearchController alloc] initWithSearchResultsController:nil];
     _searchController.searchResultsUpdater = self;
+    _searchController.searchBar.delegate = self;
+    _searchController.dimsBackgroundDuringPresentation = NO;
     self.tableView.tableHeaderView = _searchController.searchBar;
     
-    // Get database:
+    // Get database and username:
     AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
     _database = app.database;
+    _username = CBLSession.sharedInstance.username;
     
     // Load data:
     [self reload];
+    
+    // Display or hide users:
+    //[self displayOrHideUsers];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    
+    // Setup navigation bar:
+    self.tabBarController.title = [self.taskList stringForKey:@"name"];
+    self.tabBarController.navigationItem.rightBarButtonItem =
+        [[UIBarButtonItem alloc] initWithBarButtonSystemItem: UIBarButtonSystemItemAdd
+                                                      target:self action:@selector(addAction:)];
+}
+
+- (void) dealloc {
+    if (_dbChangeObserver != nil)
+        [NSNotificationCenter.defaultCenter removeObserver: _dbChangeObserver];
 }
 
 #pragma mark - Database
 
 - (void)reload {
     if (!_taskQuery) {
-        NSString *where = [NSString stringWithFormat: @"type == 'task' AND taskList.id == '%@'",
-                           self.taskList.documentID];
-        _taskQuery = [_database createQueryWhere:where];
-        _taskQuery.orderBy = @[@"createdAt", @"task"];
+        CBLQueryExpression *exp1 = [[CBLQueryExpression property:@"type"] equalTo:@"task"];
+        CBLQueryExpression *exp2 = [[CBLQueryExpression property:@"taskList.id"] equalTo:self.taskList.documentID];
+        _taskQuery = [CBLQuery select:[CBLQuerySelect all]
+                                 from:[CBLQueryDataSource database:_database]
+                                where:[exp1 and: exp2]
+                              orderBy:[CBLQueryOrderBy orderBy:@[[CBLQueryOrderBy property:@"createdAt"],
+                                                                 [CBLQueryOrderBy property:@"task"]]]];
     }
     
     NSError *error;
@@ -126,16 +154,14 @@
 }
 
 - (void)searchTask: (NSString*)name {
-    if (!_searchQuery) {
-        NSString *where = [NSString stringWithFormat:
-                           @"type == 'task' AND taskList.id == '%@' AND task contains[c] $NAME",
-                           self.taskList.documentID];
-        _searchQuery = [_database createQueryWhere: where];
-        _searchQuery.orderBy = @[@"createdAt", @"task"];
-    }
-    
-    _searchQuery.parameters = @{@"NAME": name};
-    
+    CBLQueryExpression *exp1 = [[CBLQueryExpression property:@"type"] equalTo:@"task"];
+    CBLQueryExpression *exp2 = [[CBLQueryExpression property:@"taskList.id"] equalTo:self.taskList.documentID];
+    CBLQueryExpression *exp3 = [[CBLQueryExpression property:@"task"] like:[NSString stringWithFormat:@"%%%@%%", name]];
+    _searchQuery = [CBLQuery select:[CBLQuerySelect all]
+                               from:[CBLQueryDataSource database:_database]
+                              where:[[exp1 and: exp2] and:exp3]
+                            orderBy:[CBLQueryOrderBy orderBy:@[[CBLQueryOrderBy property:@"createdAt"],
+                                                               [CBLQueryOrderBy property:@"task"]]]];
     NSError *error;
     NSEnumerator *rows = [_searchQuery run: &error];
     if (!rows)
@@ -143,6 +169,34 @@
     
     _taskRows = [rows allObjects];
     [self.tableView reloadData];
+}
+
+#pragma mark - Users
+
+- (void) displayOrHideUsers {
+    BOOL display = NO;
+    NSString *moderatorDocId = [NSString stringWithFormat:@"moderator.%@", _username];
+    if ([_username isEqualToString: [_taskList stringForKey:@"owner"]])
+        display = YES;
+    else
+        display = [_database contains:moderatorDocId];
+    [CBLUi displayOrHideTabbar:self display:display];
+    
+    if (!_dbChangeObserver) {
+        [NSNotificationCenter.defaultCenter addObserverForName:kCBLDatabaseChangeNotification
+                                                        object:_database
+                                                         queue:nil
+                                                    usingBlock:^(NSNotification * _Nonnull note)
+        {
+            CBLDatabaseChange *change = [note.userInfo objectForKey: kCBLDatabaseChangesUserInfoKey];
+            for (NSString *docId in change.documentIDs) {
+                if ([docId isEqualToString: moderatorDocId]) {
+                    [self displayOrHideUsers];
+                    break;
+                }
+            }
+        }];
+    }
 }
 
 #pragma mark - Actions
@@ -271,7 +325,6 @@
     else
         [self reload];
 }
-
 
 #pragma mark - UIImagePickerControllerDelegate
 
