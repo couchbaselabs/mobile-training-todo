@@ -88,4 +88,35 @@ class Ui {
         imagePicker.delegate = delegate
         controller.present(imagePicker, animated: true, completion: nil)
     }
+    
+    class func displayOrHideTabbar(on controller: UIViewController, display: Bool) {
+        guard let tabBar = controller.tabBarController?.tabBar else {
+            return
+        }
+        
+        if display == tabBar.isHidden {
+            tabBar.isHidden = !display
+            if tabBar.isHidden {
+                controller.tabBarController!.selectedIndex = 0
+            }
+            
+            // Workaround for resizing table view:
+            if let tableViewController = controller as? UITableViewController {
+                let tableView = tableViewController.tableView!
+                if display {
+                    tableView.frame = CGRect(
+                        x: tableView.frame.origin.x,
+                        y: tableView.frame.origin.y,
+                        width: tableView.frame.size.width,
+                        height: tableView.frame.size.height - tabBar.frame.size.height)
+                } else {
+                    tableView.frame = CGRect(
+                        x: tableView.frame.origin.x,
+                        y: tableView.frame.origin.y,
+                        width: tableView.frame.size.width,
+                        height: tableView.frame.size.height + tabBar.frame.size.height)
+                }
+            }
+        }
+    }
 }

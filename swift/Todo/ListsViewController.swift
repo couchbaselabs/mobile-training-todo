@@ -29,6 +29,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
         // Setup SearchController:
         searchController = UISearchController(searchResultsController: nil)
         searchController.searchResultsUpdater = self
+        searchController.dimsBackgroundDuringPresentation = false
         self.tableView.tableHeaderView = searchController.searchBar
         
         // Get database:
@@ -214,9 +215,15 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     // MARK: - Navigation
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        let row = listRows![self.tableView.indexPathForSelectedRow!.row]
-        let controller = segue.destination as! TasksViewController
-        controller.taskList = row.document
-        shouldUpdateIncompTasksCount = true
+        if let tabBarController = segue.destination as? UITabBarController {
+            let row = listRows![self.tableView.indexPathForSelectedRow!.row]
+            let taskList = database.getDocument(row.documentID)!
+            
+            let tasksController = tabBarController.viewControllers![0] as! TasksViewController
+            tasksController.taskList = taskList
+            
+            let usersController = tabBarController.viewControllers![1] as! UsersViewController
+            usersController.taskList = taskList
+        }
     }
 }

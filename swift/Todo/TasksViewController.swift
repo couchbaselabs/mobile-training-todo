@@ -10,15 +10,17 @@ import UIKit
 import CouchbaseLiteSwift
 
 class TasksViewController: UITableViewController, UISearchResultsUpdating,
-    UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     var searchController: UISearchController!
     
+    var username: String!
     var database: Database!
     var taskList: Document!
     var taskQuery: PredicateQuery!
     var searchQuery: PredicateQuery!
     var taskRows : [QueryRow]?
     var taskForImage: Document?
+    var dbChangeObserver: AnyObject?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,24 +28,34 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         // Setup SearchController:
         searchController = UISearchController(searchResultsController: nil)
         searchController.searchResultsUpdater = self
+        searchController.dimsBackgroundDuringPresentation = false
         self.tableView.tableHeaderView = searchController.searchBar
         
         // Get database and username:
         let app = UIApplication.shared.delegate as! AppDelegate
         database = app.database
+        username = Session.username
+        
+        // Load data:
+        reload()
+        
+        // Display or hide users:
+        displayOrHideUsers()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        // Load tasks:
-        reload()
+        // Setup navigation bar:
+        self.tabBarController?.title = taskList.string(forKey: "name")
+        self.tabBarController?.navigationItem.rightBarButtonItem =
+            UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addAction(sender:)))
     }
     
     // MARK: - Database
     
     func reload() {
-        if (taskQuery == nil) {
+        if taskQuery == nil {
             let listID = taskList.id
             taskQuery = database.createQuery(
                 where: "type == 'task' AND taskList.id == '\(listID)'",
@@ -138,9 +150,37 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         }
     }
     
+    // MARK: Users
+    
+    func displayOrHideUsers() {
+        var display = false
+        let moderatorDocId = "moderator." + username
+        if username == taskList.string(forKey: "owner") {
+            display = true
+        } else {
+            display = database.contains(moderatorDocId)
+        }
+        Ui.displayOrHideTabbar(on: self, display: display)
+        
+        if dbChangeObserver == nil {
+            dbChangeObserver = NotificationCenter.default.addObserver(
+            forName: NSNotification.Name.DatabaseChange, object: database, queue: nil) { note in
+                // Review: Can optimize this by executing in the background dispatch queue:
+                if let change = note.userInfo![DatabaseChangesUserInfoKey] as? DatabaseChange {
+                    for docId in change.documentIDs as! [String] {
+                        if docId == moderatorDocId {
+                            self.displayOrHideUsers()
+                            break
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     // MARK: - Action
     
-    @IBAction func addAction(_ sender: Any) {
+    func addAction(sender: Any) {
         Ui.showTextInput(on: self, title: "New Task", message: nil, textFieldConfig: { text in
             text.placeholder = "Task"
             text.autocapitalizationType = .sentences
@@ -171,7 +211,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
                                          withSize: 44.0,
                                          withCacheName: digest,
                                          onComplete: { (thumbnail) -> Void in
-                self.updateImage(image: thumbnail, withDigest: digest, atIndexPath: indexPath)
+                                            self.updateImage(image: thumbnail, withDigest: digest, atIndexPath: indexPath)
             })
             cell.taskImage = thumbnail
             cell.taskImageAction = {
@@ -280,3 +320,4 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         searchController?.view.removeFromSuperview()
     }
 }
+
