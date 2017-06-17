@@ -16,8 +16,8 @@ UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     var username: String!
     var database: Database!
     var taskList: Document!
-    var taskQuery: PredicateQuery!
-    var searchQuery: PredicateQuery!
+    var taskQuery: Query!
+    var searchQuery: Query!
     var taskRows : [QueryRow]?
     var taskForImage: Document?
     var dbChangeObserver: AnyObject?
@@ -56,10 +56,13 @@ UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     func reload() {
         if taskQuery == nil {
-            let listID = taskList.id
-            taskQuery = database.createQuery(
-                where: "type == 'task' AND taskList.id == '\(listID)'",
-                orderBy: ["createdAt", "task"])
+            taskQuery = Query
+                .select()
+                .from(DataSource.database(database))
+                .where(
+                    Expression.property("type").equalTo("task")
+                        .and(Expression.property("taskList.id").equalTo(taskList.id)))
+                .orderBy(OrderBy.property("createdAt"), OrderBy.property("task"))
         }
         
         do {
@@ -134,14 +137,16 @@ UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     }
     
     func searchTask(task: String) {
-        if (searchQuery == nil) {
-            let listID = taskList.id
-            let w = "type == 'task' AND taskList.id == '\(listID)' AND task contains[c] $NAME"
-            searchQuery = database.createQuery(where: w, orderBy: ["createdAt", "task"])
-        }
+        searchQuery = Query
+            .select()
+            .from(DataSource.database(database))
+            .where(
+                Expression.property("type").equalTo("task")
+                    .and(Expression.property("taskList.id").equalTo(taskList.id))
+                    .and(Expression.property("task").like("%\(task)%")))
+            .orderBy(OrderBy.property("createdAt"), OrderBy.property("task"))
         
         do {
-            searchQuery.parameters = ["NAME": task]
             let rows = try searchQuery.run()
             taskRows = Array(rows)
             tableView.reloadData()

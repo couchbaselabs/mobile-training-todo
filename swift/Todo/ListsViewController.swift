@@ -15,8 +15,8 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     var database: Database!
     var username: String!
     
-    var listQuery: PredicateQuery!
-    var searchQuery: PredicateQuery!
+    var listQuery: Query!
+    var searchQuery: Query!
     var listRows : [QueryRow]?
     
     var incompTasksCountsQuery: PredicateQuery!
@@ -54,7 +54,11 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     
     func reload() {
         if (listQuery == nil) {
-            listQuery = database.createQuery(where: "type == 'task-list'", orderBy: ["name"])
+            listQuery = Query
+                .select()
+                .from(DataSource.database(database))
+                .where(Expression.property("type").equalTo("task-list"))
+                .orderBy(OrderBy.property("name"))
         }
         
         do {
@@ -124,13 +128,13 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     }
     
     func searchTaskList(name: String) {
-        if (searchQuery == nil) {
-            searchQuery = database.createQuery(
-                where: "type == 'task-list' AND name contains[c] $NAME", orderBy: ["name"])
-        }
+        searchQuery = Query.select()
+            .from(DataSource.database(database))
+            .where(Expression.property("type").equalTo("task-list")
+                .and(Expression.property("name").like("%\(name)%")))
+            .orderBy(OrderBy.property("name"))
         
         do {
-            searchQuery.parameters = ["NAME": name]
             let rows = try searchQuery.run()
             listRows = Array(rows)
             tableView.reloadData()
