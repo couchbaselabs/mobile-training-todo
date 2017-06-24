@@ -21,7 +21,7 @@
     CBLDatabase *_database;
     NSString *_username;
     
-    CBLQuery *_listQuery;
+    CBLLiveQuery *_listQuery;
     CBLQuery *_searchQuery;
     NSArray* _listRows;
     
@@ -45,7 +45,6 @@
     _searchController.dimsBackgroundDuringPresentation = NO;
     self.tableView.tableHeaderView = _searchController.searchBar;
     
-    
     // Get database and username:
     // Get username:
     AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
@@ -63,26 +62,27 @@
         [self updateIncompleteTasksCounts];
 }
 
+
 #pragma mark - Database
 
 - (void)reload {
     if (!_listQuery) {
-        _listQuery = [CBLQuery select:[CBLQuerySelect all]
-                                 from:[CBLQueryDataSource database:_database]
-                                where:[[CBLQueryExpression property:@"type"] equalTo:@"task-list"]
-                              orderBy:[CBLQueryOrderBy property:@"name"]];
+        _listQuery = [[CBLQuery select:[CBLQuerySelect all]
+                                  from:[CBLQueryDataSource database:_database]
+                                 where:[[CBLQueryExpression property:@"type"] equalTo:@"task-list"]
+                               orderBy:[CBLQueryOrderBy property:@"name"]] toLive];
+        
+        __weak typeof(self) wSelf = self;
+        [_listQuery addChangeListener:^(CBLLiveQueryChange *change) {
+            if (!change.rows)
+                NSLog(@"Error querying task list: %@", change.error);
+            _listRows = [change.rows allObjects];
+            
+            [wSelf updateIncompleteTasksCounts];
+            [wSelf.tableView reloadData];
+        }];
     }
-    
-    NSError *error;
-    NSEnumerator *rows = [_listQuery run: &error];
-    if (!rows)
-        NSLog(@"Error querying task list: %@", error);
-    
-    _listRows = [rows allObjects];
-    
-    [self updateIncompleteTasksCounts];
-    
-    [self.tableView reloadData];
+    [_listQuery run];
 }
 
 - (void)updateIncompleteTasksCounts {
@@ -117,26 +117,20 @@
     [doc setObject:_username forKey:@"owner"];
     
     NSError *error;
-    if ([_database saveDocument:doc error:&error])
-        [self reload];
-    else
+    if (![_database saveDocument:doc error:&error])
         [CBLUi showErrorOn:self message:@"Couldn't save task list" error:error];
 }
 
 - (void)updateTaskList:(CBLDocument *)list withName:(NSString *)name {
     [list setObject:name forKey:@"name"];
     NSError *error;
-    if ([_database saveDocument:list error:&error])
-        [self reload];
-    else
+    if (![_database saveDocument:list error:&error])
         [CBLUi showErrorOn:self message:@"Couldn't update task list" error:error];
 }
 
 - (void)deleteTaskList:(CBLDocument *)list {
     NSError *error;
-    if ([_database deleteDocument:list error:&error])
-        [self reload];
-    else
+    if (![_database deleteDocument:list error:&error])
         [CBLUi showErrorOn:self message:@"Couldn't delete task list" error:error];
 }
 
@@ -189,7 +183,6 @@
     
     NSInteger count = [_incompTasksCounts[row.documentID] integerValue];
     cell.detailTextLabel.text = count > 0 ? [NSString stringWithFormat:@"%ld", (long)count] : @"";
-    
     return cell;
 }
 
@@ -240,9 +233,10 @@
 
 - (void)updateSearchResultsForSearchController:(UISearchController *)searchController {
     NSString *name = searchController.searchBar.text ?: @"";
-    if ([name length] > 0)
+    if ([name length] > 0) {
+        [_listQuery stop];
         [self searchTaskList:name];
-    else
+    } else
         [self reload];
 }
 

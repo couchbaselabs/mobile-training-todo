@@ -15,7 +15,7 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
     var username: String!
     var database: Database!
     var taskList: Document!
-    var usersQuery: Query!
+    var usersQuery: LiveQuery!
     var searchQuery: Query!
     var userRows : [QueryRow]?
     
@@ -57,15 +57,18 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
                 .where(
                     Expression.property("type").equalTo("task-list.user")
                         .and(Expression.property("taskList.id").equalTo(taskList.id)))
+                .toLive()
+            
+            usersQuery.addChangeListener({ (change) in
+                if let error = change.error {
+                    NSLog("Error querying users: %@", error.localizedDescription)
+                }
+                self.userRows = change.rows != nil ? Array(change.rows!) : nil
+                self.tableView.reloadData()
+            })
         }
         
-        do {
-            let rows = try usersQuery.run()
-            userRows = Array(rows)
-            tableView.reloadData()
-        } catch let error as NSError {
-            NSLog("Error quering tasks: %@", error)
-        }
+        usersQuery.run()
     }
     
     func addUser(username: String) {
@@ -85,7 +88,6 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
         
         do {
             try database.save(doc)
-            reload()
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't add user", error: error)
         }
@@ -94,7 +96,6 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
     func deleteUser(user: Document) {
         do {
             try database.delete(user)
-            reload()
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't delete user", error: error)
         }
@@ -114,7 +115,7 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
             userRows = Array(rows)
             tableView.reloadData()
         } catch let error as NSError {
-            NSLog("Error search tasks: %@", error)
+            NSLog("Error search users: %@", error)
         }
     }
     
@@ -149,6 +150,7 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         let text = searchController.searchBar.text ?? ""
         if !text.isEmpty {
+            usersQuery.stop()
             self.searchUser(username: text)
         } else {
             self.reload()

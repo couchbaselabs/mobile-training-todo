@@ -23,7 +23,7 @@
     
     NSString *_username;
     CBLDatabase *_database;
-    CBLQuery *_taskQuery;
+    CBLLiveQuery *_taskQuery;
     CBLQuery *_searchQuery;
     NSArray *_taskRows;
     CBLDocument *_taskForImage;
@@ -79,20 +79,20 @@
     if (!_taskQuery) {
         CBLQueryExpression *exp1 = [[CBLQueryExpression property:@"type"] equalTo:@"task"];
         CBLQueryExpression *exp2 = [[CBLQueryExpression property:@"taskList.id"] equalTo:self.taskList.documentID];
-        _taskQuery = [CBLQuery select:[CBLQuerySelect all]
-                                 from:[CBLQueryDataSource database:_database]
-                                where:[exp1 and: exp2]
-                              orderBy:[CBLQueryOrderBy orderBy:@[[CBLQueryOrderBy property:@"createdAt"],
-                                                                 [CBLQueryOrderBy property:@"task"]]]];
+        _taskQuery = [[CBLQuery select:[CBLQuerySelect all]
+                                  from:[CBLQueryDataSource database:_database]
+                                 where:[exp1 and: exp2]
+                               orderBy:[CBLQueryOrderBy orderBy:@[[CBLQueryOrderBy property:@"createdAt"],
+                                                                  [CBLQueryOrderBy property:@"task"]]]] toLive];
+        __weak typeof (self) wSelf = self;
+        [_taskQuery addChangeListener:^(CBLLiveQueryChange *change) {
+            if (!change.rows)
+                NSLog(@"Error querying tasks: %@", change.error);
+            _taskRows = [change.rows allObjects];
+            [wSelf.tableView reloadData];
+        }];
     }
-    
-    NSError *error;
-    NSEnumerator *rows = [_taskQuery run:&error];
-    if (!rows)
-        NSLog(@"Error querying tasks: %@", error);
-    _taskRows = [rows allObjects];
-    
-    [self.tableView reloadData];
+    [_taskQuery run];
 }
 
 - (void)createTask:(NSString *)task {
@@ -106,9 +106,7 @@
     [doc setObject:@NO forKey:@"complete"];
     
     NSError *error;
-    if ([_database saveDocument:doc error:&error])
-        [self reload];
-    else
+    if (![_database saveDocument:doc error:&error])
         [CBLUi showErrorOn:self message:@"Couldn't save task" error:error];
 }
 
@@ -116,18 +114,14 @@
     [task setObject:title forKey:@"task"];
     
     NSError *error;
-    if ([_database saveDocument:task error:&error])
-        [self reload];
-    else
+    if (![_database saveDocument:task error:&error])
         [CBLUi showErrorOn:self message:@"Couldn't update task" error:error];
 }
 
 - (void)updateTask:(CBLDocument *)task withComplete:(BOOL)complete {
     [task setObject:@(complete) forKey:@"complete"];
     NSError *error;
-    if ([_database saveDocument:task error:&error])
-        [self reload];
-    else
+    if (![_database saveDocument:task error:&error])
         [CBLUi showErrorOn:self message:@"Couldn't update complete status" error:error];
 }
 
@@ -139,17 +133,13 @@
     
     CBLBlob *blob = [[CBLBlob alloc] initWithContentType:@"image/jpg" data:imageData];
     [task setObject:blob forKey:@"image"];
-    if ([_database saveDocument:task error:&error])
-        [self reload];
-    else
+    if (![_database saveDocument:task error:&error])
         [CBLUi showErrorOn:self message:@"Couldn't update task" error:error];
 }
 
 - (void)deleteTask:(CBLDocument *)task {
     NSError *error;
-    if ([_database deleteDocument:task error:&error])
-        [self reload];
-    else
+    if (![_database deleteDocument:task error:&error])
         [CBLUi showErrorOn:self message:@"Couldn't delete task" error:error];
 }
 
@@ -320,9 +310,10 @@
 
 - (void)updateSearchResultsForSearchController:(UISearchController *)searchController {
     NSString *text = searchController.searchBar.text ?: @"";
-    if ([text length] > 0)
+    if ([text length] > 0) {
+        [_taskQuery stop];
         [self searchTask:text];
-    else
+    } else
         [self reload];
 }
 

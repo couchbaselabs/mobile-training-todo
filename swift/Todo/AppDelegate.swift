@@ -9,8 +9,8 @@
 import UIKit
 import CouchbaseLiteSwift
 
-let kLoginFlowEnabled = true
-let kSyncEnabled = true
+let kLoginFlowEnabled = false
+let kSyncEnabled = false
 let kSyncGatewayUrl = URL(string: "blip://localhost:4984/todo")!
 
 @UIApplicationMain
@@ -128,12 +128,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
             return
         }
         
-        var config = ReplicatorConfiguration()
-        config.database = database
-        config.target = .url(kSyncGatewayUrl)
+        var config = ReplicatorConfiguration(database: database, targetURL: kSyncGatewayUrl)
         config.continuous = true
         if kLoginFlowEnabled {
-            config.options = ["auth": ["username": username, "password": password]]
+            config.authenticator = BasicAuthenticator(username: username, password: password!)
         }
         
         replicator = Replicator(config: config)

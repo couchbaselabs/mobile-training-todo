@@ -15,7 +15,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     var database: Database!
     var username: String!
     
-    var listQuery: Query!
+    var listQuery: LiveQuery!
     var searchQuery: Query!
     var listRows : [QueryRow]?
     
@@ -59,16 +59,18 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
                 .from(DataSource.database(database))
                 .where(Expression.property("type").equalTo("task-list"))
                 .orderBy(OrderBy.property("name"))
+                .toLive()
+            
+            listQuery.addChangeListener({ (change) in
+                if let error = change.error {
+                    NSLog("Error querying task list: %@", error.localizedDescription)
+                }
+                self.listRows = change.rows != nil ? Array(change.rows!) : nil
+                self.tableView.reloadData()
+            })
         }
         
-        do {
-            let rows = try listQuery.run()
-            listRows = Array(rows)            
-            updateIncompleteTasksCounts()
-            tableView.reloadData()
-        } catch let error as NSError {
-            NSLog("Error querying task list: %@", error)
-        }
+        listQuery.run()
     }
     
     func updateIncompleteTasksCounts() {
@@ -102,7 +104,6 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
         
         do {
             try database.save(doc)
-            reload()
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't save task list", error: error)
         }
@@ -112,7 +113,6 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
         list.set(name, forKey: "name")
         do {
             try database.save(list)
-            reload()
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't update task list", error: error)
         }
@@ -121,7 +121,6 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     func deleteTaskList(list: Document) {
         do {
             try database.delete(list)
-            reload()
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't delete task list", error: error)
         }
@@ -210,6 +209,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     
     func updateSearchResults(for searchController: UISearchController) {
         if let name = searchController.searchBar.text, !name.isEmpty {
+            listQuery.stop()
             searchTaskList(name: name)
         } else {
             reload()

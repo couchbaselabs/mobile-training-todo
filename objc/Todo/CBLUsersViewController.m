@@ -19,7 +19,7 @@
     UISearchController *_searchController;
     NSString *_username;
     CBLDatabase *_database;
-    CBLQuery *_userQuery;
+    CBLLiveQuery *_userQuery;
     CBLQuery *_searchQuery;
     NSArray *_userRows;
 }
@@ -56,21 +56,21 @@
 #pragma mark - Database
 
 - (void)reload {
-    CBLQueryExpression *exp1 = [[CBLQueryExpression property:@"type"] equalTo:@"task-list.user"];
-    CBLQueryExpression *exp2 = [[CBLQueryExpression property:@"taskList.id"] equalTo: _taskList.documentID];
     if (!_userQuery) {
-        _userQuery = [CBLQuery select: [CBLQuerySelect all]
-                                 from: [CBLQueryDataSource database:_database]
-                                where: [exp1 and:exp2]];
+        CBLQueryExpression *exp1 = [[CBLQueryExpression property:@"type"] equalTo:@"task-list.user"];
+        CBLQueryExpression *exp2 = [[CBLQueryExpression property:@"taskList.id"] equalTo: _taskList.documentID];
+        _userQuery = [[CBLQuery select: [CBLQuerySelect all]
+                                  from: [CBLQueryDataSource database:_database]
+                                 where: [exp1 and:exp2]] toLive];
+        __weak typeof(self) wSelf = self;
+        [_userQuery addChangeListener:^(CBLLiveQueryChange *change) {
+            if (!change.rows)
+                NSLog(@"Error querying users: %@", change.error);
+            _userRows = [change.rows allObjects];
+            [wSelf.tableView reloadData];
+        }];
     }
-    
-    NSError *error;
-    NSEnumerator *rows = [_userQuery run:&error];
-    if (!rows)
-        NSLog(@"Error querying users: %@", error);
-    _userRows = [rows allObjects];
-    
-    [self.tableView reloadData];
+    [_userQuery run];
 }
 
 - (void)addUser:(NSString *)username {
@@ -80,7 +80,7 @@
     
     CBLDocument* doc = [[CBLDocument alloc] initWithID:docId];
     [doc setObject:@"task-list.user" forKey:@"type"];
-    [doc setObject:_username forKey:@"username"];
+    [doc setObject:username forKey:@"username"];
     
     CBLDictionary* taskListInfo = [[CBLDictionary alloc] init];
     [taskListInfo setObject:_taskList.documentID forKey:@"id"];
@@ -88,17 +88,13 @@
     [doc setObject:taskListInfo forKey:@"taskList"];
     
     NSError *error;
-    if ([_database saveDocument:doc error:&error])
-        [self reload];
-    else
+    if (![_database saveDocument:doc error:&error])
         [CBLUi showErrorOn:self message:@"Couldn't save user" error:error];
 }
 
 - (void)deleteUser:(CBLDocument *)user {
     NSError *error;
-    if ([_database deleteDocument:user error:&error])
-        [self reload];
-    else
+    if (![_database deleteDocument:user error:&error])
         [CBLUi showErrorOn:self message:@"Couldn't delete user" error:error];
 }
 
@@ -167,9 +163,10 @@
 
 - (void)updateSearchResultsForSearchController:(UISearchController *)searchController {
     NSString *text = searchController.searchBar.text ?: @"";
-    if ([text length] > 0)
+    if ([text length] > 0) {
+        [_userQuery stop];
         [self searchUser:text];
-    else
+    } else
         [self reload];
 }
 

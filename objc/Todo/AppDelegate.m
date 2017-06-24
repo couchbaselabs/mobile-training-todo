@@ -11,8 +11,8 @@
 #import "CBLSession.h"
 #import "CBLUi.h"
 
-#define kLoginFlowEnabled YES
-#define kSyncEnabled YES
+#define kLoginFlowEnabled NO
+#define kSyncEnabled NO
 #define kSyncGatewayUrl @"blip://localhost:4984/todo"
 
 @interface AppDelegate () <CBLLoginViewControllerDelegate> {
@@ -108,15 +108,16 @@
 #pragma mark - CBLLoginViewControllerDelegate
 
 - (void)login:(CBLLoginViewController *)controller
-  withUsername:(NSString *)username
-      password:(NSString *)password {
+ withUsername:(NSString *)username
+     password:(NSString *)password
+{
     [self processLogin:controller withUsername:username password:password];
 }
 
 - (void)processLogin:(CBLLoginViewController*)controller
         withUsername:(NSString *)username
-            password:(NSString *)password {
-    
+            password:(NSString *)password
+{
     NSError* error;
     if (![self startSession:username password:password error: &error]) {
         [CBLUi showMessageOn:controller
@@ -132,15 +133,13 @@
     if (!kSyncEnabled)
         return;
     
-    CBLReplicatorConfiguration* config = [[CBLReplicatorConfiguration alloc] init];
-    config.database = _database;
-    config.target = [CBLReplicatorTarget url:[NSURL URLWithString:kSyncGatewayUrl]];
+    NSURL *url = [NSURL URLWithString:kSyncGatewayUrl];
+    CBLReplicatorConfiguration *config = [[CBLReplicatorConfiguration alloc] initWithDatabase:_database targetURL:url];
     config.continuous = YES;
     if (kLoginFlowEnabled) {
-        config.options = @{@"auth": @{@"username": username, @"password": password}};
+        config.authenticator = [[CBLBasicAuthenticator alloc] initWithUsername:username password:password];
     }
-    _replicator = [[CBLReplicator alloc] initWithConfig: config];
-    
+    _replicator = [[CBLReplicator alloc] initWithConfig:config];
     [NSNotificationCenter.defaultCenter addObserver:self
                                            selector:@selector(replicatorProgress:)
                                                name:kCBLReplicatorChangeNotification

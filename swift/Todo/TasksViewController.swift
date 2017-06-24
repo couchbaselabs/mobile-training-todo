@@ -16,7 +16,7 @@ UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     var username: String!
     var database: Database!
     var taskList: Document!
-    var taskQuery: Query!
+    var taskQuery: LiveQuery!
     var searchQuery: Query!
     var taskRows : [QueryRow]?
     var taskForImage: Document?
@@ -63,15 +63,18 @@ UIImagePickerControllerDelegate, UINavigationControllerDelegate {
                     Expression.property("type").equalTo("task")
                         .and(Expression.property("taskList.id").equalTo(taskList.id)))
                 .orderBy(OrderBy.property("createdAt"), OrderBy.property("task"))
+                .toLive()
+            
+            taskQuery.addChangeListener({ (change) in
+                if let error = change.error {
+                    NSLog("Error quering tasks: %@", error.localizedDescription)
+                }
+                self.taskRows = change.rows != nil ? Array(change.rows!) : nil
+                self.tableView.reloadData()
+            })
         }
         
-        do {
-            let rows = try taskQuery.run()
-            taskRows = Array(rows)
-            tableView.reloadData()
-        } catch let error as NSError {
-            NSLog("Error quering tasks: %@", error)
-        }
+        taskQuery.run()
     }
     
     func createTask(task: String) {
@@ -85,7 +88,6 @@ UIImagePickerControllerDelegate, UINavigationControllerDelegate {
         
         do {
             try database.save(doc)
-            reload()
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't save task", error: error)
         }
@@ -95,7 +97,6 @@ UIImagePickerControllerDelegate, UINavigationControllerDelegate {
         do {
             task.set(title, forKey: "task")
             try database.save(task)
-            reload()
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't update task", error: error)
         }
@@ -105,7 +106,6 @@ UIImagePickerControllerDelegate, UINavigationControllerDelegate {
         do {
             task.set(complete, forKey: "complete")
             try database.save(task)
-            reload()
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't update task", error: error)
         }
@@ -121,7 +121,6 @@ UIImagePickerControllerDelegate, UINavigationControllerDelegate {
             let blob = Blob(contentType: "image/jpg", data: imageData)
             task.set(blob, forKey: "image")
             try database.save(task)
-            reload()
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't update task", error: error)
         }
@@ -130,7 +129,6 @@ UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     func deleteTask(task: Document) {
         do {
             try database.delete(task)
-            reload()
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't delete task", error: error)
         }
@@ -291,6 +289,7 @@ UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     func updateSearchResults(for searchController: UISearchController) {
         if let task = searchController.searchBar.text, !task.isEmpty {
+            taskQuery.stop()
             searchTask(task: task)
         } else {
             reload()
