@@ -20,7 +20,7 @@ android {
 }
 
 def SUPPORT_LIBRARY_VERSION = "26.0.0-beta2"
-def COUCHBASE_LITE_VERSION = "2.0.0-DB010"
+def COUCHBASE_LITE_VERSION = "2.0.0-DB011"
 
 dependencies {
 

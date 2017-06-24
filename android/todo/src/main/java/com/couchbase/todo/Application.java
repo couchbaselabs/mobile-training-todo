@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Handler;
 import android.widget.Toast;
 
+import com.couchbase.lite.BasicAuthenticator;
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.DatabaseConfiguration;
@@ -11,17 +12,9 @@ import com.couchbase.lite.Log;
 import com.couchbase.lite.Replicator;
 import com.couchbase.lite.ReplicatorChangeListener;
 import com.couchbase.lite.ReplicatorConfiguration;
-import com.couchbase.lite.ReplicatorTarget;
-import com.couchbase.lite.ReplicatorType;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
-
-import static com.couchbase.lite.ReplicatorConfiguration.kCBLReplicatorAuthOption;
-import static com.couchbase.lite.ReplicatorConfiguration.kCBLReplicatorAuthPassword;
-import static com.couchbase.lite.ReplicatorConfiguration.kCBLReplicatorAuthUserName;
 
 public class Application extends android.app.Application implements ReplicatorChangeListener {
 
@@ -130,22 +123,13 @@ public class Application extends android.app.Application implements ReplicatorCh
             return;
         }
 
-        ReplicatorConfiguration config = new ReplicatorConfiguration();
-        config.setDatabase(database);
-        config.setTarget(new ReplicatorTarget(uri));
-        config.setType(ReplicatorType.PUSH_AND_PULL);
-        //config.setType(ReplicatorType.PULL);
+        ReplicatorConfiguration config = new ReplicatorConfiguration(database, uri);
+        config.setReplicatorType(ReplicatorConfiguration.ReplicatorType.PUSH_AND_PULL);
         config.setContinuous(true);
 
         // authentication
-        if (username != null && password != null) {
-            Map<String, Object> options = new HashMap<>();
-            Map<String, Object> auth = new HashMap<>();
-            auth.put(kCBLReplicatorAuthUserName, username);
-            auth.put(kCBLReplicatorAuthPassword, password);
-            options.put(kCBLReplicatorAuthOption, auth);
-            config.setOptions(options);
-        }
+        if (username != null && password != null)
+            config.setAuthenticator(new BasicAuthenticator(username, password));
 
         replicator = new Replicator(config);
         replicator.addChangeListener(this);
