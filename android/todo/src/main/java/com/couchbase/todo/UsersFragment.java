@@ -17,13 +17,12 @@ import android.widget.PopupMenu;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.Document;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class UsersFragment extends Fragment {
     private ListView listView;
-    private UsersAdapter adapter;
+    private LiveUsersAdapter adapter;
 
     private Database db;
     private Document taskList;
@@ -46,7 +45,7 @@ public class UsersFragment extends Fragment {
         db = ((Application) getActivity().getApplication()).getDatabase();
         taskList = db.getDocument(getActivity().getIntent().getStringExtra(ListsActivity.INTENT_LIST_ID));
 
-        adapter = new UsersAdapter(this, db, taskList.getId(), new ArrayList<Document>());
+        adapter = new LiveUsersAdapter(this, db, taskList.getId());
         listView = view.findViewById(R.id.list);
         listView.setAdapter(adapter);
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
@@ -66,7 +65,6 @@ public class UsersFragment extends Fragment {
             }
         });
 
-        adapter.reload();
         return view;
     }
 
@@ -109,11 +107,9 @@ public class UsersFragment extends Fragment {
         taskListInfo.put("owner", taskList.getString("owner"));
         doc.set("taskList", taskListInfo);
         db.save(doc);
-        adapter.reload();
     }
 
     private void delete(Document doc) {
         db.delete(doc);
-        adapter.reload();
     }
 }

@@ -15,10 +15,14 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 
+import com.couchbase.lite.DataSource;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.Document;
+import com.couchbase.lite.Expression;
+import com.couchbase.lite.LiveQuery;
+import com.couchbase.lite.OrderBy;
+import com.couchbase.lite.Query;
 
-import java.util.ArrayList;
 import java.util.UUID;
 
 public class ListsActivity extends AppCompatActivity {
@@ -31,7 +35,7 @@ public class ListsActivity extends AppCompatActivity {
     private Database db;
 
     private ListView listView;
-    private ListsAdapter adapter;
+    private LiveListsAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +58,12 @@ public class ListsActivity extends AppCompatActivity {
             }
         });
 
-        adapter = new ListsAdapter(this, db, new ArrayList<Document>());
+        LiveQuery query = Query.select()
+                .from(DataSource.database(db))
+                .where(Expression.property("type").equalTo("task-list"))
+                .orderBy(OrderBy.property("name").ascending())
+                .toLive();
+        adapter = new LiveListsAdapter(this, db);
         listView = findViewById(R.id.list);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -80,7 +89,6 @@ public class ListsActivity extends AppCompatActivity {
                 return true;
             }
         });
-        adapter.reload();
     }
 
     private boolean handleListPopupAction(MenuItem item, Document list) {
@@ -90,8 +98,6 @@ public class ListsActivity extends AppCompatActivity {
                 return true;
             case R.id.delete:
                 deleteList(list);
-                // refresh UI
-                adapter.reload();
                 return true;
             default:
                 return false;
@@ -160,10 +166,6 @@ public class ListsActivity extends AppCompatActivity {
         doc.set("name", title);
         doc.set("owner", username);
         db.save(doc);
-
-        // update UI
-        adapter.reload();
-
         return doc;
     }
 
@@ -171,20 +173,12 @@ public class ListsActivity extends AppCompatActivity {
     private Document updateList(final Document list, String title) {
         list.set("name", title);
         db.save(list);
-
-        // update UI
-        adapter.reload();
-
         return list;
     }
 
     // delete list
     private Document deleteList(final Document list) {
         db.delete(list);
-
-        // update UI
-        adapter.reload();
-
         return list;
     }
 }

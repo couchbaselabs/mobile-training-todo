@@ -32,7 +32,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,7 +46,7 @@ public class TasksFragment extends Fragment {
     private static final int THUMBNAIL_SIZE = 150;
 
     private ListView listView;
-    private TasksAdapter adapter;
+    private LiveTasksAdapter adapter;
 
     private Database db;
     private Document taskList;
@@ -73,7 +72,7 @@ public class TasksFragment extends Fragment {
         db = ((Application) getActivity().getApplication()).getDatabase();
         taskList = db.getDocument(getActivity().getIntent().getStringExtra(ListsActivity.INTENT_LIST_ID));
 
-        adapter = new TasksAdapter(this, db, taskList.getId(), new ArrayList<Document>());
+        adapter = new LiveTasksAdapter(this, db, taskList.getId());
         listView = view.findViewById(R.id.list);
         listView.setAdapter(adapter);
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
@@ -93,7 +92,6 @@ public class TasksFragment extends Fragment {
             }
         });
 
-        adapter.reload();
         return view;
     }
 
@@ -215,20 +213,17 @@ public class TasksFragment extends Fragment {
         doc.set("task", title);
         doc.set("complete", false);
         db.save(doc);
-        adapter.reload();
     }
 
     // update task
     private void updateTask(final Document task, String text) {
         task.set("task", text);
         db.save(task);
-        adapter.reload();
     }
 
     // delete task
     private void deleteTask(final Document task) {
         db.delete(task);
-        adapter.reload();
     }
 
     // store photo
@@ -240,6 +235,5 @@ public class TasksFragment extends Fragment {
         Blob blob = new Blob("image/jpg", in);
         task.set("image", blob);
         db.save(task);
-        adapter.reload();
     }
 }

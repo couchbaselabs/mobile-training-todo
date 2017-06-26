@@ -14,28 +14,44 @@ import com.couchbase.lite.DataSource;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.Expression;
-import com.couchbase.lite.Log;
+import com.couchbase.lite.LiveQuery;
+import com.couchbase.lite.LiveQueryChange;
+import com.couchbase.lite.LiveQueryChangeListener;
 import com.couchbase.lite.OrderBy;
 import com.couchbase.lite.Query;
 import com.couchbase.lite.QueryRow;
 import com.couchbase.lite.ResultSet;
 
-import java.util.List;
 
-public class TasksAdapter extends ArrayAdapter<Document> {
-
-    private static final String TAG = TasksAdapter.class.getSimpleName();
+public class LiveTasksAdapter extends ArrayAdapter<Document> {
+    private static final String TAG = LiveTasksAdapter.class.getSimpleName();
 
     private TasksFragment fragment;
     private Database db;
     private String listID;
 
+    private LiveQuery query;
 
-    public TasksAdapter(TasksFragment fragment, Database db, String listID, List<Document> objects) {
-        super(fragment.getContext(), 0, objects);
+    public LiveTasksAdapter(TasksFragment fragment, Database db, String listID) {
+        super(fragment.getContext(), 0);
         this.fragment = fragment;
         this.db = db;
         this.listID = listID;
+
+        this.query = query();
+        this.query.addChangeListener(new LiveQueryChangeListener() {
+            @Override
+            public void changed(LiveQueryChange change) {
+                clear();
+                ResultSet rs = change.getRows();
+                QueryRow row;
+                while ((row = rs.next()) != null) {
+                    add(row.getDocument());
+                }
+                notifyDataSetChanged();
+            }
+        });
+        this.query.run();
     }
 
     @Override
@@ -81,31 +97,14 @@ public class TasksAdapter extends ArrayAdapter<Document> {
         return convertView;
     }
 
-
-    // -------------------------
-    // Database - Query
-    // -------------------------
-    public void reload() {
-        Log.e(TAG, "reload()");
-
-        clear();
-
-        ResultSet rs = Query.select()
+    private LiveQuery query() {
+        return Query.select()
                 .from(DataSource.database(db))
                 .where(Expression.property("type").equalTo("task").and(Expression.property("taskList.id").equalTo(listID)))
-                //.where(Expression.property("type").equalTo("task"))
                 .orderBy(OrderBy.property("createdAt"), OrderBy.property("task"))
-                .run();
-        QueryRow row;
-        while ((row = rs.next()) != null) {
-            add(row.getDocument());
-            Log.e(TAG, "\t- " + row.getDocumentID() + "\n\t\t" + row.getDocument().toMap());
-        }
+                .toLive();
     }
 
-    // -------------------------
-    // Database - CRUD
-    // -------------------------
     private void updateCheckedStatus(Document task, boolean checked) {
         task.set("complete", checked);
         db.save(task);
