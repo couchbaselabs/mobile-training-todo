@@ -99,7 +99,8 @@ public class UsersFragment extends Fragment {
 
     // create task
     private void createUser(String username) {
-        Document doc = new Document();
+        String docId = taskList.getId() + "." + username;
+        Document doc = new Document(docId);
         doc.set("type", "task-list.user");
         doc.set("username", username);
         Map<String, Object> taskListInfo = new HashMap<String, Object>();

@@ -74,7 +74,7 @@
 }
 
 - (void)addUser:(NSString *)username {
-    NSString *docId = [NSString stringWithFormat:@"%@.%@", _taskList.documentID, _username];
+    NSString *docId = [NSString stringWithFormat:@"%@.%@", _taskList.documentID, username];
     if ([_database contains:docId])
         return;
     
