@@ -25,10 +25,10 @@
 }
 
 - (IBAction)loginAction:(id)sender {
-    NSString* username = _usernameTextField.text != nil ? _usernameTextField.text : @"";
+    NSString *username = _usernameTextField.text != nil ? _usernameTextField.text : @"";
     username = [username stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
     
-    NSString* password = _passwordTextField.text != nil ? _passwordTextField.text : @"";
+    NSString *password = _passwordTextField.text != nil ? _passwordTextField.text : @"";
     password = [password stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
     
     if (username.length == 0 || password.length == 0) {

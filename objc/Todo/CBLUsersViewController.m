@@ -78,11 +78,11 @@
     if ([_database contains:docId])
         return;
     
-    CBLDocument* doc = [[CBLDocument alloc] initWithID:docId];
+    CBLDocument *doc = [[CBLDocument alloc] initWithID:docId];
     [doc setObject:@"task-list.user" forKey:@"type"];
     [doc setObject:username forKey:@"username"];
     
-    CBLDictionary* taskListInfo = [[CBLDictionary alloc] init];
+    CBLDictionary *taskListInfo = [[CBLDictionary alloc] init];
     [taskListInfo setObject:_taskList.documentID forKey:@"id"];
     [taskListInfo setObject:[_taskList stringForKey:@"owner"] forKey:@"owner"];
     [doc setObject:taskListInfo forKey:@"taskList"];

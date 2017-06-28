@@ -16,7 +16,7 @@
 #define kSyncGatewayUrl @"blip://localhost:4984/todo"
 
 @interface AppDelegate () <CBLLoginViewControllerDelegate> {
-    CBLReplicator* _replicator;
+    CBLReplicator *_replicator;
 }
 
 @end
@@ -27,7 +27,7 @@
     if (kLoginFlowEnabled) {
         [self loginWithUsername:nil];
     } else {
-        NSError* error;
+        NSError *error;
         if (![self startSession:@"todo" password:nil error:&error]) {
             NSLog(@"Cannot start a session: %@", error);
             return NO;
@@ -36,7 +36,7 @@
     return YES;
 }
 
-- (BOOL)startSession: (NSString*)username password: (NSString*)password error: (NSError**)error {
+- (BOOL)startSession: (NSString *)username password: (NSString *)password error: (NSError **)error {
     if ([self openDatabase:username error: error]) {
         [CBLSession sharedInstance].username = username;
         [self startReplicator:username password:password];
@@ -48,7 +48,7 @@
 
 - (BOOL)openDatabase: (NSString*)username error: (NSError**)error {
     // TRAINING: Create a database
-    NSString* dbName = username;
+    NSString *dbName = username;
     _database = [[CBLDatabase alloc] initWithName:dbName error:error];
     if (_database) {
         [self createDatabaseIndex];
@@ -77,11 +77,11 @@
 
 #pragma mark - Login
 
-- (void)loginWithUsername:(NSString*)username {
+- (void)loginWithUsername:(NSString *)username {
     UIStoryboard* storyboard = self.window.rootViewController.storyboard;
-    UINavigationController* navigation =
+    UINavigationController *navigation =
         [storyboard instantiateViewControllerWithIdentifier: @"LoginNavigationController"];
-    CBLLoginViewController* loginController = (CBLLoginViewController*)navigation.topViewController;
+    CBLLoginViewController *loginController = (CBLLoginViewController *)navigation.topViewController;
     loginController.delegate = self;
     loginController.username = username;
     self.window.rootViewController = navigation;
@@ -94,7 +94,7 @@
     if (![self closeDatabase: &error])
         NSLog(@"Cannot close database: %@", error);
     
-    NSString* oldUsername = [CBLSession sharedInstance].username;
+    NSString *oldUsername = [CBLSession sharedInstance].username;
     [CBLSession sharedInstance].username = nil;
     [self loginWithUsername:oldUsername];
 }
@@ -118,7 +118,7 @@
         withUsername:(NSString *)username
             password:(NSString *)password
 {
-    NSError* error;
+    NSError *error;
     if (![self startSession:username password:password error: &error]) {
         [CBLUi showMessageOn:controller
                        title:@"Error"
@@ -129,7 +129,7 @@
 
 #pragma mark - Replication
 
-- (void)startReplicator:(NSString*)username password:(NSString*)password {
+- (void)startReplicator:(NSString *)username password:(NSString *)password {
     if (!kSyncEnabled)
         return;
     
@@ -159,10 +159,10 @@
 }
 
 - (void)replicatorProgress:(NSNotification*)notification {
-    CBLReplicatorStatus* s =  notification.userInfo[kCBLReplicatorStatusUserInfoKey];
-    NSError* e = notification.userInfo[kCBLReplicatorErrorUserInfoKey];
-    
-    NSLog(@"[Todo] Replicator: %llu/%llu, error: %@", s.progress.completed, s.progress.total, e);
+    CBLReplicatorStatus *s =  notification.userInfo[kCBLReplicatorStatusUserInfoKey];
+    NSError *e = notification.userInfo[kCBLReplicatorErrorUserInfoKey];
+    NSLog(@"[Todo] Replicator: %@ %llu/%llu, error: %@",
+          [self ativityLevel: s.activity], s.progress.completed, s.progress.total, e);
     
     [UIApplication.sharedApplication setNetworkActivityIndicatorVisible: s.activity == kCBLBusy];
     if (e.code == 401) {
@@ -174,6 +174,17 @@
                          [self logout];
                      }];
     }
+}
+
+- (NSString *)ativityLevel:(CBLReplicatorActivityLevel)level {
+    if (level == kCBLStopped)
+        return @"STOP";
+    else if (level == kCBLIdle)
+        return @"IDLE";
+    else if (level == kCBLBusy)
+        return @"BUSY";
+    else
+        return @"UNKNOWN";
 }
 
 @end

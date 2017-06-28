@@ -52,7 +52,7 @@
         return;
     }
     
-    CBLBlob* imageBlob = [[CBLBlob alloc] initWithContentType:@"image/jpg" data:imageData];
+    CBLBlob *imageBlob = [[CBLBlob alloc] initWithContentType:@"image/jpg" data:imageData];
     [self.task setObject: imageBlob forKey: @"image"];
     
     NSError *error;

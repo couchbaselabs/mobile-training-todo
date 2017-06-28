@@ -98,7 +98,7 @@
 - (void)createTask:(NSString *)task {
     CBLDocument *doc = [[CBLDocument alloc] init];
     [doc setObject:@"task" forKey:@"type"];
-    NSDictionary* taskList = @{@"id": _taskList.documentID,
+    NSDictionary *taskList = @{@"id": _taskList.documentID,
                                @"owner": [_taskList stringForKey: @"owner"]};
     [doc setObject:taskList forKey:@"taskList"];
     [doc setObject:[NSDate date] forKey:@"createdAt"];

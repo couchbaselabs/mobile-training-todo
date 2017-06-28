@@ -244,7 +244,7 @@
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     CBLQueryRow *row = (CBLQueryRow *)_listRows[[self.tableView indexPathForSelectedRow].row];
-    CBLDocument* taskList = [_database documentWithID:row.documentID];
+    CBLDocument *taskList = [_database documentWithID:row.documentID];
     
     UITabBarController *tabBarController = (UITabBarController*)segue.destinationViewController;
     CBLTasksViewController *tasksController = tabBarController.viewControllers[0];
