@@ -19,7 +19,7 @@ The application has both Objective-C and Swift version.
 3. Use Carthage to download the library.
 
  ```
- $ carthage update
+ $ carthage update --platform iOS
  ```
  
 4. Open Todo.xcodeproj with your XCode.
