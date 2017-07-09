@@ -161,11 +161,9 @@ namespace Training.Core
                 };
             }
 
-            var config = new ReplicatorConfiguration {
+            var config = new ReplicatorConfiguration(Database, SyncGatewayUrl) {
                 ReplicatorType = ReplicatorType.PushAndPull,
                 Continuous = true,
-                Database = Database,
-                Target = new ReplicatorTarget(SyncGatewayUrl),
                 Options = options
             };
 

@@ -63,7 +63,8 @@ namespace Training.Android
 			global::AndroidHUD.Resource.Styleable.ProgressWheel_ahText = global::Training.Android.Resource.Styleable.ProgressWheel_ahText;
 			global::AndroidHUD.Resource.Styleable.ProgressWheel_ahTextColor = global::Training.Android.Resource.Styleable.ProgressWheel_ahTextColor;
 			global::AndroidHUD.Resource.Styleable.ProgressWheel_ahTextSize = global::Training.Android.Resource.Styleable.ProgressWheel_ahTextSize;
-			global::Couchbase.Lite.Android.Resource.String.library_name = global::Training.Android.Resource.String.library_name;
+			global::Couchbase.Lite.Support.Android.Resource.String.ApplicationName = global::Training.Android.Resource.String.ApplicationName;
+			global::Couchbase.Lite.Support.Android.Resource.String.Hello = global::Training.Android.Resource.String.Hello;
 			global::MvvmCross.Binding.Droid.Resource.Attribute.MvxBind = global::Training.Android.Resource.Attribute.MvxBind;
 			global::MvvmCross.Binding.Droid.Resource.Attribute.MvxDropDownItemTemplate = global::Training.Android.Resource.Attribute.MvxDropDownItemTemplate;
 			global::MvvmCross.Binding.Droid.Resource.Attribute.MvxGroupItemTemplate = global::Training.Android.Resource.Attribute.MvxGroupItemTemplate;

@@ -38,16 +38,6 @@ namespace Training.iOS
 
         #region Overrides
 
-        public override void MotionEnded(UIEventSubtype motion, UIEvent evt)
-        {
-            if(motion == UIEventSubtype.MotionShake) {
-                // TRAINING: Create task list conflict (for development only)
-                var page = this.Element as TaskListsPage;
-                var vm = page?.BindingContext as TaskListsViewModel;
-                vm?.TestConflict();
-            }
-        }
-
         public override void ViewWillAppear(bool animated)
         {
             base.ViewWillAppear(animated);
