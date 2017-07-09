@@ -17,8 +17,10 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <StackPanel Orientation="Vertical" Grid.Column="1" Grid.Row="1">
-            
-            
+
+            <Grid x:Name="WSLogoGrid" MaxWidth="180" Margin="0,0,0,0">
+                <Image Stretch="Uniform" Source="ms-appx:///Assets/Tiles/SmallTile.scale-400.png"/>
+            </Grid>
             <StackPanel  x:Name="LoginGrid" RelativePanel.AlignRightWithPanel="True" Height="230" VerticalAlignment="Top">
                 <TextBox Text="{Binding Username, Mode=TwoWay}" 
                          PlaceholderText="Username" 
@@ -30,7 +32,7 @@
                              Background="Transparent" BorderThickness="0,0,0,1" VerticalContentAlignment="Center"
                              />
                 <Button Content="Login..."  Click="OnLoginClick"
-                    Margin="0,40,0,0" Width="100" Height="35" Style="{StaticResource goitstyle}"/>
+                    Margin="0,40,0,0" Width="120" Height="40" Style="{StaticResource goitstyle}"/>
 
             </StackPanel>
            
