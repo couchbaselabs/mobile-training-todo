@@ -17,9 +17,23 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <StackPanel Orientation="Vertical" Grid.Column="1" Grid.Row="1">
-            <TextBox Width="150" PlaceholderText="Username" Text="{Binding Username, Mode=TwoWay}" />
-            <PasswordBox Width="150" PlaceholderText="Password" x:Name="_passBox" />
-            <Button Content="Login..." Background="Gray" Click="OnLoginClick" />
+            
+            
+            <StackPanel  x:Name="LoginGrid" RelativePanel.AlignRightWithPanel="True" Height="230" VerticalAlignment="Top">
+                <TextBox Text="{Binding Username, Mode=TwoWay}" 
+                         PlaceholderText="Username" 
+                         Width="300" Margin="0,15,0,0" Background="Transparent" BorderThickness="0,0,0,1" VerticalContentAlignment="Center" 
+                         />
+
+
+                <PasswordBox x:Name="_passBox" PlaceholderText="Password" Width="300" Margin="0,15,0,0" 
+                             Background="Transparent" BorderThickness="0,0,0,1" VerticalContentAlignment="Center"
+                             />
+                <Button Content="Login..."  Click="OnLoginClick"
+                    Margin="0,40,0,0" Width="100" Height="35" Style="{StaticResource goitstyle}"/>
+
+            </StackPanel>
+           
         </StackPanel>
     </Grid>
 </local:BasePage>
