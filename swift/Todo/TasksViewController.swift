@@ -20,7 +20,7 @@ UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     var searchQuery: Query!
     var taskRows : [QueryRow]?
     var taskForImage: Document?
-    var dbChangeObserver: AnyObject?
+    var dbChangeListener: NSObjectProtocol?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -62,7 +62,7 @@ UIImagePickerControllerDelegate, UINavigationControllerDelegate {
                 .where(
                     Expression.property("type").equalTo("task")
                         .and(Expression.property("taskList.id").equalTo(taskList.id)))
-                .orderBy(OrderBy.property("createdAt"), OrderBy.property("task"))
+                .orderBy(Ordering.property("createdAt"), Ordering.property("task"))
                 .toLive()
             
             taskQuery.addChangeListener({ (change) in
@@ -142,7 +142,7 @@ UIImagePickerControllerDelegate, UINavigationControllerDelegate {
                 Expression.property("type").equalTo("task")
                     .and(Expression.property("taskList.id").equalTo(taskList.id))
                     .and(Expression.property("task").like("%\(task)%")))
-            .orderBy(OrderBy.property("createdAt"), OrderBy.property("task"))
+            .orderBy(Ordering.property("createdAt"), Ordering.property("task"))
         
         do {
             let rows = try searchQuery.run()
@@ -165,19 +165,16 @@ UIImagePickerControllerDelegate, UINavigationControllerDelegate {
         }
         Ui.displayOrHideTabbar(on: self, display: display)
         
-        if dbChangeObserver == nil {
-            dbChangeObserver = NotificationCenter.default.addObserver(
-            forName: NSNotification.Name.DatabaseChange, object: database, queue: nil) { note in
-                // Review: Can optimize this by executing in the background dispatch queue:
-                if let change = note.userInfo![DatabaseChangesUserInfoKey] as? DatabaseChange {
-                    for docId in change.documentIDs as! [String] {
-                        if docId == moderatorDocId {
-                            self.displayOrHideUsers()
-                            break
-                        }
+        if dbChangeListener == nil {
+            dbChangeListener = database.addChangeListener({ [weak self] (change) in
+                guard let strongSelf = self else { return }
+                for docId in change.documentIDs as! [String] {
+                    if docId == moderatorDocId {
+                        strongSelf.displayOrHideUsers()
+                        break
                     }
                 }
-            }
+            })
         }
     }
     
@@ -322,6 +319,8 @@ UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     deinit {
         // Fix "... load the view of a view controller while it is deallocating" warning.
         searchController?.view.removeFromSuperview()
+        // Remove change listener:
+        database.removeChangeListener(dbChangeListener!)
     }
 }
 

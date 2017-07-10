@@ -68,7 +68,10 @@ fastlane/screenshots
 
 # CouchbaseLite
 CouchbaseLite.framework
+CouchbaseLiteSwift.framework
 libsqlcipher.a
+
+# Others
 *.userprefs
 packages/
 bin/

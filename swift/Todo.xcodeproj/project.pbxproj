@@ -7,7 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		930BE2391EDFD02800CCC14C /* CouchbaseLiteSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 930BE2381EDFD02800CCC14C /* CouchbaseLiteSwift.framework */; };
+		9322DCCC1F1406A700C4ACF7 /* CouchbaseLiteSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9322DCCB1F1406A700C4ACF7 /* CouchbaseLiteSwift.framework */; };
+		9322DCCE1F1406BB00C4ACF7 /* CouchbaseLiteSwift.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9322DCCB1F1406A700C4ACF7 /* CouchbaseLiteSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		934646BC1C69CF6B002F52C9 /* TasksViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 934646BB1C69CF6B002F52C9 /* TasksViewController.swift */; };
 		934646C31C6AC4CD002F52C9 /* TaskTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 934646C21C6AC4CD002F52C9 /* TaskTableViewCell.swift */; };
 		934646C61C6B218D002F52C9 /* TaskImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 934646C51C6B218D002F52C9 /* TaskImageViewController.swift */; };
@@ -24,8 +25,21 @@
 		93F4B2E01C696C78005FF4D8 /* Ui.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93F4B2DF1C696C78005FF4D8 /* Ui.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		9322DCCD1F1406AC00C4ACF7 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				9322DCCE1F1406BB00C4ACF7 /* CouchbaseLiteSwift.framework in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
-		930BE2381EDFD02800CCC14C /* CouchbaseLiteSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CouchbaseLiteSwift.framework; path = Carthage/Build/iOS/CouchbaseLiteSwift.framework; sourceTree = "<group>"; };
+		9322DCCB1F1406A700C4ACF7 /* CouchbaseLiteSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CouchbaseLiteSwift.framework; path = Frameworks/CouchbaseLiteSwift.framework; sourceTree = "<group>"; };
 		934646BB1C69CF6B002F52C9 /* TasksViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TasksViewController.swift; sourceTree = "<group>"; };
 		934646C21C6AC4CD002F52C9 /* TaskTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TaskTableViewCell.swift; sourceTree = "<group>"; };
 		934646C51C6B218D002F52C9 /* TaskImageViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TaskImageViewController.swift; sourceTree = "<group>"; };
@@ -49,17 +63,17 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				930BE2391EDFD02800CCC14C /* CouchbaseLiteSwift.framework in Frameworks */,
+				9322DCCC1F1406A700C4ACF7 /* CouchbaseLiteSwift.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		930BE2371EDFD02800CCC14C /* Frameworks */ = {
+		9322DCCA1F1406A600C4ACF7 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				930BE2381EDFD02800CCC14C /* CouchbaseLiteSwift.framework */,
+				9322DCCB1F1406A700C4ACF7 /* CouchbaseLiteSwift.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -80,7 +94,7 @@
 			children = (
 				93F4B2C11C6940D6005FF4D8 /* Todo */,
 				93F4B2C01C6940D6005FF4D8 /* Products */,
-				930BE2371EDFD02800CCC14C /* Frameworks */,
+				9322DCCA1F1406A600C4ACF7 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -121,7 +135,7 @@
 				93F4B2BB1C6940D6005FF4D8 /* Sources */,
 				93F4B2BC1C6940D6005FF4D8 /* Frameworks */,
 				93F4B2BD1C6940D6005FF4D8 /* Resources */,
-				930BE23B1EDFD09600CCC14C /* ShellScript */,
+				9322DCCD1F1406AC00C4ACF7 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -179,23 +193,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		930BE23B1EDFD09600CCC14C /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Carthage/Build/iOS/CouchbaseLiteSwift.framework",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "/usr/local/bin/carthage copy-frameworks";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		93F4B2BB1C6940D6005FF4D8 /* Sources */ = {
@@ -335,6 +332,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
+					"$(PROJECT_DIR)/Frameworks",
 				);
 				INFOPLIST_FILE = Todo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.2;
@@ -360,6 +358,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
+					"$(PROJECT_DIR)/Frameworks",
 				);
 				INFOPLIST_FILE = Todo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.2;

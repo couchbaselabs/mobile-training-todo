@@ -58,7 +58,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
                 .select()
                 .from(DataSource.database(database))
                 .where(Expression.property("type").equalTo("task-list"))
-                .orderBy(OrderBy.property("name"))
+                .orderBy(Ordering.property("name"))
                 .toLive()
             
             listQuery.addChangeListener({ (change) in
@@ -131,7 +131,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
             .from(DataSource.database(database))
             .where(Expression.property("type").equalTo("task-list")
                 .and(Expression.property("name").like("%\(name)%")))
-            .orderBy(OrderBy.property("name"))
+            .orderBy(Ordering.property("name"))
         
         do {
             let rows = try searchQuery.run()

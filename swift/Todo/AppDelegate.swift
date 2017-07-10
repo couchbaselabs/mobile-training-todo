@@ -19,6 +19,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
     
     var database: Database!
     var replicator: Replicator!
+    var changeListener: NSObjectProtocol?
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions
         launchOptions: [UIApplicationLaunchOptionsKey : Any]? = nil) -> Bool {
@@ -135,10 +136,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         }
         
         replicator = Replicator(config: config)
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(replicationProgress(notification:)),
-                                               name: NSNotification.Name.ReplicatorChange,
-                                               object: replicator)
+        changeListener = replicator.addChangeListener({ (change) in
+            let s = change.status
+            let e = change.status.error as NSError?
+            
+            NSLog("[Todo] Replicator: \(s.progress.completed)/\(s.progress.total), error: \((e != nil) ? e!.description: "")")
+            
+            UIApplication.shared.isNetworkActivityIndicatorVisible = (s.activity == .busy)
+            if let code = e?.code {
+                if code == 401 {
+                    Ui.showMessage(on: self.window!.rootViewController!,
+                                   title: "Authentication Error",
+                                   message: "Your username or password is not correct",
+                                   error: nil,
+                                   onClose: {
+                                    self.logout()
+                    })
+                }
+            }
+        })
         replicator.start()
     }
     
@@ -148,28 +164,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         }
         
         replicator.stop()
-        NotificationCenter.default.removeObserver(
-            self, name: NSNotification.Name.ReplicatorChange, object: replicator)
+        replicator.removeChangeListener(changeListener!)
+        changeListener = nil
     }
-    
-    func replicationProgress(notification: NSNotification) {
-        let s = notification.userInfo![ReplicatorStatusUserInfoKey] as! Replicator.Status
-        let e = notification.userInfo![ReplicatorErrorUserInfoKey] as? NSError
-        
-        NSLog("[Todo] Replicator: \(s.progress.completed)/\(s.progress.total), error: \(e?.description ?? "")")
-        
-        UIApplication.shared.isNetworkActivityIndicatorVisible = (s.activity == .busy)
-        if let code = e?.code {
-            if code == 401 {
-                Ui.showMessage(on: self.window!.rootViewController!,
-                               title: "Authentication Error",
-                               message: "Your username or password is not correct",
-                               error: nil,
-                               onClose: {
-                                self.logout()
-                })
-            }
-        }
-    }
-
 }
