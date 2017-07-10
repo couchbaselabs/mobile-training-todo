@@ -17,7 +17,7 @@ The application has both Objective-C and Swift version.
 
 3. Download `CouchbaseLite.framework` or `CouchbaseLiteSwift.framework` from [here](https://developer.couchbase.com/documentation/mobile/2.0/whatsnew.html?language=ios).
 
-4. Copy `CouchbaseLite.framework` for `objc` or `CouchbaseLiteSwift.framework` into the `Frameworks` folder.
+4. Copy `CouchbaseLite.framework` for `objc` or `CouchbaseLiteSwift.framework` for `swift` into the `Frameworks` folder.
  
 5. Open Todo.xcodeproj with your XCode.
 
