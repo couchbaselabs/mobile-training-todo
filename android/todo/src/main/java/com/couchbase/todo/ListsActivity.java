@@ -20,7 +20,7 @@ import com.couchbase.lite.Database;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.Expression;
 import com.couchbase.lite.LiveQuery;
-import com.couchbase.lite.OrderBy;
+import com.couchbase.lite.Ordering;
 import com.couchbase.lite.Query;
 
 import java.util.UUID;
@@ -61,7 +61,7 @@ public class ListsActivity extends AppCompatActivity {
         LiveQuery query = Query.select()
                 .from(DataSource.database(db))
                 .where(Expression.property("type").equalTo("task-list"))
-                .orderBy(OrderBy.property("name").ascending())
+                .orderBy(Ordering.property("name").ascending())
                 .toLive();
         adapter = new LiveListsAdapter(this, db);
         listView = findViewById(R.id.list);

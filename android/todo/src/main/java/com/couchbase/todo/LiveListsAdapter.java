@@ -15,7 +15,7 @@ import com.couchbase.lite.LiveQuery;
 import com.couchbase.lite.LiveQueryChange;
 import com.couchbase.lite.LiveQueryChangeListener;
 import com.couchbase.lite.Log;
-import com.couchbase.lite.OrderBy;
+import com.couchbase.lite.Ordering;
 import com.couchbase.lite.Query;
 import com.couchbase.lite.QueryRow;
 import com.couchbase.lite.ResultSet;
@@ -61,7 +61,7 @@ public class LiveListsAdapter extends ArrayAdapter<Document> {
         return Query.select()
                 .from(DataSource.database(db))
                 .where(Expression.property("type").equalTo("task-list"))
-                .orderBy(OrderBy.property("name").ascending())
+                .orderBy(Ordering.property("name").ascending())
                 .toLive();
     }
 }
