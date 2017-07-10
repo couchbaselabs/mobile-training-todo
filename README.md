@@ -3,7 +3,6 @@ ToDo iOS sample app built with [CouchbaseLite 2.0 Developer Preview](https://git
 The application has both Objective-C and Swift version.
 
 ## Requirements
-- [Carthage](https://github.com/Carthage/Carthage)
 - XCode 8.3
 
 ## How to build and run?
@@ -16,15 +15,13 @@ The application has both Objective-C and Swift version.
  
 2. cd into the project either `objc` or `swift`.
 
-3. Use Carthage to download the library.
+3. Download `CouchbaseLite.framework` or `CouchbaseLiteSwift.framework` from [here](https://developer.couchbase.com/documentation/mobile/2.0/whatsnew.html?language=ios).
 
- ```
- $ carthage update --platform iOS
- ```
+4. Copy `CouchbaseLite.framework` for `objc` or `CouchbaseLiteSwift.framework` into the `Frameworks` folder.
  
-4. Open Todo.xcodeproj with your XCode.
+5. Open Todo.xcodeproj with your XCode.
 
-5. Select `Todo` scheme and Run.
+6. Select `Todo` scheme and Run.
 
 ## How to use the replication feature?
 
