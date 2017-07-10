@@ -27,7 +27,7 @@
     CBLQuery *_searchQuery;
     NSArray *_taskRows;
     CBLDocument *_taskForImage;
-    id _dbChangeObserver;
+    id _dbChangeListener;
 }
 
 @end
@@ -69,8 +69,8 @@
 }
 
 - (void) dealloc {
-    if (_dbChangeObserver != nil)
-        [NSNotificationCenter.defaultCenter removeObserver: _dbChangeObserver];
+    // Remove change listener:
+    [_database removeChangeListener:_dbChangeListener];
 }
 
 #pragma mark - Database
@@ -172,9 +172,9 @@
         display = [_database contains:moderatorDocId];
     [CBLUi displayOrHideTabbar:self display:display];
     
-    if (!_dbChangeObserver) {
+    if (!_dbChangeListener) {
         __weak typeof(self) wSelf = self;
-        [_database addChangeListener:^(CBLDatabaseChange *change) {
+        _dbChangeListener = [_database addChangeListener:^(CBLDatabaseChange *change) {
             for (NSString *docId in change.documentIDs) {
                 if ([docId isEqualToString: moderatorDocId]) {
                     [wSelf displayOrHideUsers];
