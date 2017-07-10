@@ -40,6 +40,7 @@ namespace Training.WPF
 
         protected override IMvxApplication CreateApp()
         {
+            Couchbase.Lite.Support.NetDestkop.Activate();
             return new CoreApp();
         }
 
