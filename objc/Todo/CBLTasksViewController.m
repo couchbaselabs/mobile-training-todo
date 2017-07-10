@@ -79,11 +79,11 @@
     if (!_taskQuery) {
         CBLQueryExpression *exp1 = [[CBLQueryExpression property:@"type"] equalTo:@"task"];
         CBLQueryExpression *exp2 = [[CBLQueryExpression property:@"taskList.id"] equalTo:self.taskList.documentID];
-        _taskQuery = [[CBLQuery select:[CBLQuerySelect all]
+        _taskQuery = [[CBLQuery select:@[]
                                   from:[CBLQueryDataSource database:_database]
                                  where:[exp1 and: exp2]
-                               orderBy:[CBLQueryOrderBy orderBy:@[[CBLQueryOrderBy property:@"createdAt"],
-                                                                  [CBLQueryOrderBy property:@"task"]]]] toLive];
+                               orderBy:@[[CBLQueryOrdering property:@"createdAt"],
+                                         [CBLQueryOrdering property:@"task"]]] toLive];
         __weak typeof (self) wSelf = self;
         [_taskQuery addChangeListener:^(CBLLiveQueryChange *change) {
             if (!change.rows)
@@ -147,11 +147,11 @@
     CBLQueryExpression *exp1 = [[CBLQueryExpression property:@"type"] equalTo:@"task"];
     CBLQueryExpression *exp2 = [[CBLQueryExpression property:@"taskList.id"] equalTo:self.taskList.documentID];
     CBLQueryExpression *exp3 = [[CBLQueryExpression property:@"task"] like:[NSString stringWithFormat:@"%%%@%%", name]];
-    _searchQuery = [CBLQuery select:[CBLQuerySelect all]
+    _searchQuery = [CBLQuery select:@[]
                                from:[CBLQueryDataSource database:_database]
                               where:[[exp1 and: exp2] and:exp3]
-                            orderBy:[CBLQueryOrderBy orderBy:@[[CBLQueryOrderBy property:@"createdAt"],
-                                                               [CBLQueryOrderBy property:@"task"]]]];
+                            orderBy:@[[CBLQueryOrdering property:@"createdAt"],
+                                      [CBLQueryOrdering property:@"task"]]];
     NSError *error;
     NSEnumerator *rows = [_searchQuery run: &error];
     if (!rows)
@@ -173,15 +173,11 @@
     [CBLUi displayOrHideTabbar:self display:display];
     
     if (!_dbChangeObserver) {
-        [NSNotificationCenter.defaultCenter addObserverForName:kCBLDatabaseChangeNotification
-                                                        object:_database
-                                                         queue:nil
-                                                    usingBlock:^(NSNotification * _Nonnull note)
-        {
-            CBLDatabaseChange *change = [note.userInfo objectForKey: kCBLDatabaseChangesUserInfoKey];
+        __weak typeof(self) wSelf = self;
+        [_database addChangeListener:^(CBLDatabaseChange *change) {
             for (NSString *docId in change.documentIDs) {
                 if ([docId isEqualToString: moderatorDocId]) {
-                    [self displayOrHideUsers];
+                    [wSelf displayOrHideUsers];
                     break;
                 }
             }

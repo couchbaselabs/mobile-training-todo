@@ -59,9 +59,9 @@
     if (!_userQuery) {
         CBLQueryExpression *exp1 = [[CBLQueryExpression property:@"type"] equalTo:@"task-list.user"];
         CBLQueryExpression *exp2 = [[CBLQueryExpression property:@"taskList.id"] equalTo: _taskList.documentID];
-        _userQuery = [[CBLQuery select: [CBLQuerySelect all]
-                                  from: [CBLQueryDataSource database:_database]
-                                 where: [exp1 and:exp2]] toLive];
+        _userQuery = [[CBLQuery select:@[]
+                                  from:[CBLQueryDataSource database:_database]
+                                 where:[exp1 and:exp2]] toLive];
         __weak typeof(self) wSelf = self;
         [_userQuery addChangeListener:^(CBLLiveQueryChange *change) {
             if (!change.rows)
@@ -102,7 +102,7 @@
     CBLQueryExpression *exp1 = [[CBLQueryExpression property:@"type"] equalTo:@"task-list.user"];
     CBLQueryExpression *exp2 = [[CBLQueryExpression property:@"taskList.id"] equalTo: _taskList.documentID];
     CBLQueryExpression *exp3 = [[CBLQueryExpression property:@"username"] like: [NSString stringWithFormat:@"%@%%", username]];
-    _searchQuery = [CBLQuery select:[CBLQuerySelect all]
+    _searchQuery = [CBLQuery select:@[]
                                from:[CBLQueryDataSource database:_database]
                               where:[[exp1 and:exp2] and:exp3]];
     NSError *error;

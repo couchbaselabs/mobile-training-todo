@@ -67,10 +67,10 @@
 
 - (void)reload {
     if (!_listQuery) {
-        _listQuery = [[CBLQuery select:[CBLQuerySelect all]
+        _listQuery = [[CBLQuery select:@[]
                                   from:[CBLQueryDataSource database:_database]
                                  where:[[CBLQueryExpression property:@"type"] equalTo:@"task-list"]
-                               orderBy:[CBLQueryOrderBy property:@"name"]] toLive];
+                               orderBy:@[[CBLQueryOrdering property:@"name"]]] toLive];
         
         __weak typeof(self) wSelf = self;
         [_listQuery addChangeListener:^(CBLLiveQueryChange *change) {
@@ -138,10 +138,10 @@
     CBLQueryExpression* exp1 = [[CBLQueryExpression property:@"type"] equalTo:@"task-list"];
     CBLQueryExpression* exp2 = [[CBLQueryExpression property:@"name"] like:[NSString stringWithFormat:@"%%%@%%", name]];
     
-    _searchQuery = [CBLQuery select:[CBLQuerySelect all]
+    _searchQuery = [CBLQuery select:@[]
                                from:[CBLQueryDataSource database:_database]
                               where:[exp1 and: exp2]
-                            orderBy:[CBLQueryOrderBy property:@"name"]];
+                            orderBy:@[[CBLQueryOrdering property:@"name"]]];
     
     NSError *error;
     NSEnumerator *rows = [_searchQuery run: &error];

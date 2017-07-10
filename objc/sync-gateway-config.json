@@ -7,6 +7,7 @@
       "users": {
         "user1": {"password": "pass", "admin_channels": ["user1"]},
         "user2": {"password": "pass", "admin_channels": ["user2"]},
+        "user3": {"password": "pass", "admin_channels": ["user3"]},
         "mod": {"password": "pass", "admin_roles": ["moderator"]},
         "admin": {"password": "pass", "admin_roles": ["admin"]}
       },

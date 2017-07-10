@@ -7,9 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9322DCC41F13FC7C00C4ACF7 /* CouchbaseLite.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9322DCC31F13FC7C00C4ACF7 /* CouchbaseLite.framework */; };
+		9322DCC91F1404FE00C4ACF7 /* CouchbaseLite.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9322DCC31F13FC7C00C4ACF7 /* CouchbaseLite.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9336350C1EDE1DA500349E9A /* CBLLoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9336350B1EDE1DA500349E9A /* CBLLoginViewController.m */; };
 		933635121EDE2A7C00349E9A /* CBLSession.m in Sources */ = {isa = PBXBuildFile; fileRef = 933635111EDE2A7C00349E9A /* CBLSession.m */; };
-		933635181EDE52C800349E9A /* CouchbaseLite.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 933635171EDE52C800349E9A /* CouchbaseLite.framework */; };
 		937EAC0B1E3AB72200133693 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 937EAC0A1E3AB72200133693 /* main.m */; };
 		937EAC0E1E3AB72200133693 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 937EAC0D1E3AB72200133693 /* AppDelegate.m */; };
 		937EAC141E3AB72200133693 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 937EAC121E3AB72200133693 /* Main.storyboard */; };
@@ -25,12 +26,25 @@
 		93A8433A1E3B420B00B4AF2D /* CBLTaskImageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 93A843391E3B420B00B4AF2D /* CBLTaskImageViewController.m */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		9322DCC81F1404F500C4ACF7 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				9322DCC91F1404FE00C4ACF7 /* CouchbaseLite.framework in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		9322DCC31F13FC7C00C4ACF7 /* CouchbaseLite.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CouchbaseLite.framework; path = Frameworks/CouchbaseLite.framework; sourceTree = "<group>"; };
 		9336350A1EDE1DA500349E9A /* CBLLoginViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBLLoginViewController.h; sourceTree = "<group>"; };
 		9336350B1EDE1DA500349E9A /* CBLLoginViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CBLLoginViewController.m; sourceTree = "<group>"; };
 		933635101EDE2A7C00349E9A /* CBLSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBLSession.h; sourceTree = "<group>"; };
 		933635111EDE2A7C00349E9A /* CBLSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CBLSession.m; sourceTree = "<group>"; };
-		933635171EDE52C800349E9A /* CouchbaseLite.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CouchbaseLite.framework; path = Carthage/Build/iOS/CouchbaseLite.framework; sourceTree = "<group>"; };
 		937EAC061E3AB72200133693 /* Todo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Todo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		937EAC0A1E3AB72200133693 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		937EAC0C1E3AB72200133693 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -62,17 +76,17 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				933635181EDE52C800349E9A /* CouchbaseLite.framework in Frameworks */,
+				9322DCC41F13FC7C00C4ACF7 /* CouchbaseLite.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		933635161EDE52C700349E9A /* Frameworks */ = {
+		9322DCC21F13FC7C00C4ACF7 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				933635171EDE52C800349E9A /* CouchbaseLite.framework */,
+				9322DCC31F13FC7C00C4ACF7 /* CouchbaseLite.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -82,7 +96,7 @@
 			children = (
 				937EAC081E3AB72200133693 /* Todo */,
 				937EAC071E3AB72200133693 /* Products */,
-				933635161EDE52C700349E9A /* Frameworks */,
+				9322DCC21F13FC7C00C4ACF7 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -154,7 +168,7 @@
 				937EAC021E3AB72200133693 /* Sources */,
 				937EAC031E3AB72200133693 /* Frameworks */,
 				937EAC041E3AB72200133693 /* Resources */,
-				933635191EDE52D500349E9A /* ShellScript */,
+				9322DCC81F1404F500C4ACF7 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -211,23 +225,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		933635191EDE52D500349E9A /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Carthage/Build/iOS/CouchbaseLite.framework",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "/usr/local/bin/carthage copy-frameworks";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		937EAC021E3AB72200133693 /* Sources */ = {
@@ -369,6 +366,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
+					"$(PROJECT_DIR)/Frameworks",
 				);
 				INFOPLIST_FILE = Todo/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -385,6 +383,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
+					"$(PROJECT_DIR)/Frameworks",
 				);
 				INFOPLIST_FILE = Todo/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";

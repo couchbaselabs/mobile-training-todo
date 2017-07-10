@@ -139,12 +139,26 @@
     if (kLoginFlowEnabled) {
         config.authenticator = [[CBLBasicAuthenticator alloc] initWithUsername:username password:password];
     }
-    _replicator = [[CBLReplicator alloc] initWithConfig:config];
-    [NSNotificationCenter.defaultCenter addObserver:self
-                                           selector:@selector(replicatorProgress:)
-                                               name:kCBLReplicatorChangeNotification
-                                             object:_replicator];
     
+    _replicator = [[CBLReplicator alloc] initWithConfig:config];
+    __weak typeof(self) wSelf = self;
+    [_replicator addChangeListener:^(CBLReplicatorChange *change) {
+        CBLReplicatorStatus *s =  change.status;
+        NSError *e = s.error;
+        NSLog(@"[Todo] Replicator: %@ %llu/%llu, error: %@",
+              [wSelf ativityLevel: s.activity], s.progress.completed, s.progress.total, e);
+        [UIApplication.sharedApplication setNetworkActivityIndicatorVisible: s.activity == kCBLBusy];
+        if (e.code == 401) {
+            [CBLUi showMessageOn:wSelf.window.rootViewController
+                           title:@"Authentication Error"
+                         message:@"Your username or passpword is not correct."
+                           error:nil
+                         onClose:^{
+                             [wSelf logout];
+                         }];
+        }
+
+    }];
     [_replicator start];
 }
 
@@ -153,28 +167,10 @@
         return;
     
     [_replicator stop];
-    [NSNotificationCenter.defaultCenter removeObserver:self
-                                                  name:kCBLReplicatorChangeNotification
-                                                object:_replicator];
 }
 
 - (void)replicatorProgress:(NSNotification*)notification {
-    CBLReplicatorStatus *s =  notification.userInfo[kCBLReplicatorStatusUserInfoKey];
-    NSError *e = notification.userInfo[kCBLReplicatorErrorUserInfoKey];
-    NSLog(@"[Todo] Replicator: %@ %llu/%llu, error: %@",
-          [self ativityLevel: s.activity], s.progress.completed, s.progress.total, e);
-    
-    [UIApplication.sharedApplication setNetworkActivityIndicatorVisible: s.activity == kCBLBusy];
-    if (e.code == 401) {
-        [CBLUi showMessageOn:self.window.rootViewController
-                       title:@"Authentication Error"
-                     message:@"Your username or passpword is not correct."
-                       error:nil
-                     onClose:^{
-                         [self logout];
-                     }];
     }
-}
 
 - (NSString *)ativityLevel:(CBLReplicatorActivityLevel)level {
     if (level == kCBLStopped)
