@@ -1,0 +1,56 @@
+﻿<views:BaseView xmlns:views="clr-namespace:Training" 
+      x:Class="Training.TasksView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Training.WPF"
+      mc:Ignorable="d" 
+      d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <local:ByteArrayToImageConverter x:Key="ImageSourceConverter" />
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBox Text="{Binding SearchTerm, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+        <ListView
+            Name="_listView"
+            Grid.Row="1"
+            ItemsSource="{Binding ListData}">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <EventSetter Event="PreviewMouseRightButtonDown" Handler="ListViewItem_PreviewMouseRightButtonDown" />
+                    <EventSetter Event="PreviewMouseLeftButtonDown" Handler="ListViewItem_PreviewMouseLeftButtonDown" />
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Edit..." Click="EditRow" />
+                    <MenuItem Header="Delete..." Foreground="Red" Click="DeleteRow" />
+                </ContextMenu>
+            </ListView.ContextMenu>
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Image Source="{Binding Thumbnail, Converter={StaticResource ImageSourceConverter}}" Width="44" Height="44" VerticalAlignment="Center" />
+                        <Button Command="{Binding AddImageCommand}" CommandParameter="{Binding .}" Width="44" Height="44" VerticalAlignment="Center" Background="Transparent" />
+                        <TextBlock Text="{Binding Name}" Grid.Column="1" VerticalAlignment="Center" />
+                        <CheckBox IsChecked="{Binding IsChecked}" IsHitTestVisible="False" Grid.Column="2" VerticalAlignment="Center" />
+                    </Grid>
+
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
+</views:BaseView>

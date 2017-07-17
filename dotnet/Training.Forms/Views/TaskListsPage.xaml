@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" 
+		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+		xmlns:local="clr-namespace:Training.Forms"
+		x:Class="Training.TaskListsPage"
+		Title="Task Lists">
+	<ContentPage.Resources>
+		<ResourceDictionary>
+            <local:IncompleteCountToStringConverter x:Key="IncompleteToString" />
+		</ResourceDictionary>
+	</ContentPage.Resources>
+    <ContentPage.ToolbarItems>
+		<ToolbarItem Text="+" Command="{Binding AddCommand}"/>
+		<ToolbarItem x:Name="_logoutButton" Text="Logout" Command="{Binding LogoutCommand}" Priority="1" />
+	</ContentPage.ToolbarItems>
+	<ContentPage.Content>
+        <ListView ItemsSource="{Binding TaskLists}" 
+				SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+				Header="{Binding .}">
+			<ListView.HeaderTemplate>
+                <DataTemplate>
+                    <SearchBar Text="{Binding SearchTerm, Mode=TwoWay}" />
+                </DataTemplate>
+            </ListView.HeaderTemplate>
+            <ListView.ItemTemplate>
+				<DataTemplate>
+					<local:TaskListCell Name="{Binding Name}" IncompleteTasks="{Binding IncompleteCount, Converter={StaticResource IncompleteToString}}">
+                        <local:TaskListCell.ContextActions>
+                            <MenuItem Command="{Binding EditCommand}" CommandParameter="{Binding DocumentID}"
+                               Text="Edit" />
+                            <MenuItem Command="{Binding DeleteCommand}" CommandParameter="{Binding DocumentID}"
+                               Text="Delete" IsDestructive="True" />
+                         </local:TaskListCell.ContextActions>
+					</local:TaskListCell>
+				</DataTemplate>
+			</ListView.ItemTemplate>
+		</ListView>
+	</ContentPage.Content>
+</ContentPage>
