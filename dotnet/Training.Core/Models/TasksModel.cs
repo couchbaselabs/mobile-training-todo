@@ -35,13 +35,14 @@ namespace Training.Core
 
         #region Constants
 
-        private const string TaskType = "task";
+        internal const string TaskType = "task";
 
         #endregion
 
         #region Variables
 
-        //private LiveQuery _tasksLiveQuery;
+        private IQuery _tasksFilteredQuery;
+        private IQuery _tasksFullQuery;
         private Database _db;
         private Document _taskList;
 
@@ -72,6 +73,7 @@ namespace Training.Core
         {
             _db = CoreApp.Database;
             _taskList = _db.GetDocument(listId);
+            SetupQuery();
             Filter(null);
         }
 
@@ -116,21 +118,31 @@ namespace Training.Core
         {
             var query = default(IQuery);
             if(!String.IsNullOrEmpty(searchString)) {
-                query = QueryFactory.Select()
-                    .From(DataSourceFactory.Database(_db))
-                    .Where(ExpressionFactory.Property("type").EqualTo(TaskType)
-                    .And(ExpressionFactory.Property("taskList").EqualTo(_taskList.Id))
-                    .And(ExpressionFactory.Property("task").Like($"%{searchString}%")))
-                    .OrderBy(OrderByFactory.Property("createdAt"));
+                query = _tasksFilteredQuery;
+                query.Parameters.Set("searchString", $"%{searchString}%");
             } else {
-                query = QueryFactory.Select()
-                    .From(DataSourceFactory.Database(_db))
-                    .Where(ExpressionFactory.Property("type").EqualTo(TaskType));
-                //.And(ExpressionFactory.Property("taskList").EqualTo(_taskList.Id)))
-                //.OrderBy(OrderByFactory.Property("createdAt"));
+                query = _tasksFullQuery;
             }
 
-            ListData.Replace(query.Run().Select(x => new TaskCellModel(x.DocumentID)));
+            using (var results = query.Run()) {
+                ListData.Replace(results.Select(x => new TaskCellModel(x.GetString(0))));
+            }
+        }
+
+        private void SetupQuery()
+        {
+            _tasksFilteredQuery = Query.Select(SelectResult.Expression(Expression.Meta().DocumentID))
+                .From(DataSource.Database(_db))
+                .Where(Expression.Property("type").EqualTo(TaskType)
+                    .And(Expression.Property("taskList.id").EqualTo(_taskList.Id))
+                    .And(Expression.Property("task").Like(Expression.Parameter("searchString"))))
+                .OrderBy(Ordering.Property("createdAt"));
+
+            _tasksFullQuery = Query.Select(SelectResult.Expression(Expression.Meta().DocumentID))
+                .From(DataSource.Database(_db))
+                .Where(Expression.Property("type").EqualTo(TaskType)
+                    .And(Expression.Property("taskList.id").EqualTo(_taskList.Id)))
+                .OrderBy(Ordering.Property("createdAt"));
         }
 
         #endregion
@@ -140,6 +152,8 @@ namespace Training.Core
         public void Dispose()
         {
             ListData.Clear();
+            _tasksFilteredQuery.Dispose();
+            _tasksFullQuery.Dispose();
         }
 
         #endregion

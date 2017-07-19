@@ -102,7 +102,7 @@ namespace Training.Core
         private bool HasModerator(Database db)
         {
             var moderatorDocId = $"moderator.{db.Name}";
-            return db.DocumentExists(moderatorDocId);
+            return db.Contains(moderatorDocId);
         }
 
         #endregion

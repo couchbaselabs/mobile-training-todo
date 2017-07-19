@@ -242,9 +242,9 @@ namespace Training.Core
         public static CoreAppStartHint CreateHint()
         {
             var retVal = new CoreAppStartHint {
-                LoginEnabled = true,
+                LoginEnabled = false,
                 EncryptionEnabled = false,
-                SyncEnabled = true,
+                SyncEnabled = false,
                 UsePrebuiltDB = false,
                 Username = "todo"
             };

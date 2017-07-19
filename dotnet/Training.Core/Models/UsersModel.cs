@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Couchbase.Lite;
+using Couchbase.Lite.Query;
 
 namespace Training.Core
 {
@@ -41,7 +42,7 @@ namespace Training.Core
         #region Variables
 
         private Database _db;
-        //private LiveQuery _usersLiveQuery;
+        private ILiveQuery _usersLiveQuery;
         private Document _taskList;
 
         #endregion
@@ -65,7 +66,7 @@ namespace Training.Core
         {
             _db = CoreApp.Database;
             _taskList = _db.GetDocument(currentListId);
-            SetupViewAndQuery();
+            SetupQuery();
         }
 
         #endregion
@@ -111,41 +112,23 @@ namespace Training.Core
 
         #region Private API
 
-        private void SetupViewAndQuery()
+        private void SetupQuery()
         {
-            //var view = _db.GetView("usersByUsername");
-            //view.SetMap((doc, emit) =>
-            //{
-            //    var elements = new List<object>();
-            //    if(!doc.Extract(elements, "type", "username", "taskList")) {
-            //        return;
-            //    }
+            var username = Expression.Property("username");
+            _usersLiveQuery = Query.Select(SelectResult.Expression(username))
+                .From(DataSource.Database(_db))
+                .Where(Expression.Property("type").EqualTo(UserType).And(Expression.Property("taskList.id").EqualTo(_taskList.Id)))
+                .OrderBy(Ordering.Property("username"))
+                .ToLive();
 
-            //    if(elements[0] as string != UserType) {
-            //        return;
-            //    }
-
-            //    var listInfo = JsonUtility.ConvertToNetObject<IDictionary<string, object>>(elements[2]);
-            //    var listId = listInfo?["id"] as string;
-            //    emit(new[] { listId, elements[1] }, null);
-            //}, "1.0");
-
-            //_usersLiveQuery = view.CreateQuery().ToLiveQuery();
-            //_usersLiveQuery.StartKey = new[] { _taskList.Id };
-            //_usersLiveQuery.EndKey = new[] { _taskList.Id };
-            //_usersLiveQuery.PrefixMatchLevel = 1;
-            //_usersLiveQuery.Changed += (sender, e) =>
-            //{
-            //    ListData.Replace(e.Rows.Select(x =>
-            //    {
-            //        var key = JsonUtility.ConvertToNetList<string>(x.Key);
-            //        var id = key[0];
-            //        var name = key[1];
-            //        var docId = $"{id}.{name}";
-            //        return new UserCellModel(docId);
-            //    }));
-            //};
-            //_usersLiveQuery.Start();
+            _usersLiveQuery.Changed += (sender, args) =>
+            {
+                ListData.Replace(args.Rows.Select(x =>
+                {
+                    var docId = $"{_taskList.Id}.{x.GetString(0)}";
+                    return new UserCellModel(docId);
+                }));
+            };
         }
 
         #endregion

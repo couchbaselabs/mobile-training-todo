@@ -140,12 +140,14 @@ namespace Training
 
         #region Overrides
 
-        protected override void Dispose(bool finalizing)
+        protected override void Dispose(bool disposing)
         {
-            base.Dispose(finalizing);
+            base.Dispose(disposing);
 
-            _usersView.Dispose();
-            _tasksView.Dispose();
+            if (disposing) {
+                _usersView.Dispose();
+                _tasksView.Dispose();
+            }
         }
 
         #endregion

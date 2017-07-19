@@ -1,29 +1,30 @@
-﻿//
+﻿// 
 // TaskListsModel.cs
-//
+// 
 // Author:
-// 	Jim Borden  <jim.borden@couchbase.com>
-//
-// Copyright (c) 2016 Couchbase, Inc All rights reserved.
-//
+//     Jim Borden  <jim.borden@couchbase.com>
+// 
+// Copyright (c) 2017 Couchbase, Inc All rights reserved.
+// 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//
+// 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
+// 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 using Couchbase.Lite;
 using Couchbase.Lite.Query;
+using Couchbase.Lite.Util;
 
 namespace Training.Core
 {
@@ -32,7 +33,6 @@ namespace Training.Core
     /// </summary>
     public sealed class TaskListsModel : BaseModel, IDisposable
     {
-
         #region Constants
 
         private const string TaskListType = "task-list";
@@ -42,8 +42,11 @@ namespace Training.Core
         #region Variables
 
         private Database _db;
-        //private LiveQuery _byNameQuery;
-        //private LiveQuery _incompleteQuery;
+        private IQuery _filteredQuery;
+        private IQuery _fullQuery;
+        private ILiveQuery _incompleteQuery;
+        private string _searchText;
+        private readonly IDictionary<string, int> _incompleteCount = new Dictionary<string, int>();
 
         #endregion
 
@@ -72,11 +75,12 @@ namespace Training.Core
         {
             _db = db;
             SetupQuery();
+            Filter(null);
         }
 
         #endregion
 
-        #region Public API
+        #region Public Methods
 
         //public void TestConflict()
         //{
@@ -110,7 +114,7 @@ namespace Training.Core
                 doc["name"].Value = name;
                 doc["owner"].Value = Username;
                 _db.Save(doc);
-                Filter(null);
+                Filter(_searchText);
                 return doc;
             } catch(Exception e) {
                 var newException = new Exception("Couldn't save task list", e);
@@ -120,34 +124,68 @@ namespace Training.Core
 
         public void Filter(string searchText)
         {
+            _searchText = searchText;
             var query = default(IQuery);
             if(!String.IsNullOrEmpty(searchText)) {
-                query = QueryFactory.Select("name")
-                    .From(DataSourceFactory.Database(_db))
-                    .Where(ExpressionFactory.Property("name")
-                        .Like($"%{searchText}%")
-                        .And(ExpressionFactory.Property("type").EqualTo("task-list")))
-                    .OrderBy(OrderByFactory.Property("name"));
+                query = _filteredQuery;
+                query.Parameters.Set("searchText", $"%{searchText}%");
             } else {
-                query = QueryFactory.Select("name")
-                    .From(DataSourceFactory.Database(_db))
-                    .Where(ExpressionFactory.Property("name")
-                        .NotNull()
-                        .And(ExpressionFactory.Property("type").EqualTo("task-list")))
-                    .OrderBy(OrderByFactory.Property("name"));
+                query = _fullQuery;
             }
 
-            TasksList.Replace(query.Run().Select(x => new TaskListCellModel(x.DocumentID, x.Document["name"].ToString())));
+            using (var results = query.Run()) {
+                TasksList.Replace(results.Select(x => new TaskListCellModel(x.GetString(0), x.GetString(1)) {
+                    IncompleteCount = _incompleteCount.ContainsKey(x.GetString(0)) ? _incompleteCount[x.GetString(0)] : 0
+                }));
+            }
         }
 
         #endregion
 
-        #region Private API
+        #region Private Methods
 
         private void SetupQuery()
         {
-            _db.CreateIndex(new[] { ExpressionFactory.Property("name") });
-            Filter(null);
+            _db.CreateIndex(new[] { Expression.Property("name") });
+
+            _filteredQuery = Query.Select(SelectResult.Expression(Expression.Meta().DocumentID), 
+                SelectResult.Expression(Expression.Property("name")))
+                .From(DataSource.Database(_db))
+                .Where(Expression.Property("name")
+                    .Like(Expression.Parameter("searchText"))
+                    .And(Expression.Property("type").EqualTo("task-list")))
+                .OrderBy(Ordering.Property("name"));
+
+            _fullQuery = Query.Select(SelectResult.Expression(Expression.Meta().DocumentID),
+                    SelectResult.Expression(Expression.Property("name")))
+                .From(DataSource.Database(_db))
+                .Where(Expression.Property("name")
+                    .NotNull()
+                    .And(Expression.Property("type").EqualTo("task-list")))
+                .OrderBy(Ordering.Property("name"));
+
+            _incompleteQuery = Query.Select(SelectResult.Expression(Expression.Property("taskList.id")),
+                    SelectResult.Expression(Function.Count(1)))
+                .From(DataSource.Database(_db))
+                .Where(Expression.Property("type").EqualTo(TasksModel.TaskType)
+                    .And(Expression.Property("complete").Is(false)))
+                .GroupBy(Expression.Property("taskList.id"))
+                .ToLive();
+
+            _incompleteQuery.Changed += (sender, args) =>
+            {
+                _incompleteCount.Clear();
+                foreach (var result in args.Rows) {
+                    _incompleteCount[result.GetString(0)] = result.GetInt(1);
+                }
+
+                foreach (var row in TasksList) {
+                    row.IncompleteCount = _incompleteCount.ContainsKey(row.DocumentID)
+                        ? _incompleteCount[row.DocumentID]
+                        : 0;
+                }
+            };
+            _incompleteQuery.Run();
         }
 
         #endregion
@@ -157,10 +195,12 @@ namespace Training.Core
         public void Dispose()
         {
             _db.Close();
+            _incompleteQuery.Dispose();
+            _fullQuery.Dispose();
+            _filteredQuery.Dispose();
         }
 
         #endregion
-
     }
 }
 

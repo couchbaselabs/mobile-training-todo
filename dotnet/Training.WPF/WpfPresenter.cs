@@ -80,6 +80,12 @@ namespace Training.WPF
             _contentControl.Content = _history.Pop();
         }
 
+        public override void Close(IMvxViewModel toClose)
+        {
+            (_contentControl as IDisposable)?.Dispose();
+            _contentControl.Content = _history.Pop();
+        }
+
         #endregion
 
     }

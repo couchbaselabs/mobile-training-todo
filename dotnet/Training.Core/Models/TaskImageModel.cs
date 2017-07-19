@@ -44,15 +44,15 @@ namespace Training.Core
         /// <value>The image.</value>
         public Stream Image
         {
-            get {
-                return _taskDocument.GetBlob("image")?.ContentStream;
-            }
+            get => _taskDocument.GetBlob("image")?.ContentStream;
             set {
                 if (value == null) {
                     _taskDocument.Remove("image");
                 } else {
                     _taskDocument.Set("image", new Blob("image/png", value));
                 }
+
+                CoreApp.Database.Save(_taskDocument);
             }
         }
 

@@ -41,6 +41,7 @@ namespace Training.WPF
         public MainWindow()
         {
             InitializeComponent();
+            Couchbase.Lite.Support.NetDestkop.Activate();
         }
 
         #endregion

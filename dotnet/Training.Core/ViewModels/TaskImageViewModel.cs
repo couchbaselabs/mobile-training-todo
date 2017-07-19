@@ -45,12 +45,7 @@ namespace Training.Core
         /// <summary>
         /// Gets the command to handle an edit request
         /// </summary>
-        public ICommand EditCommand
-        {
-            get {
-                return new MvxAsyncCommand(EditImage);
-            }
-        }
+        public ICommand EditCommand => new MvxAsyncCommand(EditImage);
 
         /// <summary>
         /// Gets the stream containing the image data
@@ -58,9 +53,7 @@ namespace Training.Core
         /// <value>The image.</value>
         public Stream Image
         {
-            get {
-                return Model.Image ?? Stream.Null;
-            }
+            get => Model.Image ?? Stream.Null;
             set {
                 Model.Image = value;
                 RaisePropertyChanged();
