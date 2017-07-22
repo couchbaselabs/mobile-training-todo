@@ -10,7 +10,8 @@ import UIKit
 import CouchbaseLiteSwift
 
 class TasksViewController: UITableViewController, UISearchResultsUpdating,
-UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+                           UIImagePickerControllerDelegate, UINavigationControllerDelegate
+{
     var searchController: UISearchController!
     
     var username: String!
@@ -18,7 +19,7 @@ UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     var taskList: Document!
     var taskQuery: LiveQuery!
     var searchQuery: Query!
-    var taskRows : [QueryRow]?
+    var taskRows : [Result]?
     var taskForImage: Document?
     var dbChangeListener: NSObjectProtocol?
     
@@ -57,12 +58,10 @@ UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     func reload() {
         if taskQuery == nil {
             taskQuery = Query
-                .select()
+                .select(S_ID)
                 .from(DataSource.database(database))
-                .where(
-                    Expression.property("type").equalTo("task")
-                        .and(Expression.property("taskList.id").equalTo(taskList.id)))
-                .orderBy(Ordering.property("createdAt"), Ordering.property("task"))
+                .where(TYPE.equalTo("task").and(TASK_LIST_ID.equalTo(taskList.id)))
+                .orderBy(Ordering.expression(CREATED_AT), Ordering.expression(TASK))
                 .toLive()
             
             taskQuery.addChangeListener({ (change) in
@@ -74,12 +73,13 @@ UIImagePickerControllerDelegate, UINavigationControllerDelegate {
             })
         }
         
-        taskQuery.run()
+        taskQuery.start()
     }
     
     func createTask(task: String) {
         let doc = Document()
         doc.set("task", forKey: "type")
+        
         let taskListInfo = ["id": taskList.id, "owner": taskList.string(forKey: "owner")]
         doc.set(taskListInfo, forKey: "taskList")
         doc.set(Date(), forKey: "createdAt")
@@ -136,13 +136,12 @@ UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     func searchTask(task: String) {
         searchQuery = Query
-            .select()
+            .select(S_ID)
             .from(DataSource.database(database))
-            .where(
-                Expression.property("type").equalTo("task")
-                    .and(Expression.property("taskList.id").equalTo(taskList.id))
-                    .and(Expression.property("task").like("%\(task)%")))
-            .orderBy(Ordering.property("createdAt"), Ordering.property("task"))
+            .where(TYPE.equalTo("task")
+                .and(TASK_LIST_ID.equalTo(taskList.id))
+                .and(TASK.like("%\(task)%")))
+            .orderBy(Ordering.expression(CREATED_AT), Ordering.expression(TASK))
         
         do {
             let rows = try searchQuery.run()
@@ -198,7 +197,10 @@ UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TaskCell") as! TaskTableViewCell
         
-        let doc = taskRows![indexPath.row].document
+        let row = taskRows![indexPath.row]
+        let docID = row.string(at: 0)!
+        let doc = database.getDocument(docID)!
+        
         cell.taskLabel.text = doc.string(forKey: "task")
         
         let complete: Bool = doc.boolean(forKey: "complete")
@@ -234,7 +236,10 @@ UIImagePickerControllerDelegate, UINavigationControllerDelegate {
             return
         }
         
-        let doc = taskRows![indexPath.row].document
+        let row = taskRows![indexPath.row]
+        let docID = row.string(at: 0)!
+        let doc = database.getDocument(docID)!
+        
         if let imageBlob = doc.blob(forKey: "image"), let d = imageBlob.digest, d == digest {
             let cell = tableView.cellForRow(at: indexPath) as! TaskTableViewCell
             cell.taskImage = image
@@ -242,7 +247,10 @@ UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let doc = taskRows![indexPath.row].document
+        let row = taskRows![indexPath.row]
+        let docID = row.string(at: 0)!
+        let doc = database.getDocument(docID)!
+        
         let complete: Bool = !doc.boolean(forKey: "complete")
         updateTask(task: doc, withComplete: complete)
         
@@ -252,12 +260,15 @@ UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     }
     
     override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+        let row = taskRows![indexPath.row]
+        let docID = row.string(at: 0)!
+        let doc = database.getDocument(docID)!
+        
         let delete = UITableViewRowAction(style: .normal, title: "Delete") {
             (action, indexPath) -> Void in
             // Dismiss row actions:
             tableView.setEditing(false, animated: true)
             // Delete list document:
-            let doc = self.taskRows![indexPath.row].document
             self.deleteTask(task: doc)
         }
         delete.backgroundColor = UIColor(red: 1.0, green: 0.23, blue: 0.19, alpha: 1.0)
@@ -267,14 +278,12 @@ UIImagePickerControllerDelegate, UINavigationControllerDelegate {
             // Dismiss row actions:
             tableView.setEditing(false, animated: true)
             // Display update list dialog:
-            let document = self.taskRows![indexPath.row].document
-            
             Ui.showTextInput(on: self, title: "Edit Task", message:  nil, textFieldConfig: { text in
                 text.placeholder = "Task"
-                text.text = document.string(forKey: "task")
+                text.text = doc.string(forKey: "task")
                 text.autocapitalizationType = .sentences
             }, onOk: { task in
-                self.updateTask(task: document, withTitle: task)
+                self.updateTask(task: doc, withTitle: task)
             })
         }
         update.backgroundColor = UIColor(red: 0.0, green: 0.48, blue: 1.0, alpha: 1.0)

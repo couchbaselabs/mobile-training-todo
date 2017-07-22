@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		9322DCCC1F1406A700C4ACF7 /* CouchbaseLiteSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9322DCCB1F1406A700C4ACF7 /* CouchbaseLiteSwift.framework */; };
 		9322DCCE1F1406BB00C4ACF7 /* CouchbaseLiteSwift.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9322DCCB1F1406A700C4ACF7 /* CouchbaseLiteSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		933F1AB81F393EEE00338C6A /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 933F1AB71F393EEE00338C6A /* Constants.swift */; };
 		934646BC1C69CF6B002F52C9 /* TasksViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 934646BB1C69CF6B002F52C9 /* TasksViewController.swift */; };
 		934646C31C6AC4CD002F52C9 /* TaskTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 934646C21C6AC4CD002F52C9 /* TaskTableViewCell.swift */; };
 		934646C61C6B218D002F52C9 /* TaskImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 934646C51C6B218D002F52C9 /* TaskImageViewController.swift */; };
@@ -40,6 +41,7 @@
 
 /* Begin PBXFileReference section */
 		9322DCCB1F1406A700C4ACF7 /* CouchbaseLiteSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CouchbaseLiteSwift.framework; path = Frameworks/CouchbaseLiteSwift.framework; sourceTree = "<group>"; };
+		933F1AB71F393EEE00338C6A /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		934646BB1C69CF6B002F52C9 /* TasksViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TasksViewController.swift; sourceTree = "<group>"; };
 		934646C21C6AC4CD002F52C9 /* TaskTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TaskTableViewCell.swift; sourceTree = "<group>"; };
 		934646C51C6B218D002F52C9 /* TaskImageViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TaskImageViewController.swift; sourceTree = "<group>"; };
@@ -116,6 +118,7 @@
 				934646BB1C69CF6B002F52C9 /* TasksViewController.swift */,
 				934646C51C6B218D002F52C9 /* TaskImageViewController.swift */,
 				93D6508D1EF441DE00EA44F3 /* UsersViewController.swift */,
+				933F1AB71F393EEE00338C6A /* Constants.swift */,
 				93D9D9AB1EDF8427001355EE /* Session.swift */,
 				93F4B2C61C6940D6005FF4D8 /* Main.storyboard */,
 				93F4B2C91C6940D6005FF4D8 /* Assets.xcassets */,
@@ -210,6 +213,7 @@
 				93D999FD1C7FE78300FEFF17 /* TextDialog.swift in Sources */,
 				93D9D9AE1EDF8495001355EE /* LoginViewController.swift in Sources */,
 				93D9D9AC1EDF8427001355EE /* Session.swift in Sources */,
+				933F1AB81F393EEE00338C6A /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

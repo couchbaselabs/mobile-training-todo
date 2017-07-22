@@ -8,11 +8,13 @@
 
 #import "CBLTasksViewController.h"
 #import "AppDelegate.h"
+#import "CBLConstants.h"
 #import "CBLUi.h"
 #import "CBLImage.h"
 #import "CBLTaskTableViewCell.h"
 #import "CBLTaskImageViewController.h"
 #import "CBLSession.h"
+
 
 @interface CBLTasksViewController () <UISearchResultsUpdating,
                                       UISearchBarDelegate,
@@ -25,7 +27,7 @@
     CBLDatabase *_database;
     CBLLiveQuery *_taskQuery;
     CBLQuery *_searchQuery;
-    NSArray *_taskRows;
+    NSArray <CBLQueryResult*> *_taskRows;
     CBLDocument *_taskForImage;
     id _dbChangeListener;
 }
@@ -77,13 +79,12 @@
 
 - (void)reload {
     if (!_taskQuery) {
-        CBLQueryExpression *exp1 = [[CBLQueryExpression property:@"type"] equalTo:@"task"];
-        CBLQueryExpression *exp2 = [[CBLQueryExpression property:@"taskList.id"] equalTo:self.taskList.documentID];
-        _taskQuery = [[CBLQuery select:@[]
+        _taskQuery = [[CBLQuery select:@[S_ID]
                                   from:[CBLQueryDataSource database:_database]
-                                 where:[exp1 and: exp2]
-                               orderBy:@[[CBLQueryOrdering property:@"createdAt"],
-                                         [CBLQueryOrdering property:@"task"]]] toLive];
+                                 where:[[TYPE equalTo:@"task"]
+                                        and: [TASK_LIST_ID equalTo:self.taskList.id]]
+                               orderBy:@[[CBLQueryOrdering expression:CREATED_AT],
+                                         [CBLQueryOrdering expression:TASK]]] toLive];
         __weak typeof (self) wSelf = self;
         [_taskQuery addChangeListener:^(CBLLiveQueryChange *change) {
             if (!change.rows)
@@ -92,13 +93,13 @@
             [wSelf.tableView reloadData];
         }];
     }
-    [_taskQuery run];
+    [_taskQuery start];
 }
 
 - (void)createTask:(NSString *)task {
     CBLDocument *doc = [[CBLDocument alloc] init];
     [doc setObject:@"task" forKey:@"type"];
-    NSDictionary *taskList = @{@"id": _taskList.documentID,
+    NSDictionary *taskList = @{@"id": _taskList.id,
                                @"owner": [_taskList stringForKey: @"owner"]};
     [doc setObject:taskList forKey:@"taskList"];
     [doc setObject:[NSDate date] forKey:@"createdAt"];
@@ -144,14 +145,14 @@
 }
 
 - (void)searchTask: (NSString*)name {
-    CBLQueryExpression *exp1 = [[CBLQueryExpression property:@"type"] equalTo:@"task"];
-    CBLQueryExpression *exp2 = [[CBLQueryExpression property:@"taskList.id"] equalTo:self.taskList.documentID];
-    CBLQueryExpression *exp3 = [[CBLQueryExpression property:@"task"] like:[NSString stringWithFormat:@"%%%@%%", name]];
-    _searchQuery = [CBLQuery select:@[]
+    CBLQueryExpression *exp1 = [TYPE equalTo:@"task"];
+    CBLQueryExpression *exp2 = [TASK_LIST_ID equalTo:self.taskList.id];
+    CBLQueryExpression *exp3 = [TASK like:[NSString stringWithFormat:@"%%%@%%", name]];
+    _searchQuery = [CBLQuery select:@[S_ID]
                                from:[CBLQueryDataSource database:_database]
                               where:[[exp1 and: exp2] and:exp3]
-                            orderBy:@[[CBLQueryOrdering property:@"createdAt"],
-                                      [CBLQueryOrdering property:@"task"]]];
+                            orderBy:@[[CBLQueryOrdering expression:CREATED_AT],
+                                      [CBLQueryOrdering expression:TASK]]];
     NSError *error;
     NSEnumerator *rows = [_searchQuery run: &error];
     if (!rows)
@@ -211,7 +212,9 @@
         (CBLTaskTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"TaskCell"
                                                                 forIndexPath:indexPath];
     
-    CBLDocument *doc = ((CBLQueryRow *)_taskRows[indexPath.row]).document;
+    NSString* docID = [_taskRows[indexPath.row] stringAtIndex:0];
+    CBLDocument *doc = [_database documentWithID:docID];
+    
     cell.taskLabel.text = [doc stringForKey: @"task"];
     
     BOOL complete = [doc booleanForKey:@"complete"];
@@ -247,7 +250,8 @@
     if (_taskRows.count <= indexPath.row)
         return;
     
-    CBLDocument *doc = ((CBLQueryRow *)_taskRows[indexPath.row]).document;
+    NSString* docID = [_taskRows[indexPath.row] stringAtIndex:0];
+    CBLDocument *doc = [_database documentWithID:docID];
     CBLBlob *imageBlob = [doc blobForKey: @"image"];
     if ([imageBlob.digest isEqualToString:digest]) {
         CBLTaskTableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
@@ -256,7 +260,8 @@
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    CBLDocument *doc = ((CBLQueryRow *)_taskRows[indexPath.row]).document;
+    NSString* docID = [_taskRows[indexPath.row] stringAtIndex:0];
+    CBLDocument *doc = [_database documentWithID:docID];
     BOOL complete = ![doc booleanForKey:@"complete"];
     [self updateTask:doc withComplete:complete];
     
@@ -268,14 +273,17 @@
 - (NSArray<UITableViewRowAction *> *)tableView:(UITableView *)tableView
                   editActionsForRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    NSString* docID = [_taskRows[indexPath.row] stringAtIndex:0];
+    CBLDocument *doc = [_database documentWithID:docID];
+    
     UITableViewRowAction *delete =
         [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleNormal
                                            title:@"Delete"
-                                         handler:^(UITableViewRowAction *action, NSIndexPath *indexPath) {
+                                         handler:^(UITableViewRowAction *action, NSIndexPath *indexPath)
+    {
         // Dismiss row actions:
         [tableView setEditing:NO animated:YES];
         // Delete task document:
-        CBLDocument *doc = ((CBLQueryRow *)_taskRows[indexPath.row]).document;
         [self deleteTask:doc];
     }];
     delete.backgroundColor = [UIColor colorWithRed:1.0 green:0.23 blue:0.19 alpha:1.0];
@@ -283,12 +291,12 @@
     UITableViewRowAction *update =
         [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleNormal
                                            title:@"Edit"
-                                         handler:^(UITableViewRowAction *action, NSIndexPath *indexPath) {
+                                         handler:^(UITableViewRowAction *action, NSIndexPath *indexPath)
+    {
         // Dismiss row actions:
         [tableView setEditing:NO animated:YES];
-        // Display update list dialog:
-        CBLDocument *doc = ((CBLQueryRow *)_taskRows[indexPath.row]).document;
         
+        // Display update list dialog:
         [CBLUi showTextInputOn:self title:@"Edit Task" message:nil textField:^(UITextField *text) {
             text.placeholder = @"Task";
             text.text = [doc stringForKey:@"task"];
