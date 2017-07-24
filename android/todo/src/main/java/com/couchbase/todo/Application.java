@@ -97,12 +97,23 @@ public class Application extends android.app.Application implements ReplicatorCh
 
     private void openDatabase(String dbname) {
         DatabaseConfiguration config = new DatabaseConfiguration(getApplicationContext());
-        database = new Database(dbname, config);
+        try {
+            database = new Database(dbname, config);
+        } catch (CouchbaseLiteException e) {
+            Log.e(TAG, "Failed to create Database instance: %s - %s", e, dbname, config);
+            // TODO: error handling
+        }
     }
 
     private void closeDatabase() {
-        if (database != null)
-            database.close();
+        if (database != null) {
+            try {
+                database.close();
+            } catch (CouchbaseLiteException e) {
+                Log.e(TAG, "Failed to close Database", e);
+                // TODO: error handling
+            }
+        }
     }
 
     private void createDatabaseIndex() {

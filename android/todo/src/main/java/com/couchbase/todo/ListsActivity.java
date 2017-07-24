@@ -15,11 +15,13 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 
+import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.DataSource;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.Expression;
 import com.couchbase.lite.LiveQuery;
+import com.couchbase.lite.Log;
 import com.couchbase.lite.Ordering;
 import com.couchbase.lite.Query;
 
@@ -165,20 +167,35 @@ public class ListsActivity extends AppCompatActivity {
         doc.set("type", "task-list");
         doc.set("name", title);
         doc.set("owner", username);
-        db.save(doc);
+        try {
+            db.save(doc);
+        } catch (CouchbaseLiteException e) {
+            Log.e(TAG, "Failed to save the doc - %s", e, doc);
+            //TODO: Error handling
+        }
         return doc;
     }
 
     // update list
     private Document updateList(final Document list, String title) {
         list.set("name", title);
-        db.save(list);
+        try {
+            db.save(list);
+        } catch (CouchbaseLiteException e) {
+            Log.e(TAG, "Failed to save the doc - %s", e, list);
+            //TODO: Error handling
+        }
         return list;
     }
 
     // delete list
     private Document deleteList(final Document list) {
-        db.delete(list);
+        try {
+            db.delete(list);
+        } catch (CouchbaseLiteException e) {
+            Log.e(TAG, "Failed to delete the doc - %s", e, list);
+            //TODO: Error handling
+        }
         return list;
     }
 }

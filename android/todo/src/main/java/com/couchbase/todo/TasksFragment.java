@@ -24,8 +24,10 @@ import android.widget.ListView;
 import android.widget.PopupMenu;
 
 import com.couchbase.lite.Blob;
+import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.Document;
+import com.couchbase.lite.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -40,6 +42,7 @@ import static android.app.Activity.RESULT_OK;
 import static android.os.Build.VERSION_CODES.M;
 
 public class TasksFragment extends Fragment {
+    private static final String TAG = TasksFragment.class.getSimpleName();
 
     private static final int REQUEST_TAKE_PHOTO = 1;
     private static final int REQUEST_CHOOSE_PHOTO = 2;
@@ -212,18 +215,33 @@ public class TasksFragment extends Fragment {
         doc.set("createdAt", new Date());
         doc.set("task", title);
         doc.set("complete", false);
-        db.save(doc);
+        try {
+            db.save(doc);
+        } catch (CouchbaseLiteException e) {
+            Log.e(TAG, "Failed to save the doc - %s", e, doc);
+            //TODO: Error handling
+        }
     }
 
     // update task
     private void updateTask(final Document task, String text) {
         task.set("task", text);
-        db.save(task);
+        try {
+            db.save(task);
+        } catch (CouchbaseLiteException e) {
+            Log.e(TAG, "Failed to save the doc - %s", e, task);
+            //TODO: Error handling
+        }
     }
 
     // delete task
     private void deleteTask(final Document task) {
-        db.delete(task);
+        try {
+            db.delete(task);
+        } catch (CouchbaseLiteException e) {
+            Log.e(TAG, "Failed to delete the doc - %s", e, task);
+            //TODO: Error handling
+        }
     }
 
     // store photo
@@ -234,6 +252,11 @@ public class TasksFragment extends Fragment {
 
         Blob blob = new Blob("image/jpg", in);
         task.set("image", blob);
-        db.save(task);
+        try {
+            db.save(task);
+        } catch (CouchbaseLiteException e) {
+            Log.e(TAG, "Failed to save the doc - %s", e, task);
+            //TODO: Error handling
+        }
     }
 }

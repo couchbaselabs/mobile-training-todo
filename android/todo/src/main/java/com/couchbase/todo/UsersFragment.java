@@ -14,13 +14,18 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 
+import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.Document;
+import com.couchbase.lite.Log;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class UsersFragment extends Fragment {
+
+    private static final String TAG = UsersFragment.class.getSimpleName();
+
     private ListView listView;
     private LiveUsersAdapter adapter;
 
@@ -107,10 +112,20 @@ public class UsersFragment extends Fragment {
         taskListInfo.put("id", taskList.getId());
         taskListInfo.put("owner", taskList.getString("owner"));
         doc.set("taskList", taskListInfo);
-        db.save(doc);
+        try {
+            db.save(doc);
+        } catch (CouchbaseLiteException e) {
+            Log.e(TAG, "Failed to save the doc - %s", e, doc);
+            //TODO: Error handling
+        }
     }
 
     private void delete(Document doc) {
-        db.delete(doc);
+        try {
+            db.delete(doc);
+        } catch (CouchbaseLiteException e) {
+            Log.e(TAG, "Failed to delete the doc - %s", e, doc);
+            //TODO: Error handling
+        }
     }
 }

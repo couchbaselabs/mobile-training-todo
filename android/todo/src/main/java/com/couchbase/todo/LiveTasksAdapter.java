@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.couchbase.lite.Blob;
+import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.DataSource;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.Document;
@@ -17,6 +18,7 @@ import com.couchbase.lite.Expression;
 import com.couchbase.lite.LiveQuery;
 import com.couchbase.lite.LiveQueryChange;
 import com.couchbase.lite.LiveQueryChangeListener;
+import com.couchbase.lite.Log;
 import com.couchbase.lite.Ordering;
 import com.couchbase.lite.Query;
 import com.couchbase.lite.QueryRow;
@@ -107,6 +109,11 @@ public class LiveTasksAdapter extends ArrayAdapter<Document> {
 
     private void updateCheckedStatus(Document task, boolean checked) {
         task.set("complete", checked);
-        db.save(task);
+        try {
+            db.save(task);
+        } catch (CouchbaseLiteException e) {
+            Log.e(TAG, "Failed to save the doc - %s", e, task);
+            //TODO: Error handling
+        }
     }
 }
