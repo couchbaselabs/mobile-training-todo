@@ -78,6 +78,7 @@ namespace Training.WPF
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
+            Couchbase.Lite.Support.NetDestkop.Activate();
             if(e.Args.Length > 0 && e.Args[0].ToLowerInvariant() == "/clean") {
                 Database.Delete("todo", null);
             }
