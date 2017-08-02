@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 26 // 26
-    buildToolsVersion '26.0.0' // 26.0.0
+    buildToolsVersion '26.0.1' // 26.0.1
     defaultConfig {
         applicationId "com.couchbase.todo"
         minSdkVersion 16
@@ -19,7 +19,7 @@ android {
     }
 }
 
-def SUPPORT_LIBRARY_VERSION = "26.0.0-beta2"
+def SUPPORT_LIBRARY_VERSION = "26.0.0"
 def COUCHBASE_LITE_VERSION = "2.0.0-DB013"
 
 dependencies {
