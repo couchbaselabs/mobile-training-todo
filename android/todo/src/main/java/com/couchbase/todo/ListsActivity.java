@@ -71,7 +71,8 @@ public class ListsActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Document list = adapter.getItem(i);
+                String id = adapter.getItem(i);
+                Document list = db.getDocument(id);
                 showTaskListView(list);
             }
         });
@@ -83,7 +84,8 @@ public class ListsActivity extends AppCompatActivity {
                 popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
-                        Document list = adapter.getItem(pos);
+                        String id = adapter.getItem(pos);
+                        Document list = db.getDocument(id);
                         return handleListPopupAction(item, list);
                     }
                 });
@@ -164,9 +166,9 @@ public class ListsActivity extends AppCompatActivity {
     private Document createList(String title) {
         String docId = username + "." + UUID.randomUUID();
         Document doc = new Document(docId);
-        doc.set("type", "task-list");
-        doc.set("name", title);
-        doc.set("owner", username);
+        doc.setString("type", "task-list");
+        doc.setString("name", title);
+        doc.setString("owner", username);
         try {
             db.save(doc);
         } catch (CouchbaseLiteException e) {
@@ -178,7 +180,7 @@ public class ListsActivity extends AppCompatActivity {
 
     // update list
     private Document updateList(final Document list, String title) {
-        list.set("name", title);
+        list.setString("name", title);
         try {
             db.save(list);
         } catch (CouchbaseLiteException e) {

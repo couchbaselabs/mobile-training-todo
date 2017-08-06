@@ -21,11 +21,12 @@ import com.couchbase.lite.LiveQueryChangeListener;
 import com.couchbase.lite.Log;
 import com.couchbase.lite.Ordering;
 import com.couchbase.lite.Query;
-import com.couchbase.lite.QueryRow;
+import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
+import com.couchbase.lite.SelectResult;
 
 
-public class LiveTasksAdapter extends ArrayAdapter<Document> {
+public class LiveTasksAdapter extends ArrayAdapter<String> {
     private static final String TAG = LiveTasksAdapter.class.getSimpleName();
 
     private TasksFragment fragment;
@@ -46,9 +47,9 @@ public class LiveTasksAdapter extends ArrayAdapter<Document> {
             public void changed(LiveQueryChange change) {
                 clear();
                 ResultSet rs = change.getRows();
-                QueryRow row;
-                while ((row = rs.next()) != null) {
-                    add(row.getDocument());
+                Result result;
+                while ((result = rs.next()) != null) {
+                    add(result.getString(0));
                 }
                 notifyDataSetChanged();
             }
@@ -61,7 +62,8 @@ public class LiveTasksAdapter extends ArrayAdapter<Document> {
         if (convertView == null)
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.view_task, parent, false);
 
-        final Document task = getItem(position);
+        String id = getItem(position);
+        final Document task = db.getDocument(id);
         if (task == null)
             return convertView;
 
@@ -100,7 +102,7 @@ public class LiveTasksAdapter extends ArrayAdapter<Document> {
     }
 
     private LiveQuery query() {
-        return Query.select()
+        return Query.select(SelectResult.expression(Expression.meta().getId()))
                 .from(DataSource.database(db))
                 .where(Expression.property("type").equalTo("task").and(Expression.property("taskList.id").equalTo(listID)))
                 .orderBy(Ordering.property("createdAt"), Ordering.property("task"))
@@ -108,7 +110,7 @@ public class LiveTasksAdapter extends ArrayAdapter<Document> {
     }
 
     private void updateCheckedStatus(Document task, boolean checked) {
-        task.set("complete", checked);
+        task.setBoolean("complete", checked);
         try {
             db.save(task);
         } catch (CouchbaseLiteException e) {

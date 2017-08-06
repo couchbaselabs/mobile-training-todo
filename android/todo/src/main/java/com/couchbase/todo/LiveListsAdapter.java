@@ -17,10 +17,11 @@ import com.couchbase.lite.LiveQueryChangeListener;
 import com.couchbase.lite.Log;
 import com.couchbase.lite.Ordering;
 import com.couchbase.lite.Query;
-import com.couchbase.lite.QueryRow;
+import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
+import com.couchbase.lite.SelectResult;
 
-public class LiveListsAdapter extends ArrayAdapter<Document> {
+public class LiveListsAdapter extends ArrayAdapter<String> {
     private static final String TAG = LiveListsAdapter.class.getSimpleName();
 
     private Database db;
@@ -36,9 +37,9 @@ public class LiveListsAdapter extends ArrayAdapter<Document> {
             public void changed(LiveQueryChange change) {
                 clear();
                 ResultSet rs = change.getRows();
-                QueryRow row;
-                while ((row = rs.next()) != null) {
-                    add(row.getDocument());
+                Result result;
+                while ((result = rs.next()) != null) {
+                    add(result.getString(0));
                 }
                 notifyDataSetChanged();
             }
@@ -48,7 +49,8 @@ public class LiveListsAdapter extends ArrayAdapter<Document> {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        Document list = getItem(position);
+        String id = getItem(position);
+        Document list = db.getDocument(id);
         if (convertView == null)
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.view_list, parent, false);
         TextView text = convertView.findViewById(R.id.text);
@@ -58,7 +60,7 @@ public class LiveListsAdapter extends ArrayAdapter<Document> {
     }
 
     private LiveQuery query() {
-        return Query.select()
+        return Query.select(SelectResult.expression(Expression.meta().getId()))
                 .from(DataSource.database(db))
                 .where(Expression.property("type").equalTo("task-list"))
                 .orderBy(Ordering.property("name").ascending())

@@ -61,7 +61,7 @@ public class UsersFragment extends Fragment {
                 popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
-                        handlePopupAction(item, adapter.getItem(pos));
+                        handlePopupAction(item, db.getDocument(adapter.getItem(pos)));
                         return true;
                     }
                 });
@@ -106,12 +106,12 @@ public class UsersFragment extends Fragment {
     private void createUser(String username) {
         String docId = taskList.getId() + "." + username;
         Document doc = new Document(docId);
-        doc.set("type", "task-list.user");
-        doc.set("username", username);
+        doc.setString("type", "task-list.user");
+        doc.setString("username", username);
         Map<String, Object> taskListInfo = new HashMap<String, Object>();
         taskListInfo.put("id", taskList.getId());
         taskListInfo.put("owner", taskList.getString("owner"));
-        doc.set("taskList", taskListInfo);
+        doc.setObject("taskList", taskListInfo);
         try {
             db.save(doc);
         } catch (CouchbaseLiteException e) {

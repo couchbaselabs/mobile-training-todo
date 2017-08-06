@@ -16,14 +16,15 @@ import com.couchbase.lite.LiveQuery;
 import com.couchbase.lite.LiveQueryChange;
 import com.couchbase.lite.LiveQueryChangeListener;
 import com.couchbase.lite.Query;
-import com.couchbase.lite.QueryRow;
+import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
+import com.couchbase.lite.SelectResult;
 
 /**
  * Created by hideki on 6/26/17.
  */
 
-public class LiveUsersAdapter  extends ArrayAdapter<Document> {
+public class LiveUsersAdapter  extends ArrayAdapter<String> {
     private static final String TAG = LiveUsersAdapter.class.getSimpleName();
 
     private UsersFragment fragment;
@@ -44,9 +45,10 @@ public class LiveUsersAdapter  extends ArrayAdapter<Document> {
             public void changed(LiveQueryChange change) {
                 clear();
                 ResultSet rs = change.getRows();
-                QueryRow row;
-                while ((row = rs.next()) != null) {
-                    add(row.getDocument());
+                Result result;
+                while ((result = rs.next()) != null) {
+                    String id = result.getString(0);
+                    add(result.getString(0));
                 }
                 notifyDataSetChanged();
             }
@@ -59,7 +61,8 @@ public class LiveUsersAdapter  extends ArrayAdapter<Document> {
         if (convertView == null)
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.view_user, parent, false);
 
-        final Document user = getItem(position);
+        String id = getItem(position);
+        final Document user = db.getDocument(id);
         if (user == null)
             return convertView;
 
@@ -71,7 +74,7 @@ public class LiveUsersAdapter  extends ArrayAdapter<Document> {
     }
 
     private LiveQuery query() {
-        return Query.select()
+        return Query.select(SelectResult.expression(Expression.meta().getId()))
                 .from(DataSource.database(db))
                 .where(Expression.property("type").equalTo("task-list.user")
                         .and(Expression.property("taskList.id").equalTo(listID)))

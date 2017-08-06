@@ -86,7 +86,7 @@ public class TasksFragment extends Fragment {
                 popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
-                        handlePopupAction(item, adapter.getItem(pos));
+                        handlePopupAction(item, db.getDocument(adapter.getItem(pos)));
                         return true;
                     }
                 });
@@ -207,14 +207,14 @@ public class TasksFragment extends Fragment {
     // create task
     private void createTask(String title) {
         Document doc = new Document();
-        doc.set("type", "task");
+        doc.setString("type", "task");
         Map<String, Object> taskListInfo = new HashMap<String, Object>();
         taskListInfo.put("id", taskList.getId());
         taskListInfo.put("owner", taskList.getString("owner"));
-        doc.set("taskList", taskListInfo);
-        doc.set("createdAt", new Date());
-        doc.set("task", title);
-        doc.set("complete", false);
+        doc.setObject("taskList", taskListInfo);
+        doc.setDate("createdAt", new Date());
+        doc.setString("task", title);
+        doc.setBoolean("complete", false);
         try {
             db.save(doc);
         } catch (CouchbaseLiteException e) {
@@ -225,7 +225,7 @@ public class TasksFragment extends Fragment {
 
     // update task
     private void updateTask(final Document task, String text) {
-        task.set("task", text);
+        task.setString("task", text);
         try {
             db.save(task);
         } catch (CouchbaseLiteException e) {
@@ -251,7 +251,7 @@ public class TasksFragment extends Fragment {
         ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 
         Blob blob = new Blob("image/jpg", in);
-        task.set("image", blob);
+        task.setBlob("image", blob);
         try {
             db.save(task);
         } catch (CouchbaseLiteException e) {
