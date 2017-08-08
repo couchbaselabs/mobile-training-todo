@@ -11,9 +11,9 @@
 #import "CBLSession.h"
 #import "CBLUi.h"
 
-#define kLoginFlowEnabled NO
-#define kSyncEnabled NO
-#define kSyncGatewayUrl @"blip://localhost:4984/todo"
+#define kLoginFlowEnabled YES
+#define kSyncEnabled YES
+#define kSyncGatewayUrl @"blip://10.17.6.102:4984/todo"
 
 @interface AppDelegate () <CBLLoginViewControllerDelegate> {
     CBLReplicator *_replicator;

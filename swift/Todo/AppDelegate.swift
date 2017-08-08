@@ -9,9 +9,9 @@
 import UIKit
 import CouchbaseLiteSwift
 
-let kLoginFlowEnabled = false
-let kSyncEnabled = false
-let kSyncGatewayUrl = URL(string: "blip://localhost:4984/todo")!
+let kLoginFlowEnabled = true
+let kSyncEnabled = true
+let kSyncGatewayUrl = URL(string: "blip://10.17.6.102:4984/todo")!
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelegate {

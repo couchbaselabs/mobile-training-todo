@@ -10,6 +10,18 @@ import UIKit
 import CouchbaseLiteSwift
 
 class UsersViewController: UITableViewController, UISearchResultsUpdating {
+    class $ {
+        // Query: Property Expressions
+        static let DOC_ID = Expression.meta().id
+        static let TYPE = Expression.property("type")
+        static let USERNAME = Expression.property("username")
+        static let TASK_LIST_ID = Expression.property("taskList.id")
+        
+        // Query: Select Results
+        static let S_ID = SelectResult.expression(DOC_ID)
+        static let S_USERNAME = SelectResult.expression(USERNAME)
+    }
+    
     var searchController: UISearchController!
     
     var username: String!
@@ -17,7 +29,7 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
     var taskList: Document!
     var usersQuery: LiveQuery!
     var searchQuery: Query!
-    var userRows : [QueryRow]?
+    var userRows : [Result]?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -52,11 +64,9 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
     func reload() {
         if usersQuery == nil {
             usersQuery = Query
-                .select()
+                .select(S_ID, S_USERNAME)
                 .from(DataSource.database(database))
-                .where(
-                    Expression.property("type").equalTo("task-list.user")
-                        .and(Expression.property("taskList.id").equalTo(taskList.id)))
+                .where(TYPE.equalTo("task-list.user").and(TASK_LIST_ID.equalTo(taskList.id)))
                 .toLive()
             
             usersQuery.addChangeListener({ (change) in
@@ -67,8 +77,7 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
                 self.tableView.reloadData()
             })
         }
-        
-        usersQuery.run()
+        usersQuery.start()
     }
     
     func addUser(username: String) {
@@ -103,12 +112,11 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
     
     func searchUser(username: String) {
         searchQuery = Query
-            .select()
+            .select(S_ID, S_USERNAME)
             .from(DataSource.database(database))
-            .where(
-                Expression.property("type").equalTo("task-list.user")
-                    .and(Expression.property("taskList.id").equalTo(taskList.id))
-                    .and(Expression.property("username").like("%" + username + "%")))
+            .where(TYPE.equalTo("task-list.user")
+                .and(TASK_LIST_ID.equalTo(taskList.id))
+                .and(USERNAME.like("%" + username + "%")))
         
         do {
             let rows = try searchQuery.run()
@@ -127,18 +135,21 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "UserCell", for: indexPath)
-        let doc = userRows![indexPath.row].document
-        cell.textLabel?.text = doc.string(forKey: "username")
+        let row = userRows![indexPath.row]
+        cell.textLabel?.text = row.string(at: 1)
         return cell
     }
     
     override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+        let row = userRows![indexPath.row]
+        let docID = row.string(at: 0)!
+        let doc = database.getDocument(docID)!
+        
         let delete = UITableViewRowAction(style: .normal, title: "Delete") {
             (action, indexPath) -> Void in
             // Dismiss row actions:
             tableView.setEditing(false, animated: true)
             // Delete list document:
-            let doc = self.userRows![indexPath.row].document
             self.deleteUser(user: doc)
         }
         delete.backgroundColor = UIColor(red: 1.0, green: 0.23, blue: 0.19, alpha: 1.0)

@@ -45,6 +45,7 @@
 		9336350B1EDE1DA500349E9A /* CBLLoginViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CBLLoginViewController.m; sourceTree = "<group>"; };
 		933635101EDE2A7C00349E9A /* CBLSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBLSession.h; sourceTree = "<group>"; };
 		933635111EDE2A7C00349E9A /* CBLSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CBLSession.m; sourceTree = "<group>"; };
+		933F1AB91F39431100338C6A /* CBLConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CBLConstants.h; sourceTree = "<group>"; };
 		937EAC061E3AB72200133693 /* Todo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Todo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		937EAC0A1E3AB72200133693 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		937EAC0C1E3AB72200133693 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -126,6 +127,7 @@
 				93A019D81EF305470097D427 /* CBLUsersViewController.m */,
 				933635101EDE2A7C00349E9A /* CBLSession.h */,
 				933635111EDE2A7C00349E9A /* CBLSession.m */,
+				933F1AB91F39431100338C6A /* CBLConstants.h */,
 				937EAC121E3AB72200133693 /* Main.storyboard */,
 				937EAC151E3AB72200133693 /* Assets.xcassets */,
 				937EAC171E3AB72200133693 /* LaunchScreen.storyboard */,

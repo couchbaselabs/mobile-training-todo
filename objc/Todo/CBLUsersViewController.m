@@ -8,8 +8,10 @@
 
 #import "CBLUsersViewController.h"
 #import "AppDelegate.h"
-#import "CBLUi.h"
+#import "CBLConstants.h"
 #import "CBLSession.h"
+#import "CBLUi.h"
+
 
 @interface CBLUsersViewController () <UISearchResultsUpdating>
 
@@ -21,7 +23,7 @@
     CBLDatabase *_database;
     CBLLiveQuery *_userQuery;
     CBLQuery *_searchQuery;
-    NSArray *_userRows;
+    NSArray<CBLQueryResult*> *_userRows;
 }
 
 - (void)viewDidLoad {
@@ -57,9 +59,10 @@
 
 - (void)reload {
     if (!_userQuery) {
-        CBLQueryExpression *exp1 = [[CBLQueryExpression property:@"type"] equalTo:@"task-list.user"];
-        CBLQueryExpression *exp2 = [[CBLQueryExpression property:@"taskList.id"] equalTo: _taskList.documentID];
-        _userQuery = [[CBLQuery select:@[]
+        CBLQueryExpression *exp1 = [TYPE equalTo:@"task-list.user"];
+        CBLQueryExpression *exp2 = [TASK_LIST_ID equalTo: _taskList.id];
+        
+        _userQuery = [[CBLQuery select:@[S_ID, S_USERNAME]
                                   from:[CBLQueryDataSource database:_database]
                                  where:[exp1 and:exp2]] toLive];
         __weak typeof(self) wSelf = self;
@@ -70,11 +73,11 @@
             [wSelf.tableView reloadData];
         }];
     }
-    [_userQuery run];
+    [_userQuery start];
 }
 
 - (void)addUser:(NSString *)username {
-    NSString *docId = [NSString stringWithFormat:@"%@.%@", _taskList.documentID, username];
+    NSString *docId = [NSString stringWithFormat:@"%@.%@", _taskList.id, username];
     if ([_database contains:docId])
         return;
     
@@ -83,7 +86,7 @@
     [doc setObject:username forKey:@"username"];
     
     CBLDictionary *taskListInfo = [[CBLDictionary alloc] init];
-    [taskListInfo setObject:_taskList.documentID forKey:@"id"];
+    [taskListInfo setObject:_taskList.id forKey:@"id"];
     [taskListInfo setObject:[_taskList stringForKey:@"owner"] forKey:@"owner"];
     [doc setObject:taskListInfo forKey:@"taskList"];
     
@@ -99,10 +102,10 @@
 }
 
 - (void)searchUser: (NSString*)username {
-    CBLQueryExpression *exp1 = [[CBLQueryExpression property:@"type"] equalTo:@"task-list.user"];
-    CBLQueryExpression *exp2 = [[CBLQueryExpression property:@"taskList.id"] equalTo: _taskList.documentID];
-    CBLQueryExpression *exp3 = [[CBLQueryExpression property:@"username"] like: [NSString stringWithFormat:@"%@%%", username]];
-    _searchQuery = [CBLQuery select:@[]
+    CBLQueryExpression *exp1 = [TYPE equalTo:@"task-list.user"];
+    CBLQueryExpression *exp2 = [TASK_LIST_ID equalTo: _taskList.id];
+    CBLQueryExpression *exp3 = [USERNAME like: [NSString stringWithFormat:@"%@%%", username]];
+    _searchQuery = [CBLQuery select:@[S_ID, S_USERNAME]
                                from:[CBLQueryDataSource database:_database]
                               where:[[exp1 and:exp2] and:exp3]];
     NSError *error;
@@ -137,24 +140,26 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"UserCell" forIndexPath:indexPath];
-    CBLDocument *doc = ((CBLQueryRow *)_userRows[indexPath.row]).document;
-    cell.textLabel.text = [doc stringForKey:@"username"];
+    cell.textLabel.text = [_userRows[indexPath.row] stringAtIndex:1];
     return cell;
 }
 
 - (NSArray<UITableViewRowAction *> *)tableView:(UITableView *)tableView
                   editActionsForRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    NSString* docID = [_userRows[indexPath.row] stringAtIndex:0];
+    CBLDocument *doc = [_database documentWithID:docID];
+    
     UITableViewRowAction *delete =
     [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleNormal
                                        title:@"Delete"
-                                     handler:^(UITableViewRowAction *action, NSIndexPath *indexPath) {
-                                         // Dismiss row actions:
-                                         [tableView setEditing:NO animated:YES];
-                                         // Delete task document:
-                                         CBLDocument *doc = ((CBLQueryRow *)_userRows[indexPath.row]).document;
-                                         [self deleteUser:doc];
-                                     }];
+                                     handler:^(UITableViewRowAction *action, NSIndexPath *indexPath)
+    {
+        // Dismiss row actions:
+        [tableView setEditing:NO animated:YES];
+        // Delete task document:
+        [self deleteUser:doc];
+    }];
     delete.backgroundColor = [UIColor colorWithRed:1.0 green:0.23 blue:0.19 alpha:1.0];
     return @[delete];
 }

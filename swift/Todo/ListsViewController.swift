@@ -9,7 +9,7 @@
 import UIKit
 import CouchbaseLiteSwift
 
-class ListsViewController: UITableViewController, UISearchResultsUpdating {
+class ListsViewController: UITableViewController, UISearchResultsUpdating {    
     var searchController: UISearchController!
     
     var database: Database!
@@ -17,9 +17,9 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     
     var listQuery: LiveQuery!
     var searchQuery: Query!
-    var listRows : [QueryRow]?
+    var listRows : [Result]?
     
-    var incompTasksCountsQuery: PredicateQuery!
+    var incompTasksCountsQuery: LiveQuery!
     var incompTasksCounts: [String:Int] = [:]
     var shouldUpdateIncompTasksCount: Bool = true
     
@@ -42,23 +42,16 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
         reload()
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
-        if (shouldUpdateIncompTasksCount) {
-            updateIncompleteTasksCounts()
-        }
-    }
-    
     // MARK: - Database
     
     func reload() {
         if (listQuery == nil) {
+            // Task List:
             listQuery = Query
-                .select()
+                .select(S_ID, S_NAME)
                 .from(DataSource.database(database))
-                .where(Expression.property("type").equalTo("task-list"))
-                .orderBy(Ordering.property("name"))
+                .where(TYPE.equalTo("task-list"))
+                .orderBy(Ordering.expression(NAME))
                 .toLive()
             
             listQuery.addChangeListener({ (change) in
@@ -68,31 +61,34 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
                 self.listRows = change.rows != nil ? Array(change.rows!) : nil
                 self.tableView.reloadData()
             })
+            
+            // Incomplete tasks count:
+            incompTasksCountsQuery = Query
+                .select(S_TASK_LIST_ID, S_COUNT)
+                .from(DataSource.database(database))
+                .where(TYPE.equalTo("task").and(COMPLETE.equalTo(false)))
+                .groupBy(TASK_LIST_ID)
+                .toLive()
+            
+            incompTasksCountsQuery.addChangeListener({ (change) in
+                if change.error == nil {
+                    self.updateIncompleteTasksCounts(change.rows!)
+                } else {
+                    NSLog("Error querying task list: %@", change.error!.localizedDescription)
+                }
+            })
         }
         
-        listQuery.run()
+        listQuery.start()
+        incompTasksCountsQuery.start()
     }
     
-    func updateIncompleteTasksCounts() {
-        shouldUpdateIncompTasksCount = false;
-        
-        if (incompTasksCountsQuery == nil) {
-            incompTasksCountsQuery = database.createQuery(
-                where: "type == 'task' AND complete == false",
-                groupBy: ["taskList.id"],
-                returning: ["taskList.id", "count(1)"])
+    func updateIncompleteTasksCounts(_ rows: ResultSet) {
+        incompTasksCounts.removeAll()
+        for row in rows {
+            incompTasksCounts[row.string(at: 0)!] = row.int(at: 1)
         }
-        
-        do {
-            incompTasksCounts.removeAll()
-            let rows = try incompTasksCountsQuery.run()
-            for row in rows {
-                incompTasksCounts[row[0]!] = row[1]
-            }
-            tableView.reloadData()
-        } catch let error as NSError {
-            NSLog("Error querying incomplete tasks counts: %@", error)
-        }
+        tableView.reloadData()
     }
     
     func createTaskList(name: String) {
@@ -127,11 +123,10 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     }
     
     func searchTaskList(name: String) {
-        searchQuery = Query.select()
+        searchQuery = Query.select(S_ID, S_NAME)
             .from(DataSource.database(database))
-            .where(Expression.property("type").equalTo("task-list")
-                .and(Expression.property("name").like("%\(name)%")))
-            .orderBy(Ordering.property("name"))
+            .where(TYPE.equalTo("task-list").and(NAME.like("%\(name)%")))
+            .orderBy(Ordering.expression(NAME))
         
         do {
             let rows = try searchQuery.run()
@@ -162,23 +157,27 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TaskListCell", for: indexPath)
         let row = listRows![indexPath.row]
-        cell.textLabel?.text = row.document.string(forKey: "name")
+        cell.textLabel?.text = row.string(at: 1)
         cell.detailTextLabel?.text = nil
         
-        let count = incompTasksCounts[row.documentID] ?? 0
+        let docID = row.string(at: 0)!
+        let count = incompTasksCounts[docID] ?? 0
         cell.detailTextLabel?.text = count > 0 ? "\(count)" : ""
         
         return cell
     }
     
     override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+        let row = self.listRows![indexPath.row]
+        let docID = row.string(at: 0)!
+        let doc = database.getDocument(docID)!
+        
         let delete = UITableViewRowAction(style: .normal, title: "Delete") {
             (action, indexPath) -> Void in
             // Dismiss row actions:
             tableView.setEditing(false, animated: true)
             
             // Delete list document:
-            let doc = self.listRows![indexPath.row].document
             self.deleteTaskList(list: doc)
         }
         delete.backgroundColor = UIColor(red: 1.0, green: 0.23, blue: 0.19, alpha: 1.0)
@@ -187,9 +186,6 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
             (action, indexPath) -> Void in
             // Dismiss row actions:
             tableView.setEditing(false, animated: true)
-            
-            // Display update list dialog:
-            let doc = self.listRows![indexPath.row].document
             
             // Display update list dialog:
             Ui.showTextInput(on: self, title: "Edit List", message:  nil, textFieldConfig: { text in
@@ -210,6 +206,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         if let name = searchController.searchBar.text, !name.isEmpty {
             listQuery.stop()
+            incompTasksCountsQuery.stop()
             searchTaskList(name: name)
         } else {
             reload()
@@ -221,7 +218,8 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let tabBarController = segue.destination as? UITabBarController {
             let row = listRows![self.tableView.indexPathForSelectedRow!.row]
-            let taskList = database.getDocument(row.documentID)!
+            let docID = row.string(at: 0)!
+            let taskList = database.getDocument(docID)!
             
             let tasksController = tabBarController.viewControllers![0] as! TasksViewController
             tasksController.taskList = taskList
