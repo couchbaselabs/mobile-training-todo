@@ -10,18 +10,6 @@ import UIKit
 import CouchbaseLiteSwift
 
 class UsersViewController: UITableViewController, UISearchResultsUpdating {
-    class $ {
-        // Query: Property Expressions
-        static let DOC_ID = Expression.meta().id
-        static let TYPE = Expression.property("type")
-        static let USERNAME = Expression.property("username")
-        static let TASK_LIST_ID = Expression.property("taskList.id")
-        
-        // Query: Select Results
-        static let S_ID = SelectResult.expression(DOC_ID)
-        static let S_USERNAME = SelectResult.expression(USERNAME)
-    }
-    
     var searchController: UISearchController!
     
     var username: String!
@@ -87,13 +75,13 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
         }
         
         let doc = Document(docId)
-        doc.set("task-list.user", forKey: "type")
-        doc.set(username, forKey: "username")
+        doc.setValue("task-list.user", forKey: "type")
+        doc.setValue(username, forKey: "username")
         
         let taskListInfo = DictionaryObject()
-        taskListInfo.set(taskList.id, forKey: "id")
-        taskListInfo.set(taskList.string(forKey: "owner"), forKey: "owner")
-        doc.set(taskListInfo, forKey: "taskList")
+        taskListInfo.setValue(taskList.id, forKey: "id")
+        taskListInfo.setValue(taskList.string(forKey: "owner"), forKey: "owner")
+        doc.setValue(taskListInfo, forKey: "taskList")
         
         do {
             try database.save(doc)

@@ -78,13 +78,13 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     func createTask(task: String) {
         let doc = Document()
-        doc.set("task", forKey: "type")
+        doc.setValue("task", forKey: "type")
         
         let taskListInfo = ["id": taskList.id, "owner": taskList.string(forKey: "owner")]
-        doc.set(taskListInfo, forKey: "taskList")
-        doc.set(Date(), forKey: "createdAt")
-        doc.set(task, forKey: "task")
-        doc.set(false, forKey: "complete")
+        doc.setValue(taskListInfo, forKey: "taskList")
+        doc.setValue(Date(), forKey: "createdAt")
+        doc.setValue(task, forKey: "task")
+        doc.setValue(false, forKey: "complete")
         
         do {
             try database.save(doc)
@@ -95,7 +95,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     func updateTask(task: Document, withTitle title: String) {
         do {
-            task.set(title, forKey: "task")
+            task.setValue(title, forKey: "task")
             try database.save(task)
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't update task", error: error)
@@ -104,7 +104,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     func updateTask(task: Document, withComplete complete: Bool) {
         do {
-            task.set(complete, forKey: "complete")
+            task.setValue(complete, forKey: "complete")
             try database.save(task)
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't update task", error: error)
@@ -119,7 +119,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         
         do {
             let blob = Blob(contentType: "image/jpg", data: imageData)
-            task.set(blob, forKey: "image")
+            task.setValue(blob, forKey: "image")
             try database.save(task)
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't update task", error: error)

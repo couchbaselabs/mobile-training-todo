@@ -147,7 +147,7 @@
         NSError *e = s.error;
         NSLog(@"[Todo] Replicator: %@ %llu/%llu, error: %@",
               [wSelf ativityLevel: s.activity], s.progress.completed, s.progress.total, e);
-        [UIApplication.sharedApplication setNetworkActivityIndicatorVisible: s.activity == kCBLBusy];
+        [UIApplication.sharedApplication setNetworkActivityIndicatorVisible: s.activity == kCBLReplicatorBusy];
         if (e.code == 401) {
             [CBLUi showMessageOn:wSelf.window.rootViewController
                            title:@"Authentication Error"
@@ -173,11 +173,11 @@
     }
 
 - (NSString *)ativityLevel:(CBLReplicatorActivityLevel)level {
-    if (level == kCBLStopped)
+    if (level == kCBLReplicatorStopped)
         return @"STOP";
-    else if (level == kCBLIdle)
+    else if (level == kCBLReplicatorIdle)
         return @"IDLE";
-    else if (level == kCBLBusy)
+    else if (level == kCBLReplicatorBusy)
         return @"BUSY";
     else
         return @"UNKNOWN";

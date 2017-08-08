@@ -94,9 +94,9 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     func createTaskList(name: String) {
         let docId = username + "." + NSUUID().uuidString
         let doc = Document(docId)
-        doc.set("task-list", forKey: "type")
-        doc.set(name, forKey: "name")
-        doc.set(username, forKey: "owner")
+        doc.setValue("task-list", forKey: "type")
+        doc.setValue(name, forKey: "name")
+        doc.setValue(username, forKey: "owner")
         
         do {
             try database.save(doc)
@@ -106,7 +106,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     }
     
     func updateTaskList(list: Document, withName name: String) {
-        list.set(name, forKey: "name")
+        list.setValue(name, forKey: "name")
         do {
             try database.save(list)
         } catch let error as NSError {

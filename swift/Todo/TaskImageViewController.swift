@@ -66,7 +66,7 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
         }
         
         do {
-            task.set(Blob(contentType: "image/jpg", data: imageData), forKey: "image")
+            task.setValue(Blob(contentType: "image/jpg", data: imageData), forKey: "image")
             try database.save(task)
             reload()
         } catch let error as NSError {
@@ -76,7 +76,7 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
     
     func deleteImage() {
         do {
-            task.set(nil, forKey: "image")
+            task.setValue(nil, forKey: "image")
             try database.save(task)
             reload()
         } catch let error as NSError {
