@@ -11,9 +11,9 @@
 #import "CBLSession.h"
 #import "CBLUi.h"
 
-#define kLoginFlowEnabled YES
-#define kSyncEnabled YES
-#define kSyncGatewayUrl @"blip://10.17.6.102:4984/todo"
+#define kLoginFlowEnabled NO
+#define kSyncEnabled NO
+#define kSyncGatewayUrl @"blip://10.0.1.5:4984/todo"
 
 @interface AppDelegate () <CBLLoginViewControllerDelegate> {
     CBLReplicator *_replicator;
@@ -64,13 +64,20 @@
 - (void)createDatabaseIndex {
     NSError *error;
     
+    CBLValueIndexItem *type = [CBLValueIndexItem expression:[CBLQueryExpression property:@"type"]];
+    CBLValueIndexItem *name = [CBLValueIndexItem expression:[CBLQueryExpression property:@"name"]];
+    CBLValueIndexItem *taskListId = [CBLValueIndexItem expression:[CBLQueryExpression property:@"taskList.id"]];
+    CBLValueIndexItem *task = [CBLValueIndexItem expression:[CBLQueryExpression property:@"task"]];
+    
     // For task list query:
-    if (![_database createIndexOn:@[@"type", @"name"] error:&error])
+    if (![_database createIndex:[CBLIndex valueIndexOn:@[type, name]] withName:@"task-list" error:&error]) {
         NSLog(@"Couldn't create index (type, name): %@", error);
+    }
     
     // For tasks query:
-    if (![_database createIndexOn:@[@"type", @"taskList.id", @"task"] error:&error])
+    if (!![_database createIndex:[CBLIndex valueIndexOn:@[type, taskListId, task]] withName:@"tasks" error:&error]) {
         NSLog(@"Cannot create index (type, taskList.id, task): %@", error);
+    }
 }
 
 // TODO handleAccessChange
@@ -173,14 +180,20 @@
     }
 
 - (NSString *)ativityLevel:(CBLReplicatorActivityLevel)level {
-    if (level == kCBLReplicatorStopped)
-        return @"STOP";
-    else if (level == kCBLReplicatorIdle)
-        return @"IDLE";
-    else if (level == kCBLReplicatorBusy)
-        return @"BUSY";
-    else
-        return @"UNKNOWN";
+    switch (level) {
+        case kCBLReplicatorStopped:
+            return @"STOPPED";
+        case kCBLReplicatorOffline:
+            return @"OFFLINE";
+        case kCBLReplicatorConnecting:
+            return @"CONNECTING";
+        case kCBLReplicatorIdle:
+            return @"IDLE";
+        case kCBLReplicatorBusy:
+            return @"BUSY";
+        default:
+            return @"UNKNOWN";
+    }
 }
 
 @end

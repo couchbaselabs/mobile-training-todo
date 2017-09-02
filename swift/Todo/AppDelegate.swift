@@ -9,9 +9,9 @@
 import UIKit
 import CouchbaseLiteSwift
 
-let kLoginFlowEnabled = true
-let kSyncEnabled = true
-let kSyncGatewayUrl = URL(string: "blip://10.17.6.102:4984/todo")!
+let kLoginFlowEnabled = false
+let kSyncEnabled = false
+let kSyncGatewayUrl = URL(string: "blip://10.0.1.5:4984/todo")!
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelegate {
@@ -56,15 +56,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
     
     func createDatabaseIndex() {
         // For task list query:
+        let type = ValueIndexItem.expression(Expression.property("type"))
+        let name = ValueIndexItem.expression(Expression.property("name"))
+        let taskListId = ValueIndexItem.expression(Expression.property("taskList.id"))
+        let task = ValueIndexItem.expression(Expression.property("task"))
+        
         do {
-            try database.createIndex(["type", "name"])
+            try database.createIndex(Index.valueIndex().on(type, name), withName: "task-list")
         } catch let error as NSError {
             NSLog("Couldn't create index (type, name): %@", error);
         }
         
         // For tasks query:
         do {
-            try database.createIndex(["type", "taskList.id", "task"])
+            try database.createIndex(Index.valueIndex().on(type, taskListId, task), withName: "tasks")
         } catch let error as NSError {
             NSLog("Couldn't create index (type, taskList.id, task): %@", error);
         }

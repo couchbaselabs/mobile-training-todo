@@ -82,7 +82,7 @@
         _taskQuery = [[CBLQuery select:@[S_ID]
                                   from:[CBLQueryDataSource database:_database]
                                  where:[[TYPE equalTo:@"task"]
-                                        and: [TASK_LIST_ID equalTo:self.taskList.id]]
+                                        andExpression: [TASK_LIST_ID equalTo:self.taskList.id]]
                                orderBy:@[[CBLQueryOrdering expression:CREATED_AT],
                                          [CBLQueryOrdering expression:TASK]]] toLive];
         __weak typeof (self) wSelf = self;
@@ -150,7 +150,7 @@
     CBLQueryExpression *exp3 = [TASK like:[NSString stringWithFormat:@"%%%@%%", name]];
     _searchQuery = [CBLQuery select:@[S_ID]
                                from:[CBLQueryDataSource database:_database]
-                              where:[[exp1 and: exp2] and:exp3]
+                              where:[[exp1 andExpression: exp2] andExpression:exp3]
                             orderBy:@[[CBLQueryOrdering expression:CREATED_AT],
                                       [CBLQueryOrdering expression:TASK]]];
     NSError *error;

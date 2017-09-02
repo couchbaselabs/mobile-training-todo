@@ -64,7 +64,7 @@
         
         _userQuery = [[CBLQuery select:@[S_ID, S_USERNAME]
                                   from:[CBLQueryDataSource database:_database]
-                                 where:[exp1 and:exp2]] toLive];
+                                 where:[exp1 andExpression:exp2]] toLive];
         __weak typeof(self) wSelf = self;
         [_userQuery addChangeListener:^(CBLLiveQueryChange *change) {
             if (!change.rows)
@@ -107,7 +107,7 @@
     CBLQueryExpression *exp3 = [USERNAME like: [NSString stringWithFormat:@"%@%%", username]];
     _searchQuery = [CBLQuery select:@[S_ID, S_USERNAME]
                                from:[CBLQueryDataSource database:_database]
-                              where:[[exp1 and:exp2] and:exp3]];
+                              where:[[exp1 andExpression:exp2] andExpression:exp3]];
     NSError *error;
     NSEnumerator *rows = [_searchQuery run: &error];
     if (!rows)

@@ -78,7 +78,7 @@
         _incompTasksCountsQuery = [[CBLQuery select:@[S_TASK_LIST_ID, S_COUNT]
                                                from:[CBLQueryDataSource database:_database]
                                               where:[[TYPE equalTo:@"task"]
-                                                        and:[COMPLETE equalTo:@(NO)]]
+                                                        andExpression:[COMPLETE equalTo:@(NO)]]
                                             groupBy:@[TASK_LIST_ID]] toLive];
         
         [_incompTasksCountsQuery addChangeListener:^(CBLLiveQueryChange *change) {
@@ -133,7 +133,7 @@
 - (void)searchTaskList: (NSString*)name {
     _searchQuery = [CBLQuery select:@[S_ID, S_NAME]
                                from:[CBLQueryDataSource database:_database]
-                              where:[[TYPE equalTo:@"task-list"] and:
+                              where:[[TYPE equalTo:@"task-list"] andExpression:
                                      [NAME like:[NSString stringWithFormat:@"%%%@%%", name]]]
                             orderBy:@[[CBLQueryOrdering expression: NAME]]];
     
