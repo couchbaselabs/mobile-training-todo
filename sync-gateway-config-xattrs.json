@@ -4,9 +4,7 @@
   "databases": {
     "todo": {
       "import_docs": "continuous",
-      "unsupported": {
-        "enable_extended_attributes": true
-      },
+      "enable_shared_bucket_access": true,
       "server": "http://localhost:8091",
       "bucket": "todo",
       "password": "password",
