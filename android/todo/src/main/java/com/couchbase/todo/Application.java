@@ -16,6 +16,8 @@ import com.couchbase.lite.ReplicatorConfiguration;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+
 public class Application extends android.app.Application implements ReplicatorChangeListener {
 
     private static final String TAG = Application.class.getSimpleName();
@@ -24,7 +26,7 @@ public class Application extends android.app.Application implements ReplicatorCh
     private final static boolean SYNC_ENABLED = true;
 
     private final static String DATABASE_NAME = "todo";
-    private final static String SYNCGATEWAY_URL = "blip://10.0.2.2:4984/todo/";
+    private final static String SYNCGATEWAY_URL = "blip://10.17.1.69:4984/todo/";
 
     private Database database = null;
     private Replicator replicator;
@@ -67,7 +69,9 @@ public class Application extends android.app.Application implements ReplicatorCh
 
     // show loginUI
     private void showLoginUI() {
-        startActivity(new Intent(getApplicationContext(), LoginActivity.class));
+        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+        intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 
     public void login(String username, String password) {
@@ -88,7 +92,9 @@ public class Application extends android.app.Application implements ReplicatorCh
     }
 
     private void showApp() {
-        startActivity(new Intent(getApplicationContext(), ListsActivity.class));
+        Intent intent = new Intent(getApplicationContext(), ListsActivity.class);
+        intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 
     // -------------------------
