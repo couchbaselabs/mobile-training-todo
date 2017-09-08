@@ -6,14 +6,20 @@ import android.support.v4.app.FragmentPagerAdapter;
 
 public class ListDetailFragmentPagerAdapter extends FragmentPagerAdapter {
     private String tabTitles[] = new String[]{"Tasks", "Users"};
+    private final int pageCount;
 
     public ListDetailFragmentPagerAdapter(FragmentManager fm) {
         super(fm);
+        this.pageCount = tabTitles.length;
+    }
+    public ListDetailFragmentPagerAdapter(FragmentManager fm, int pageCount) {
+        super(fm);
+        this.pageCount = pageCount;
     }
 
     @Override
     public int getCount() {
-        return tabTitles.length;
+        return pageCount;
     }
 
     @Override
