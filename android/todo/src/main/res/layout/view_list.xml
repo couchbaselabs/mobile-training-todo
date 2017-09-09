@@ -17,7 +17,6 @@
         android:text="New Text"
         android:textSize="25sp" />
 
-    <!-- NOTE: GroupBy is not supported by Query Yet.
     <TextView
         android:id="@+id/task_count"
         android:layout_width="wrap_content"
@@ -26,6 +25,5 @@
         android:layout_alignParentEnd="true"
         android:text="1"
         android:textSize="20sp" />
-        -->
 
 </RelativeLayout>
