@@ -16,14 +16,9 @@ import android.widget.ListView;
 import android.widget.PopupMenu;
 
 import com.couchbase.lite.CouchbaseLiteException;
-import com.couchbase.lite.DataSource;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.Document;
-import com.couchbase.lite.Expression;
-import com.couchbase.lite.LiveQuery;
 import com.couchbase.lite.Log;
-import com.couchbase.lite.Ordering;
-import com.couchbase.lite.Query;
 
 import java.util.UUID;
 
@@ -49,8 +44,9 @@ public class ListsActivity extends AppCompatActivity {
         toolbar.setTitle(getTitle());
 
         Application application = (Application) getApplication();
-        db = ((Application) getApplication()).getDatabase();
         username = application.getUsername();
+        db = application.getDatabase();
+        if(db == null) throw new IllegalArgumentException();
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -60,11 +56,6 @@ public class ListsActivity extends AppCompatActivity {
             }
         });
 
-        LiveQuery query = Query.select()
-                .from(DataSource.database(db))
-                .where(Expression.property("type").equalTo("task-list"))
-                .orderBy(Ordering.property("name").ascending())
-                .toLive();
         adapter = new LiveListsAdapter(this, db);
         listView = findViewById(R.id.list);
         listView.setAdapter(adapter);

@@ -35,6 +35,8 @@ public class LiveListsAdapter extends ArrayAdapter<String> {
 
     public LiveListsAdapter(Context context, Database db) {
         super(context, 0);
+
+        if(db == null) throw new IllegalArgumentException();
         this.db = db;
 
         this.listsLiveQuery = listsLiveQuery();
@@ -104,8 +106,6 @@ public class LiveListsAdapter extends ArrayAdapter<String> {
     }
 
     private LiveQuery listsLiveQuery() {
-
-
         return Query.select(SelectResult.expression(Expression.meta().getId()))
                 .from(DataSource.database(db))
                 .where(Expression.property("type").equalTo("task-list"))
