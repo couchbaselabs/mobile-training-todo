@@ -48,9 +48,8 @@ public class LiveTasksAdapter extends ArrayAdapter<String> {
                 clear();
                 ResultSet rs = change.getRows();
                 Result result;
-                while ((result = rs.next()) != null) {
+                while ((result = rs.next()) != null)
                     add(result.getString(0));
-                }
                 notifyDataSetChanged();
             }
         });
@@ -62,10 +61,10 @@ public class LiveTasksAdapter extends ArrayAdapter<String> {
         if (convertView == null)
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.view_task, parent, false);
 
-        String id = getItem(position);
-        final Document task = db.getDocument(id);
+        String docID = getItem(position);
+        final Document task = db.getDocument(docID);
         if (task == null)
-            return convertView;
+            throw new IllegalStateException("Document does not exists: " + docID);
 
         // image view
         ImageView imageView = convertView.findViewById(R.id.photo);
@@ -102,10 +101,17 @@ public class LiveTasksAdapter extends ArrayAdapter<String> {
     }
 
     private LiveQuery query() {
-        return Query.select(SelectResult.expression(Expression.meta().getId()))
+        SelectResult SR_DOC_ID = SelectResult.expression(Expression.meta().getId());
+        Expression EXPR_TYPE = Expression.property("type");
+        Expression EXPR_TASKLIST_ID = Expression.property("taskList.id");
+        Ordering ORDERBY_CREATED_AT = Ordering.property("createdAt");
+        Ordering ORDERBY_TASK = Ordering.property("task");
+
+        return Query.select(SR_DOC_ID)
                 .from(DataSource.database(db))
-                .where(Expression.property("type").equalTo("task").and(Expression.property("taskList.id").equalTo(listID)))
-                .orderBy(Ordering.property("createdAt"), Ordering.property("task"))
+                .where(EXPR_TYPE.equalTo("task")
+                        .and(EXPR_TASKLIST_ID.equalTo(listID)))
+                .orderBy(ORDERBY_CREATED_AT, ORDERBY_TASK)
                 .toLive();
     }
 
