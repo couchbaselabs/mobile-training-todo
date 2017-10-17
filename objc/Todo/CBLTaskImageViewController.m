@@ -38,7 +38,8 @@
 #pragma mark - Database
 
 - (void)reload {
-    CBLBlob *imageBlob = [self.task blobForKey:@"image"];
+    CBLDocument* task = [_database documentWithID: self.taskID];
+    CBLBlob *imageBlob = [task blobForKey:@"image"];
     if (imageBlob)
         imageView.image = [UIImage imageWithData:imageBlob.content scale:[UIScreen mainScreen].scale];
     else
@@ -52,23 +53,25 @@
         return;
     }
     
+    CBLMutableDocument* task = [[_database documentWithID: self.taskID] edit];
     CBLBlob *imageBlob = [[CBLBlob alloc] initWithContentType:@"image/jpg" data:imageData];
-    [self.task setObject: imageBlob forKey: @"image"];
+    [task setObject: imageBlob forKey: @"image"];
     
     NSError *error;
-    if ([_database saveDocument:self.task error:&error])
+    if ([_database saveDocument:task error:&error]) {
         [self reload];
-    else
+    } else
         [CBLUi showErrorOn:self message:@"Couldn't update image" error:error];
 }
 
 - (void)deleteImage {
-    [self.task setObject: nil forKey: @"image"];
+    CBLMutableDocument* task = [[_database documentWithID: self.taskID] edit];
+    [task setObject: nil forKey: @"image"];
     
     NSError *error;
-    if ([_database saveDocument: self.task error: &error])
+    if ([_database saveDocument: task error: &error]) {
         [self reload];
-    else
+    } else
         [CBLUi showErrorOn:self message:@"Couldn't delete image" error:error];
 }
 
