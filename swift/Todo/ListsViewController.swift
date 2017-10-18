@@ -93,7 +93,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     
     func createTaskList(name: String) {
         let docId = username + "." + NSUUID().uuidString
-        let doc = Document(docId)
+        let doc = MutableDocument(docId)
         doc.setValue("task-list", forKey: "type")
         doc.setValue(name, forKey: "name")
         doc.setValue(username, forKey: "owner")
@@ -105,7 +105,8 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
         }
     }
     
-    func updateTaskList(list: Document, withName name: String) {
+    func updateTaskList(listID: String, withName name: String) {
+        let list = database.getDocument(listID)!.edit()
         list.setValue(name, forKey: "name")
         do {
             try database.save(list)
@@ -114,8 +115,9 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
         }
     }
     
-    func deleteTaskList(list: Document) {
+    func deleteTaskList(listID: String) {
         do {
+            let list = database.getDocument(listID)!
             try database.delete(list)
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't delete task list", error: error)
@@ -170,7 +172,6 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
         let row = self.listRows![indexPath.row]
         let docID = row.string(at: 0)!
-        let doc = database.getDocument(docID)!
         
         let delete = UITableViewRowAction(style: .normal, title: "Delete") {
             (action, indexPath) -> Void in
@@ -178,7 +179,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
             tableView.setEditing(false, animated: true)
             
             // Delete list document:
-            self.deleteTaskList(list: doc)
+            self.deleteTaskList(listID: docID)
         }
         delete.backgroundColor = UIColor(red: 1.0, green: 0.23, blue: 0.19, alpha: 1.0)
         
@@ -189,11 +190,12 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
             
             // Display update list dialog:
             Ui.showTextInput(on: self, title: "Edit List", message:  nil, textFieldConfig: { text in
+                let doc = self.database.getDocument(docID)!
                 text.placeholder = "List name"
                 text.text = doc.string(forKey: "name")
                 text.autocapitalizationType = .words
             }, onOk: { (name) -> Void in
-                self.updateTaskList(list: doc, withName: name)
+                self.updateTaskList(listID: docID, withName: name)
             })
         }
         update.backgroundColor = UIColor(red: 0.0, green: 0.48, blue: 1.0, alpha: 1.0)

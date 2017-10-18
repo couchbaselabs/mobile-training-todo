@@ -20,7 +20,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     var taskQuery: LiveQuery!
     var searchQuery: Query!
     var taskRows : [Result]?
-    var taskForImage: Document?
+    var taskIDForImage: String?
     var dbChangeListener: NSObjectProtocol?
     
     override func viewDidLoad() {
@@ -77,7 +77,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     }
     
     func createTask(task: String) {
-        let doc = Document()
+        let doc = MutableDocument()
         doc.setValue("task", forKey: "type")
         
         let taskListInfo = ["id": taskList.id, "owner": taskList.string(forKey: "owner")]
@@ -93,8 +93,9 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         }
     }
     
-    func updateTask(task: Document, withTitle title: String) {
+    func updateTask(taskID: String, withTitle title: String) {
         do {
+            let task = database.getDocument(taskID)!.edit()
             task.setValue(title, forKey: "task")
             try database.save(task)
         } catch let error as NSError {
@@ -102,8 +103,9 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         }
     }
     
-    func updateTask(task: Document, withComplete complete: Bool) {
+    func updateTask(taskID: String, withComplete complete: Bool) {
         do {
+            let task = database.getDocument(taskID)!.edit()
             task.setValue(complete, forKey: "complete")
             try database.save(task)
         } catch let error as NSError {
@@ -111,13 +113,14 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         }
     }
     
-    func updateTask(task: Document, withImage image: UIImage) {
+    func updateTask(taskID: String, withImage image: UIImage) {
         guard let imageData = UIImageJPEGRepresentation(image, 0.5) else {
             Ui.showError(on: self, message: "Invalid image format")
             return
         }
         
         do {
+            let task = database.getDocument(taskID)!.edit()
             let blob = Blob(contentType: "image/jpg", data: imageData)
             task.setValue(blob, forKey: "image")
             try database.save(task)
@@ -126,8 +129,9 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         }
     }
     
-    func deleteTask(task: Document) {
+    func deleteTask(taskID: String) {
         do {
+            let task = database.getDocument(taskID)!
             try database.delete(task)
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't delete task", error: error)
@@ -217,13 +221,13 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
             })
             cell.taskImage = thumbnail
             cell.taskImageAction = {
-                self.taskForImage = doc
+                self.taskIDForImage = docID
                 self.performSegue(withIdentifier: "showTaskImage", sender: self)
             }
         } else {
             cell.taskImage = nil
             cell.taskImageAction = {
-                self.taskForImage = doc
+                self.taskIDForImage = docID
                 Ui.showImageActionSheet(on: self, imagePickerDelegate: self)
             }
         }
@@ -252,7 +256,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         let doc = database.getDocument(docID)!
         
         let complete: Bool = !doc.boolean(forKey: "complete")
-        updateTask(task: doc, withComplete: complete)
+        updateTask(taskID: docID, withComplete: complete)
         
         // Optimistically update the UI:
         let cell = tableView.cellForRow(at: indexPath) as! TaskTableViewCell
@@ -262,14 +266,13 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
         let row = taskRows![indexPath.row]
         let docID = row.string(at: 0)!
-        let doc = database.getDocument(docID)!
         
         let delete = UITableViewRowAction(style: .normal, title: "Delete") {
             (action, indexPath) -> Void in
             // Dismiss row actions:
             tableView.setEditing(false, animated: true)
             // Delete list document:
-            self.deleteTask(task: doc)
+            self.deleteTask(taskID: docID)
         }
         delete.backgroundColor = UIColor(red: 1.0, green: 0.23, blue: 0.19, alpha: 1.0)
         
@@ -279,11 +282,12 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
             tableView.setEditing(false, animated: true)
             // Display update list dialog:
             Ui.showTextInput(on: self, title: "Edit Task", message:  nil, textFieldConfig: { text in
+                let doc = self.database.getDocument(docID)!
                 text.placeholder = "Task"
                 text.text = doc.string(forKey: "task")
                 text.autocapitalizationType = .sentences
             }, onOk: { task in
-                self.updateTask(task: doc, withTitle: task)
+                self.updateTask(taskID: docID, withTitle: task)
             })
         }
         update.backgroundColor = UIColor(red: 0.0, green: 0.48, blue: 1.0, alpha: 1.0)
@@ -305,9 +309,9 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     // MARK: - UIImagePickerControllerDelegate
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        if let task = taskForImage {
-            updateTask(task: task, withImage: info["UIImagePickerControllerOriginalImage"] as! UIImage)
-            self.taskForImage = nil
+        if let taskID = taskIDForImage {
+            updateTask(taskID: taskID, withImage: info["UIImagePickerControllerOriginalImage"] as! UIImage)
+            self.taskIDForImage = nil
         }
         picker.presentingViewController?.dismiss(animated: true, completion: nil)
     }
@@ -318,8 +322,8 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         if segue.identifier == "showTaskImage" {
             let navController = segue.destination as! UINavigationController
             let controller = navController.topViewController as! TaskImageViewController
-            controller.task = taskForImage
-            taskForImage = nil
+            controller.taskID = taskIDForImage
+            taskIDForImage = nil
         }
     }
     

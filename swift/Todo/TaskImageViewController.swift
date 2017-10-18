@@ -14,7 +14,7 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
     @IBOutlet weak var imageView: UIImageView!
     
     var database: Database!
-    var task: Document!
+    var taskID: String!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -52,6 +52,7 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
     // MARK: - Database
     
     func reload() {
+        let task = database.getDocument(taskID)!
         if let blob = task.blob(forKey: "image"), let content = blob.content {
             imageView.image = UIImage(data: content)
         } else {
@@ -66,6 +67,7 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
         }
         
         do {
+            let task = database.getDocument(taskID)!.edit()
             task.setValue(Blob(contentType: "image/jpg", data: imageData), forKey: "image")
             try database.save(task)
             reload()
@@ -76,6 +78,7 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
     
     func deleteImage() {
         do {
+            let task = database.getDocument(taskID)!.edit()
             task.setValue(nil, forKey: "image")
             try database.save(task)
             reload()

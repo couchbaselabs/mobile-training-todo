@@ -74,11 +74,11 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
             return
         }
         
-        let doc = Document(docId)
+        let doc = MutableDocument(docId)
         doc.setValue("task-list.user", forKey: "type")
         doc.setValue(username, forKey: "username")
         
-        let taskListInfo = DictionaryObject()
+        let taskListInfo = MutableDictionaryObject()
         taskListInfo.setValue(taskList.id, forKey: "id")
         taskListInfo.setValue(taskList.string(forKey: "owner"), forKey: "owner")
         doc.setValue(taskListInfo, forKey: "taskList")
