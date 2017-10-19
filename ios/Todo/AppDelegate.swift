@@ -10,6 +10,7 @@ import UIKit
 
 let kLoginFlowEnabled = false
 let kEncryptionEnabled = false
+let kUseForestDB = false
 let kSyncEnabled = false
 let kSyncGatewayUrl = URL(string: "http://localhost:4984/todo/")!
 let kLoggingEnabled = false
@@ -95,6 +96,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         let dbname = username
         let options = CBLDatabaseOptions()
         options.create = true
+        
+        if (kUseForestDB) {
+            options.storageType = kCBLForestDBStorage
+        }
 
         if kEncryptionEnabled {
             if let encryptionKey = key {
