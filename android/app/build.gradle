@@ -1,12 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '25.0.3'
+    compileSdkVersion 26
     defaultConfig {
         applicationId "com.couchbase.todo"
         minSdkVersion 16
-        targetSdkVersion 25
+        targetSdkVersion 26
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -25,8 +24,8 @@ android {
     }
 }
 
-def COUCHBASE_LITE_VERSION = "1.4.0"
-def SUPPORT_LIBRARY_VERSION = "25.4.0"
+def COUCHBASE_LITE_VERSION = "1.4.1"
+def SUPPORT_LIBRARY_VERSION = "26.1.0"
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
