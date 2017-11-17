@@ -118,7 +118,7 @@
 }
 
 - (void)updateTaskList:(NSString *)listID withName:(NSString *)name {
-    CBLMutableDocument* list = [[_database documentWithID: listID] edit];
+    CBLMutableDocument* list = [[_database documentWithID: listID] toMutable];
     [list setObject:name forKey:@"name"];
     NSError *error;
     if (![_database saveDocument:list error:&error])

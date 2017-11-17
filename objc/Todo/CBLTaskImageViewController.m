@@ -53,7 +53,7 @@
         return;
     }
     
-    CBLMutableDocument* task = [[_database documentWithID: self.taskID] edit];
+    CBLMutableDocument* task = [[_database documentWithID: self.taskID] toMutable];
     CBLBlob *imageBlob = [[CBLBlob alloc] initWithContentType:@"image/jpg" data:imageData];
     [task setObject: imageBlob forKey: @"image"];
     
@@ -65,7 +65,7 @@
 }
 
 - (void)deleteImage {
-    CBLMutableDocument* task = [[_database documentWithID: self.taskID] edit];
+    CBLMutableDocument* task = [[_database documentWithID: self.taskID] toMutable];
     [task setObject: nil forKey: @"image"];
     
     NSError *error;

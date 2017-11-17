@@ -67,7 +67,7 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
         }
         
         do {
-            let task = database.getDocument(taskID)!.edit()
+            let task = database.getDocument(taskID)!.toMutable()
             task.setValue(Blob(contentType: "image/jpg", data: imageData), forKey: "image")
             try database.save(task)
             reload()
@@ -78,7 +78,7 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
     
     func deleteImage() {
         do {
-            let task = database.getDocument(taskID)!.edit()
+            let task = database.getDocument(taskID)!.toMutable()
             task.setValue(nil, forKey: "image")
             try database.save(task)
             reload()

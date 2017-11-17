@@ -112,7 +112,7 @@
 }
 
 - (void)updateTask:(NSString *)taskID withTitle:(NSString *)title {
-    CBLMutableDocument *task = [[_database documentWithID: taskID] edit];
+    CBLMutableDocument *task = [[_database documentWithID: taskID] toMutable];
     [task setObject:title forKey:@"task"];
     
     NSError *error;
@@ -121,7 +121,7 @@
 }
 
 - (void)updateTask:(NSString *)taskID withComplete:(BOOL)complete {
-    CBLMutableDocument *task = [[_database documentWithID: taskID] edit];
+    CBLMutableDocument *task = [[_database documentWithID: taskID] toMutable];
     [task setObject:@(complete) forKey:@"complete"];
     NSError *error;
     if (![_database saveDocument:task error:&error])
@@ -134,7 +134,7 @@
     if (!imageData)
         return;
     
-    CBLMutableDocument *task = [[_database documentWithID: taskID] edit];
+    CBLMutableDocument *task = [[_database documentWithID: taskID] toMutable];
     CBLBlob *blob = [[CBLBlob alloc] initWithContentType:@"image/jpg" data:imageData];
     [task setObject:blob forKey:@"image"];
     if (![_database saveDocument:task error:&error])
@@ -142,7 +142,7 @@
 }
 
 - (void)deleteTask:(NSString *)taskID {
-    CBLMutableDocument *task = [_database documentWithID: taskID];
+    CBLDocument *task = [_database documentWithID: taskID];
     NSError *error;
     if (![_database deleteDocument:task error:&error])
         [CBLUi showErrorOn:self message:@"Couldn't delete task" error:error];

@@ -95,7 +95,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     func updateTask(taskID: String, withTitle title: String) {
         do {
-            let task = database.getDocument(taskID)!.edit()
+            let task = database.getDocument(taskID)!.toMutable()
             task.setValue(title, forKey: "task")
             try database.save(task)
         } catch let error as NSError {
@@ -105,7 +105,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     func updateTask(taskID: String, withComplete complete: Bool) {
         do {
-            let task = database.getDocument(taskID)!.edit()
+            let task = database.getDocument(taskID)!.toMutable()
             task.setValue(complete, forKey: "complete")
             try database.save(task)
         } catch let error as NSError {
@@ -120,7 +120,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         }
         
         do {
-            let task = database.getDocument(taskID)!.edit()
+            let task = database.getDocument(taskID)!.toMutable()
             let blob = Blob(contentType: "image/jpg", data: imageData)
             task.setValue(blob, forKey: "image")
             try database.save(task)

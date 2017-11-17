@@ -106,7 +106,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating {
     }
     
     func updateTaskList(listID: String, withName name: String) {
-        let list = database.getDocument(listID)!.edit()
+        let list = database.getDocument(listID)!.toMutable()
         list.setValue(name, forKey: "name")
         do {
             try database.save(list)
