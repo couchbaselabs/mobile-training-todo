@@ -28,7 +28,7 @@
     CBLLiveQuery *_taskQuery;
     CBLQuery *_searchQuery;
     NSArray <CBLQueryResult*> *_taskRows;
-    CBLDocument *_taskForImage;
+    NSString *_taskIDForImage;
     id _dbChangeListener;
 }
 
@@ -97,7 +97,7 @@
 }
 
 - (void)createTask:(NSString *)task {
-    CBLDocument *doc = [[CBLDocument alloc] init];
+    CBLMutableDocument *doc = [[CBLMutableDocument alloc] init];
     [doc setObject:@"task" forKey:@"type"];
     NSDictionary *taskList = @{@"id": _taskList.id,
                                @"owner": [_taskList stringForKey: @"owner"]};
@@ -111,7 +111,8 @@
         [CBLUi showErrorOn:self message:@"Couldn't save task" error:error];
 }
 
-- (void)updateTask:(CBLDocument *)task withTitle:(NSString *)title {
+- (void)updateTask:(NSString *)taskID withTitle:(NSString *)title {
+    CBLMutableDocument *task = [[_database documentWithID: taskID] toMutable];
     [task setObject:title forKey:@"task"];
     
     NSError *error;
@@ -119,26 +120,29 @@
         [CBLUi showErrorOn:self message:@"Couldn't update task" error:error];
 }
 
-- (void)updateTask:(CBLDocument *)task withComplete:(BOOL)complete {
+- (void)updateTask:(NSString *)taskID withComplete:(BOOL)complete {
+    CBLMutableDocument *task = [[_database documentWithID: taskID] toMutable];
     [task setObject:@(complete) forKey:@"complete"];
     NSError *error;
     if (![_database saveDocument:task error:&error])
         [CBLUi showErrorOn:self message:@"Couldn't update complete status" error:error];
 }
 
-- (void)updateTask:(CBLDocument *)task withImage:(UIImage *)image {
+- (void)updateTask:(NSString *)taskID withImage:(UIImage *)image {
     NSError *error;
     NSData *imageData = UIImageJPEGRepresentation(image, 0.5);
     if (!imageData)
         return;
     
+    CBLMutableDocument *task = [[_database documentWithID: taskID] toMutable];
     CBLBlob *blob = [[CBLBlob alloc] initWithContentType:@"image/jpg" data:imageData];
     [task setObject:blob forKey:@"image"];
     if (![_database saveDocument:task error:&error])
         [CBLUi showErrorOn:self message:@"Couldn't update task" error:error];
 }
 
-- (void)deleteTask:(CBLDocument *)task {
+- (void)deleteTask:(NSString *)taskID {
+    CBLDocument *task = [_database documentWithID: taskID];
     NSError *error;
     if (![_database deleteDocument:task error:&error])
         [CBLUi showErrorOn:self message:@"Couldn't delete task" error:error];
@@ -232,13 +236,13 @@
         }];
         cell.taskImage = thumbnail;
         cell.taskImageAction = ^() {
-            _taskForImage = doc;
+            _taskIDForImage = docID;
             [self performSegueWithIdentifier:@"showTaskImage" sender:self];
         };
     } else {
         cell.taskImage = nil;
         cell.taskImageAction = ^() {
-            _taskForImage = doc;
+            _taskIDForImage = docID;
             [CBLUi showImageActionSheet:self imagePickerDelegate:self onDelete:nil];
         };
     }
@@ -263,7 +267,7 @@
     NSString* docID = [_taskRows[indexPath.row] stringAtIndex:0];
     CBLDocument *doc = [_database documentWithID:docID];
     BOOL complete = ![doc booleanForKey:@"complete"];
-    [self updateTask:doc withComplete:complete];
+    [self updateTask:docID withComplete:complete];
     
     // Optimistically update the UI:
     CBLTaskTableViewCell *cell = (CBLTaskTableViewCell *)[self.tableView cellForRowAtIndexPath:indexPath];
@@ -274,7 +278,6 @@
                   editActionsForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     NSString* docID = [_taskRows[indexPath.row] stringAtIndex:0];
-    CBLDocument *doc = [_database documentWithID:docID];
     
     UITableViewRowAction *delete =
         [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleNormal
@@ -284,7 +287,7 @@
         // Dismiss row actions:
         [tableView setEditing:NO animated:YES];
         // Delete task document:
-        [self deleteTask:doc];
+        [self deleteTask:docID];
     }];
     delete.backgroundColor = [UIColor colorWithRed:1.0 green:0.23 blue:0.19 alpha:1.0];
     
@@ -298,11 +301,12 @@
         
         // Display update list dialog:
         [CBLUi showTextInputOn:self title:@"Edit Task" message:nil textField:^(UITextField *text) {
+            CBLDocument *doc = [_database documentWithID:docID];
             text.placeholder = @"Task";
             text.text = [doc stringForKey:@"task"];
             text.autocorrectionType = UITextAutocapitalizationTypeSentences;
         } onOk:^(NSString * name) {
-            [self updateTask:doc withTitle:name];
+            [self updateTask:docID withTitle:name];
         }];
     }];
     update.backgroundColor = [UIColor colorWithRed:0.0 green:0.48 blue:1.0 alpha:1.0];
@@ -326,9 +330,9 @@
 -(void)imagePickerController:(UIImagePickerController *)picker
 didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info
 {
-    if (_taskForImage) {
-        [self updateTask:_taskForImage withImage:info[@"UIImagePickerControllerOriginalImage"]];
-        _taskForImage = nil;
+    if (_taskIDForImage) {
+        [self updateTask:_taskIDForImage withImage:info[@"UIImagePickerControllerOriginalImage"]];
+        _taskIDForImage = nil;
     }
 }
 
@@ -338,8 +342,8 @@ didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info
     if ([segue.identifier isEqualToString:@"showTaskImage"]) {
         UINavigationController *navController = segue.destinationViewController;
         CBLTaskImageViewController *controller = (CBLTaskImageViewController*)navController.topViewController;
-        controller.task = _taskForImage;
-        _taskForImage = nil;
+        controller.taskID = _taskIDForImage;
+        _taskIDForImage = nil;
     }
 }
 

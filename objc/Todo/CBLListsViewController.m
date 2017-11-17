@@ -105,9 +105,9 @@
 }
 
 
-- (void)createTaskList:(NSString*)name {
+- (void)createTaskList:(NSString *)name {
     NSString *docId = [NSString stringWithFormat:@"%@.%@", _username, [NSUUID UUID].UUIDString];
-    CBLDocument *doc = [[CBLDocument alloc] initWithID: docId];
+    CBLMutableDocument *doc = [[CBLMutableDocument alloc] initWithID: docId];
     [doc setObject:@"task-list" forKey:@"type"];
     [doc setObject:name forKey:@"name"];
     [doc setObject:_username forKey:@"owner"];
@@ -117,15 +117,17 @@
         [CBLUi showErrorOn:self message:@"Couldn't save task list" error:error];
 }
 
-- (void)updateTaskList:(CBLDocument *)list withName:(NSString *)name {
+- (void)updateTaskList:(NSString *)listID withName:(NSString *)name {
+    CBLMutableDocument* list = [[_database documentWithID: listID] toMutable];
     [list setObject:name forKey:@"name"];
     NSError *error;
     if (![_database saveDocument:list error:&error])
         [CBLUi showErrorOn:self message:@"Couldn't update task list" error:error];
 }
 
-- (void)deleteTaskList:(CBLDocument *)list {
+- (void)deleteTaskList:(NSString *)listID {
     NSError *error;
+    CBLDocument* list = [_database documentWithID: listID];
     if (![_database deleteDocument:list error:&error])
         [CBLUi showErrorOn:self message:@"Couldn't delete task list" error:error];
 }
@@ -188,7 +190,6 @@
                  editActionsForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     NSString *docID = [_listRows[indexPath.row] stringAtIndex:0];
-    CBLDocument *doc = [_database documentWithID:docID];
     
     // Delete action:
     UITableViewRowAction *delete =
@@ -200,7 +201,7 @@
          [tableView setEditing:NO animated:YES];
          
          // Delete list document:
-         [self deleteTaskList:doc];
+         [self deleteTaskList:docID];
     }];
     delete.backgroundColor = [UIColor colorWithRed:1.0 green:0.23 blue:0.19 alpha:1.0];
     
@@ -213,12 +214,13 @@
          [tableView setEditing:NO animated:YES];
          
          // Display update list dialog:
+         CBLDocument *doc = [_database documentWithID:docID];
          [CBLUi showTextInputOn:self title:@"Edit List" message:nil textField:^(UITextField *text) {
              text.placeholder = @"List name";
              text.text = [doc stringForKey:@"name"];
          } onOk:^(NSString *name) {
              // Update task list with a new name:
-             [self updateTaskList:doc withName:name];
+             [self updateTaskList:docID withName:name];
          }];
     }];
     update.backgroundColor = [UIColor colorWithRed:0.0 green:0.48 blue:1.0 alpha:1.0];

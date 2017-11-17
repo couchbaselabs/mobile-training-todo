@@ -11,6 +11,6 @@
 
 @interface CBLTaskImageViewController : UIViewController
 
-@property (nonatomic) CBLDocument *task;
+@property (nonatomic) NSString *taskID;
 
 @end
