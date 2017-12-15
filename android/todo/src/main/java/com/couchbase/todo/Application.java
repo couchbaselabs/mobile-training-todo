@@ -12,8 +12,9 @@ import com.couchbase.lite.Database;
 import com.couchbase.lite.DatabaseConfiguration;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.Log;
-import com.couchbase.lite.ReadOnlyDocument;
+import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Replicator;
+import com.couchbase.lite.ReplicatorChange;
 import com.couchbase.lite.ReplicatorChangeListener;
 import com.couchbase.lite.ReplicatorConfiguration;
 
@@ -22,8 +23,13 @@ import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Set;
 
-import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASKuser;
 
+/*
+public interface ReplicatorChangeListener {
+    void changed(ReplicatorChange change);
+}
+ */
 public class Application extends android.app.Application implements ReplicatorChangeListener {
 
     private static final String TAG = Application.class.getSimpleName();
@@ -32,7 +38,7 @@ public class Application extends android.app.Application implements ReplicatorCh
     private final static boolean SYNC_ENABLED = true;
 
     private final static String DATABASE_NAME = "todo";
-    private final static String SYNCGATEWAY_URL = "blip://10.17.1.69:4984/todo/";
+    private final static String SYNCGATEWAY_URL = "blip://10.0.2.2:4984/todo/";
 
     private Database database = null;
     private Replicator replicator;
@@ -118,29 +124,29 @@ public class Application extends android.app.Application implements ReplicatorCh
         }
     }
 
-    private ConflictResolver getConflictResolver(){
+    private ConflictResolver getConflictResolver() {
         /**
          * Example: Conflict resolver that merges Mine and Their document.
          */
         return new ConflictResolver() {
             @Override
-            public ReadOnlyDocument resolve(Conflict conflict) {
-                ReadOnlyDocument mine = conflict.getMine();
-                ReadOnlyDocument theirs = conflict.getTheirs();
+            public Document resolve(Conflict conflict) {
+                Document mine = conflict.getMine();
+                Document theirs = conflict.getTheirs();
 
-                Document resolved = new Document();
+                MutableDocument resolved = new MutableDocument();
                 Set<String> changed = new HashSet<>();
 
                 // copy all data from theirs document
                 for (String key : theirs) {
-                    resolved.setObject(key, theirs.getObject(key));
+                    resolved.setValue(key, theirs.getValue(key));
                     changed.add(key);
                 }
 
                 // copy all data from mine which are not in mine document
                 for (String key : mine) {
                     if (!changed.contains(key))
-                        resolved.setObject(key, mine.getObject(key));
+                        resolved.setValue(key, mine.getValue(key));
                 }
 
                 Log.e(TAG, "ConflictResolver.resolve() resolved -> %s", resolved.toMap());
@@ -207,9 +213,9 @@ public class Application extends android.app.Application implements ReplicatorCh
     // ReplicatorChangeListener implementation
     // --------------------------------------------------
     @Override
-    public void changed(Replicator replicator, Replicator.Status status, CouchbaseLiteException error) {
-        Log.i(TAG, "[Todo] Replicator: status -> %s, error -> %s", status, error);
-        if (error != null && error.getCode() == 401) {
+    public void changed(ReplicatorChange change) {
+        Log.i(TAG, "[Todo] Replicator: status -> %s", change.getStatus());
+        if (change.getStatus().getError() != null && change.getStatus().getError().getCode() == 401) {
             Toast.makeText(getApplicationContext(), "Authentication Error: Your username or password is not correct.", Toast.LENGTH_LONG).show();
             logout();
         }

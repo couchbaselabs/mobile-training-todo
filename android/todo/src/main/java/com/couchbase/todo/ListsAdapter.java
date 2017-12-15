@@ -12,37 +12,37 @@ import com.couchbase.lite.Database;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.Expression;
 import com.couchbase.lite.Function;
-import com.couchbase.lite.LiveQuery;
-import com.couchbase.lite.LiveQueryChange;
-import com.couchbase.lite.LiveQueryChangeListener;
 import com.couchbase.lite.Log;
+import com.couchbase.lite.Meta;
 import com.couchbase.lite.Ordering;
 import com.couchbase.lite.Query;
 import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
+import com.couchbase.lite.query.QueryChange;
+import com.couchbase.lite.query.QueryChangeListener;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class LiveListsAdapter extends ArrayAdapter<String> {
-    private static final String TAG = LiveListsAdapter.class.getSimpleName();
+public class ListsAdapter extends ArrayAdapter<String> {
+    private static final String TAG = ListsAdapter.class.getSimpleName();
 
     private Database db;
-    private LiveQuery listsLiveQuery = null;
-    private LiveQuery incompTasksCountLiveQuery = null;
+    private Query listsQuery = null;
+    private Query incompTasksCountQuery = null;
     private Map<String, Integer> incompCounts = new HashMap<>();
 
-    public LiveListsAdapter(Context context, Database db) {
+    public ListsAdapter(Context context, Database db) {
         super(context, 0);
 
-        if(db == null) throw new IllegalArgumentException();
+        if (db == null) throw new IllegalArgumentException();
         this.db = db;
 
-        this.listsLiveQuery = listsLiveQuery();
-        this.listsLiveQuery.addChangeListener(new LiveQueryChangeListener() {
+        this.listsQuery = listsQuery();
+        this.listsQuery.addChangeListener(new QueryChangeListener() {
             @Override
-            public void changed(LiveQueryChange change) {
+            public void changed(QueryChange change) {
                 clear();
                 ResultSet rs = change.getRows();
                 Result result;
@@ -52,12 +52,11 @@ public class LiveListsAdapter extends ArrayAdapter<String> {
                 notifyDataSetChanged();
             }
         });
-        this.listsLiveQuery.run();
 
-        this.incompTasksCountLiveQuery = incompTasksCountLiveQuery();
-        this.incompTasksCountLiveQuery.addChangeListener(new LiveQueryChangeListener() {
+        this.incompTasksCountQuery = incompTasksCountQuery();
+        this.incompTasksCountQuery.addChangeListener(new QueryChangeListener() {
             @Override
-            public void changed(LiveQueryChange change) {
+            public void changed(QueryChange change) {
                 incompCounts.clear();
                 ResultSet rs = change.getRows();
                 Result result;
@@ -68,20 +67,6 @@ public class LiveListsAdapter extends ArrayAdapter<String> {
                 notifyDataSetChanged();
             }
         });
-        this.incompTasksCountLiveQuery.run();
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        if (listsLiveQuery != null) {
-            listsLiveQuery.stop();
-            listsLiveQuery = null;
-        }
-        if (incompTasksCountLiveQuery != null) {
-            incompTasksCountLiveQuery.stop();
-            incompTasksCountLiveQuery = null;
-        }
-        super.finalize();
     }
 
     @Override
@@ -101,19 +86,18 @@ public class LiveListsAdapter extends ArrayAdapter<String> {
             countText.setText("");
         }
 
-        Log.e(TAG, "getView(): pos -> %d, docID -> %s, name -> %s, name2 -> %s, all -> %s", position, list.getId(), list.getString("name"), list.getObject("name"), list.toMap());
+        Log.e(TAG, "getView(): pos -> %d, docID -> %s, name -> %s, name2 -> %s, all -> %s", position, list.getId(), list.getString("name"), list.getValue("name"), list.toMap());
         return convertView;
     }
 
-    private LiveQuery listsLiveQuery() {
-        return Query.select(SelectResult.expression(Expression.meta().getId()))
+    private Query listsQuery() {
+        return Query.select(SelectResult.expression(Meta.id))
                 .from(DataSource.database(db))
                 .where(Expression.property("type").equalTo("task-list"))
-                .orderBy(Ordering.property("name").ascending())
-                .toLive();
+                .orderBy(Ordering.property("name").ascending());
     }
 
-    private LiveQuery incompTasksCountLiveQuery() {
+    private Query incompTasksCountQuery() {
         Expression exprType = Expression.property("type");
         Expression exprComplete = Expression.property("complete");
         Expression exprTaskListId = Expression.property("taskList.id");
@@ -122,7 +106,6 @@ public class LiveListsAdapter extends ArrayAdapter<String> {
         return Query.select(srTaskListID, srCount)
                 .from(DataSource.database(db))
                 .where(exprType.equalTo("task").and(exprComplete.equalTo(false)))
-                .groupBy(exprTaskListId)
-                .toLive();
+                .groupBy(exprTaskListId);
     }
 }

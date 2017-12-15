@@ -18,6 +18,7 @@ import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.Log;
+import com.couchbase.lite.MutableDocument;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +28,7 @@ public class UsersFragment extends Fragment {
     private static final String TAG = UsersFragment.class.getSimpleName();
 
     private ListView listView;
-    private LiveUsersAdapter adapter;
+    private UsersAdapter adapter;
 
     private Database db;
     private Document taskList;
@@ -50,7 +51,7 @@ public class UsersFragment extends Fragment {
         db = ((Application) getActivity().getApplication()).getDatabase();
         taskList = db.getDocument(getActivity().getIntent().getStringExtra(ListsActivity.INTENT_LIST_ID));
 
-        adapter = new LiveUsersAdapter(this, db, taskList.getId());
+        adapter = new UsersAdapter(this, db, taskList.getId());
         listView = view.findViewById(R.id.list);
         listView.setAdapter(adapter);
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
@@ -105,17 +106,17 @@ public class UsersFragment extends Fragment {
     // create task
     private void createUser(String username) {
         String docId = taskList.getId() + "." + username;
-        Document doc = new Document(docId);
-        doc.setString("type", "task-list.user");
-        doc.setString("username", username);
+        MutableDocument mDoc = new MutableDocument(docId);
+        mDoc.setString("type", "task-list.user");
+        mDoc.setString("username", username);
         Map<String, Object> taskListInfo = new HashMap<String, Object>();
         taskListInfo.put("id", taskList.getId());
         taskListInfo.put("owner", taskList.getString("owner"));
-        doc.setObject("taskList", taskListInfo);
+        mDoc.setValue("taskList", taskListInfo);
         try {
-            db.save(doc);
+            db.save(mDoc);
         } catch (CouchbaseLiteException e) {
-            Log.e(TAG, "Failed to save the doc - %s", e, doc);
+            Log.e(TAG, "Failed to save the doc - %s", e, mDoc);
             //TODO: Error handling
         }
     }

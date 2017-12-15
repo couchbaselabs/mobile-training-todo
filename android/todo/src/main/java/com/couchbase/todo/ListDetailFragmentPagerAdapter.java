@@ -12,6 +12,7 @@ public class ListDetailFragmentPagerAdapter extends FragmentPagerAdapter {
         super(fm);
         this.pageCount = tabTitles.length;
     }
+
     public ListDetailFragmentPagerAdapter(FragmentManager fm, int pageCount) {
         super(fm);
         this.pageCount = pageCount;

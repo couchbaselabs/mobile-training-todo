@@ -28,6 +28,7 @@ import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.Log;
+import com.couchbase.lite.MutableDocument;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -49,7 +50,7 @@ public class TasksFragment extends Fragment {
     private static final int THUMBNAIL_SIZE = 150;
 
     private ListView listView;
-    private LiveTasksAdapter adapter;
+    private TasksAdapter adapter;
 
     private Database db;
     private Document taskList;
@@ -75,7 +76,7 @@ public class TasksFragment extends Fragment {
         db = ((Application) getActivity().getApplication()).getDatabase();
         taskList = db.getDocument(getActivity().getIntent().getStringExtra(ListsActivity.INTENT_LIST_ID));
 
-        adapter = new LiveTasksAdapter(this, db, taskList.getId());
+        adapter = new TasksAdapter(this, db, taskList.getId());
         listView = view.findViewById(R.id.list);
         listView.setAdapter(adapter);
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
@@ -140,7 +141,7 @@ public class TasksFragment extends Fragment {
         alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                updateTask(task, input.getText().toString());
+                updateTask(task.toMutable(), input.getText().toString());
             }
         });
         alert.show();
@@ -195,7 +196,7 @@ public class TasksFragment extends Fragment {
                 Bitmap mImage = BitmapFactory.decodeFile(mImagePathToBeAttached, options);
                 Bitmap thumbnail = ThumbnailUtils.extractThumbnail(mImage, THUMBNAIL_SIZE, THUMBNAIL_SIZE);
                 file.delete();
-                attachImage(selectedTask, thumbnail);
+                selectedTask = attachImage(selectedTask.toMutable(), thumbnail);
             }
         }
     }
@@ -205,32 +206,34 @@ public class TasksFragment extends Fragment {
     // -------------------------
 
     // create task
-    private void createTask(String title) {
-        Document doc = new Document();
-        doc.setString("type", "task");
+    private Document createTask(String title) {
+        MutableDocument mDoc = new MutableDocument();
+        mDoc.setString("type", "task");
         Map<String, Object> taskListInfo = new HashMap<String, Object>();
         taskListInfo.put("id", taskList.getId());
         taskListInfo.put("owner", taskList.getString("owner"));
-        doc.setObject("taskList", taskListInfo);
-        doc.setDate("createdAt", new Date());
-        doc.setString("task", title);
-        doc.setBoolean("complete", false);
+        mDoc.setValue("taskList", taskListInfo);
+        mDoc.setDate("createdAt", new Date());
+        mDoc.setString("task", title);
+        mDoc.setBoolean("complete", false);
         try {
-            db.save(doc);
+            return db.save(mDoc);
         } catch (CouchbaseLiteException e) {
-            Log.e(TAG, "Failed to save the doc - %s", e, doc);
+            Log.e(TAG, "Failed to save the doc - %s", e, mDoc);
             //TODO: Error handling
+            return null;
         }
     }
 
     // update task
-    private void updateTask(final Document task, String text) {
+    private Document updateTask(final MutableDocument task, String text) {
         task.setString("task", text);
         try {
-            db.save(task);
+            return db.save(task);
         } catch (CouchbaseLiteException e) {
             Log.e(TAG, "Failed to save the doc - %s", e, task);
             //TODO: Error handling
+            return null;
         }
     }
 
@@ -245,7 +248,7 @@ public class TasksFragment extends Fragment {
     }
 
     // store photo
-    private void attachImage(Document task, Bitmap image) {
+    private Document attachImage(MutableDocument task, Bitmap image) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.JPEG, 50, out);
         ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
@@ -253,10 +256,11 @@ public class TasksFragment extends Fragment {
         Blob blob = new Blob("image/jpg", in);
         task.setBlob("image", blob);
         try {
-            db.save(task);
+            return db.save(task);
         } catch (CouchbaseLiteException e) {
             Log.e(TAG, "Failed to save the doc - %s", e, task);
             //TODO: Error handling
+            return null;
         }
     }
 }

@@ -12,37 +12,33 @@ import com.couchbase.lite.DataSource;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.Expression;
-import com.couchbase.lite.LiveQuery;
-import com.couchbase.lite.LiveQueryChange;
-import com.couchbase.lite.LiveQueryChangeListener;
+import com.couchbase.lite.Meta;
 import com.couchbase.lite.Query;
 import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
+import com.couchbase.lite.query.QueryChange;
+import com.couchbase.lite.query.QueryChangeListener;
 
 /**
  * Created by hideki on 6/26/17.
  */
 
-public class LiveUsersAdapter  extends ArrayAdapter<String> {
-    private static final String TAG = LiveUsersAdapter.class.getSimpleName();
-
-    private UsersFragment fragment;
+public class UsersAdapter extends ArrayAdapter<String> {
+    private static final String TAG = UsersAdapter.class.getSimpleName();
+    UsersFragment fragment;
     private Database db;
     private String listID;
 
-    private LiveQuery query;
-
-    public LiveUsersAdapter(UsersFragment fragment, Database db, String listID) {
+    public UsersAdapter(UsersFragment fragment, Database db, String listID) {
         super(fragment.getContext(), 0);
         this.fragment = fragment;
         this.db = db;
         this.listID = listID;
 
-        this.query = query();
-        this.query.addChangeListener(new LiveQueryChangeListener() {
+        query().addChangeListener(new QueryChangeListener() {
             @Override
-            public void changed(LiveQueryChange change) {
+            public void changed(QueryChange change) {
                 clear();
                 ResultSet rs = change.getRows();
                 Result result;
@@ -53,7 +49,6 @@ public class LiveUsersAdapter  extends ArrayAdapter<String> {
                 notifyDataSetChanged();
             }
         });
-        this.query.run();
     }
 
     @Override
@@ -73,11 +68,10 @@ public class LiveUsersAdapter  extends ArrayAdapter<String> {
         return convertView;
     }
 
-    private LiveQuery query() {
-        return Query.select(SelectResult.expression(Expression.meta().getId()))
+    private Query query() {
+        return Query.select(SelectResult.expression(Meta.id))
                 .from(DataSource.database(db))
                 .where(Expression.property("type").equalTo("task-list.user")
-                        .and(Expression.property("taskList.id").equalTo(listID)))
-                .toLive();
+                        .and(Expression.property("taskList.id").equalTo(listID)));
     }
 }

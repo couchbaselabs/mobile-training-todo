@@ -20,6 +20,7 @@ import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.Log;
+import com.couchbase.lite.MutableDocument;
 
 import java.util.UUID;
 
@@ -33,7 +34,7 @@ public class ListsActivity extends AppCompatActivity {
     private Database db;
 
     private ListView listView;
-    private LiveListsAdapter adapter;
+    private ListsAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +48,7 @@ public class ListsActivity extends AppCompatActivity {
         Application application = (Application) getApplication();
         username = application.getUsername();
         db = application.getDatabase();
-        if(db == null) throw new IllegalArgumentException();
+        if (db == null) throw new IllegalArgumentException();
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -57,7 +58,7 @@ public class ListsActivity extends AppCompatActivity {
             }
         });
 
-        adapter = new LiveListsAdapter(this, db);
+        adapter = new ListsAdapter(this, db);
         listView = findViewById(R.id.list);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -167,7 +168,7 @@ public class ListsActivity extends AppCompatActivity {
                 String title = input.getText().toString();
                 if (title.length() == 0)
                     return;
-                updateList(list, title);
+                updateList(list.toMutable(), title);
             }
         });
         alert.show();
@@ -180,29 +181,29 @@ public class ListsActivity extends AppCompatActivity {
     // create list
     private Document createList(String title) {
         String docId = username + "." + UUID.randomUUID();
-        Document doc = new Document(docId);
-        doc.setString("type", "task-list");
-        doc.setString("name", title);
-        doc.setString("owner", username);
+        MutableDocument mDoc = new MutableDocument(docId);
+        mDoc.setString("type", "task-list");
+        mDoc.setString("name", title);
+        mDoc.setString("owner", username);
         try {
-            db.save(doc);
+            return db.save(mDoc);
         } catch (CouchbaseLiteException e) {
-            Log.e(TAG, "Failed to save the doc - %s", e, doc);
+            Log.e(TAG, "Failed to save the doc - %s", e, mDoc);
             //TODO: Error handling
+            return null;
         }
-        return doc;
     }
 
     // update list
-    private Document updateList(final Document list, String title) {
+    private Document updateList(final MutableDocument list, String title) {
         list.setString("name", title);
         try {
-            db.save(list);
+            return db.save(list);
         } catch (CouchbaseLiteException e) {
             Log.e(TAG, "Failed to save the doc - %s", e, list);
             //TODO: Error handling
+            return null;
         }
-        return list;
     }
 
     // delete list
