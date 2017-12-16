@@ -38,7 +38,7 @@
 #pragma mark - Database
 
 - (void)reload {
-    CBLDocument* task = [_database documentWithID: self.taskID];
+    CBLDocument* task = [_database documentWithID:self.taskID];
     CBLBlob *imageBlob = [task blobForKey:@"image"];
     if (imageBlob)
         imageView.image = [UIImage imageWithData:imageBlob.content scale:[UIScreen mainScreen].scale];
@@ -53,9 +53,9 @@
         return;
     }
     
-    CBLMutableDocument* task = [[_database documentWithID: self.taskID] toMutable];
+    CBLMutableDocument *task = [[_database documentWithID:self.taskID] toMutable];
     CBLBlob *imageBlob = [[CBLBlob alloc] initWithContentType:@"image/jpg" data:imageData];
-    [task setObject: imageBlob forKey: @"image"];
+    [task setValue:imageBlob forKey:@"image"];
     
     NSError *error;
     if ([_database saveDocument:task error:&error]) {
@@ -65,8 +65,8 @@
 }
 
 - (void)deleteImage {
-    CBLMutableDocument* task = [[_database documentWithID: self.taskID] toMutable];
-    [task setObject: nil forKey: @"image"];
+    CBLMutableDocument *task = [[_database documentWithID:self.taskID] toMutable];
+    [task setValue:nil forKey:@"image"];
     
     NSError *error;
     if ([_database saveDocument: task error: &error]) {

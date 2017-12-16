@@ -11,7 +11,7 @@ import CouchbaseLiteSwift
 
 // Property Expression:
 
-let ID = Expression.meta().id
+let ID = Meta.id
 let CREATED_AT = Expression.property("createdAt")
 let COMPLETE = Expression.property("complete")
 let NAME = Expression.property("name")

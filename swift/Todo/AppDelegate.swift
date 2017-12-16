@@ -19,7 +19,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
     
     var database: Database!
     var replicator: Replicator!
-    var changeListener: NSObjectProtocol?
+    var changeListener: ListenerToken?
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions
         launchOptions: [UIApplicationLaunchOptionsKey : Any]? = nil) -> Bool {
@@ -62,14 +62,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         let task = ValueIndexItem.expression(Expression.property("task"))
         
         do {
-            try database.createIndex(Index.valueIndex().on(type, name), withName: "task-list")
+            try database.createIndex(Index.valueIndex(withItems: type, name), withName: "task-list")
         } catch let error as NSError {
             NSLog("Couldn't create index (type, name): %@", error);
         }
         
         // For tasks query:
         do {
-            try database.createIndex(Index.valueIndex().on(type, taskListId, task), withName: "tasks")
+            try database.createIndex(Index.valueIndex(withItems: type, taskListId, task), withName: "tasks")
         } catch let error as NSError {
             NSLog("Couldn't create index (type, taskList.id, task): %@", error);
         }
@@ -134,13 +134,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
             return
         }
         
-        var config = ReplicatorConfiguration(database: database, targetURL: kSyncGatewayUrl)
+        var config = ReplicatorConfiguration(withDatabase: database, targetURL: kSyncGatewayUrl)
         config.continuous = true
         if kLoginFlowEnabled {
             config.authenticator = BasicAuthenticator(username: username, password: password!)
         }
         
-        replicator = Replicator(config: config)
+        replicator = Replicator(withConfig: config)
         changeListener = replicator.addChangeListener({ (change) in
             let s = change.status
             let e = change.status.error as NSError?
@@ -169,7 +169,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         }
         
         replicator.stop()
-        replicator.removeChangeListener(changeListener!)
+        replicator.removeChangeListener(withToken: changeListener!)
         changeListener = nil
     }
 }

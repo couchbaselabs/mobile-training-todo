@@ -25,9 +25,14 @@
     
     NSString *_username;
     CBLDatabase *_database;
-    CBLLiveQuery *_taskQuery;
-    CBLQuery *_searchQuery;
+    
+    CBLQuery *_taskQuery;
     NSArray <CBLQueryResult*> *_taskRows;
+    
+    CBLQuery *_searchQuery;
+    BOOL _inSearch;
+    NSArray <CBLQueryResult*> *_searchRows;
+    
     NSString *_taskIDForImage;
     id _dbChangeListener;
 }
@@ -46,6 +51,7 @@
     _searchController.searchResultsUpdater = self;
     _searchController.searchBar.delegate = self;
     _searchController.dimsBackgroundDuringPresentation = NO;
+    _searchController.searchBar.delegate = self;
     self.tableView.tableHeaderView = _searchController.searchBar;
     
     // Get database and username:
@@ -72,39 +78,38 @@
 
 - (void) dealloc {
     // Remove change listener:
-    [_database removeChangeListener:_dbChangeListener];
+    [_database removeChangeListenerWithToken:_dbChangeListener];
 }
 
 #pragma mark - Database
 
 - (void)reload {
     if (!_taskQuery) {
-        _taskQuery = [[CBLQuery select:@[S_ID]
-                                  from:[CBLQueryDataSource database:_database]
-                                 where:[[TYPE equalTo:@"task"]
-                                        andExpression: [TASK_LIST_ID equalTo:self.taskList.id]]
-                               orderBy:@[[CBLQueryOrdering expression:CREATED_AT],
-                                         [CBLQueryOrdering expression:TASK]]] toLive];
+        _taskQuery = [CBLQuery select:@[S_ID]
+                                 from:[CBLQueryDataSource database:_database]
+                                where:[[TYPE equalTo:@"task"]
+                                       andExpression: [TASK_LIST_ID equalTo:self.taskList.id]]
+                              orderBy:@[[CBLQueryOrdering expression:CREATED_AT],
+                                        [CBLQueryOrdering expression:TASK]]];
         __weak typeof (self) wSelf = self;
-        [_taskQuery addChangeListener:^(CBLLiveQueryChange *change) {
+        [_taskQuery addChangeListener:^(CBLQueryChange *change) {
             if (!change.rows)
                 NSLog(@"Error querying tasks: %@", change.error);
             _taskRows = [change.rows allObjects];
             [wSelf.tableView reloadData];
         }];
     }
-    [_taskQuery start];
 }
 
 - (void)createTask:(NSString *)task {
     CBLMutableDocument *doc = [[CBLMutableDocument alloc] init];
-    [doc setObject:@"task" forKey:@"type"];
+    [doc setValue:@"task" forKey:@"type"];
     NSDictionary *taskList = @{@"id": _taskList.id,
                                @"owner": [_taskList stringForKey: @"owner"]};
-    [doc setObject:taskList forKey:@"taskList"];
-    [doc setObject:[NSDate date] forKey:@"createdAt"];
-    [doc setObject:task forKey:@"task"];
-    [doc setObject:@NO forKey:@"complete"];
+    [doc setValue:taskList forKey:@"taskList"];
+    [doc setValue:[NSDate date] forKey:@"createdAt"];
+    [doc setValue:task forKey:@"task"];
+    [doc setValue:@NO forKey:@"complete"];
     
     NSError *error;
     if (![_database saveDocument:doc error:&error])
@@ -113,7 +118,7 @@
 
 - (void)updateTask:(NSString *)taskID withTitle:(NSString *)title {
     CBLMutableDocument *task = [[_database documentWithID: taskID] toMutable];
-    [task setObject:title forKey:@"task"];
+    [task setValue:title forKey:@"task"];
     
     NSError *error;
     if (![_database saveDocument:task error:&error])
@@ -122,7 +127,7 @@
 
 - (void)updateTask:(NSString *)taskID withComplete:(BOOL)complete {
     CBLMutableDocument *task = [[_database documentWithID: taskID] toMutable];
-    [task setObject:@(complete) forKey:@"complete"];
+    [task setValue:@(complete) forKey:@"complete"];
     NSError *error;
     if (![_database saveDocument:task error:&error])
         [CBLUi showErrorOn:self message:@"Couldn't update complete status" error:error];
@@ -136,7 +141,7 @@
     
     CBLMutableDocument *task = [[_database documentWithID: taskID] toMutable];
     CBLBlob *blob = [[CBLBlob alloc] initWithContentType:@"image/jpg" data:imageData];
-    [task setObject:blob forKey:@"image"];
+    [task setValue:blob forKey:@"image"];
     if (![_database saveDocument:task error:&error])
         [CBLUi showErrorOn:self message:@"Couldn't update task" error:error];
 }
@@ -158,11 +163,11 @@
                             orderBy:@[[CBLQueryOrdering expression:CREATED_AT],
                                       [CBLQueryOrdering expression:TASK]]];
     NSError *error;
-    NSEnumerator *rows = [_searchQuery run: &error];
+    NSEnumerator *rows = [_searchQuery execute: &error];
     if (!rows)
         NSLog(@"Error searching tasks: %@", error);
     
-    _taskRows = [rows allObjects];
+    _searchRows = [rows allObjects];
     [self.tableView reloadData];
 }
 
@@ -174,7 +179,7 @@
     if ([_username isEqualToString: [_taskList stringForKey:@"owner"]])
         display = YES;
     else
-        display = [_database contains:moderatorDocId];
+        display = [_database containsDocumentWithID:moderatorDocId];
     [CBLUi displayOrHideTabbar:self display:display];
     
     if (!_dbChangeListener) {
@@ -203,12 +208,16 @@
 
 #pragma mark - Table view data source
 
+- (NSArray<CBLQueryResult*>*)data {
+    return _inSearch ? _searchRows : _taskRows;
+}
+
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     return 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return _taskRows.count;
+    return self.data.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -216,7 +225,7 @@
         (CBLTaskTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"TaskCell"
                                                                 forIndexPath:indexPath];
     
-    NSString* docID = [_taskRows[indexPath.row] stringAtIndex:0];
+    NSString* docID = [self.data[indexPath.row] stringAtIndex:0];
     CBLDocument *doc = [_database documentWithID:docID];
     
     cell.taskLabel.text = [doc stringForKey: @"task"];
@@ -251,10 +260,10 @@
 }
 
 - (void)updateImage:(UIImage *)image withDigest:(NSString *)digest atIndexPath:(NSIndexPath *)indexPath {
-    if (_taskRows.count <= indexPath.row)
+    if (self.data.count <= indexPath.row)
         return;
     
-    NSString* docID = [_taskRows[indexPath.row] stringAtIndex:0];
+    NSString* docID = [self.data[indexPath.row] stringAtIndex:0];
     CBLDocument *doc = [_database documentWithID:docID];
     CBLBlob *imageBlob = [doc blobForKey: @"image"];
     if ([imageBlob.digest isEqualToString:digest]) {
@@ -264,7 +273,7 @@
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    NSString* docID = [_taskRows[indexPath.row] stringAtIndex:0];
+    NSString* docID = [self.data[indexPath.row] stringAtIndex:0];
     CBLDocument *doc = [_database documentWithID:docID];
     BOOL complete = ![doc booleanForKey:@"complete"];
     [self updateTask:docID withComplete:complete];
@@ -277,7 +286,7 @@
 - (NSArray<UITableViewRowAction *> *)tableView:(UITableView *)tableView
                   editActionsForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSString* docID = [_taskRows[indexPath.row] stringAtIndex:0];
+    NSString* docID = [self.data[indexPath.row] stringAtIndex:0];
     
     UITableViewRowAction *delete =
         [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleNormal
@@ -319,10 +328,17 @@
 - (void)updateSearchResultsForSearchController:(UISearchController *)searchController {
     NSString *text = searchController.searchBar.text ?: @"";
     if ([text length] > 0) {
-        [_taskQuery stop];
+        _inSearch = YES;
         [self searchTask:text];
-    } else
-        [self reload];
+    } else {
+        [self searchBarCancelButtonClicked: searchController.searchBar];
+    }
+}
+
+- (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
+    _inSearch = NO;
+    _searchRows = nil;
+    [self.tableView reloadData];
 }
 
 #pragma mark - UIImagePickerControllerDelegate

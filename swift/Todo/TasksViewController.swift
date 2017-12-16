@@ -9,7 +9,7 @@
 import UIKit
 import CouchbaseLiteSwift
 
-class TasksViewController: UITableViewController, UISearchResultsUpdating,
+class TasksViewController: UITableViewController, UISearchResultsUpdating, UISearchBarDelegate,
                            UIImagePickerControllerDelegate, UINavigationControllerDelegate
 {
     var searchController: UISearchController!
@@ -17,11 +17,16 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     var username: String!
     var database: Database!
     var taskList: Document!
-    var taskQuery: LiveQuery!
-    var searchQuery: Query!
+    
+    var taskQuery: Query!
     var taskRows : [Result]?
+    
+    var searchQuery: Query!
+    var inSearch = false;
+    var searchRows : [Result]?
+    
     var taskIDForImage: String?
-    var dbChangeListener: NSObjectProtocol?
+    var dbChangeListener: ListenerToken?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -30,6 +35,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         searchController = UISearchController(searchResultsController: nil)
         searchController.searchResultsUpdater = self
         searchController.dimsBackgroundDuringPresentation = false
+        searchController.searchBar.delegate = self
         self.tableView.tableHeaderView = searchController.searchBar
         
         // Get database and username:
@@ -62,7 +68,6 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
                 .from(DataSource.database(database))
                 .where(TYPE.equalTo("task").and(TASK_LIST_ID.equalTo(taskList.id)))
                 .orderBy(Ordering.expression(CREATED_AT), Ordering.expression(TASK))
-                .toLive()
             
             taskQuery.addChangeListener({ (change) in
                 if let error = change.error {
@@ -72,8 +77,6 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
                 self.tableView.reloadData()
             })
         }
-        
-        taskQuery.start()
     }
     
     func createTask(task: String) {
@@ -87,7 +90,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         doc.setValue(false, forKey: "complete")
         
         do {
-            try database.save(doc)
+            try database.saveDocument(doc)
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't save task", error: error)
         }
@@ -95,9 +98,9 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     func updateTask(taskID: String, withTitle title: String) {
         do {
-            let task = database.getDocument(taskID)!.toMutable()
+            let task = database.document(withID: taskID)!.toMutable()
             task.setValue(title, forKey: "task")
-            try database.save(task)
+            try database.saveDocument(task)
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't update task", error: error)
         }
@@ -105,9 +108,9 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     func updateTask(taskID: String, withComplete complete: Bool) {
         do {
-            let task = database.getDocument(taskID)!.toMutable()
+            let task = database.document(withID: taskID)!.toMutable()
             task.setValue(complete, forKey: "complete")
-            try database.save(task)
+            try database.saveDocument(task)
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't update task", error: error)
         }
@@ -120,10 +123,10 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         }
         
         do {
-            let task = database.getDocument(taskID)!.toMutable()
+            let task = database.document(withID: taskID)!.toMutable()
             let blob = Blob(contentType: "image/jpg", data: imageData)
             task.setValue(blob, forKey: "image")
-            try database.save(task)
+            try database.saveDocument(task)
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't update task", error: error)
         }
@@ -131,8 +134,8 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     func deleteTask(taskID: String) {
         do {
-            let task = database.getDocument(taskID)!
-            try database.delete(task)
+            let task = database.document(withID: taskID)!
+            try database.deleteDocument(task)
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't delete task", error: error)
         }
@@ -148,8 +151,8 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
             .orderBy(Ordering.expression(CREATED_AT), Ordering.expression(TASK))
         
         do {
-            let rows = try searchQuery.run()
-            taskRows = Array(rows)
+            let rows = try searchQuery.execute()
+            searchRows = Array(rows)
             tableView.reloadData()
         } catch let error as NSError {
             NSLog("Error searching tasks: %@", error)
@@ -164,7 +167,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         if username == taskList.string(forKey: "owner") {
             display = true
         } else {
-            display = database.contains(moderatorDocId)
+            display = database.containsDocument(withID: moderatorDocId)
         }
         Ui.displayOrHideTabbar(on: self, display: display)
         
@@ -194,16 +197,20 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     // MARK: - UITableViewController
     
+    var data: [Result]? {
+        return inSearch ? searchRows : taskRows
+    }
+    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return taskRows?.count ?? 0
+        return self.data?.count ?? 0
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TaskCell") as! TaskTableViewCell
         
-        let row = taskRows![indexPath.row]
+        let row = self.data![indexPath.row]
         let docID = row.string(at: 0)!
-        let doc = database.getDocument(docID)!
+        let doc = database.document(withID: docID)!
         
         cell.taskLabel.text = doc.string(forKey: "task")
         
@@ -240,9 +247,9 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
             return
         }
         
-        let row = taskRows![indexPath.row]
+        let row = self.data![indexPath.row]
         let docID = row.string(at: 0)!
-        let doc = database.getDocument(docID)!
+        let doc = database.document(withID: docID)!
         
         if let imageBlob = doc.blob(forKey: "image"), let d = imageBlob.digest, d == digest {
             let cell = tableView.cellForRow(at: indexPath) as! TaskTableViewCell
@@ -251,9 +258,9 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let row = taskRows![indexPath.row]
+        let row = self.data![indexPath.row]
         let docID = row.string(at: 0)!
-        let doc = database.getDocument(docID)!
+        let doc = database.document(withID: docID)!
         
         let complete: Bool = !doc.boolean(forKey: "complete")
         updateTask(taskID: docID, withComplete: complete)
@@ -264,7 +271,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     }
     
     override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
-        let row = taskRows![indexPath.row]
+        let row = self.data![indexPath.row]
         let docID = row.string(at: 0)!
         
         let delete = UITableViewRowAction(style: .normal, title: "Delete") {
@@ -282,7 +289,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
             tableView.setEditing(false, animated: true)
             // Display update list dialog:
             Ui.showTextInput(on: self, title: "Edit Task", message:  nil, textFieldConfig: { text in
-                let doc = self.database.getDocument(docID)!
+                let doc = self.database.document(withID: docID)!
                 text.placeholder = "Task"
                 text.text = doc.string(forKey: "task")
                 text.autocapitalizationType = .sentences
@@ -299,11 +306,17 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
     
     func updateSearchResults(for searchController: UISearchController) {
         if let task = searchController.searchBar.text, !task.isEmpty {
-            taskQuery.stop()
+            inSearch = true
             searchTask(task: task)
         } else {
-            reload()
+            searchBarCancelButtonClicked(searchController.searchBar)
         }
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        inSearch = false
+        searchRows = nil
+        self.tableView.reloadData()
     }
     
     // MARK: - UIImagePickerControllerDelegate
@@ -333,7 +346,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating,
         // Fix "... load the view of a view controller while it is deallocating" warning.
         searchController?.view.removeFromSuperview()
         // Remove change listener:
-        database.removeChangeListener(dbChangeListener!)
+        database.removeChangeListener(withToken: dbChangeListener!)
     }
 }
 

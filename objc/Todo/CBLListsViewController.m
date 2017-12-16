@@ -15,17 +15,21 @@
 #import "CBLUsersViewController.h"
 #import "CBLUi.h"
 
-@interface CBLListsViewController () <UISearchResultsUpdating> {
+@interface CBLListsViewController () <UISearchResultsUpdating, UISearchBarDelegate> {
     UISearchController *_searchController;
     
     CBLDatabase *_database;
     NSString *_username;
     
-    CBLLiveQuery *_listQuery;
-    CBLQuery *_searchQuery;
+    CBLQuery *_listQuery;
     NSArray<CBLQueryResult*>* _listRows;
     
-    CBLLiveQuery *_incompTasksCountsQuery;
+    CBLQuery *_searchQuery;
+    BOOL _inSearch;
+    NSArray<CBLQueryResult*>* _searchRows;
+    
+    CBLQuery *_incompTasksCountsQuery;
+    
     NSMutableDictionary *_incompTasksCounts;
     BOOL shouldUpdateIncompTasksCount;
 }
@@ -43,6 +47,8 @@
     _searchController = [[UISearchController alloc] initWithSearchResultsController:nil];
     _searchController.searchResultsUpdater = self;
     _searchController.dimsBackgroundDuringPresentation = NO;
+    _searchController.searchBar.delegate = self;
+    
     self.tableView.tableHeaderView = _searchController.searchBar;
     
     // Get database and username:
@@ -55,42 +61,38 @@
     [self reload];
 }
 
-
 #pragma mark - Database
 
 - (void)reload {
     if (!_listQuery) {
         // TASK LIST:
-        _listQuery = [[CBLQuery select:@[S_ID, S_NAME]
-                                  from:[CBLQueryDataSource database:_database]
-                                 where:[TYPE equalTo:@"task-list"]
-                               orderBy:@[[CBLQueryOrdering expression:NAME]]] toLive];
+        _listQuery = [CBLQuery select:@[S_ID, S_NAME]
+                                 from:[CBLQueryDataSource database:_database]
+                                where:[TYPE equalTo:@"task-list"]
+                              orderBy:@[[CBLQueryOrdering expression:NAME]]];
+        
+        // INCOMPLETE TASKS COUNT:
+        _incompTasksCountsQuery = [CBLQuery select:@[S_TASK_LIST_ID, S_COUNT]
+                                              from:[CBLQueryDataSource database:_database]
+                                             where:[[TYPE equalTo:@"task"]
+                                                    andExpression:[COMPLETE equalTo:@(NO)]]
+                                           groupBy:@[TASK_LIST_ID]];
         
         __weak typeof(self) wSelf = self;
-        [_listQuery addChangeListener:^(CBLLiveQueryChange *change) {
+        [_listQuery addChangeListener:^(CBLQueryChange *change) {
             if (!change.rows)
                 NSLog(@"Error querying task list: %@", change.error);
             _listRows = [change.rows allObjects];
             [wSelf.tableView reloadData];
         }];
         
-        // INCOMPLETE TASKS COUNT:
-        _incompTasksCountsQuery = [[CBLQuery select:@[S_TASK_LIST_ID, S_COUNT]
-                                               from:[CBLQueryDataSource database:_database]
-                                              where:[[TYPE equalTo:@"task"]
-                                                        andExpression:[COMPLETE equalTo:@(NO)]]
-                                            groupBy:@[TASK_LIST_ID]] toLive];
-        
-        [_incompTasksCountsQuery addChangeListener:^(CBLLiveQueryChange *change) {
+        [_incompTasksCountsQuery addChangeListener:^(CBLQueryChange *change) {
             if (change.rows)
                 [wSelf updateIncompleteTasksCounts: change.rows];
             else
                 NSLog(@"Error querying incomplete task count: %@", change.error);
         }];
     }
-    
-    [_listQuery start];
-    [_incompTasksCountsQuery start];
 }
 
 - (void)updateIncompleteTasksCounts:(CBLQueryResultSet*)rows {
@@ -99,7 +101,7 @@
     [_incompTasksCounts removeAllObjects];
     
     for (CBLQueryResult *row in rows) {
-        _incompTasksCounts[[row stringAtIndex:0]] = [row objectAtIndex:1];
+        _incompTasksCounts[[row stringAtIndex:0]] = [row valueAtIndex:1];
     }
     [self.tableView reloadData];
 }
@@ -108,9 +110,9 @@
 - (void)createTaskList:(NSString *)name {
     NSString *docId = [NSString stringWithFormat:@"%@.%@", _username, [NSUUID UUID].UUIDString];
     CBLMutableDocument *doc = [[CBLMutableDocument alloc] initWithID: docId];
-    [doc setObject:@"task-list" forKey:@"type"];
-    [doc setObject:name forKey:@"name"];
-    [doc setObject:_username forKey:@"owner"];
+    [doc setValue:@"task-list" forKey:@"type"];
+    [doc setValue:name forKey:@"name"];
+    [doc setValue:_username forKey:@"owner"];
     
     NSError *error;
     if (![_database saveDocument:doc error:&error])
@@ -119,7 +121,7 @@
 
 - (void)updateTaskList:(NSString *)listID withName:(NSString *)name {
     CBLMutableDocument* list = [[_database documentWithID: listID] toMutable];
-    [list setObject:name forKey:@"name"];
+    [list setValue:name forKey:@"name"];
     NSError *error;
     if (![_database saveDocument:list error:&error])
         [CBLUi showErrorOn:self message:@"Couldn't update task list" error:error];
@@ -140,11 +142,12 @@
                             orderBy:@[[CBLQueryOrdering expression: NAME]]];
     
     NSError *error;
-    NSEnumerator *rows = [_searchQuery run: &error];
+    NSEnumerator *rows = [_searchQuery execute: &error];
     if (!rows)
         NSLog(@"Error searching task list: %@", error);
     
-    _listRows = [rows allObjects];
+    _searchRows = [rows allObjects];
+    
     [self.tableView reloadData];
 }
 
@@ -161,12 +164,16 @@
 
 #pragma mark - Table view data source
 
+- (NSArray<CBLQueryResult*>*)data {
+    return _inSearch ? _searchRows : _listRows;
+}
+
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     return 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return [_listRows count];
+    return [self.data count];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView
@@ -175,7 +182,7 @@
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"TaskListCell"
                                                             forIndexPath:indexPath];
     
-    CBLQueryResult *row = _listRows[indexPath.row];
+    CBLQueryResult *row = self.data[indexPath.row];
     NSString *docID = [row stringAtIndex:0];
     NSString *name = [row stringAtIndex:1];
     
@@ -189,7 +196,7 @@
 -(NSArray<UITableViewRowAction *> *)tableView:(UITableView *)tableView
                  editActionsForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSString *docID = [_listRows[indexPath.row] stringAtIndex:0];
+    NSString *docID = [self.data[indexPath.row] stringAtIndex:0];
     
     // Delete action:
     UITableViewRowAction *delete =
@@ -233,17 +240,23 @@
 - (void)updateSearchResultsForSearchController:(UISearchController *)searchController {
     NSString *name = searchController.searchBar.text ?: @"";
     if ([name length] > 0) {
-        [_listQuery stop];
-        [_incompTasksCountsQuery stop];
+        _inSearch = YES;
         [self searchTaskList:name];
-    } else
-        [self reload];
+    } else {
+        [self searchBarCancelButtonClicked: searchController.searchBar];
+    }
+}
+
+- (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
+    _inSearch = NO;
+    _searchRows = nil;
+    [self.tableView reloadData];
 }
 
 #pragma mark - Navigation
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    NSString *docID = [_listRows[[self.tableView indexPathForSelectedRow].row] stringAtIndex:0];
+    NSString *docID = [self.data[[self.tableView indexPathForSelectedRow].row] stringAtIndex:0];
     CBLDocument *taskList = [_database documentWithID:docID];
     
     UITabBarController *tabBarController = (UITabBarController*)segue.destinationViewController;

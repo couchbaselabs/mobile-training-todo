@@ -9,15 +9,19 @@
 import UIKit
 import CouchbaseLiteSwift
 
-class UsersViewController: UITableViewController, UISearchResultsUpdating {
+class UsersViewController: UITableViewController, UISearchResultsUpdating, UISearchBarDelegate {
     var searchController: UISearchController!
     
     var username: String!
     var database: Database!
     var taskList: Document!
-    var usersQuery: LiveQuery!
-    var searchQuery: Query!
+    
+    var usersQuery: Query!
     var userRows : [Result]?
+    
+    var searchQuery: Query!
+    var inSearch = false;
+    var searchRows : [Result]?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -27,6 +31,7 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
         searchController.searchResultsUpdater = self
         searchController.searchBar.autocapitalizationType = .none
         searchController.dimsBackgroundDuringPresentation = false
+        searchController.searchBar.delegate = self
         self.tableView.tableHeaderView = searchController.searchBar
         
         // Get username and database:
@@ -55,7 +60,6 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
                 .select(S_ID, S_USERNAME)
                 .from(DataSource.database(database))
                 .where(TYPE.equalTo("task-list.user").and(TASK_LIST_ID.equalTo(taskList.id)))
-                .toLive()
             
             usersQuery.addChangeListener({ (change) in
                 if let error = change.error {
@@ -65,16 +69,15 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
                 self.tableView.reloadData()
             })
         }
-        usersQuery.start()
     }
     
     func addUser(username: String) {
         let docId = taskList.id + "." + username
-        if database.contains(docId) {
+        if database.containsDocument(withID: docId) {
             return
         }
         
-        let doc = MutableDocument(docId)
+        let doc = MutableDocument(withID: docId)
         doc.setValue("task-list.user", forKey: "type")
         doc.setValue(username, forKey: "username")
         
@@ -84,7 +87,7 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
         doc.setValue(taskListInfo, forKey: "taskList")
         
         do {
-            try database.save(doc)
+            try database.saveDocument(doc)
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't add user", error: error)
         }
@@ -92,7 +95,7 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
     
     func deleteUser(user: Document) {
         do {
-            try database.delete(user)
+            try database.deleteDocument(user)
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't delete user", error: error)
         }
@@ -107,8 +110,8 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
                 .and(USERNAME.like("%" + username + "%")))
         
         do {
-            let rows = try searchQuery.run()
-            userRows = Array(rows)
+            let rows = try searchQuery.execute()
+            searchRows = Array(rows)
             tableView.reloadData()
         } catch let error as NSError {
             NSLog("Error search users: %@", error)
@@ -117,21 +120,25 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
     
     // MARK: - UITableViewController
     
+    var data: [Result]? {
+        return inSearch ? searchRows : userRows
+    }
+    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return userRows?.count ?? 0
+        return self.data?.count ?? 0
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "UserCell", for: indexPath)
-        let row = userRows![indexPath.row]
+        let row = self.data![indexPath.row]
         cell.textLabel?.text = row.string(at: 1)
         return cell
     }
     
     override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
-        let row = userRows![indexPath.row]
+        let row = self.data![indexPath.row]
         let docID = row.string(at: 0)!
-        let doc = database.getDocument(docID)!
+        let doc = database.document(withID: docID)!
         
         let delete = UITableViewRowAction(style: .normal, title: "Delete") {
             (action, indexPath) -> Void in
@@ -149,11 +156,17 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         let text = searchController.searchBar.text ?? ""
         if !text.isEmpty {
-            usersQuery.stop()
+            inSearch = true
             self.searchUser(username: text)
         } else {
-            self.reload()
+            searchBarCancelButtonClicked(searchController.searchBar)
         }
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        inSearch = false
+        searchRows = nil
+        self.tableView.reloadData()
     }
     
     // MARK: - Action

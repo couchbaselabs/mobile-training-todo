@@ -13,7 +13,7 @@
 #import "CBLUi.h"
 
 
-@interface CBLUsersViewController () <UISearchResultsUpdating>
+@interface CBLUsersViewController () <UISearchResultsUpdating, UISearchBarDelegate>
 
 @end
 
@@ -21,9 +21,13 @@
     UISearchController *_searchController;
     NSString *_username;
     CBLDatabase *_database;
-    CBLLiveQuery *_userQuery;
-    CBLQuery *_searchQuery;
+    
+    CBLQuery *_userQuery;
     NSArray<CBLQueryResult*> *_userRows;
+    
+    CBLQuery *_searchQuery;
+    BOOL _inSearch;
+    NSArray<CBLQueryResult*> *_searchRows;
 }
 
 - (void)viewDidLoad {
@@ -34,6 +38,7 @@
     _searchController.searchResultsUpdater = self;
     _searchController.searchBar.autocapitalizationType = UITextAutocapitalizationTypeNone;
     _searchController.dimsBackgroundDuringPresentation = NO;
+    _searchController.searchBar.delegate = self;
     self.tableView.tableHeaderView = _searchController.searchBar;
     
     // Get username and database:
@@ -62,33 +67,32 @@
         CBLQueryExpression *exp1 = [TYPE equalTo:@"task-list.user"];
         CBLQueryExpression *exp2 = [TASK_LIST_ID equalTo: _taskList.id];
         
-        _userQuery = [[CBLQuery select:@[S_ID, S_USERNAME]
-                                  from:[CBLQueryDataSource database:_database]
-                                 where:[exp1 andExpression:exp2]] toLive];
+        _userQuery = [CBLQuery select:@[S_ID, S_USERNAME]
+                                 from:[CBLQueryDataSource database:_database]
+                                where:[exp1 andExpression:exp2]];
         __weak typeof(self) wSelf = self;
-        [_userQuery addChangeListener:^(CBLLiveQueryChange *change) {
+        [_userQuery addChangeListener:^(CBLQueryChange *change) {
             if (!change.rows)
                 NSLog(@"Error querying users: %@", change.error);
             _userRows = [change.rows allObjects];
             [wSelf.tableView reloadData];
         }];
     }
-    [_userQuery start];
 }
 
 - (void)addUser:(NSString *)username {
     NSString *docId = [NSString stringWithFormat:@"%@.%@", _taskList.id, username];
-    if ([_database contains:docId])
+    if ([_database containsDocumentWithID:docId])
         return;
     
     CBLMutableDocument *doc = [[CBLMutableDocument alloc] initWithID:docId];
-    [doc setObject:@"task-list.user" forKey:@"type"];
-    [doc setObject:username forKey:@"username"];
+    [doc setValue:@"task-list.user" forKey:@"type"];
+    [doc setValue:username forKey:@"username"];
     
     CBLMutableDictionary *taskListInfo = [[CBLMutableDictionary alloc] init];
-    [taskListInfo setObject:_taskList.id forKey:@"id"];
-    [taskListInfo setObject:[_taskList stringForKey:@"owner"] forKey:@"owner"];
-    [doc setObject:taskListInfo forKey:@"taskList"];
+    [taskListInfo setValue:_taskList.id forKey:@"id"];
+    [taskListInfo setValue:[_taskList stringForKey:@"owner"] forKey:@"owner"];
+    [doc setValue:taskListInfo forKey:@"taskList"];
     
     NSError *error;
     if (![_database saveDocument:doc error:&error])
@@ -109,11 +113,11 @@
                                from:[CBLQueryDataSource database:_database]
                               where:[[exp1 andExpression:exp2] andExpression:exp3]];
     NSError *error;
-    NSEnumerator *rows = [_searchQuery run: &error];
+    NSEnumerator *rows = [_searchQuery execute: &error];
     if (!rows)
         NSLog(@"Error searching tasks: %@", error);
     
-    _userRows = [rows allObjects];
+    _searchRows = [rows allObjects];
     [self.tableView reloadData];
 }
 
@@ -130,24 +134,28 @@
 
 #pragma mark - Table view data source
 
+- (NSArray<CBLQueryResult*>*)data {
+    return _inSearch ? _searchRows : _userRows;
+}
+
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     return 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return [_userRows count];
+    return [self.data count];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"UserCell" forIndexPath:indexPath];
-    cell.textLabel.text = [_userRows[indexPath.row] stringAtIndex:1];
+    cell.textLabel.text = [self.data[indexPath.row] stringAtIndex:1];
     return cell;
 }
 
 - (NSArray<UITableViewRowAction *> *)tableView:(UITableView *)tableView
                   editActionsForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSString* docID = [_userRows[indexPath.row] stringAtIndex:0];
+    NSString* docID = [self.data[indexPath.row] stringAtIndex:0];
     CBLDocument *doc = [_database documentWithID:docID];
     
     UITableViewRowAction *delete =
@@ -169,10 +177,17 @@
 - (void)updateSearchResultsForSearchController:(UISearchController *)searchController {
     NSString *text = searchController.searchBar.text ?: @"";
     if ([text length] > 0) {
-        [_userQuery stop];
+        _inSearch = YES;
         [self searchUser:text];
-    } else
-        [self reload];
+    } else {
+        [self searchBarCancelButtonClicked: searchController.searchBar];
+    }
+}
+
+- (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
+    _inSearch = NO;
+    _searchRows = nil;
+    [self.tableView reloadData];
 }
 
 @end

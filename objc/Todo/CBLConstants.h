@@ -11,7 +11,7 @@
 
 #define COMPLETE          [CBLQueryExpression property:@"complete"]
 #define CREATED_AT        [CBLQueryExpression property:@"createdAt"]
-#define ID                [CBLQueryExpression meta].id
+#define ID                [CBLQueryMeta id]
 #define NAME              [CBLQueryExpression property:@"name"]
 #define TASK              [CBLQueryExpression property:@"task"]
 #define TASK_LIST_ID      [CBLQueryExpression property:@"taskList.id"]

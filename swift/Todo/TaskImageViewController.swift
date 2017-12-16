@@ -52,7 +52,7 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
     // MARK: - Database
     
     func reload() {
-        let task = database.getDocument(taskID)!
+        let task = database.document(withID: taskID)!
         if let blob = task.blob(forKey: "image"), let content = blob.content {
             imageView.image = UIImage(data: content)
         } else {
@@ -67,9 +67,9 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
         }
         
         do {
-            let task = database.getDocument(taskID)!.toMutable()
+            let task = database.document(withID: taskID)!.toMutable()
             task.setValue(Blob(contentType: "image/jpg", data: imageData), forKey: "image")
-            try database.save(task)
+            try database.saveDocument(task)
             reload()
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't update image", error: error)
@@ -78,9 +78,9 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
     
     func deleteImage() {
         do {
-            let task = database.getDocument(taskID)!.toMutable()
+            let task = database.document(withID: taskID)!.toMutable()
             task.setValue(nil, forKey: "image")
-            try database.save(task)
+            try database.saveDocument(task)
             reload()
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't delete image", error: error)

@@ -64,18 +64,20 @@
 - (void)createDatabaseIndex {
     NSError *error;
     
-    CBLValueIndexItem *type = [CBLValueIndexItem expression:[CBLQueryExpression property:@"type"]];
-    CBLValueIndexItem *name = [CBLValueIndexItem expression:[CBLQueryExpression property:@"name"]];
-    CBLValueIndexItem *taskListId = [CBLValueIndexItem expression:[CBLQueryExpression property:@"taskList.id"]];
-    CBLValueIndexItem *task = [CBLValueIndexItem expression:[CBLQueryExpression property:@"task"]];
+    CBLValueIndexItem *type = [CBLValueIndexItem property:@"type"];
+    CBLValueIndexItem *name = [CBLValueIndexItem property:@"name"];
+    CBLValueIndexItem *taskListId = [CBLValueIndexItem property:@"taskList.id"];
+    CBLValueIndexItem *task = [CBLValueIndexItem property:@"task"];
     
     // For task list query:
-    if (![_database createIndex:[CBLIndex valueIndexOn:@[type, name]] withName:@"task-list" error:&error]) {
+    id index1 = [CBLIndex valueIndexWithItems:@[type, name]];
+    if (![_database createIndex: index1 withName:@"task-list" error:&error]) {
         NSLog(@"Couldn't create index (type, name): %@", error);
     }
     
     // For tasks query:
-    if (!![_database createIndex:[CBLIndex valueIndexOn:@[type, taskListId, task]] withName:@"tasks" error:&error]) {
+    id index2 = [CBLIndex valueIndexWithItems:@[type, taskListId, task]];
+    if (!![_database createIndex: index2 withName:@"tasks" error:&error]) {
         NSLog(@"Cannot create index (type, taskList.id, task): %@", error);
     }
 }
