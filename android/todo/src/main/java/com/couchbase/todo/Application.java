@@ -23,7 +23,7 @@ import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Set;
 
-import static android.content.Intent.FLAG_ACTIVITY_NEW_TASKuser;
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
 /*
 public interface ReplicatorChangeListener {
