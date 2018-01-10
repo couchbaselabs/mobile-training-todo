@@ -145,20 +145,28 @@ Well done! You've completed this lesson on designing the security model for each
 
 The entrypoint in the Couchbase Lite SDK is the [Manager](/documentation/mobile/current/develop/guides/couchbase-lite/native-api/manager/index.html) class. There is no limit to how many databases can be created or opened on the device. You can think of a database as a namespace for documents and several databases can be used in the same app (one database per user of the app is a common pattern). The code below creates an empty database.
 
-```swift
-// This code can be found in AppDelegate.swift
-// in the openDatabase(username:withKey:withNewKey) method
-let dbname = username
-let options = CBLDatabaseOptions()
-options.create = true
+```java
+// This code can be found in Application.java
+// in the openDatabase(username, key, newKey) method
+String dbname = username;
+DatabaseOptions options = new DatabaseOptions();
+options.setCreate(true);
 
-if kEncryptionEnabled {
-		if let encryptionKey = key {
-				options.encryptionKey = encryptionKey
-		}
+if (mEncryptionEnabled) {
+    options.setEncryptionKey(key);
 }
 
-try database = CBLManager.sharedInstance().openDatabaseNamed(dbname, with: options)
+Manager manager = null;
+try {
+    manager = new Manager(new AndroidContext(getApplicationContext()), Manager.DEFAULT_OPTIONS);
+} catch (IOException e) {
+    e.printStackTrace();
+}
+try {
+    database = manager.openDatabase(dbname, options);
+} catch (CouchbaseLiteException e) {
+    e.printStackTrace();
+}
 ```
 
 Here you're using the `openDatabaseNamed` method where the database is the user currently logged in and `options.create` is set to `true`.
@@ -171,28 +179,35 @@ Here you're using the `openDatabaseNamed` method where the database is the user 
 2. Create a new list on the application's 'Task lists' screen.
 3. The task list is persisted to the database.
 
-<img src="img/image40.png" class="portrait" />
+<img src="img/image40a.png" class="portrait" />
 
 ### Pre-built database
 
 In this section, you will learn how to bundle a pre-built Couchbase Lite database in an application. It can be a lot more efficient to bundle a database in your application and install it on the first launch. Even if some of the content changes on the server after you create the app, the app's first pull replication will bring the database up to date. Here, you will use a pre-built database that contains a list of groceries. The code below moves the pre-built database from the bundled location to the application directory.
 
-```swift
-// This code can be found in AppDelegate.swift
+```java
+// This code can be found in Application.java
 // in the installPrebuiltDb() method
-guard kUsePrebuiltDb else {
-		return
+if (!mUsePrebuiltDb) {
+    return;
 }
 
-let db = CBLManager.sharedInstance().databaseExistsNamed("todo")
-
-if (!db) {
-		let dbPath = Bundle.main.path(forResource: "todo", ofType: "cblite2")
-		do {
-				try CBLManager.sharedInstance().replaceDatabaseNamed("todo", withDatabaseDir: dbPath!)
-		} catch let error as NSError {
-				NSLog("Cannot replace the database %@", error)
-		}
+try {
+    manager = new Manager(new AndroidContext(getApplicationContext()), Manager.DEFAULT_OPTIONS);
+} catch (IOException e) {
+    e.printStackTrace();
+}
+try {
+    database = manager.getExistingDatabase("todo");
+} catch (CouchbaseLiteException e) {
+    e.printStackTrace();
+}
+if (database == null) {
+    try {
+        ZipUtils.unzip(getAssets().open("todo.zip"), manager.getContext().getFilesDir());
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
 }
 ```
 
@@ -200,15 +215,11 @@ The prebuilt database is installed using the database replacement API only if th
 
 #### Try it out
 
-1. Open **AppDelegate.swift** and set the `kUsePrebuiltDb` constant to `true`.
-
-		```swift
-		let kUsePrebuiltDb = true
-		```
-
+1. Open **Application.java** and set the `mUsePrebuiltDb` constant to true.
 2. Build and run (⚠️ don't forget to delete the app first).
 3. A Groceries list will now be visible on the Lists screen. Click on it to see the tasks.
-	<img src="https://cl.ly/3e1J2I0G1U1U/image45.gif" class="portrait" />
+
+    <img src="https://cl.ly/2z4715010K2Z/image45a.gif" class="portrait" />
 
 #### Conclusion
 
@@ -226,29 +237,18 @@ In this lesson you’ll be introduced to Couchbase Lite, our embedded NoSQL data
 
 In Couchbase Lite, the primary entity stored in a database is called a document instead of a "row" or "record". A document's body takes the form of a JSON object — a collection of key/value pairs where the values can be different types of data such as numbers, strings, arrays or even nested objects. The code below creates a new list document.
 
-```swift
-// This code can be found in ListsViewController.swift
-// in the createTaskList(name:) method
-let properties: [String : Any] = [
-		"type": "task-list",
-		"name": name,
-		"owner": username
-]
+```java
+// This code can be found in ListsActivity.java
+// in the createTaskList(String) method
+Map<String, Object> properties = new HashMap<String, Object>();
+properties.put("type", "task-list");
+properties.put("name", title);
+properties.put("owner", mUsername);
 
-let docId = username + "." + NSUUID().uuidString
-guard let doc = database.document(withID: docId) else {
-		Ui.showMessageDialog(onController: self, withTitle: "Error",
-				withMessage: "Couldn't save task list")
-		return nil
-}
+String docId = mUsername + "." + UUID.randomUUID();
 
-do {
-		return try doc.putProperties(properties)
-} catch let error as NSError {
-		Ui.showMessageDialog(onController: self, withTitle: "Error",
-				withMessage: "Couldn't save task list", withError: error)
-		return nil
-}
+Document document = mDatabase.getDocument(docId);
+document.putProperties(properties);
 ```
 
 Here you're creating an unsaved document instance with a pre-defined **document ID** (i.e. the **_id** property in the document’s JSON body) using the `documentWithID` method. The ID follows the form `{username}.{uuid}` where username is the name of the user logged in. Alternatively, you could also use the `createDocument` method to let the database generate a random **ID** for you.
@@ -258,7 +258,7 @@ Here you're creating an unsaved document instance with a pre-defined **document 
 1. Build and run.
 2. Create a new list using the '+' button on the application's 'Task lists' screen.
 3. A new list document is saved to the database.
-		<img src="img/image40.png" class="portrait" />
+    <img src="img/image40a.png" class="portrait" />
 
 > **Challenge:** Update the code to persist your name as the value for the `name` field. Then create a new list and notice that your name is displayed instead of the text input value.
 
@@ -266,18 +266,18 @@ Here you're creating an unsaved document instance with a pre-defined **document 
 
 To update a document, you must retrieve it from the database, modify the desired properties and write them back to the database. The `update` method does this operation for you in the form of a callback. The code below updates a list's name property.
 
-```swift
-// This code can be found in ListsViewController.swift
-// in the updateTaskList(list:withName:) method
-do {
-		try list.update { newRev in
-				newRev["name"] = name
-				return true
-		}
-} catch let error as NSError {
-		Ui.showMessageDialog(onController: self, withTitle: "Error",
-				withMessage: "Couldn't update task list", withError: error)
-}
+```java
+// This code can be in ListsActivity.java
+// in the updateList(Document) method
+list.update(new Document.DocumentUpdater() {
+    @Override
+    public boolean update(UnsavedRevision newRevision) {
+        Map<String, Object> props = newRevision.getUserProperties();
+        props.put("name", input.getText().toString());
+        newRevision.setUserProperties(props);
+        return true;
+    }
+});
 ```
 
 Your callback code can modify this object's properties as it sees fit; after it returns, the modified revision is saved and becomes the current one.
@@ -285,23 +285,23 @@ Your callback code can modify this object's properties as it sees fit; after it 
 #### Try it out
               
 1. Build and run.
-2. Swipe to the left on a row to reveal the **Edit** button and update the List name in the pop-up.
-		<img src="img/image04.png" class="portrait" />
-		
+2. Long press on a row to reveal the action items. Click the update menu to change title of a list.
+
+<img src="img/image04a.png" class="portrait" />
+
 > **Challenge:** Modify the code to uppercase the text inserted before persisting the document to the database.
 
 ### Delete Document
 
 A document can be deleted using the `delete` method. This operation actually creates a new revision in order to propagate the deletion to other clients. The concept of revisions will be covered in more detail in the next lesson. The code below deletes a list.
 
-```swift
-// This code can be found in ListsViewController.swift
-// in the deleteTaskList(list:) method
-do {
-		try list.delete()
-} catch let error as NSError {
-		Ui.showMessageDialog(onController: self, withTitle: "Error",
-				withMessage: "Couldn't delete task list", withError: error)
+```java
+// This code can be found in ListsActivity.java
+// in the deleteList(Document) method
+try {
+    list.delete();
+} catch (CouchbaseLiteException e) {
+    e.printStackTrace();
 }
 ```
 
@@ -311,8 +311,8 @@ do {
 
 1. Build and run.
 2. Click the **Delete** action to delete a list.
-		<img class="portrait" src="https://cl.ly/383h2q2C2Z3V/image46.gif" />
-		
+    <img class="portrait" src="https://cl.ly/262v3o381j2a/image46a.gif" />
+
 ### Query Documents
 
 The way to query data in Couchbase Lite is by registering a View and then running a Query on it with QueryOptions. The first thing to know about Couchbase Views is that they have nothing to do with UI views.
@@ -323,40 +323,47 @@ A [View](/documentation/mobile/current/develop/guides/couchbase-lite/native-api/
 
 So you can remember that a view index is a list of key/value pairs, sorted by key. In addition, the view’s logic is written in the native language of the platform you’re developing on. The code below indexes documents as shown on the diagram above. Then it create the Query and monitors the result set using a Live Query.
 
-```swift
-// This code can be found in ListsViewController.swift
-// in the setupViewAndQuery method
-let listsView = database.viewNamed("list/listsByName")
-if listsView.mapBlock == nil {
-		listsView.setMapBlock({ (doc, emit) in
-				if let type: String = doc["type"] as? String, let name = doc["name"]
-						, type == "task-list" {
-								emit(name, nil)
-				}
-		}, version: "1.0")
+```java
+// This code can be found in ListsActivity.java
+// in the setupViewAndQuery() method
+com.couchbase.lite.View listsView = mDatabase.getView("list/listsByName");
+if (listsView.getMap() == null) {
+    listsView.setMap(new Mapper() {
+        @Override
+        public void map(Map<String, Object> document, Emitter emitter) {
+            String type = (String) document.get("type");
+            if ("task-list".equals(type)) {
+                emitter.emit(document.get("name"), null);
+            }
+        }
+    }, "1.0");
 }
 
-listsLiveQuery = listsView.createQuery().asLive()
-listsLiveQuery.addObserver(self, forKeyPath: "rows", options: .new, context: nil)
-listsLiveQuery.start()
+listsLiveQuery = listsView.createQuery().toLiveQuery();
 ```
 
 The `viewNamed` method returns a [View](http://developer.couchbase.com/documentation/mobile/current/develop/guides/couchbase-lite/native-api/view/index.html) object on which the map function can be set. The map function is indexing documents where the type property is equal to "task-list". Each cell on the screen will contain a list name and nothing else. For that reason, you can emit the name property as the key and nil is the value. If you also wanted to display the owner of the list in the row you could emit the `owner` property as the value.
 
 The `listsView.createQuery()` method returns a [Query](/documentation/mobile/current/develop/guides/couchbase-lite/native-api/query/index.html) object which has a **run** method to return the results as a [QueryEnumerator](/documentation/mobile/current/develop/references/couchbase-lite/couchbase-lite/query/query-enumerator/index.html) object. However, in this case, you are hooking into a [Live Query](/documentation/mobile/current/develop/guides/couchbase-lite/native-api/query/index.html) to keep monitoring the database for new results. Any time the result of that query changes through user interaction or synchronization, it will notify your application via the change event. A live query provides an easy way to build reactive UIs, which will be especially useful when you enable sync in the [Adding Synchronization](/documentation/mobile/current/training/develop/adding-synchronization/index.html) lesson. The change event is triggered as a result of user interaction locally as well as during synchronization with Sync Gateway.
 
-In the code blow, the notifications are posted to the application code using the KVO observer method.
+On Android you are using a utility class named **LiveQueryAdapter** which takes care of reloading the list when changes are received.
 
-```swift
-// This code can be found in ListsViewController.swift
-// in the observeValue(forKeyPath:of:_:_:) method
-override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-		if object as? NSObject == listsLiveQuery {
-				reloadTaskLists()
-		} else if object as? NSObject == incompTasksCountsLiveQuery {
-				reloadIncompleteTasksCounts()
-		}
-}
+```java
+// This code can be found in LiveQueryAdapter.java
+// in the public constructor
+query.addChangeListener(new LiveQuery.ChangeListener() {
+    @Override
+    public void changed(final LiveQuery.ChangeEvent event) {
+        ((Activity) LiveQueryAdapter.this.context).runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                enumerator = event.getRows();
+                notifyDataSetChanged();
+            }
+        });
+    }
+});
+query.start();
 ```
 
 #### Try it out
@@ -364,7 +371,7 @@ override func observeValue(forKeyPath keyPath: String?, of object: Any?, change:
 1. Build and run.
 2. Save a new list to the database and the live query will pick it up instantly and reload the table view.
 
-<img src="https://cl.ly/3z3i0k1C2W1p/image66.gif" class="portrait" />
+<img src="https://cl.ly/44433I102l3q/image66a.gif" class="portrait" />
 
 > **Challenge:** Update the map function to emit the document ID as the key. Don't forget to bump the view version whenever you change the map function. The list view should now display the document ID on each row.
 
@@ -393,43 +400,63 @@ The most commonly used aggregation functions are Count and Sum:
 
 The code below indexes documents as shown on the diagram above. Then it create the Query and monitors the result set using a Live Query.
 
-```swift
-// This code can be found in ListsViewController.swift
-// in the setupViewAndQuery() method
-let incompTasksCountView = database.viewNamed("list/incompleteTasksCount")
-if incompTasksCountView.mapBlock == nil {
-		incompTasksCountView.setMapBlock({ (doc, emit) in
-				if let type: String = doc["type"] as? String , type == "task" {
-						if let list = doc["taskList"] as? [String: AnyObject], let listId = list["id"],
-								let complete = doc["complete"] as? Bool , !complete {
-								emit(listId, nil)
-						}
-				}
-				}, reduce: { (keys, values, reredeuce) in
-				return values.count
-		}, version: "1.0")
+```java
+// This code can be found in ListsActivity.java
+// in the setupViewAndQuery method
+com.couchbase.lite.View incompTasksCountView = mDatabase.getView("list/incompleteTasksCount");
+if (incompTasksCountView.getMap() == null) {
+    incompTasksCountView.setMapReduce(new Mapper() {
+        @Override
+        public void map(Map<String, Object> document, Emitter emitter) {
+            String type = (String) document.get("type");
+            if ("task".equals(type)) {
+                Boolean complete = (Boolean) document.get("complete");
+                if (!complete) {
+                    Map<String, Object> taskList = (Map<String, Object>) document.get("taskList");
+                    String listId = (String) taskList.get("id");
+                    emitter.emit(listId, null);
+                }
+            }
+        }
+    }, new Reducer() {
+        @Override
+        public Object reduce(List<Object> keys, List<Object> values, boolean rereduce) {
+            // keys: [0, 0]
+            // values: [null, null]
+            return values.size();
+        }
+    }, "1.0");
 }
 
-incompTasksCountsLiveQuery = incompTasksCountView.createQuery().asLive()
-incompTasksCountsLiveQuery.groupLevel = 1
-incompTasksCountsLiveQuery.addObserver(self, forKeyPath: "rows", options: .new, context: nil)
-incompTasksCountsLiveQuery.start()
+final LiveQuery incompTasksCountLiveQuery = incompTasksCountView.createQuery().toLiveQuery();
+incompTasksCountLiveQuery.setGroupLevel(1);
 ```
 
 This time, you call emit only if the document `type` is "task" and `complete` is `false`. The document ID of the list it belongs to (**doc.taskList._id**) serves as the key and the value is nil. The reduce function simply counts the number of rows with the same key. Notice that the **groupLevel** is a property on the live query object.
 
 Every time there is a change to `incompTasksCountsLiveQuery.rows` the `observeValueForKeyPath` method is called which will reload the list count for each row.
 
-```swift
-// This code can be found in ListsViewController.swift
-// in the observeValue(forKeyPath:of:_:_:) method
-override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-		if object as? NSObject == listsLiveQuery {
-				reloadTaskLists()
-		} else if object as? NSObject == incompTasksCountsLiveQuery {
-				reloadIncompleteTasksCounts()
-		}
-}
+```java
+incompTasksCountLiveQuery.addChangeListener(new LiveQuery.ChangeListener() {
+    @Override
+    public void changed(LiveQuery.ChangeEvent event) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Map<String, Object> counts = new HashMap<String, Object>();
+                QueryEnumerator rows = incompTasksCountLiveQuery.getRows();
+                for (QueryRow row : rows) {
+                    String listId = (String) row.getKey();
+                    int count = (int) row.getValue();
+                    counts.put(listId, count);
+                }
+                incompCounts = counts;
+                mAdapter.notifyDataSetChanged();
+            }
+        });
+    }
+});
+incompTasksCountLiveQuery.start();
 ```
 
 #### Try it out
@@ -437,7 +464,7 @@ override func observeValue(forKeyPath keyPath: String?, of object: Any?, change:
 1. Build and run.
 2. You will see the uncompleted task count for each list.
 
-<img src="./img/image08.png" class="portrait" />
+<img src="img/image08a.png" class="portrait" />
 
 #### Conclusion
 
@@ -511,47 +538,52 @@ There are a few terminologies that designate the role of each database involved 
 
 The following code starts a pull and push replication with progress notifications.
 
-```swift
-// This code can be found in AppDelegate.swift
-// in the startReplication(withUsername:andPassword:)
-pusher = database.createPushReplication(kSyncGatewayUrl)
-pusher.continuous = true // Runs forever in the background
-NotificationCenter.default.addObserver(self, selector: #selector(replicationProgress(notification:)),
-                                        name: NSNotification.Name.cblReplicationChange, object: pusher)
-
-puller = database.createPullReplication(kSyncGatewayUrl)
-puller.continuous = true // Runs forever in the background
-NotificationCenter.default.addObserver(self, selector: #selector(replicationProgress(notification:)),
-                                        name: NSNotification.Name.cblReplicationChange, object: puller)
-
-if kLoginFlowEnabled {
-    let authenticator = CBLAuthenticator.basicAuthenticator(withName: username, password: password!)
-    pusher.authenticator = authenticator
-    puller.authenticator = authenticator
+```java
+// This code can be found in Application.java
+// in the startReplication(String, String) method
+URL url = null;
+try {
+    url = new URL(mSyncGatewayUrl);
+} catch (MalformedURLException e) {
+    e.printStackTrace();
 }
 
-pusher.start()
-puller.start()
+pusher = database.createPushReplication(url);
+pusher.setContinuous(true); // Runs forever in the background
+
+puller = database.createPullReplication(url);
+puller.setContinuous(true); // Runs forever in the background
+
+if (mLoginFlowEnabled) {
+    Authenticator authenticator = AuthenticatorFactory.createBasicAuthenticator(username, password);
+    pusher.setAuthenticator(authenticator);
+    puller.setAuthenticator(authenticator);
+}
+
+pusher.start();
+puller.start();
 ```
 
 #### Try it out
 
-1. In **AppDelegate.swift**, set `kSyncGatewayUrl` to the URL of the Sync Gateway database (http://localhost:4984/todo/).
+1. In **Application.java**, set `mSyncGatewayUrl` to the URL of the Sync Gateway database (http://localhost:4984/todo/).
 
-    ```swift
-    let kSyncGatewayUrl = URL(string: "http://localhost:4984/todo/")!
+    ```java
+    private String mSyncGatewayUrl = "http://10.0.2.2:4984/todo/";
     ```
 
-2. Set `kSyncEnabled` to `true` in **AppDelegate.swift**.
+    For Android stock emulators, the hostname is `10.0.2.2`.
 
-    ```swift
-    let kSyncEnabled = true
+2. Set `mSyncEnabled` to `true` in **Application.java**.
+
+    ```java
+    private Boolean mSyncEnabled = true;
     ```
     
 3. Build and run.
 4. Open [http://localhost:4985/_admin/db/todo](http://localhost:4985/_admin/db/todo) in the browser and notice that all the documents are pushed to Sync Gateway! You may have more or less rows depending on how many documents are present in the Couchbase Lite database.
 
-    <img src="./img/image19.png" />
+    <img src="./img/image19a.png" />
 
 ### Resolve Conflicts
 
@@ -569,30 +601,18 @@ Revisions form a tree data structure and a conflict occurs when there are multip
 
 To resolve conflicts you must first learn how to detect them. The code below uses an All Docs query which is an index of all the documents in the local database. The **OnlyConflicts** option is passed to report only the documents with conflicts and a **LiveQuery** is used to continuously monitor the database for changes.
 
-```swift
-// This code can be found in AppDelegate.swift
+```java
+// This code can be found in Application.java
 // in the startConflictLiveQuery() method
-guard kConflictResolution else {
-    return
-}
-
-conflictsLiveQuery = database.createAllDocumentsQuery().asLive()
-conflictsLiveQuery!.allDocsMode = .onlyConflicts
-conflictsLiveQuery!.addObserver(self, forKeyPath: "rows", options: .new, context: nil)
-conflictsLiveQuery!.start()
-```
-
-The query results are then posted to the application code using the KVO observer method.
-
-```swift
-// This code can be found in AppDelegate.swift
-// in the observeValue(forKeyPath:of:change:context:) method
-override func observeValue(forKeyPath keyPath: String?, of object: Any?,
-                            change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-    if object as? NSObject == conflictsLiveQuery {
-        resolveConflicts()
+LiveQuery conflictsLiveQuery = database.createAllDocumentsQuery().toLiveQuery();
+conflictsLiveQuery.setAllDocsMode(Query.AllDocsMode.ONLY_CONFLICTS);
+conflictsLiveQuery.addChangeListener(new LiveQuery.ChangeListener() {
+    @Override
+    public void changed(LiveQuery.ChangeEvent event) {
+        resolveConflicts(event.getRows());
     }
-}
+});
+conflictsLiveQuery.start();
 ```
 
 The query results are then posted to the application code using the change callback or change listener.
@@ -603,83 +623,92 @@ Even if the conflict isn’t resolved, Couchbase Lite has to return something. I
 
 Shown below is a list document created with two conflicting revisions. After deleting the row, the text **Text Changed** appears which is the name of the second conflicting revision. The action of deleting a document only deletes the current revision and if there are conflicting revisions it will be promoted as the new current revision.
 
-<img src="https://cl.ly/0h3T1c0e1V2G/image47.gif" class="portrait" />
+<img src="https://cl.ly/2h0Z2u2S0M1W/image47a.gif" class="portrait" />
 
-> **Note:** During development, the method `saveAllowingConflicts` is used to intentionally create a conflict. You can shake the device (**^⌘Z** on the simulator) to create a list conflict. The code is located in the `motionEnded(_:with:)` method of **ListsViewController.swift**.
+> **Note:** During development, the method `save(boolean)` is used to intentionally create a conflict. You can long press the floating action button to create a list conflict. The code is located in the `createListConflict()` method of **ListsActivity.java**.
 
 This can be surprising at first but it’s the strength of using a distributed database that defers the conflict resolution logic to the application. It’s your responsibility as the developer to ensure conflicts are resolved! Even if you decide to let Couchbase Lite pick the winner you must remove extraneous conflicting revisions to prevent the behaviour observed above. The code below removes all revisions except the current/winning one.
 
-```swift
-// This code can be found in AppDelegate.swift
-// in the resolveConflicts(revisions:withProps:andImage:) method
-database.inTransaction {
-    var i = 0
-    for rev in revs as! [CBLSavedRevision] {
-        let newRev = rev.createRevision()
-        if (i == 0) { // Default winning revision
-            newRev.userProperties = props
-            if rev.attachmentNamed("image") != image {
-                newRev.setAttachmentNamed("image", withContentType: "image/jpg",
-                    content: image?.content)
-            }
-        } else {
-            newRev.isDeletion = true
-        }
+```java
+// This code can be found in Application.java
+// in the resolveConflicts(List<SavedRevision>, Map<String, Object>, Attachment)
+private void resolveConflicts(final List<SavedRevision> revs, final Map<String, Object> desiredProps, final Attachment desiredImage) {
+    database.runInTransaction(new TransactionalTask() {
+        @Override
+        public boolean run() {
+            int i = 0;
+            for (SavedRevision rev : revs) {
+                UnsavedRevision newRev = rev.createRevision(); // Create new revision
+                if (i == 0) { // That's the current/winning revision
+                    newRev.setUserProperties(desiredProps);
+                    if (desiredImage != null) {
+                        try {
+                            newRev.setAttachment("image", "image/jpg", desiredImage.getContent());
+                        } catch (CouchbaseLiteException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } else { // That's a conflicting revision, delete it
+                    newRev.setIsDeletion(true);
+                }
 
-        do {
-            try newRev.saveAllowingConflict()
-        } catch let error as NSError {
-            NSLog("Cannot resolve conflicts with error: %@", error)
-            return false
+                try {
+                    newRev.save(true); // Persist the new revision
+                } catch (CouchbaseLiteException e) {
+                    e.printStackTrace();
+                    return false;
+                }
+                i++;
+            }
+            return true;
         }
-        i += 1
-    }
-    return true
+    });
 }
 ```
 
 #### Try it out
 
-1. To enable conflict resolution, set the `kConflictResolution` constant in **AppDelegate.swift** to `true`.
+1. To enable conflict resolution, set the `mConflictResolution` constant in **Application.java** to `true`.
 
-    ```swift
-    let kConflictResolution = true
+    ```java
+    private Boolean mConflictResolution = true;
     ```
 
-2. Perform the same actions and this time deleting the list conflict doesn’t reveal the subsequent conflicting revision anymore.
+2. Perform the same actions and this time deleting the list conflict doesn't reveal the subsequent conflicting revision anymore.
 
-    <img class="portrait" src="https://cl.ly/0b2y1o1U1L2u/image48.gif"  />
+    <img class="portrait" src="https://cl.ly/1A0u402Z1t08/image48a.gif"  />
 
 #### N-way conflict resolution
 
 For task documents, you will follow the same steps as previously except this time the conflict resolution will merge the differences between the conflicting revisions into a new revision before removing them. This time, one revision changes the title of the task while the other revision marks it as completed.
 
-<img src="https://cl.ly/0q3A3F2E1Z2L/image67.gif" class="portrait" />
+<img src="https://cl.ly/1E1O0M1l333r/image67a.gif" class="portrait" />
 
-> **Note:** To see the same result, open any list and shake the device (**^⌘Z** on the simulator) to create a task conflict. The code is located in the `motionEnded(_:with:)` method of **TasksViewController.swift**. Be sure to disable conflict resolution to see the same result as the animation above.
+> **Note:** To see the same result, open any list and long press the floating action button to create a task conflict. The code is located in the `createTaskConflict()` method of **TasksFragment.java**. Be sure to disable conflict resolution to see the same result as the animation above.
 
 Similarly to the previous section, you will learn how to resolve conflicts, this time for "task" documents. In this case, the resolution code will **merge the changes** (i.e n-way merge) of the conflicting revisions and promote the result as the current revision.
 
-```swift
-// This code can be found in AppDelegate.swift
-// in the resolveConflicts() method
-let rows = conflictsLiveQuery?.rows
-while let row = rows?.nextRow() {
-    if let revs = row.conflictingRevisions, revs.count > 1 {
-        let defaultWinning = revs[0]
-        let type = (defaultWinning["type"] as? String) ?? ""
-        switch type {
-        // TRAINING: Automatic conflict resolution
-        case "task-list", "task-list.user":
-            let props = defaultWinning.userProperties
-            let image = defaultWinning.attachmentNamed("image")
-            resolveConflicts(revisions: revs, withProps: props, andImage: image)
-        // TRAINING: N-way merge conflict resolution
-        case "task":
-            let merged = nWayMergeConflicts(revs: revs)
-            resolveConflicts(revisions: revs, withProps: merged.props, andImage: merged.image)
-        default:
-            break
+```java
+// This code can be found in Application.java
+// in the resolveConflicts(QueryEnumerator) method
+for (QueryRow row : rows) {
+    List<SavedRevision> revs = row.getConflictingRevisions();
+    if (revs.size() > 1) {
+        SavedRevision defaultWinning = revs.get(0);
+        String type = (String) defaultWinning.getProperty("type");
+        switch (type) {
+            // TRAINING: Automatic conflict resolution
+            case "task-list":
+            case "task-list.user":
+                Map<String, Object> props = defaultWinning.getUserProperties();
+                Attachment image = defaultWinning.getAttachment("image");
+                resolveConflicts(revs, props, image);
+                break;
+            // TRAINING: N-way merge conflict resolution
+            case "task":
+                List<Object> mergedPropsAndImage = nWayMergeConflicts(revs);
+                resolveConflicts(revs, (Map<String, Object>) mergedPropsAndImage.get(0), (Attachment) mergedPropsAndImage.get(1));
+                break;
         }
     }
 }
@@ -689,16 +718,17 @@ Notice that for 'task' documents, the `nWayMergeConflicts()` method is called to
 
 #### Try it out
 
-1. Enable conflict resolution.
+1. Enable conflict resolution in **Application.java**.
 
-    ```swift
-    let kConflictResolution = true
+    ```java
+    private Boolean mConflictResolution = true;
     ```
 
-2. Build and run. 
-3. Create a task conflict using the shake gesture (or **^⌘Z**) and this time the row contains the updated text **and** is marked as completed.
-    <img src="img/image03.png" class="portrait" />
-    
+2. Build and run.
+3. Create a task conflict using the shake gesture and this time the row contains the updated text **and** is marked as completed.
+
+    <image src="img/image03a.png" class="portrait" />
+
 #### Conclusion
 
 Well done! You've completed this lesson on enabling synchronization, detecting and resolving conflicts. In the next lesson you'll learn how to implement authentication and define access control rules in the Sync Function. Feel free to share your feedback, findings or ask any questions on the forums.
@@ -756,47 +786,46 @@ Users are created with a name/password on Sync Gateway which can then be used on
 
 With Sync Gateway users defined you can now enable authentication on the Couchbase Lite replicator. The code below creates two replications with authentication.
 
-```swift
-// This code can be found in AppDelegate.swift
-// in the startReplication(withUsername:andPassword:) method
-pusher = database.createPushReplication(kSyncGatewayUrl)
-pusher.continuous = true
-NotificationCenter.default.addObserver(self, selector: #selector(replicationProgress(notification:)),
-    name: NSNotification.Name.cblReplicationChange, object: pusher)
-
-puller = database.createPullReplication(kSyncGatewayUrl)
-puller.continuous = true
-NotificationCenter.default.addObserver(self, selector: #selector(replicationProgress(notification:)),
-                                        name: NSNotification.Name.cblReplicationChange, object: puller)
-
-if kLoginFlowEnabled {
-    let authenticator = CBLAuthenticator.basicAuthenticator(withName: username, password: password!)
-    pusher.authenticator = authenticator
-    puller.authenticator = authenticator
+```java
+URL url = null;
+try {
+    url = new URL(mSyncGatewayUrl);
+} catch (MalformedURLException e) {
+    e.printStackTrace();
 }
 
-pusher.start()
-puller.start()
+pusher = database.createPushReplication(url);
+pusher.setContinuous(true);
+
+puller = database.createPullReplication(url);
+puller.setContinuous(true);
+
+if (mLoginFlowEnabled) {
+    Authenticator authenticator = AuthenticatorFactory.createBasicAuthenticator(username, password);
+    pusher.setAuthenticator(authenticator);
+    puller.setAuthenticator(authenticator);
+}
+
+pusher.start();
+puller.start();
 ```
 
 The `CBLAuthenticator` class has static methods for each authentication method supported by Couchbase Lite. Here, you're passing the name/password to the `basicAuthenticatorWithName` method. The object returned by this method can be set on the replication's `authenticator` property.
 
 #### Try it out
 
-1. Set `kSyncEnabled` and `kLoginFlowEnabled` to `true` in **AppDelegate.swift**.
+1. Set `mSyncEnabled` and `mLoginFlowEnabled` to `true` in **Application.java**.
 
-    ```swift
-    let kSyncEnabled = true
-    let kLoginFlowEnabled = true
+    ```java
+    private Boolean mSyncEnabled = true;
+    private Boolean mLoginFlowEnabled = true;
     ```
 
 2. Build and run.
 
 3. Now login with the credentials saved in the config file previously (**user1/pass**) and create a new list. Open the Sync Gateway Admin UI at [http://localhost:4985/_admin/db/todo](http://localhost:4985/_admin/db/todo), the list document is successfully replicated to Sync Gateway as an authenticated user.
 
-<img src="img/image35.png" class=center-image />
-
-> **Note:** You can remove the local database and check if the pull replication retrieves the documents now present on Sync Gateway. On macOS, use the [SimPholders](https://simpholders.com/) utility app to quickly find the data directory of the application and delete the database called **user1** on iOS, or you can use the adb shell to navigate to the application's data folder and delete it on Android. Then restart the app and you'll notice that the "Today" list isn't displayed. That is, the list document wasn't replicated from Sync Gateway to Couchbase Lite. Indeed, the document is not routed to a channel that the user has access to. **Channel** and **access** are new terms so don't worry, we'll cover what they mean in the next section.
+<img src="img/image35a.png" class=center-image />
 
 ### Access Control
 
@@ -1022,7 +1051,7 @@ access("role:moderator", "task-list." + doc._id);
 
     ![](img/image38.png)
 
-### Conclusion
+## Conclusion
 
 Well done! You've completed this lesson on adding authentication, writing a sync function and adding database encryption. Feel free to share your feedback, findings or ask any questions on the forums.
 
@@ -1052,19 +1081,11 @@ Deleting a document creates a new revision with the `deleted: true` property and
     ~/Downloads/couchbase-sync-gateway/bin/sync_gateway sync-gateway-config.json
     ```
 
-	
-	```powershell
-	PS> & 'C:\Program Files (x86)\Couchbase\sync_gateway.exe' sync-gateway-config.json
-	```
-
-> **Note:** The Sync Gateway service might be running on Windows which will prevent this command from succeeding with the message 'FATAL: Failed to start HTTP server on 127.0.0.1:4985: listen tcp 127.0.0.1:4985: bind: Only one usage of each socket address (protocol/network address/port) is normally permitted.'  To get around this, stop the 'Couchbase Sync Gateway' service in 'services.msc'.
-
-
-2. Open **AppDelegate.swift** and set the following constants to `true`.
+2. Open **Application.java** and set the following constants to `true`.
 
     ```swift
-    let kLoginFlowEnabled = true
-    let kSyncEnabled = true
+    let mLoginFlowEnabled = true
+    let mSyncEnabled = true
     ```
 
 3. Run the application, login with the **user1/pass** credentials and add a new list. It should appear as a new document on the Admin UI of Sync Gateway on [http://localhost:4985/_admin/db/todo](http://localhost:4985/_admin/db/todo).
