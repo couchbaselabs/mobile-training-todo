@@ -1,5 +1,7 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" 
+<?xml version="1.0" encoding="UTF-8"?>
+<d:MvxContentPage 
+    xmlns:d="clr-namespace:MvvmCross.Forms.Views;assembly=MvvmCross.Forms"
+    xmlns="http://xamarin.com/schemas/2014/forms" 
 		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
 		xmlns:local="clr-namespace:Training.Forms"
 		x:Class="Training.TaskImagePage">
@@ -14,4 +16,4 @@
 	<ContentPage.Content>
 		<Image Source="{Binding Image, Converter={StaticResource ImageSourceConverter}}" />
     </ContentPage.Content>
-</ContentPage>
+</d:MvxContentPage>

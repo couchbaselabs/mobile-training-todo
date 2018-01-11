@@ -19,6 +19,7 @@
 // limitations under the License.
 //
 
+using MvvmCross.Forms.Views;
 using Xamarin.Forms;
 
 namespace Training
@@ -26,7 +27,7 @@ namespace Training
     /// <summary>
     /// The page that display the tasks in a given task list
     /// </summary>
-    public partial class TasksPage : ContentPage
+    public partial class TasksPage : MvxContentPage
     {
 
         #region Constructors

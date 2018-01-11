@@ -1,5 +1,6 @@
 // This file was automatically included from MvvmCross.
 
+using System;
 using System.Collections.Specialized;
 using System.Windows.Input;
 
@@ -115,6 +116,19 @@ namespace Training.iOS
         public void Include(System.ComponentModel.INotifyPropertyChanged changed)
         {
             changed.PropertyChanged += (sender, e) => { var test = e.PropertyName; };
+        }
+
+        public void Include(ConsoleColor color)
+        {
+            Console.Write("");
+            Console.WriteLine("");
+            color = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.ForegroundColor = ConsoleColor.DarkGray;
         }
     }
 }

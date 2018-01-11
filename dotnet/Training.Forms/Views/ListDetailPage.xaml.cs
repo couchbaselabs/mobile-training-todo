@@ -20,7 +20,7 @@
 //
 using System;
 using System.ComponentModel;
-
+using MvvmCross.Forms.Views;
 using Training.Core;
 using Training.Forms;
 using Xamarin.Forms;
@@ -30,7 +30,7 @@ namespace Training
     /// <summary>
     /// The high level page containing a list of tasks and list of users
     /// </summary>
-    public partial class ListDetailPage : TabbedPage
+    public partial class ListDetailPage : MvxTabbedPage
     {
 
         #region Variables
@@ -83,11 +83,11 @@ namespace Training
             }
 
             var child1 = new TasksPage();
-            child1.BindingContext = new TasksViewModel(viewModel);
+            child1.ViewModel = new TasksViewModel(viewModel);
             Children.Add(child1);
 
             _usersPage = new UsersPage();
-            _usersPage.BindingContext = new UsersViewModel(viewModel);
+            _usersPage.ViewModel = new UsersViewModel(viewModel);
 
             if(!viewModel.HasModeratorStatus) {
                 viewModel.PropertyChanged += AddUsersTab;

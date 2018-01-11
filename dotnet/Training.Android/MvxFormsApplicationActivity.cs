@@ -23,8 +23,7 @@ using Android.App;
 using Android.Content.PM;
 using Android.OS;
 using MvvmCross.Core.Views;
-using MvvmCross.Forms.Presenter.Core;
-using MvvmCross.Forms.Presenter.Droid;
+using MvvmCross.Forms.Droid.Views;
 using MvvmCross.Platform;
 using Training.Core;
 using Xamarin.Forms.Platform.Android;
@@ -36,30 +35,32 @@ namespace Training.Android
     /// The highest entry point in the MvvmCross application, and the first activity that the user
     /// interacts with
     /// </summary>
-    [Activity(Label = "MvxFormsApplicationActivity", ScreenOrientation = ScreenOrientation.Portrait, Icon = "@android:color/transparent")]
-    public class MvxFormsApplicationActivity
-        : FormsApplicationActivity
+    [Activity(Label = "MainActivity", ScreenOrientation = ScreenOrientation.Portrait, Icon = "@android:color/transparent")]
+    public class MainActivity
+        : MvxFormsApplicationActivity
     {
         protected override void OnCreate(Bundle bundle)
         {
             base.OnCreate(bundle);
 
-            // Init Forms and presenter
+
+            Couchbase.Lite.Support.Droid.Activate(ApplicationContext);
+
+            // Setup the application
             Xamarin.Forms.Forms.Init(this, bundle);
-            var mvxFormsApp = new MvxFormsApp();
-            LoadApplication(mvxFormsApp);
-            var presenter = Mvx.Resolve<IMvxViewPresenter>() as MvxFormsDroidPagePresenter;
-            presenter.MvxFormsApp = mvxFormsApp;
+            var setup = new Setup(ApplicationContext);
+            setup.Initialize();
 
             // Register platform specific implementations
-            UserDialogs.Init(() => (Activity)Xamarin.Forms.Forms.Context);
             Mvx.RegisterSingleton<IDevice>(() => AndroidDevice.CurrentDevice);
             Mvx.RegisterSingleton<IImageService>(() => new ImageService());
 
-            // Start the app
-            var appStart = new CoreAppStart();
+            //Start the application
+            var startup = new CoreAppStart();
             var hint = CoreAppStart.CreateHint();
-            appStart.Start(hint);
+            startup.Start(hint);
+
+            LoadApplication(setup.FormsApplication);
         }
     }
 }

@@ -20,6 +20,7 @@
 //
 
 using Foundation;
+using MvvmCross.Forms.iOS;
 using MvvmCross.iOS.Platform;
 using MvvmCross.Platform;
 using Training.Core;
@@ -32,7 +33,7 @@ namespace Training.iOS
     /// The app delegate for the overall iOS app lifecycle
     /// </summary>
     [Register("AppDelegate")]
-    public partial class AppDelegate : MvxApplicationDelegate
+    public partial class AppDelegate : MvxFormsApplicationDelegate
     {
 
         #region Properties
@@ -49,6 +50,8 @@ namespace Training.iOS
 
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
+            Couchbase.Lite.Support.iOS.Activate();
+
             // Setup the application
             Xamarin.Forms.Forms.Init();
             Window = new UIWindow(UIScreen.MainScreen.Bounds);
@@ -63,6 +66,8 @@ namespace Training.iOS
             var startup = new CoreAppStart();
             var hint = CoreAppStart.CreateHint();
             startup.Start(hint);
+
+            LoadApplication(setup.FormsApplication);
 
             Window.MakeKeyAndVisible();
 

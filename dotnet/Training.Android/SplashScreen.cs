@@ -61,7 +61,7 @@ namespace Training.Android
         {
             if(!isInitializationComplete) {
                 isInitializationComplete = true;
-                StartActivity(typeof(MvxFormsApplicationActivity));
+                StartActivity(typeof(MainActivity));
             }
         }
 

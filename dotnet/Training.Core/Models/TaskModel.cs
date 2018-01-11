@@ -35,7 +35,7 @@ namespace Training.Core
 
         #region Variables
 
-        private readonly Document _document;
+        private Document _document;
 
         #endregion
 
@@ -57,8 +57,13 @@ namespace Training.Core
             get => _document.GetBoolean("complete");
             set {
                 try {
-                    _document["complete"].Value = value;
-                    CoreApp.Database.Save(_document);
+                    using (var mutableDoc = _document.ToMutable())
+                    {
+                        mutableDoc["complete"].Value = value;
+                        var doc = _document;
+                        _document = CoreApp.Database.Save(mutableDoc);
+                        doc.Dispose();
+                    }
                 } catch(Exception e) {
                     throw new Exception("Failed to edit task", e);
                 }
@@ -127,13 +132,17 @@ namespace Training.Core
         public void SetImage(Stream image)
         {
             try {
-                if(image == null) {
-                    _document.Remove("image");
-                } else {
-                    _document["image"].Value = new Blob("image/png", image);
-                }
+                using(var mutableDoc = _document.ToMutable()) {
+                    if(image == null) {
+                        mutableDoc.Remove("image");
+                    } else {
+                        mutableDoc["image"].Blob = new Blob("image/png", image);
+                    }
 
-                CoreApp.Database.Save(_document);
+                    var doc = _document;
+                    _document = CoreApp.Database.Save(mutableDoc);
+                    doc.Dispose();
+                }
             } catch(Exception e) {
                 throw new Exception("Failed to save image", e);
             }
@@ -146,6 +155,7 @@ namespace Training.Core
         {
             try {
                 CoreApp.Database.Delete(_document);
+                _document = null;
             } catch(Exception e) {
                 throw new Exception("Failed to delete task", e);
             }
@@ -158,8 +168,13 @@ namespace Training.Core
         public void Edit(string name)
         {
             try {
-                _document["task"].Value = name;
-                CoreApp.Database.Save(_document);
+                using (var mutableDoc = _document.ToMutable())
+                {
+                    mutableDoc["task"].String = name;
+                    var doc = _document;
+                    _document = CoreApp.Database.Save(mutableDoc);
+                    doc.Dispose();
+                }
             } catch(Exception e) {
                 throw new Exception("Failed to edit task", e);
             }

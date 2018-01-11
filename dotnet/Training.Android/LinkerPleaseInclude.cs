@@ -4,8 +4,10 @@ using Android.App;
 using Android.Views;
 using Android.Widget;
 using MvvmCross.Binding.BindingContext;
+using MvvmCross.Core.Navigation;
+using MvvmCross.Core.ViewModels;
 
-namespace Training.Android
+namespace MvxForms.Droid
 {
     // This class is never actually executed, but when Xamarin linking is enabled it does how to ensure types and properties
     // are preserved in the deployed app
@@ -33,13 +35,13 @@ namespace Training.Android
 
         public void Include(TextView text)
         {
-            text.TextChanged += (sender, args) => text.Text = "" + text.Text;
+            text.AfterTextChanged += (sender, args) => text.Text = "" + text.Text;
             text.Hint = "" + text.Hint;
         }
 
         public void Include(CheckedTextView text)
         {
-            text.TextChanged += (sender, args) => text.Text = "" + text.Text;
+            text.AfterTextChanged += (sender, args) => text.Text = "" + text.Text;
             text.Hint = "" + text.Hint;
         }
 
@@ -51,6 +53,21 @@ namespace Training.Android
         public void Include(SeekBar sb)
         {
             sb.ProgressChanged += (sender, args) => sb.Progress = sb.Progress + 1;
+        }
+
+        public void Include(RadioGroup radioGroup)
+        {
+            radioGroup.CheckedChange += (sender, args) => radioGroup.Check(args.CheckedId);
+        }
+
+        public void Include(RadioButton radioButton)
+        {
+            radioButton.CheckedChange += (sender, args) => radioButton.Checked = args.IsChecked;
+        }
+
+        public void Include(RatingBar ratingBar)
+        {
+            ratingBar.RatingBarChange += (sender, args) => ratingBar.Rating = 0 + ratingBar.Rating;
         }
 
         public void Include(Activity act)
@@ -65,7 +82,7 @@ namespace Training.Android
 
         public void Include(ICommand command)
         {
-            command.CanExecuteChanged += (s, e) => { if(command.CanExecute(null)) command.Execute(null); };
+            command.CanExecuteChanged += (s, e) => { if (command.CanExecute(null)) command.Execute(null); };
         }
 
         public void Include(MvvmCross.Platform.IoC.MvxPropertyInjector injector)
@@ -75,8 +92,7 @@ namespace Training.Android
 
         public void Include(System.ComponentModel.INotifyPropertyChanged changed)
         {
-            changed.PropertyChanged += (sender, e) =>
-            {
+            changed.PropertyChanged += (sender, e) => {
                 var test = e.PropertyName;
             };
         }
@@ -86,6 +102,11 @@ namespace Training.Android
             context.Dispose();
             var context2 = new MvxTaskBasedBindingContext();
             context2.Dispose();
+        }
+
+        public void Include(MvxNavigationService service, IMvxViewModelLoader loader)
+        {
+            service = new MvxNavigationService(null, loader);
         }
     }
 }

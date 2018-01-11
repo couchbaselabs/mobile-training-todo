@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" 
+<d:MvxContentPage 
+    xmlns:d="clr-namespace:MvvmCross.Forms.Views;assembly=MvvmCross.Forms"
+    xmlns="http://xamarin.com/schemas/2014/forms" 
         xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
         x:Class="Training.LoginPage">
     <ContentPage.ToolbarItems>
@@ -9,4 +11,4 @@
         <Entry Placeholder="Username" Text="{Binding Username}" />
         <Entry x:Name="_passBox" Placeholder="Password" IsPassword="true" Margin="0,10,0,0" />
     </StackLayout>
-</ContentPage>
+</d:MvxContentPage>

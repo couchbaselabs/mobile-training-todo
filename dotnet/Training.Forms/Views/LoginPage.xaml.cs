@@ -20,7 +20,7 @@
 //
 
 using System;
-
+using MvvmCross.Forms.Views;
 using Training.Core;
 using Xamarin.Forms;
 
@@ -29,7 +29,7 @@ namespace Training
     /// <summary>
     /// The page for handling user login
     /// </summary>
-    public partial class LoginPage : ContentPage
+    public partial class LoginPage : MvxContentPage
     {
 
         #region Constructors
@@ -48,7 +48,7 @@ namespace Training
 
         private void OnLoginClick(object sender, EventArgs args)
         {
-            (BindingContext as LoginViewModel).LoginCommand.Execute(_passBox.Text);
+            (ViewModel as LoginViewModel).LoginCommand.Execute(_passBox.Text);
         }
 
         #endregion

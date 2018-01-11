@@ -32,7 +32,7 @@ namespace Training.Core
 
         #region Variables
 
-        private readonly Document _document;
+        private Document _document;
 
         #endregion
 
@@ -41,7 +41,7 @@ namespace Training.Core
         /// <summary>
         /// Gets the name of the list
         /// </summary>
-        public string Name => _document.GetString("name");
+        public string Name => _document?.GetString("name");
 
         #endregion
 
@@ -65,6 +65,10 @@ namespace Training.Core
         /// </summary>
         public bool Delete()
         {
+            if(_document == null) {
+                return true;
+            }
+
             var db = CoreApp.Database;
             if (_document.GetString("owner") != db.Name && !HasModerator(db))
             {
@@ -73,6 +77,7 @@ namespace Training.Core
 
             try {
                 db.Delete(_document);
+                _document = null;
             }
             catch (Exception e)
             {
@@ -89,7 +94,12 @@ namespace Training.Core
         public void Edit(string name)
         {
             try {
-                _document.Set("name", name);
+                using(var mutableDoc = _document.ToMutable()) {
+                    mutableDoc.SetString("name", name);
+                    var document = _document;
+                    _document = CoreApp.Database.Save(mutableDoc);
+                    document.Dispose();
+                }
             } catch(Exception e) {
                 throw new Exception("Couldn't edit task list", e);
             }

@@ -32,7 +32,7 @@ namespace Training.Core
 
         #region Variables
 
-        private readonly Document _taskDocument;
+        private Document _taskDocument;
 
         #endregion
 
@@ -46,13 +46,19 @@ namespace Training.Core
         {
             get => _taskDocument.GetBlob("image")?.ContentStream;
             set {
-                if (value == null) {
-                    _taskDocument.Remove("image");
-                } else {
-                    _taskDocument.Set("image", new Blob("image/png", value));
-                }
+                using(var mutableTask = _taskDocument.ToMutable()) {
+                    if (value == null)
+                    {
+                        mutableTask.Remove("image");
+                    }
+                    else
+                    {
+                        mutableTask.SetBlob("image", new Blob("image/png", value));
+                    }
 
-                CoreApp.Database.Save(_taskDocument);
+                    _taskDocument.Dispose();
+                    _taskDocument = CoreApp.Database.Save(mutableTask);
+                }
             }
         }
 

@@ -25,15 +25,21 @@ using MvvmCross.Platform.Platform;
 using MvvmCross.Droid.Views;
 using MvvmCross.Platform;
 using MvvmCross.Core.Views;
-using MvvmCross.Forms.Presenter.Droid;
+using MvvmCross.Forms.Platform;
 using Training.Core;
+using MvvmCross.Forms.Droid.Platform;
+using Training.Forms;
+using System.Reflection;
+using MvvmCross.Platform.IoC;
+using System.Linq;
+using System;
 
 namespace Training.Android
 {
     /// <summary>
     /// Custom app setup (not much here)
     /// </summary>
-    public sealed class Setup : MvxAndroidSetup
+    public sealed class Setup : MvxFormsAndroidSetup
     {
         public Setup(Context applicationContext) : base(applicationContext)
         {
@@ -49,12 +55,26 @@ namespace Training.Android
             return new DebugTrace();
         }
 
-        protected override IMvxAndroidViewPresenter CreateViewPresenter()
+        protected override MvxFormsApplication CreateFormsApplication()
         {
-            var presenter = new MvxFormsDroidPagePresenter();
-            Mvx.RegisterSingleton<IMvxViewPresenter>(presenter);
+            return new App();
+        }
 
-            return presenter;
+        protected override IMvxAndroidViewsContainer CreateViewsContainer(Context applicationContext)
+        {
+            var viewsContainer = (IMvxViewsContainer)base.CreateViewsContainer(applicationContext);
+            var viewModelTypes =
+                typeof(LoginViewModel).GetTypeInfo().Assembly.CreatableTypes().Where(t => t.Name.EndsWith("ViewModel")).ToDictionary(t => t.Name.Remove(t.Name.LastIndexOf("ViewModel", StringComparison.Ordinal)));
+            var viewTypes =
+                typeof(LoginPage).GetTypeInfo().Assembly.CreatableTypes().Where(t => t.Name.EndsWith("Page")).ToDictionary(t => t.Name.Remove(t.Name.LastIndexOf("Page", StringComparison.Ordinal)));
+            foreach (var viewModelTypeAndName in viewModelTypes)
+            {
+                Type viewType;
+                if (viewTypes.TryGetValue(viewModelTypeAndName.Key, out viewType))
+                    viewsContainer.Add(viewModelTypeAndName.Value, viewType);
+            }
+
+            return (IMvxAndroidViewsContainer)viewsContainer;
         }
     }
 }

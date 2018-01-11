@@ -19,6 +19,7 @@
 // limitations under the License.
 //
 
+using MvvmCross.Forms.Views;
 using Xamarin.Forms;
 
 namespace Training
@@ -26,7 +27,7 @@ namespace Training
     /// <summary>
     /// The page for handling display and editing of a task's image
     /// </summary>
-    public partial class TaskImagePage : ContentPage
+    public partial class TaskImagePage : MvxContentPage
     {
 
         #region Constructors

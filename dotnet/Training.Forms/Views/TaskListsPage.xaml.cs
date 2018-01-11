@@ -19,6 +19,7 @@
 // limitations under the License.
 //
 
+using MvvmCross.Forms.Views;
 using Xamarin.Forms;
 
 namespace Training
@@ -26,7 +27,7 @@ namespace Training
     /// <summary>
     /// The page that displays the list of task lists in a given database
     /// </summary>
-    public partial class TaskListsPage : ContentPage
+    public partial class TaskListsPage : MvxContentPage
     {
 
         #region Constructors
@@ -65,16 +66,19 @@ namespace Training
         {
             base.OnBindingContextChanged();
 
-            if(_logoutButton == null) {
+            if (_logoutButton == null)
+            {
                 return;
             }
 
             var newContext = BindingContext as TaskListsViewModel;
-            if(newContext == null) {
+            if (newContext == null)
+            {
                 return;
             }
 
-            if(!newContext.LoginEnabled) {
+            if (!newContext.LoginEnabled)
+            {
                 ToolbarItems.Remove(_logoutButton);
                 _logoutButton = null;
             }

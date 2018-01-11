@@ -19,6 +19,7 @@
 // limitations under the License.
 //
 
+using MvvmCross.Forms.Views;
 using Xamarin.Forms;
 
 namespace Training
@@ -26,7 +27,7 @@ namespace Training
     /// <summary>
     /// The page that lists the users that have access to a given task list
     /// </summary>
-    public partial class UsersPage : ContentPage
+    public partial class UsersPage : MvxContentPage
     {
 
         #region Constructors

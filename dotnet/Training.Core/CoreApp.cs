@@ -125,12 +125,12 @@ namespace Training.Core
             //    Database.ChangeEncryptionKey(new SymmetricKey(newKey));
             //}
 
-            Database.Changed += (sender, args) =>
+            Database.AddChangeListener((sender, args) =>
             {
                 foreach (var id in args.DocumentIDs) {
                     MonitorIfNeeded(id, args.Database.Name);
                 }
-            };
+            });
         }
 
         /// <summary>
@@ -152,26 +152,20 @@ namespace Training.Core
         /// <param name="password">The password to use for replication auth (optional)</param>
         public static void StartReplication(string username, string password = null)
         {
-            var options = new ReplicatorOptionsDictionary();
-            if (username != null && password != null) {
-                options.Auth = new AuthOptionsDictionary {
-                    Type = AuthType.HttpBasic,
-                    Username = username,
-                    Password = password
-                };
-            }
-
             var config = new ReplicatorConfiguration(Database, SyncGatewayUrl) {
                 ReplicatorType = ReplicatorType.PushAndPull,
-                Continuous = true,
-                Options = options
+                Continuous = true
             };
 
+            if(username != null && password != null) {
+                config.Authenticator = new BasicAuthenticator(username, password);
+            }
+
             _replication = new Replicator(config);
-            _replication.StatusChanged += (sender, args) =>
+            _replication.AddChangeListener((sender, args) =>
             {
                 Console.WriteLine(args.Status.Activity);
-            };
+            });
             _replication.Start();
         }
 

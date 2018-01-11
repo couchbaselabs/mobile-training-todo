@@ -101,10 +101,12 @@ namespace Training.Core
             };
 
             try {
-                var doc = new Document(properties);
-                _db.Save(doc);
-                Filter(null);
-                return doc;
+                using (var doc = new MutableDocument(properties))
+                {
+                    var retVal = _db.Save(doc);
+                    Filter(null);
+                    return retVal;
+                }
             } catch(Exception e) {
                 throw new Exception("Couldn't save task", e);
             }
@@ -119,26 +121,26 @@ namespace Training.Core
             var query = default(IQuery);
             if(!String.IsNullOrEmpty(searchString)) {
                 query = _tasksFilteredQuery;
-                query.Parameters.Set("searchString", $"%{searchString}%");
+                query.Parameters.SetString("searchString", $"%{searchString}%");
             } else {
                 query = _tasksFullQuery;
             }
 
-            using (var results = query.Run()) {
+            using (var results = query.Execute()) {
                 ListData.Replace(results.Select(x => new TaskCellModel(x.GetString(0))));
             }
         }
 
         private void SetupQuery()
         {
-            _tasksFilteredQuery = Query.Select(SelectResult.Expression(Expression.Meta().DocumentID))
+            _tasksFilteredQuery = Query.Select(SelectResult.Expression(Meta.ID))
                 .From(DataSource.Database(_db))
                 .Where(Expression.Property("type").EqualTo(TaskType)
                     .And(Expression.Property("taskList.id").EqualTo(_taskList.Id))
                     .And(Expression.Property("task").Like(Expression.Parameter("searchString"))))
                 .OrderBy(Ordering.Property("createdAt"));
 
-            _tasksFullQuery = Query.Select(SelectResult.Expression(Expression.Meta().DocumentID))
+            _tasksFullQuery = Query.Select(SelectResult.Expression(Meta.ID))
                 .From(DataSource.Database(_db))
                 .Where(Expression.Property("type").EqualTo(TaskType)
                     .And(Expression.Property("taskList.id").EqualTo(_taskList.Id)))

@@ -42,7 +42,7 @@ namespace Training.Core
         #region Variables
 
         private Database _db;
-        private ILiveQuery _usersLiveQuery;
+        private IQuery _usersLiveQuery;
         private Document _taskList;
 
         #endregion
@@ -92,7 +92,7 @@ namespace Training.Core
 
             var docId = $"{_taskList.Id}.{username}";
             try {
-                var doc = new Document(docId, properties);
+                var doc = new MutableDocument(docId, properties);
                 _db.Save(doc);
             } catch(Exception e) {
                 throw new Exception("Couldn't create user", e);
@@ -118,17 +118,16 @@ namespace Training.Core
             _usersLiveQuery = Query.Select(SelectResult.Expression(username))
                 .From(DataSource.Database(_db))
                 .Where(Expression.Property("type").EqualTo(UserType).And(Expression.Property("taskList.id").EqualTo(_taskList.Id)))
-                .OrderBy(Ordering.Property("username"))
-                .ToLive();
+                                   .OrderBy(Ordering.Property("username"));
 
-            _usersLiveQuery.Changed += (sender, args) =>
+            _usersLiveQuery.AddChangeListener((sender, args) =>
             {
                 ListData.Replace(args.Rows.Select(x =>
                 {
                     var docId = $"{_taskList.Id}.{x.GetString(0)}";
                     return new UserCellModel(docId);
                 }));
-            };
+            });
         }
 
         #endregion
