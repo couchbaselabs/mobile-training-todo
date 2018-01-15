@@ -59,7 +59,7 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating, UISea
             usersQuery = Query
                 .select(S_ID, S_USERNAME)
                 .from(DataSource.database(database))
-                .where(TYPE.equalTo("task-list.user").and(TASK_LIST_ID.equalTo(taskList.id)))
+                .where(TYPE.equalTo(Expression.string("task-list.user")).and(TASK_LIST_ID.equalTo(Expression.string(taskList.id))))
             
             usersQuery.addChangeListener({ (change) in
                 if let error = change.error {
@@ -73,7 +73,7 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating, UISea
     
     func addUser(username: String) {
         let docId = taskList.id + "." + username
-        if database.containsDocument(withID: docId) {
+        if database.document(withID: docId) != nil {
             return
         }
         
@@ -105,9 +105,9 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating, UISea
         searchQuery = Query
             .select(S_ID, S_USERNAME)
             .from(DataSource.database(database))
-            .where(TYPE.equalTo("task-list.user")
-                .and(TASK_LIST_ID.equalTo(taskList.id))
-                .and(USERNAME.like("%" + username + "%")))
+            .where(TYPE.equalTo(Expression.string("task-list.user"))
+                .and(TASK_LIST_ID.equalTo(Expression.string(taskList.id)))
+                .and(USERNAME.like(Expression.string("%" + username + "%"))))
         
         do {
             let rows = try searchQuery.execute()

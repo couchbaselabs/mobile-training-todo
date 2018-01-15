@@ -68,14 +68,14 @@
         // TASK LIST:
         _listQuery = [CBLQuery select:@[S_ID, S_NAME]
                                  from:[CBLQueryDataSource database:_database]
-                                where:[TYPE equalTo:@"task-list"]
+                                where:[TYPE equalTo:[CBLQueryExpression string:@"task-list"]]
                               orderBy:@[[CBLQueryOrdering expression:NAME]]];
         
         // INCOMPLETE TASKS COUNT:
         _incompTasksCountsQuery = [CBLQuery select:@[S_TASK_LIST_ID, S_COUNT]
                                               from:[CBLQueryDataSource database:_database]
-                                             where:[[TYPE equalTo:@"task"]
-                                                    andExpression:[COMPLETE equalTo:@(NO)]]
+                                             where:[[TYPE equalTo:[CBLQueryExpression string:@"task"]]
+                                                    andExpression:[COMPLETE equalTo:[CBLQueryExpression boolean:NO]]]
                                            groupBy:@[TASK_LIST_ID]];
         
         __weak typeof(self) wSelf = self;
@@ -137,8 +137,8 @@
 - (void)searchTaskList: (NSString*)name {
     _searchQuery = [CBLQuery select:@[S_ID, S_NAME]
                                from:[CBLQueryDataSource database:_database]
-                              where:[[TYPE equalTo:@"task-list"] andExpression:
-                                     [NAME like:[NSString stringWithFormat:@"%%%@%%", name]]]
+                              where:[[TYPE equalTo:[CBLQueryExpression string:@"task-list"]] andExpression:
+                                     [NAME like:[CBLQueryExpression string:[NSString stringWithFormat:@"%%%@%%", name]]]]
                             orderBy:@[[CBLQueryOrdering expression: NAME]]];
     
     NSError *error;

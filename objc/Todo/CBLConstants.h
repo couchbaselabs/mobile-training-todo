@@ -18,7 +18,7 @@
 #define TYPE              [CBLQueryExpression property:@"type"]
 #define USERNAME          [CBLQueryExpression property:@"username"]
 
-#define S_COUNT           [CBLQuerySelectResult expression:[CBLQueryFunction count:@(1)]]
+#define S_COUNT           [CBLQuerySelectResult expression:[CBLQueryFunction count:[CBLQueryExpression integer: 1]]]
 #define S_ID              [CBLQuerySelectResult expression:ID]
 #define S_NAME            [CBLQuerySelectResult expression:NAME]
 #define S_TASK_LIST_ID    [CBLQuerySelectResult expression:TASK_LIST_ID]

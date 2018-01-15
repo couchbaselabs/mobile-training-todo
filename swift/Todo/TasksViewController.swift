@@ -66,7 +66,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
             taskQuery = Query
                 .select(S_ID)
                 .from(DataSource.database(database))
-                .where(TYPE.equalTo("task").and(TASK_LIST_ID.equalTo(taskList.id)))
+                .where(TYPE.equalTo(Expression.string("task")).and(TASK_LIST_ID.equalTo(Expression.string(taskList.id))))
                 .orderBy(Ordering.expression(CREATED_AT), Ordering.expression(TASK))
             
             taskQuery.addChangeListener({ (change) in
@@ -145,9 +145,9 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
         searchQuery = Query
             .select(S_ID)
             .from(DataSource.database(database))
-            .where(TYPE.equalTo("task")
-                .and(TASK_LIST_ID.equalTo(taskList.id))
-                .and(TASK.like("%\(task)%")))
+            .where(TYPE.equalTo(Expression.string("task"))
+                .and(TASK_LIST_ID.equalTo(Expression.string(taskList.id)))
+                .and(TASK.like(Expression.string("%\(task)%"))))
             .orderBy(Ordering.expression(CREATED_AT), Ordering.expression(TASK))
         
         do {
@@ -167,7 +167,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
         if username == taskList.string(forKey: "owner") {
             display = true
         } else {
-            display = database.containsDocument(withID: moderatorDocId)
+            display = database.document(withID: moderatorDocId) != nil
         }
         Ui.displayOrHideTabbar(on: self, display: display)
         

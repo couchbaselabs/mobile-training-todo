@@ -64,8 +64,8 @@
 
 - (void)reload {
     if (!_userQuery) {
-        CBLQueryExpression *exp1 = [TYPE equalTo:@"task-list.user"];
-        CBLQueryExpression *exp2 = [TASK_LIST_ID equalTo: _taskList.id];
+        CBLQueryExpression *exp1 = [TYPE equalTo:[CBLQueryExpression string: @"task-list.user"]];
+        CBLQueryExpression *exp2 = [TASK_LIST_ID equalTo:[CBLQueryExpression string: _taskList.id]];
         
         _userQuery = [CBLQuery select:@[S_ID, S_USERNAME]
                                  from:[CBLQueryDataSource database:_database]
@@ -82,7 +82,7 @@
 
 - (void)addUser:(NSString *)username {
     NSString *docId = [NSString stringWithFormat:@"%@.%@", _taskList.id, username];
-    if ([_database containsDocumentWithID:docId])
+    if ([_database documentWithID: docId] != nil)
         return;
     
     CBLMutableDocument *doc = [[CBLMutableDocument alloc] initWithID:docId];
@@ -106,9 +106,9 @@
 }
 
 - (void)searchUser: (NSString*)username {
-    CBLQueryExpression *exp1 = [TYPE equalTo:@"task-list.user"];
-    CBLQueryExpression *exp2 = [TASK_LIST_ID equalTo: _taskList.id];
-    CBLQueryExpression *exp3 = [USERNAME like: [NSString stringWithFormat:@"%@%%", username]];
+    CBLQueryExpression *exp1 = [TYPE equalTo:[CBLQueryExpression string: @"task-list.user"]];
+    CBLQueryExpression *exp2 = [TASK_LIST_ID equalTo:[CBLQueryExpression string: _taskList.id]];
+    CBLQueryExpression *exp3 = [USERNAME like: [CBLQueryExpression string:[NSString stringWithFormat:@"%@%%", username]]];
     _searchQuery = [CBLQuery select:@[S_ID, S_USERNAME]
                                from:[CBLQueryDataSource database:_database]
                               where:[[exp1 andExpression:exp2] andExpression:exp3]];

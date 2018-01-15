@@ -87,8 +87,8 @@
     if (!_taskQuery) {
         _taskQuery = [CBLQuery select:@[S_ID]
                                  from:[CBLQueryDataSource database:_database]
-                                where:[[TYPE equalTo:@"task"]
-                                       andExpression: [TASK_LIST_ID equalTo:self.taskList.id]]
+                                where:[[TYPE equalTo:[CBLQueryExpression string:@"task"]]
+                                       andExpression: [TASK_LIST_ID equalTo:[CBLQueryExpression string:self.taskList.id]]]
                               orderBy:@[[CBLQueryOrdering expression:CREATED_AT],
                                         [CBLQueryOrdering expression:TASK]]];
         __weak typeof (self) wSelf = self;
@@ -154,9 +154,9 @@
 }
 
 - (void)searchTask: (NSString*)name {
-    CBLQueryExpression *exp1 = [TYPE equalTo:@"task"];
-    CBLQueryExpression *exp2 = [TASK_LIST_ID equalTo:self.taskList.id];
-    CBLQueryExpression *exp3 = [TASK like:[NSString stringWithFormat:@"%%%@%%", name]];
+    CBLQueryExpression *exp1 = [TYPE equalTo:[CBLQueryExpression string:@"task"]];
+    CBLQueryExpression *exp2 = [TASK_LIST_ID equalTo:[CBLQueryExpression string:self.taskList.id]];
+    CBLQueryExpression *exp3 = [TASK like:[CBLQueryExpression string:[NSString stringWithFormat:@"%%%@%%", name]]];
     _searchQuery = [CBLQuery select:@[S_ID]
                                from:[CBLQueryDataSource database:_database]
                               where:[[exp1 andExpression: exp2] andExpression:exp3]
@@ -179,7 +179,7 @@
     if ([_username isEqualToString: [_taskList stringForKey:@"owner"]])
         display = YES;
     else
-        display = [_database containsDocumentWithID:moderatorDocId];
+        display = [_database documentWithID:moderatorDocId] != nil;
     [CBLUi displayOrHideTabbar:self display:display];
     
     if (!_dbChangeListener) {

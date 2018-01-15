@@ -23,7 +23,7 @@ let USERNAME = Expression.property("username")
 // SelectResult:
 
 let S_ID = SelectResult.expression(ID)
-let S_COUNT = SelectResult.expression(Function.count(1))
+let S_COUNT = SelectResult.expression(Function.count(Expression.int(1)))
 let S_NAME = SelectResult.expression(NAME)
 let S_TASK_LIST_ID = SelectResult.expression(TASK_LIST_ID)
 let S_USERNAME = SelectResult.expression(USERNAME)

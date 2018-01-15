@@ -11,7 +11,7 @@ import CouchbaseLiteSwift
 
 let kLoginFlowEnabled = false
 let kSyncEnabled = false
-let kSyncGatewayUrl = URL(string: "blip://10.0.1.5:4984/todo")!
+let kSyncEndpoint = URLEndpoint(withHost: "10.0.1.5", port: 4984, path: "todo", secure: false)
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelegate {
@@ -134,11 +134,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
             return
         }
         
-        var config = ReplicatorConfiguration(withDatabase: database, targetURL: kSyncGatewayUrl)
-        config.continuous = true
-        if kLoginFlowEnabled {
-            config.authenticator = BasicAuthenticator(username: username, password: password!)
-        }
+        let auth = kLoginFlowEnabled ? BasicAuthenticator(username: username, password: password!) : nil
+        let config = ReplicatorConfiguration.Builder(withDatabase: database, target: kSyncEndpoint)
+            .setContinuous(true)
+            .setAuthenticator(auth)
+            .build()
         
         replicator = Replicator(withConfig: config)
         changeListener = replicator.addChangeListener({ (change) in

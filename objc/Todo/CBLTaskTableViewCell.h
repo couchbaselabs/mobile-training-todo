@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (weak, nonatomic) IBOutlet UIButton *imageButton;
 @property (weak, nonatomic) IBOutlet UILabel *taskLabel;
 @property (nullable, nonatomic) UIImage *taskImage;
-@property (nullable, copy, nonatomic) void (^taskImageAction)();
+@property (nullable, copy, nonatomic) void (^taskImageAction)(void);
 
 @end
 

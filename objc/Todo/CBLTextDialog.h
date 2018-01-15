@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, copy, nonatomic) void (^onOkAction)(NSString *);
 @property (nullable, copy, nonatomic) NSString *cancelButtonTitle;
 @property (nonatomic) UIAlertActionStyle cancelButtonStyle;
-@property (nullable, copy, nonatomic) void (^onCancelAction)();
+@property (nullable, copy, nonatomic) void (^onCancelAction)(void);
 
 - (void)show:(UIViewController *)controller;
 

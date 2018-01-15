@@ -54,7 +54,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating, UISea
             listQuery = Query
                 .select(S_ID, S_NAME)
                 .from(DataSource.database(database))
-                .where(TYPE.equalTo("task-list"))
+                .where(TYPE.equalTo(Expression.string("task-list")))
                 .orderBy(Ordering.expression(NAME))
             
             listQuery.addChangeListener({ (change) in
@@ -69,7 +69,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating, UISea
             incompTasksCountsQuery = Query
                 .select(S_TASK_LIST_ID, S_COUNT)
                 .from(DataSource.database(database))
-                .where(TYPE.equalTo("task").and(COMPLETE.equalTo(false)))
+                .where(TYPE.equalTo(Expression.string("task")).and(COMPLETE.equalTo(Expression.boolean(false))))
                 .groupBy(TASK_LIST_ID)
             
             incompTasksCountsQuery.addChangeListener({ (change) in
@@ -126,7 +126,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating, UISea
     func searchTaskList(name: String) {
         searchQuery = Query.select(S_ID, S_NAME)
             .from(DataSource.database(database))
-            .where(TYPE.equalTo("task-list").and(NAME.like("%\(name)%")))
+            .where(TYPE.equalTo(Expression.string("task-list")).and(NAME.like(Expression.string("%\(name)%"))))
             .orderBy(Ordering.expression(NAME))
         
         do {

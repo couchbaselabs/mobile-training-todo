@@ -13,7 +13,7 @@
 
 #define kLoginFlowEnabled NO
 #define kSyncEnabled NO
-#define kSyncGatewayUrl @"blip://10.0.1.5:4984/todo"
+#define kSyncEndpoint [[CBLURLEndpoint alloc] initWithHost: @"10.0.1.5" port: 4984 path: @"todo" secure: NO]
 
 @interface AppDelegate () <CBLLoginViewControllerDelegate> {
     CBLReplicator *_replicator;
@@ -142,12 +142,17 @@
     if (!kSyncEnabled)
         return;
     
-    NSURL *url = [NSURL URLWithString:kSyncGatewayUrl];
-    CBLReplicatorConfiguration *config = [[CBLReplicatorConfiguration alloc] initWithDatabase:_database targetURL:url];
-    config.continuous = YES;
-    if (kLoginFlowEnabled) {
-        config.authenticator = [[CBLBasicAuthenticator alloc] initWithUsername:username password:password];
-    }
+    id config = [[CBLReplicatorConfiguration alloc] initWithDatabase:_database
+                                                              target:kSyncEndpoint
+                                                               block:
+                 ^(CBLReplicatorConfigurationBuilder *builder)
+    {
+        builder.continuous = YES;
+        if (kLoginFlowEnabled) {
+            builder.authenticator = [[CBLBasicAuthenticator alloc] initWithUsername:username
+                                                                           password:password];
+        }
+    }];
     
     _replicator = [[CBLReplicator alloc] initWithConfig:config];
     __weak typeof(self) wSelf = self;
