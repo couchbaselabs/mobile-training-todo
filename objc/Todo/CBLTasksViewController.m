@@ -85,7 +85,7 @@
 
 - (void)reload {
     if (!_taskQuery) {
-        _taskQuery = [CBLQuery select:@[S_ID]
+        _taskQuery = [CBLQuery select:@[S_ID, S_TASK, S_COMPLETE, S_IMAGE]
                                  from:[CBLQueryDataSource database:_database]
                                 where:[[TYPE equalTo:[CBLQueryExpression string:@"task"]]
                                        andExpression: [TASK_LIST_ID equalTo:[CBLQueryExpression string:self.taskList.id]]]
@@ -93,6 +93,7 @@
                                         [CBLQueryOrdering expression:TASK]]];
         __weak typeof (self) wSelf = self;
         [_taskQuery addChangeListener:^(CBLQueryChange *change) {
+            NSLog(@"Upate>>>>>>");
             if (!change.rows)
                 NSLog(@"Error querying tasks: %@", change.error);
             _taskRows = [change.rows allObjects];
@@ -127,9 +128,9 @@
 
 - (void)updateTask:(NSString *)taskID withComplete:(BOOL)complete {
     CBLMutableDocument *task = [[_database documentWithID: taskID] toMutable];
-    [task setValue:@(complete) forKey:@"complete"];
+    [task setBoolean:complete forKey:@"complete"];
     NSError *error;
-    if (![_database saveDocument:task error:&error])
+    if ([_database saveDocument:task error:&error] == nil)
         [CBLUi showErrorOn:self message:@"Couldn't update complete status" error:error];
 }
 
@@ -225,15 +226,15 @@
         (CBLTaskTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"TaskCell"
                                                                 forIndexPath:indexPath];
     
-    NSString* docID = [self.data[indexPath.row] stringAtIndex:0];
-    CBLDocument *doc = [_database documentWithID:docID];
+    CBLQueryResult* result = self.data[indexPath.row];
+    NSString* docID = [result stringAtIndex:0];
     
-    cell.taskLabel.text = [doc stringForKey: @"task"];
+    cell.taskLabel.text = [result stringAtIndex: 1];
     
-    BOOL complete = [doc booleanForKey:@"complete"];
+    BOOL complete = [result booleanAtIndex: 2];
     cell.accessoryType = complete ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
     
-    CBLBlob *imageBlob = [doc blobForKey: @"image"];
+    CBLBlob *imageBlob = [result blobAtIndex: 3];
     if (imageBlob) {
         UIImage *image = [UIImage imageWithData:imageBlob.content scale:[UIScreen mainScreen].scale];
         NSString *digest = imageBlob.digest;

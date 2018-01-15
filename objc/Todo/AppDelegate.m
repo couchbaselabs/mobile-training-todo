@@ -24,6 +24,8 @@
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    [CBLDatabase setLogLevel: kCBLLogLevelDebug domain:kCBLLogDomainAll];
+    
     if (kLoginFlowEnabled) {
         [self loginWithUsername:nil];
     } else {

@@ -64,7 +64,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
     func reload() {
         if taskQuery == nil {
             taskQuery = Query
-                .select(S_ID)
+                .select(S_ID, S_TASK, S_COMPLETE, S_IMAGE)
                 .from(DataSource.database(database))
                 .where(TYPE.equalTo(Expression.string("task")).and(TASK_LIST_ID.equalTo(Expression.string(taskList.id))))
                 .orderBy(Ordering.expression(CREATED_AT), Ordering.expression(TASK))
@@ -208,16 +208,14 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TaskCell") as! TaskTableViewCell
         
-        let row = self.data![indexPath.row]
-        let docID = row.string(at: 0)!
-        let doc = database.document(withID: docID)!
+        let result = self.data![indexPath.row]
+        let docID = result.string(at: 0)!
+        cell.taskLabel.text = result.string(at: 1)!
         
-        cell.taskLabel.text = doc.string(forKey: "task")
-        
-        let complete: Bool = doc.boolean(forKey: "complete")
+        let complete: Bool = result.boolean(at: 2)
         cell.accessoryType = complete ? .checkmark : .none
         
-        if let imageBlob = doc.blob(forKey: "image") {
+        if let imageBlob = result.blob(at: 3) {
             let digest = imageBlob.digest!
             let image = UIImage(data: imageBlob.content!, scale: UIScreen.main.scale)
             let thumbnail = Image.square(image: image,
