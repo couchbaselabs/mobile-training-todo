@@ -11,12 +11,14 @@ import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.DatabaseConfiguration;
 import com.couchbase.lite.Document;
-import com.couchbase.lite.Log;
+import com.couchbase.lite.Endpoint;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Replicator;
 import com.couchbase.lite.ReplicatorChange;
 import com.couchbase.lite.ReplicatorChangeListener;
 import com.couchbase.lite.ReplicatorConfiguration;
+import com.couchbase.lite.URLEndpoint;
+import com.couchbase.lite.internal.support.Log;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -114,8 +116,9 @@ public class Application extends android.app.Application implements ReplicatorCh
     // -------------------------
 
     private void openDatabase(String dbname) {
-        DatabaseConfiguration config = new DatabaseConfiguration(getApplicationContext());
-        config.setConflictResolver(getConflictResolver());
+        DatabaseConfiguration config = new DatabaseConfiguration.Builder(getApplicationContext())
+                .setConflictResolver(getConflictResolver())
+                .build();
         try {
             database = new Database(dbname, config);
         } catch (CouchbaseLiteException e) {
@@ -179,22 +182,25 @@ public class Application extends android.app.Application implements ReplicatorCh
         if (!SYNC_ENABLED) return;
 
         URI uri;
+        Endpoint endpoint;
         try {
             uri = new URI(SYNCGATEWAY_URL);
+            boolean secure = uri.getScheme().endsWith("s");
+            endpoint = new URLEndpoint(uri.getHost(),uri.getPort(), uri.getPath(), secure);
         } catch (URISyntaxException e) {
             Log.e(TAG, "Failed parse URI: %s", e, SYNCGATEWAY_URL);
             return;
         }
 
-        ReplicatorConfiguration config = new ReplicatorConfiguration(database, uri);
-        config.setReplicatorType(ReplicatorConfiguration.ReplicatorType.PUSH_AND_PULL);
-        config.setContinuous(true);
+        ReplicatorConfiguration.Builder builder = new ReplicatorConfiguration.Builder(database, endpoint)
+        .setReplicatorType(ReplicatorConfiguration.ReplicatorType.PUSH_AND_PULL)
+        .setContinuous(true);
 
         // authentication
         if (username != null && password != null)
-            config.setAuthenticator(new BasicAuthenticator(username, password));
+            builder.setAuthenticator(new BasicAuthenticator(username, password));
 
-        replicator = new Replicator(config);
+        replicator = new Replicator(builder.build());
         replicator.addChangeListener(this);
         replicator.start();
     }

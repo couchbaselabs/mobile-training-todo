@@ -27,8 +27,8 @@ import com.couchbase.lite.Blob;
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.Document;
-import com.couchbase.lite.Log;
 import com.couchbase.lite.MutableDocument;
+import com.couchbase.lite.internal.support.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

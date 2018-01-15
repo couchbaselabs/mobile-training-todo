@@ -14,12 +14,10 @@ public class ListDetailActivity extends AppCompatActivity {
     private Document taskList;
     private String username;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_detail);
-
 
         db = ((Application) getApplication()).getDatabase();
         taskList = db.getDocument(getIntent().getStringExtra(ListsActivity.INTENT_LIST_ID));
@@ -40,6 +38,6 @@ public class ListDetailActivity extends AppCompatActivity {
     }
 
     private boolean hasModeratorAccess() {
-        return db.contains("moderator." + username);
+        return db.getDocument("moderator." + username) != null;
     }
 }

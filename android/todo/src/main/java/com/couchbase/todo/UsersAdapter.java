@@ -14,11 +14,12 @@ import com.couchbase.lite.Document;
 import com.couchbase.lite.Expression;
 import com.couchbase.lite.Meta;
 import com.couchbase.lite.Query;
+import com.couchbase.lite.QueryChange;
+import com.couchbase.lite.QueryChangeListener;
 import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
-import com.couchbase.lite.query.QueryChange;
-import com.couchbase.lite.query.QueryChangeListener;
+
 
 /**
  * Created by hideki on 6/26/17.
@@ -40,7 +41,7 @@ public class UsersAdapter extends ArrayAdapter<String> {
             @Override
             public void changed(QueryChange change) {
                 clear();
-                ResultSet rs = change.getRows();
+                ResultSet rs = change.getResults();
                 Result result;
                 while ((result = rs.next()) != null) {
                     String id = result.getString(0);
@@ -71,7 +72,7 @@ public class UsersAdapter extends ArrayAdapter<String> {
     private Query query() {
         return Query.select(SelectResult.expression(Meta.id))
                 .from(DataSource.database(db))
-                .where(Expression.property("type").equalTo("task-list.user")
-                        .and(Expression.property("taskList.id").equalTo(listID)));
+                .where(Expression.property("type").equalTo(Expression.string("task-list.user"))
+                        .and(Expression.property("taskList.id").equalTo(Expression.string(listID))));
     }
 }

@@ -15,16 +15,16 @@ import com.couchbase.lite.DataSource;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.Expression;
-import com.couchbase.lite.Log;
 import com.couchbase.lite.Meta;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Ordering;
 import com.couchbase.lite.Query;
+import com.couchbase.lite.QueryChange;
+import com.couchbase.lite.QueryChangeListener;
 import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
-import com.couchbase.lite.query.QueryChange;
-import com.couchbase.lite.query.QueryChangeListener;
+import com.couchbase.lite.internal.support.Log;
 
 
 public class TasksAdapter extends ArrayAdapter<String> {
@@ -44,7 +44,7 @@ public class TasksAdapter extends ArrayAdapter<String> {
             @Override
             public void changed(QueryChange change) {
                 clear();
-                ResultSet rs = change.getRows();
+                ResultSet rs = change.getResults();
                 Result result;
                 while ((result = rs.next()) != null)
                     add(result.getString(0));
@@ -106,8 +106,8 @@ public class TasksAdapter extends ArrayAdapter<String> {
 
         return Query.select(SR_DOC_ID)
                 .from(DataSource.database(db))
-                .where(EXPR_TYPE.equalTo("task")
-                        .and(EXPR_TASKLIST_ID.equalTo(listID)))
+                .where(EXPR_TYPE.equalTo(Expression.string("task"))
+                        .and(EXPR_TASKLIST_ID.equalTo(Expression.string(listID))))
                 .orderBy(ORDERBY_CREATED_AT, ORDERBY_TASK);
     }
 

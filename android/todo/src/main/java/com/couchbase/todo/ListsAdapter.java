@@ -12,15 +12,15 @@ import com.couchbase.lite.Database;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.Expression;
 import com.couchbase.lite.Function;
-import com.couchbase.lite.Log;
 import com.couchbase.lite.Meta;
 import com.couchbase.lite.Ordering;
 import com.couchbase.lite.Query;
+import com.couchbase.lite.QueryChange;
+import com.couchbase.lite.QueryChangeListener;
 import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
-import com.couchbase.lite.query.QueryChange;
-import com.couchbase.lite.query.QueryChangeListener;
+import com.couchbase.lite.internal.support.Log;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +44,7 @@ public class ListsAdapter extends ArrayAdapter<String> {
             @Override
             public void changed(QueryChange change) {
                 clear();
-                ResultSet rs = change.getRows();
+                ResultSet rs = change.getResults();
                 Result result;
                 while ((result = rs.next()) != null) {
                     add(result.getString(0));
@@ -58,7 +58,7 @@ public class ListsAdapter extends ArrayAdapter<String> {
             @Override
             public void changed(QueryChange change) {
                 incompCounts.clear();
-                ResultSet rs = change.getRows();
+                ResultSet rs = change.getResults();
                 Result result;
                 while ((result = rs.next()) != null) {
                     Log.e(TAG, "result -> " + result.toMap());
@@ -93,7 +93,7 @@ public class ListsAdapter extends ArrayAdapter<String> {
     private Query listsQuery() {
         return Query.select(SelectResult.expression(Meta.id))
                 .from(DataSource.database(db))
-                .where(Expression.property("type").equalTo("task-list"))
+                .where(Expression.property("type").equalTo(Expression.string("task-list")))
                 .orderBy(Ordering.property("name").ascending());
     }
 
@@ -102,10 +102,10 @@ public class ListsAdapter extends ArrayAdapter<String> {
         Expression exprComplete = Expression.property("complete");
         Expression exprTaskListId = Expression.property("taskList.id");
         SelectResult srTaskListID = SelectResult.expression(exprTaskListId);
-        SelectResult srCount = SelectResult.expression(Function.count(1));
+        SelectResult srCount = SelectResult.expression(Function.count(Expression.all()));
         return Query.select(srTaskListID, srCount)
                 .from(DataSource.database(db))
-                .where(exprType.equalTo("task").and(exprComplete.equalTo(false)))
+                .where(exprType.equalTo(Expression.string("task")).and(exprComplete.equalTo(Expression.booleanValue(false))))
                 .groupBy(exprTaskListId);
     }
 }
