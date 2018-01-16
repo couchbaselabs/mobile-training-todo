@@ -54,7 +54,7 @@
     }
     
     CBLMutableDocument *task = [[_database documentWithID:self.taskID] toMutable];
-    CBLBlob *imageBlob = [[CBLBlob alloc] initWithContentType:@"image/jpg" data:imageData];
+    CBLBlob *imageBlob = [[CBLBlob alloc] initWithContentType:@"image/jpeg" data:imageData];
     [task setValue:imageBlob forKey:@"image"];
     
     NSError *error;

@@ -124,7 +124,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
         
         do {
             let task = database.document(withID: taskID)!.toMutable()
-            let blob = Blob(contentType: "image/jpg", data: imageData)
+            let blob = Blob(contentType: "image/jpeg", data: imageData)
             task.setValue(blob, forKey: "image")
             try database.saveDocument(task)
         } catch let error as NSError {
