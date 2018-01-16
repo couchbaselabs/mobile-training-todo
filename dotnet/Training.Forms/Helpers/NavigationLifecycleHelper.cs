@@ -20,7 +20,7 @@
 //
 using System;
 using System.Linq;
-
+using MvvmCross.Forms.Views;
 using Xamarin.Forms;
 
 namespace Training.Forms
@@ -60,7 +60,7 @@ namespace Training.Forms
         public bool OnDisappearing(INavigation navigation)
         {
             if(navigation.NavigationStack.Last() == _page) {
-                (_page.BindingContext as IDisposable)?.Dispose();
+                ((_page as MvxPage)?.ViewModel as IDisposable)?.Dispose();
                 return true;
             }
 

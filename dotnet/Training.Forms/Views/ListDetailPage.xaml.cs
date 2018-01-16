@@ -57,7 +57,7 @@ namespace Training
 
         private void AddUsersTab(object sender, PropertyChangedEventArgs e)
         {
-            var viewModel = BindingContext as ListDetailViewModel;
+            var viewModel = ViewModel as ListDetailViewModel;
             if(viewModel == null) {
                 return;
             }
@@ -77,7 +77,7 @@ namespace Training
         {
             base.OnBindingContextChanged();
 
-            var viewModel = BindingContext as ListDetailViewModel;
+            var viewModel = ViewModel as ListDetailViewModel;
             if(viewModel == null || Children.Count > 0) {
                 return;
             }
@@ -99,8 +99,8 @@ namespace Training
         protected override void OnDisappearing()
         {
             if(_navHelper.OnDisappearing(Navigation)) {
-                (Children[0].BindingContext as IDisposable)?.Dispose();
-                (_usersPage.BindingContext as IDisposable)?.Dispose();
+                ((Children[0] as MvxPage)?.ViewModel as IDisposable)?.Dispose();
+                (_usersPage.ViewModel as IDisposable)?.Dispose();
             }
         }
 

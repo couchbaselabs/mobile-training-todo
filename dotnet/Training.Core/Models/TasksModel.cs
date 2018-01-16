@@ -95,7 +95,7 @@ namespace Training.Core
             var properties = new Dictionary<string, object> {
                 ["type"] = TaskType,
                 ["taskList"] = taskListInfo,
-                ["createdAt"] = DateTime.UtcNow,
+                ["createdAt"] = DateTimeOffset.UtcNow,
                 ["task"] = taskName,
                 ["complete"] = false
             };

@@ -77,7 +77,7 @@ namespace Training.Core
         public void Init(string username, string name, string listID)
         {
             Username = username;
-            PageTitle = name;
+            //PageTitle = name;
             CurrentListID = listID;
             Model = new ListDetailModel(listID);
             CalculateModeratorStatus();

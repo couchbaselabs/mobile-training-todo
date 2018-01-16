@@ -33,7 +33,7 @@ namespace Training.Android
     {
 
         bool hasUpdated = false;
-        DateTime lastUpdate;
+        DateTimeOffset lastUpdate;
         float last_x = 0.0f;
         float last_y = 0.0f;
         float last_z = 0.0f;
@@ -80,7 +80,7 @@ namespace Training.Android
                 float y = e.Values[1];
                 float z = e.Values[2];
 
-                DateTime curTime = System.DateTime.Now;
+                var curTime = System.DateTimeOffset.Now;
                 if(hasUpdated == false) {
                     hasUpdated = true;
                     lastUpdate = curTime;

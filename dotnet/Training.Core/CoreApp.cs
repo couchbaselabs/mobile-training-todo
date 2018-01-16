@@ -214,7 +214,7 @@ namespace Training.Core
 
             Mvx.RegisterSingleton<IUserDialogs>(() => UserDialogs.Instance);
             Mvx.RegisterType<IMediaPicker>(() => Mvx.Resolve<IDevice>().MediaPicker);
-            RegisterAppStart<TaskListsViewModel>();
+            RegisterCustomAppStart<CoreAppStart>();
         }
 
         #endregion
