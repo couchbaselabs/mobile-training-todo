@@ -171,7 +171,7 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating, UISea
     
     // MARK: - Action
     
-    func addAction(sender: AnyObject) {
+    @objc func addAction(sender: AnyObject) {
         Ui.showTextInput(on: self, title: "Add User", message: nil, textFieldConfig: { text in
             text.placeholder = "Username"
             text.autocapitalizationType = .none

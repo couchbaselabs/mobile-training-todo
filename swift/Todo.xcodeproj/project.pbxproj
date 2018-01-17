@@ -162,7 +162,7 @@
 					93F4B2BE1C6940D6005FF4D8 = {
 						CreatedOnToolsVersion = 7.2;
 						DevelopmentTeam = N2Q372V7W2;
-						LastSwiftMigration = 0820;
+						LastSwiftMigration = 0920;
 					};
 				};
 			};
@@ -360,7 +360,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.couchbase.Todo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -385,7 +386,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.couchbase.Todo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

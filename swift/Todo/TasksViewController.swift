@@ -186,7 +186,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
     
     // MARK: - Action
     
-    func addAction(sender: Any) {
+    @objc func addAction(sender: Any) {
         Ui.showTextInput(on: self, title: "New Task", message: nil, textFieldConfig: { text in
             text.placeholder = "Task"
             text.autocapitalizationType = .sentences
