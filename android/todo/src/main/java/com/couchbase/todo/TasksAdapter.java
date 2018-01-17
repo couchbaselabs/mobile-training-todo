@@ -101,12 +101,13 @@ public class TasksAdapter extends ArrayAdapter<String> {
         SelectResult SR_DOC_ID = SelectResult.expression(Meta.id);
         SelectResult SR_TASK = SelectResult.property("task");
         SelectResult SR_COMPLETE = SelectResult.property("complete");
+        SelectResult SR_IMAGE = SelectResult.property("image");
         Expression EXPR_TYPE = Expression.property("type");
         Expression EXPR_TASKLIST_ID = Expression.property("taskList.id");
         Ordering ORDERBY_CREATED_AT = Ordering.property("createdAt");
         Ordering ORDERBY_TASK = Ordering.property("task");
 
-        return Query.select(SR_DOC_ID, SR_TASK, SR_COMPLETE)
+        return Query.select(SR_DOC_ID, SR_TASK, SR_COMPLETE, SR_IMAGE)
                 .from(DataSource.database(db))
                 .where(EXPR_TYPE.equalTo(Expression.string("task"))
                         .and(EXPR_TASKLIST_ID.equalTo(Expression.string(listID))))
