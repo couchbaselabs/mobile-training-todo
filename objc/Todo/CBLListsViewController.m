@@ -80,15 +80,15 @@
         
         __weak typeof(self) wSelf = self;
         [_listQuery addChangeListener:^(CBLQueryChange *change) {
-            if (!change.rows)
+            if (!change.results)
                 NSLog(@"Error querying task list: %@", change.error);
-            _listRows = [change.rows allObjects];
+            _listRows = [change.results allObjects];
             [wSelf.tableView reloadData];
         }];
         
         [_incompTasksCountsQuery addChangeListener:^(CBLQueryChange *change) {
-            if (change.rows)
-                [wSelf updateIncompleteTasksCounts: change.rows];
+            if (change.results)
+                [wSelf updateIncompleteTasksCounts: change.results];
             else
                 NSLog(@"Error querying incomplete task count: %@", change.error);
         }];

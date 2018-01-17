@@ -73,7 +73,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
                 if let error = change.error {
                     NSLog("Error quering tasks: %@", error.localizedDescription)
                 }
-                self.taskRows = change.rows != nil ? Array(change.rows!) : nil
+                self.taskRows = change.results != nil ? Array(change.results!) : nil
                 self.tableView.reloadData()
             })
         }

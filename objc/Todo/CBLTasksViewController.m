@@ -93,10 +93,9 @@
                                         [CBLQueryOrdering expression:TASK]]];
         __weak typeof (self) wSelf = self;
         [_taskQuery addChangeListener:^(CBLQueryChange *change) {
-            NSLog(@"Upate>>>>>>");
-            if (!change.rows)
+            if (!change.results)
                 NSLog(@"Error querying tasks: %@", change.error);
-            _taskRows = [change.rows allObjects];
+            _taskRows = [change.results allObjects];
             [wSelf.tableView reloadData];
         }];
     }

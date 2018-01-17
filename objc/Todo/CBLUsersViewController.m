@@ -72,9 +72,9 @@
                                 where:[exp1 andExpression:exp2]];
         __weak typeof(self) wSelf = self;
         [_userQuery addChangeListener:^(CBLQueryChange *change) {
-            if (!change.rows)
+            if (!change.results)
                 NSLog(@"Error querying users: %@", change.error);
-            _userRows = [change.rows allObjects];
+            _userRows = [change.results allObjects];
             [wSelf.tableView reloadData];
         }];
     }

@@ -61,7 +61,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating, UISea
                 if let error = change.error {
                     NSLog("Error querying task list: %@", error.localizedDescription)
                 }
-                self.listRows = change.rows != nil ? Array(change.rows!) : nil
+                self.listRows = change.results != nil ? Array(change.results!) : nil
                 self.tableView.reloadData()
             })
             
@@ -74,7 +74,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating, UISea
             
             incompTasksCountsQuery.addChangeListener({ (change) in
                 if change.error == nil {
-                    self.updateIncompleteTasksCounts(change.rows!)
+                    self.updateIncompleteTasksCounts(change.results!)
                 } else {
                     NSLog("Error querying task list: %@", change.error!.localizedDescription)
                 }

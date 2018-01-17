@@ -65,7 +65,7 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating, UISea
                 if let error = change.error {
                     NSLog("Error querying users: %@", error.localizedDescription)
                 }
-                self.userRows = change.rows != nil ? Array(change.rows!) : nil
+                self.userRows = change.results != nil ? Array(change.results!) : nil
                 self.tableView.reloadData()
             })
         }

@@ -9,9 +9,10 @@
 import UIKit
 import CouchbaseLiteSwift
 
+let kLoggingEnabled = true
 let kLoginFlowEnabled = false
 let kSyncEnabled = false
-let kSyncEndpoint = URLEndpoint(withHost: "10.0.1.5", port: 4984, path: "todo", secure: false)
+let kSyncEndpoint = URLEndpoint(withHost: "localhost", port: 4984, path: "todo", secure: false)
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelegate {
@@ -23,6 +24,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions
         launchOptions: [UIApplicationLaunchOptionsKey : Any]? = nil) -> Bool {
+        if kLoggingEnabled {
+            Database.setLogLevel(.debug, domain: .all);
+        }
+        
         if kLoginFlowEnabled {
             login(username: nil)
         } else {
