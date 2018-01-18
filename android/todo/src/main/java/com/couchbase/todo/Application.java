@@ -5,14 +5,10 @@ import android.os.Handler;
 import android.widget.Toast;
 
 import com.couchbase.lite.BasicAuthenticator;
-import com.couchbase.lite.Conflict;
-import com.couchbase.lite.ConflictResolver;
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.DatabaseConfiguration;
-import com.couchbase.lite.Document;
 import com.couchbase.lite.Endpoint;
-import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Replicator;
 import com.couchbase.lite.ReplicatorChange;
 import com.couchbase.lite.ReplicatorChangeListener;
@@ -22,8 +18,6 @@ import com.couchbase.lite.internal.support.Log;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashSet;
-import java.util.Set;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
@@ -116,9 +110,7 @@ public class Application extends android.app.Application implements ReplicatorCh
     // -------------------------
 
     private void openDatabase(String dbname) {
-        DatabaseConfiguration config = new DatabaseConfiguration.Builder(getApplicationContext())
-                .setConflictResolver(getConflictResolver())
-                .build();
+        DatabaseConfiguration config = new DatabaseConfiguration.Builder(getApplicationContext()).build();
         try {
             database = new Database(dbname, config);
         } catch (CouchbaseLiteException e) {
@@ -126,39 +118,6 @@ public class Application extends android.app.Application implements ReplicatorCh
             // TODO: error handling
         }
     }
-
-    private ConflictResolver getConflictResolver() {
-        /**
-         * Example: Conflict resolver that merges Mine and Their document.
-         */
-        return new ConflictResolver() {
-            @Override
-            public Document resolve(Conflict conflict) {
-                Document mine = conflict.getMine();
-                Document theirs = conflict.getTheirs();
-
-                MutableDocument resolved = new MutableDocument();
-                Set<String> changed = new HashSet<>();
-
-                // copy all data from theirs document
-                for (String key : theirs) {
-                    resolved.setValue(key, theirs.getValue(key));
-                    changed.add(key);
-                }
-
-                // copy all data from mine which are not in mine document
-                for (String key : mine) {
-                    if (!changed.contains(key))
-                        resolved.setValue(key, mine.getValue(key));
-                }
-
-                Log.e(TAG, "ConflictResolver.resolve() resolved -> %s", resolved.toMap());
-
-                return resolved;
-            }
-        };
-    }
-
 
     private void closeDatabase() {
         if (database != null) {
