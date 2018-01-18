@@ -143,7 +143,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
     
     func searchTask(task: String) {
         searchQuery = Query
-            .select(S_ID)
+            .select(S_ID, S_TASK, S_COMPLETE, S_IMAGE)
             .from(DataSource.database(database))
             .where(TYPE.equalTo(Expression.string("task"))
                 .and(TASK_LIST_ID.equalTo(Expression.string(taskList.id)))

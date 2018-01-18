@@ -157,7 +157,7 @@
     CBLQueryExpression *exp1 = [TYPE equalTo:[CBLQueryExpression string:@"task"]];
     CBLQueryExpression *exp2 = [TASK_LIST_ID equalTo:[CBLQueryExpression string:self.taskList.id]];
     CBLQueryExpression *exp3 = [TASK like:[CBLQueryExpression string:[NSString stringWithFormat:@"%%%@%%", name]]];
-    _searchQuery = [CBLQuery select:@[S_ID]
+    _searchQuery = [CBLQuery select:@[S_ID, S_TASK, S_COMPLETE, S_IMAGE]
                                from:[CBLQueryDataSource database:_database]
                               where:[[exp1 andExpression: exp2] andExpression:exp3]
                             orderBy:@[[CBLQueryOrdering expression:CREATED_AT],
@@ -350,6 +350,7 @@ didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info
         [self updateTask:_taskIDForImage withImage:info[@"UIImagePickerControllerOriginalImage"]];
         _taskIDForImage = nil;
     }
+    [picker.presentingViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
 #pragma mark - Navigation
