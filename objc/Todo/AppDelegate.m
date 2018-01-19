@@ -12,9 +12,9 @@
 #import "CBLUi.h"
 
 #define kLoggingEnabled YES
-#define kLoginFlowEnabled NO
-#define kSyncEnabled NO
-#define kSyncEndpoint [[CBLURLEndpoint alloc] initWithHost: @"localhost" port: 4984 path: @"todo" secure: NO]
+#define kLoginFlowEnabled YES
+#define kSyncEnabled YES
+#define kSyncEndpoint @"ws://localhost:4984/todo"
 
 @interface AppDelegate () <CBLLoginViewControllerDelegate> {
     CBLReplicator *_replicator;
@@ -25,10 +25,10 @@
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    [CBLDatabase setLogLevel: kCBLLogLevelDebug domain:kCBLLogDomainAll];
-    if (kLoggingEnabled) {
-        [CBLDatabase setLogLevel:kCBLLogLevelDebug domain:kCBLLogDomainAll];
-    }
+    // [CBLDatabase setLogLevel: kCBLLogLevelDebug domain:kCBLLogDomainAll];
+    // if (kLoggingEnabled) {
+        // [CBLDatabase setLogLevel:kCBLLogLevelDebug domain:kCBLLogDomainAll];
+    //}
     
     if (kLoginFlowEnabled) {
         [self loginWithUsername:nil];
@@ -148,8 +148,9 @@
     if (!kSyncEnabled)
         return;
     
+    id target = [[CBLURLEndpoint alloc] initWithURL:[NSURL URLWithString:kSyncEndpoint]];
     id config = [[CBLReplicatorConfiguration alloc] initWithDatabase:_database
-                                                              target:kSyncEndpoint
+                                                              target:target
                                                                block:
                  ^(CBLReplicatorConfigurationBuilder *builder)
     {

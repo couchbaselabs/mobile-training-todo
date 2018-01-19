@@ -12,7 +12,7 @@ import CouchbaseLiteSwift
 let kLoggingEnabled = true
 let kLoginFlowEnabled = false
 let kSyncEnabled = false
-let kSyncEndpoint = URLEndpoint(withHost: "localhost", port: 4984, path: "todo", secure: false)
+let kSyncEndpoint = "ws://localhost:4984/todo"
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelegate {
@@ -140,7 +140,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         }
         
         let auth = kLoginFlowEnabled ? BasicAuthenticator(username: username, password: password!) : nil
-        let config = ReplicatorConfiguration.Builder(withDatabase: database, target: kSyncEndpoint)
+        let target = URLEndpoint(withURL: URL(string: kSyncEndpoint)!)
+        let config = ReplicatorConfiguration.Builder(withDatabase: database, target: target)
             .setContinuous(true)
             .setAuthenticator(auth)
             .build()
