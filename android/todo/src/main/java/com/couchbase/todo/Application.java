@@ -141,16 +141,14 @@ public class Application extends android.app.Application implements ReplicatorCh
         if (!SYNC_ENABLED) return;
 
         URI uri;
-        Endpoint endpoint;
         try {
             uri = new URI(SYNCGATEWAY_URL);
-            boolean secure = uri.getScheme().endsWith("s");
-            endpoint = new URLEndpoint(uri.getHost(),uri.getPort(), uri.getPath(), secure);
         } catch (URISyntaxException e) {
             Log.e(TAG, "Failed parse URI: %s", e, SYNCGATEWAY_URL);
             return;
         }
 
+        Endpoint endpoint = new URLEndpoint(uri);
         ReplicatorConfiguration.Builder builder = new ReplicatorConfiguration.Builder(database, endpoint)
         .setReplicatorType(ReplicatorConfiguration.ReplicatorType.PUSH_AND_PULL)
         .setContinuous(true);
