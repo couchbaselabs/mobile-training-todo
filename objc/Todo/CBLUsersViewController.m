@@ -67,9 +67,9 @@
         CBLQueryExpression *exp1 = [TYPE equalTo:[CBLQueryExpression string: @"task-list.user"]];
         CBLQueryExpression *exp2 = [TASK_LIST_ID equalTo:[CBLQueryExpression string: _taskList.id]];
         
-        _userQuery = [CBLQuery select:@[S_ID, S_USERNAME]
-                                 from:[CBLQueryDataSource database:_database]
-                                where:[exp1 andExpression:exp2]];
+        _userQuery = [CBLQueryBuilder select:@[S_ID, S_USERNAME]
+                                        from:[CBLQueryDataSource database:_database]
+                                       where:[exp1 andExpression:exp2]];
         __weak typeof(self) wSelf = self;
         [_userQuery addChangeListener:^(CBLQueryChange *change) {
             if (!change.results)
@@ -109,9 +109,9 @@
     CBLQueryExpression *exp1 = [TYPE equalTo:[CBLQueryExpression string: @"task-list.user"]];
     CBLQueryExpression *exp2 = [TASK_LIST_ID equalTo:[CBLQueryExpression string: _taskList.id]];
     CBLQueryExpression *exp3 = [USERNAME like: [CBLQueryExpression string:[NSString stringWithFormat:@"%@%%", username]]];
-    _searchQuery = [CBLQuery select:@[S_ID, S_USERNAME]
-                               from:[CBLQueryDataSource database:_database]
-                              where:[[exp1 andExpression:exp2] andExpression:exp3]];
+    _searchQuery = [CBLQueryBuilder select:@[S_ID, S_USERNAME]
+                                      from:[CBLQueryDataSource database:_database]
+                                     where:[[exp1 andExpression:exp2] andExpression:exp3]];
     NSError *error;
     NSEnumerator *rows = [_searchQuery execute: &error];
     if (!rows)

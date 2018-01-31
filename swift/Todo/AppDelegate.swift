@@ -25,7 +25,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
     func application(_ application: UIApplication, didFinishLaunchingWithOptions
         launchOptions: [UIApplicationLaunchOptionsKey : Any]? = nil) -> Bool {
         if kLoggingEnabled {
-            Database.setLogLevel(.debug, domain: .all);
+            Database.setLogLevel(.verbose, domain: .all);
         }
         
         if kLoginFlowEnabled {
@@ -67,14 +67,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         let task = ValueIndexItem.expression(Expression.property("task"))
         
         do {
-            try database.createIndex(Index.valueIndex(withItems: type, name), withName: "task-list")
+            let index = IndexBuilder.valueIndex(items: type, name)
+            try database.createIndex(index, withName: "task-list")
         } catch let error as NSError {
             NSLog("Couldn't create index (type, name): %@", error);
         }
         
         // For tasks query:
         do {
-            try database.createIndex(Index.valueIndex(withItems: type, taskListId, task), withName: "tasks")
+            let index = IndexBuilder.valueIndex(items: type, taskListId, task)
+            try database.createIndex(index, withName: "tasks")
         } catch let error as NSError {
             NSLog("Couldn't create index (type, taskList.id, task): %@", error);
         }
@@ -140,13 +142,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         }
         
         let auth = kLoginFlowEnabled ? BasicAuthenticator(username: username, password: password!) : nil
-        let target = URLEndpoint(withURL: URL(string: kSyncEndpoint)!)
-        let config = ReplicatorConfiguration.Builder(withDatabase: database, target: target)
-            .setContinuous(true)
-            .setAuthenticator(auth)
-            .build()
+        let target = URLEndpoint(url: URL(string: kSyncEndpoint)!)
+        let config = ReplicatorConfiguration(database: database, target: target)
+        config.continuous = true
+        config.authenticator = auth
         
-        replicator = Replicator(withConfig: config)
+        replicator = Replicator(config: config)
         changeListener = replicator.addChangeListener({ (change) in
             let s = change.status
             let e = change.status.error as NSError?

@@ -85,12 +85,12 @@
 
 - (void)reload {
     if (!_taskQuery) {
-        _taskQuery = [CBLQuery select:@[S_ID, S_TASK, S_COMPLETE, S_IMAGE]
-                                 from:[CBLQueryDataSource database:_database]
-                                where:[[TYPE equalTo:[CBLQueryExpression string:@"task"]]
-                                       andExpression: [TASK_LIST_ID equalTo:[CBLQueryExpression string:self.taskList.id]]]
-                              orderBy:@[[CBLQueryOrdering expression:CREATED_AT],
-                                        [CBLQueryOrdering expression:TASK]]];
+        _taskQuery = [CBLQueryBuilder select:@[S_ID, S_TASK, S_COMPLETE, S_IMAGE]
+                                        from:[CBLQueryDataSource database:_database]
+                                       where:[[TYPE equalTo:[CBLQueryExpression string:@"task"]]
+                                              andExpression: [TASK_LIST_ID equalTo:[CBLQueryExpression string:self.taskList.id]]]
+                                     orderBy:@[[CBLQueryOrdering expression:CREATED_AT],
+                                               [CBLQueryOrdering expression:TASK]]];
         __weak typeof (self) wSelf = self;
         [_taskQuery addChangeListener:^(CBLQueryChange *change) {
             if (!change.results)
@@ -157,11 +157,11 @@
     CBLQueryExpression *exp1 = [TYPE equalTo:[CBLQueryExpression string:@"task"]];
     CBLQueryExpression *exp2 = [TASK_LIST_ID equalTo:[CBLQueryExpression string:self.taskList.id]];
     CBLQueryExpression *exp3 = [TASK like:[CBLQueryExpression string:[NSString stringWithFormat:@"%%%@%%", name]]];
-    _searchQuery = [CBLQuery select:@[S_ID, S_TASK, S_COMPLETE, S_IMAGE]
-                               from:[CBLQueryDataSource database:_database]
-                              where:[[exp1 andExpression: exp2] andExpression:exp3]
-                            orderBy:@[[CBLQueryOrdering expression:CREATED_AT],
-                                      [CBLQueryOrdering expression:TASK]]];
+    _searchQuery = [CBLQueryBuilder select:@[S_ID, S_TASK, S_COMPLETE, S_IMAGE]
+                                      from:[CBLQueryDataSource database:_database]
+                                     where:[[exp1 andExpression: exp2] andExpression:exp3]
+                                   orderBy:@[[CBLQueryOrdering expression:CREATED_AT],
+                                             [CBLQueryOrdering expression:TASK]]];
     NSError *error;
     NSEnumerator *rows = [_searchQuery execute: &error];
     if (!rows)

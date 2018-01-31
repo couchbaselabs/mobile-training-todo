@@ -12,8 +12,8 @@
 #import "CBLUi.h"
 
 #define kLoggingEnabled YES
-#define kLoginFlowEnabled YES
-#define kSyncEnabled YES
+#define kLoginFlowEnabled NO
+#define kSyncEnabled NO
 #define kSyncEndpoint @"ws://localhost:4984/todo"
 
 @interface AppDelegate () <CBLLoginViewControllerDelegate> {
@@ -25,10 +25,9 @@
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    // [CBLDatabase setLogLevel: kCBLLogLevelDebug domain:kCBLLogDomainAll];
-    // if (kLoggingEnabled) {
-        // [CBLDatabase setLogLevel:kCBLLogLevelDebug domain:kCBLLogDomainAll];
-    //}
+    if (kLoggingEnabled) {
+        [CBLDatabase setLogLevel:kCBLLogLevelVerbose domain:kCBLLogDomainAll];
+    }
     
     if (kLoginFlowEnabled) {
         [self loginWithUsername:nil];
@@ -76,13 +75,13 @@
     CBLValueIndexItem *task = [CBLValueIndexItem property:@"task"];
     
     // For task list query:
-    id index1 = [CBLIndex valueIndexWithItems:@[type, name]];
+    id index1 = [CBLIndexBuilder valueIndexWithItems:@[type, name]];
     if (![_database createIndex: index1 withName:@"task-list" error:&error]) {
         NSLog(@"Couldn't create index (type, name): %@", error);
     }
     
     // For tasks query:
-    id index2 = [CBLIndex valueIndexWithItems:@[type, taskListId, task]];
+    id index2 = [CBLIndexBuilder valueIndexWithItems:@[type, taskListId, task]];
     if (!![_database createIndex: index2 withName:@"tasks" error:&error]) {
         NSLog(@"Cannot create index (type, taskList.id, task): %@", error);
     }
@@ -148,18 +147,10 @@
     if (!kSyncEnabled)
         return;
     
-    id target = [[CBLURLEndpoint alloc] initWithURL:[NSURL URLWithString:kSyncEndpoint]];
-    id config = [[CBLReplicatorConfiguration alloc] initWithDatabase:_database
-                                                              target:target
-                                                               block:
-                 ^(CBLReplicatorConfigurationBuilder *builder)
-    {
-        builder.continuous = YES;
-        if (kLoginFlowEnabled) {
-            builder.authenticator = [[CBLBasicAuthenticator alloc] initWithUsername:username
-                                                                           password:password];
-        }
-    }];
+    CBLURLEndpoint *target = [[CBLURLEndpoint alloc] initWithURL:[NSURL URLWithString:kSyncEndpoint]];
+    CBLReplicatorConfiguration *config = [[CBLReplicatorConfiguration alloc] initWithDatabase:_database target:target];
+    config.continuous = YES;
+    config.authenticator = [[CBLBasicAuthenticator alloc] initWithUsername:username password:password];
     
     _replicator = [[CBLReplicator alloc] initWithConfig:config];
     __weak typeof(self) wSelf = self;

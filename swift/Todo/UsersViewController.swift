@@ -56,7 +56,7 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating, UISea
     
     func reload() {
         if usersQuery == nil {
-            usersQuery = Query
+            usersQuery = QueryBuilder
                 .select(S_ID, S_USERNAME)
                 .from(DataSource.database(database))
                 .where(TYPE.equalTo(Expression.string("task-list.user")).and(TASK_LIST_ID.equalTo(Expression.string(taskList.id))))
@@ -77,7 +77,7 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating, UISea
             return
         }
         
-        let doc = MutableDocument(withID: docId)
+        let doc = MutableDocument(id: docId)
         doc.setValue("task-list.user", forKey: "type")
         doc.setValue(username, forKey: "username")
         
@@ -102,7 +102,7 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating, UISea
     }
     
     func searchUser(username: String) {
-        searchQuery = Query
+        searchQuery = QueryBuilder
             .select(S_ID, S_USERNAME)
             .from(DataSource.database(database))
             .where(TYPE.equalTo(Expression.string("task-list.user"))

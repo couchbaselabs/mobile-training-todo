@@ -51,7 +51,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating, UISea
     func reload() {
         if (listQuery == nil) {
             // Task List:
-            listQuery = Query
+            listQuery = QueryBuilder
                 .select(S_ID, S_NAME)
                 .from(DataSource.database(database))
                 .where(TYPE.equalTo(Expression.string("task-list")))
@@ -66,7 +66,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating, UISea
             })
             
             // Incomplete tasks count:
-            incompTasksCountsQuery = Query
+            incompTasksCountsQuery = QueryBuilder
                 .select(S_TASK_LIST_ID, S_COUNT)
                 .from(DataSource.database(database))
                 .where(TYPE.equalTo(Expression.string("task")).and(COMPLETE.equalTo(Expression.boolean(false))))
@@ -92,7 +92,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating, UISea
     
     func createTaskList(name: String) {
         let docId = username + "." + NSUUID().uuidString
-        let doc = MutableDocument(withID: docId)
+        let doc = MutableDocument(id: docId)
         doc.setValue("task-list", forKey: "type")
         doc.setValue(name, forKey: "name")
         doc.setValue(username, forKey: "owner")
@@ -124,7 +124,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating, UISea
     }
     
     func searchTaskList(name: String) {
-        searchQuery = Query.select(S_ID, S_NAME)
+        searchQuery = QueryBuilder.select(S_ID, S_NAME)
             .from(DataSource.database(database))
             .where(TYPE.equalTo(Expression.string("task-list")).and(NAME.like(Expression.string("%\(name)%"))))
             .orderBy(Ordering.expression(NAME))
