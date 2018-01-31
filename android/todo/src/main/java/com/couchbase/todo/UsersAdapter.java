@@ -14,6 +14,7 @@ import com.couchbase.lite.Document;
 import com.couchbase.lite.Expression;
 import com.couchbase.lite.Meta;
 import com.couchbase.lite.Query;
+import com.couchbase.lite.QueryBuilder;
 import com.couchbase.lite.QueryChange;
 import com.couchbase.lite.QueryChangeListener;
 import com.couchbase.lite.Result;
@@ -70,7 +71,7 @@ public class UsersAdapter extends ArrayAdapter<String> {
     }
 
     private Query query() {
-        return Query.select(SelectResult.expression(Meta.id))
+        return QueryBuilder.select(SelectResult.expression(Meta.id))
                 .from(DataSource.database(db))
                 .where(Expression.property("type").equalTo(Expression.string("task-list.user"))
                         .and(Expression.property("taskList.id").equalTo(Expression.string(listID))));

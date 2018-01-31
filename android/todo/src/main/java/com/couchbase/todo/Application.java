@@ -110,7 +110,7 @@ public class Application extends android.app.Application implements ReplicatorCh
     // -------------------------
 
     private void openDatabase(String dbname) {
-        DatabaseConfiguration config = new DatabaseConfiguration.Builder(getApplicationContext()).build();
+        DatabaseConfiguration config = new DatabaseConfiguration(getApplicationContext());
         try {
             database = new Database(dbname, config);
         } catch (CouchbaseLiteException e) {
@@ -149,15 +149,15 @@ public class Application extends android.app.Application implements ReplicatorCh
         }
 
         Endpoint endpoint = new URLEndpoint(uri);
-        ReplicatorConfiguration.Builder builder = new ReplicatorConfiguration.Builder(database, endpoint)
-        .setReplicatorType(ReplicatorConfiguration.ReplicatorType.PUSH_AND_PULL)
-        .setContinuous(true);
+        ReplicatorConfiguration config = new ReplicatorConfiguration(database, endpoint)
+                .setReplicatorType(ReplicatorConfiguration.ReplicatorType.PUSH_AND_PULL)
+                .setContinuous(true);
 
         // authentication
         if (username != null && password != null)
-            builder.setAuthenticator(new BasicAuthenticator(username, password));
+            config.setAuthenticator(new BasicAuthenticator(username, password));
 
-        replicator = new Replicator(builder.build());
+        replicator = new Replicator(config);
         replicator.addChangeListener(this);
         replicator.start();
     }

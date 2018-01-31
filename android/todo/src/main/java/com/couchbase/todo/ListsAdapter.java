@@ -15,6 +15,7 @@ import com.couchbase.lite.Function;
 import com.couchbase.lite.Meta;
 import com.couchbase.lite.Ordering;
 import com.couchbase.lite.Query;
+import com.couchbase.lite.QueryBuilder;
 import com.couchbase.lite.QueryChange;
 import com.couchbase.lite.QueryChangeListener;
 import com.couchbase.lite.Result;
@@ -91,7 +92,7 @@ public class ListsAdapter extends ArrayAdapter<String> {
     }
 
     private Query listsQuery() {
-        return Query.select(SelectResult.expression(Meta.id))
+        return QueryBuilder.select(SelectResult.expression(Meta.id))
                 .from(DataSource.database(db))
                 .where(Expression.property("type").equalTo(Expression.string("task-list")))
                 .orderBy(Ordering.property("name").ascending());
@@ -103,7 +104,7 @@ public class ListsAdapter extends ArrayAdapter<String> {
         Expression exprTaskListId = Expression.property("taskList.id");
         SelectResult srTaskListID = SelectResult.expression(exprTaskListId);
         SelectResult srCount = SelectResult.expression(Function.count(Expression.all()));
-        return Query.select(srTaskListID, srCount)
+        return QueryBuilder.select(srTaskListID, srCount)
                 .from(DataSource.database(db))
                 .where(exprType.equalTo(Expression.string("task")).and(exprComplete.equalTo(Expression.booleanValue(false))))
                 .groupBy(exprTaskListId);

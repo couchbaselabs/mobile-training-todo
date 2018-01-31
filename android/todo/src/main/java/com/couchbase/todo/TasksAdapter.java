@@ -19,6 +19,7 @@ import com.couchbase.lite.Meta;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Ordering;
 import com.couchbase.lite.Query;
+import com.couchbase.lite.QueryBuilder;
 import com.couchbase.lite.QueryChange;
 import com.couchbase.lite.QueryChangeListener;
 import com.couchbase.lite.Result;
@@ -107,7 +108,7 @@ public class TasksAdapter extends ArrayAdapter<String> {
         Ordering ORDERBY_CREATED_AT = Ordering.property("createdAt");
         Ordering ORDERBY_TASK = Ordering.property("task");
 
-        return Query.select(SR_DOC_ID, SR_TASK, SR_COMPLETE, SR_IMAGE)
+        return QueryBuilder.select(SR_DOC_ID, SR_TASK, SR_COMPLETE, SR_IMAGE)
                 .from(DataSource.database(db))
                 .where(EXPR_TYPE.equalTo(Expression.string("task"))
                         .and(EXPR_TASKLIST_ID.equalTo(Expression.string(listID))))
