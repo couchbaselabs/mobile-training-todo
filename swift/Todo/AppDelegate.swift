@@ -9,10 +9,14 @@
 import UIKit
 import CouchbaseLiteSwift
 
+// Configuration:
 let kLoggingEnabled = true
 let kLoginFlowEnabled = false
 let kSyncEnabled = false
 let kSyncEndpoint = "ws://localhost:4984/todo"
+
+// Constants:
+let kActivities = ["Stopped", "Offline", "Connecting", "Idle", "Busy"]
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelegate {
@@ -150,10 +154,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         replicator = Replicator(config: config)
         changeListener = replicator.addChangeListener({ (change) in
             let s = change.status
+            let activity = kActivities[Int(s.activity.rawValue)]
             let e = change.status.error as NSError?
-            
-            NSLog("[Todo] Replicator: \(s.progress.completed)/\(s.progress.total), error: \((e != nil) ? e!.description: "")")
-            
+            let error = e != nil ? ", error: \(e!.description)" : ""
+            NSLog("[Todo] Replicator: \(activity), \(s.progress.completed)/\(s.progress.total)\(error)")
             UIApplication.shared.isNetworkActivityIndicatorVisible = (s.activity == .busy)
             if let code = e?.code {
                 if code == 401 {
