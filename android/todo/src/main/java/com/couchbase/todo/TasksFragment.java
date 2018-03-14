@@ -217,7 +217,8 @@ public class TasksFragment extends Fragment {
         mDoc.setString("task", title);
         mDoc.setBoolean("complete", false);
         try {
-            return db.save(mDoc);
+            db.save(mDoc);
+            return db.getDocument(mDoc.getId());
         } catch (CouchbaseLiteException e) {
             Log.e(TAG, "Failed to save the doc - %s", e, mDoc);
             //TODO: Error handling
@@ -229,7 +230,8 @@ public class TasksFragment extends Fragment {
     private Document updateTask(final MutableDocument task, String text) {
         task.setString("task", text);
         try {
-            return db.save(task);
+            db.save(task);
+            return db.getDocument(task.getId());
         } catch (CouchbaseLiteException e) {
             Log.e(TAG, "Failed to save the doc - %s", e, task);
             //TODO: Error handling
@@ -256,7 +258,8 @@ public class TasksFragment extends Fragment {
         Blob blob = new Blob("image/jpg", in);
         task.setBlob("image", blob);
         try {
-            return db.save(task);
+            db.save(task);
+            return db.getDocument(task.getId());
         } catch (CouchbaseLiteException e) {
             Log.e(TAG, "Failed to save the doc - %s", e, task);
             //TODO: Error handling

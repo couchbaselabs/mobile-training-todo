@@ -118,7 +118,8 @@ public class TasksAdapter extends ArrayAdapter<String> {
     private Document updateCheckedStatus(MutableDocument task, boolean checked) {
         task.setBoolean("complete", checked);
         try {
-            return db.save(task);
+            db.save(task);
+            return db.getDocument(task.getId());
         } catch (CouchbaseLiteException e) {
             Log.e(TAG, "Failed to save the doc - %s", e, task);
             //TODO: Error handling

@@ -186,7 +186,8 @@ public class ListsActivity extends AppCompatActivity {
         mDoc.setString("name", title);
         mDoc.setString("owner", username);
         try {
-            return db.save(mDoc);
+            db.save(mDoc);
+            return db.getDocument(mDoc.getId());
         } catch (CouchbaseLiteException e) {
             Log.e(TAG, "Failed to save the doc - %s", e, mDoc);
             //TODO: Error handling
@@ -198,7 +199,8 @@ public class ListsActivity extends AppCompatActivity {
     private Document updateList(final MutableDocument list, String title) {
         list.setString("name", title);
         try {
-            return db.save(list);
+            db.save(list);
+            return db.getDocument(list.getId());
         } catch (CouchbaseLiteException e) {
             Log.e(TAG, "Failed to save the doc - %s", e, list);
             //TODO: Error handling
