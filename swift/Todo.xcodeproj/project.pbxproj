@@ -7,8 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		9322DCCC1F1406A700C4ACF7 /* CouchbaseLiteSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9322DCCB1F1406A700C4ACF7 /* CouchbaseLiteSwift.framework */; };
-		9322DCCE1F1406BB00C4ACF7 /* CouchbaseLiteSwift.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9322DCCB1F1406A700C4ACF7 /* CouchbaseLiteSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		932EA5E02065D59300EDB667 /* Fabric.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 932EA5DE2065D59300EDB667 /* Fabric.framework */; };
+		932EA5E12065D59300EDB667 /* Crashlytics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 932EA5DF2065D59300EDB667 /* Crashlytics.framework */; };
+		932EA5E62065E69A00EDB667 /* CouchbaseLiteSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 932EA5E52065E69900EDB667 /* CouchbaseLiteSwift.framework */; };
+		932EA5E72065E69A00EDB667 /* CouchbaseLiteSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 932EA5E52065E69900EDB667 /* CouchbaseLiteSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		933F1AB81F393EEE00338C6A /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 933F1AB71F393EEE00338C6A /* Constants.swift */; };
 		934646BC1C69CF6B002F52C9 /* TasksViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 934646BB1C69CF6B002F52C9 /* TasksViewController.swift */; };
 		934646C31C6AC4CD002F52C9 /* TaskTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 934646C21C6AC4CD002F52C9 /* TaskTableViewCell.swift */; };
@@ -27,20 +29,23 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		9322DCCD1F1406AC00C4ACF7 /* CopyFiles */ = {
+		932EA5E82065E69A00EDB667 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				9322DCCE1F1406BB00C4ACF7 /* CouchbaseLiteSwift.framework in CopyFiles */,
+				932EA5E72065E69A00EDB667 /* CouchbaseLiteSwift.framework in Embed Frameworks */,
 			);
+			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		9322DCCB1F1406A700C4ACF7 /* CouchbaseLiteSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CouchbaseLiteSwift.framework; path = Frameworks/CouchbaseLiteSwift.framework; sourceTree = "<group>"; };
+		932EA5DE2065D59300EDB667 /* Fabric.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Fabric.framework; path = Frameworks/Fabric.framework; sourceTree = "<group>"; };
+		932EA5DF2065D59300EDB667 /* Crashlytics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Crashlytics.framework; path = Frameworks/Crashlytics.framework; sourceTree = "<group>"; };
+		932EA5E52065E69900EDB667 /* CouchbaseLiteSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CouchbaseLiteSwift.framework; path = Frameworks/CouchbaseLiteSwift.framework; sourceTree = "<group>"; };
 		933F1AB71F393EEE00338C6A /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		934646BB1C69CF6B002F52C9 /* TasksViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TasksViewController.swift; sourceTree = "<group>"; };
 		934646C21C6AC4CD002F52C9 /* TaskTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TaskTableViewCell.swift; sourceTree = "<group>"; };
@@ -65,7 +70,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9322DCCC1F1406A700C4ACF7 /* CouchbaseLiteSwift.framework in Frameworks */,
+				932EA5E62065E69A00EDB667 /* CouchbaseLiteSwift.framework in Frameworks */,
+				932EA5E12065D59300EDB667 /* Crashlytics.framework in Frameworks */,
+				932EA5E02065D59300EDB667 /* Fabric.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -75,7 +82,9 @@
 		9322DCCA1F1406A600C4ACF7 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				9322DCCB1F1406A700C4ACF7 /* CouchbaseLiteSwift.framework */,
+				932EA5E52065E69900EDB667 /* CouchbaseLiteSwift.framework */,
+				932EA5DF2065D59300EDB667 /* Crashlytics.framework */,
+				932EA5DE2065D59300EDB667 /* Fabric.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -138,7 +147,8 @@
 				93F4B2BB1C6940D6005FF4D8 /* Sources */,
 				93F4B2BC1C6940D6005FF4D8 /* Frameworks */,
 				93F4B2BD1C6940D6005FF4D8 /* Resources */,
-				9322DCCD1F1406AC00C4ACF7 /* CopyFiles */,
+				932EA5D92065D50400EDB667 /* Run Script */,
+				932EA5E82065E69A00EDB667 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -196,6 +206,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		932EA5D92065D50400EDB667 /* Run Script */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Run Script";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "./Frameworks/Fabric.framework/run 777ded422d343e33f5361f098e867f07dde3bde8 65529c76389e4f04ec7d937fc11fb8b178174e1e17e074d6e77431b14cd6ecc7";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		93F4B2BB1C6940D6005FF4D8 /* Sources */ = {
@@ -266,7 +293,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -349,6 +376,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 					"$(PROJECT_DIR)/Frameworks",
+					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = Todo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.2;
@@ -376,6 +404,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 					"$(PROJECT_DIR)/Frameworks",
+					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = Todo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.2;

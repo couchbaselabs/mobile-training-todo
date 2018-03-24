@@ -8,12 +8,18 @@
 
 import UIKit
 import CouchbaseLiteSwift
+import Fabric
+import Crashlytics
+
 
 // Configuration:
 let kLoggingEnabled = true
 let kLoginFlowEnabled = false
 let kSyncEnabled = false
 let kSyncEndpoint = "ws://localhost:4984/todo"
+
+// Crashlytics:
+let kCrashlyticsEnabled = true
 
 // Constants:
 let kActivities = ["Stopped", "Offline", "Connecting", "Idle", "Busy"]
@@ -28,6 +34,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions
         launchOptions: [UIApplicationLaunchOptionsKey : Any]? = nil) -> Bool {
+        
+        if kCrashlyticsEnabled {
+            Fabric.with([Crashlytics.self])
+        }
+        
         if kLoggingEnabled {
             Database.setLogLevel(.verbose, domain: .all);
         }
