@@ -147,8 +147,8 @@
 				93F4B2BB1C6940D6005FF4D8 /* Sources */,
 				93F4B2BC1C6940D6005FF4D8 /* Frameworks */,
 				93F4B2BD1C6940D6005FF4D8 /* Resources */,
-				932EA5D92065D50400EDB667 /* Run Script */,
 				932EA5E82065E69A00EDB667 /* Embed Frameworks */,
+				932EA5D92065D50400EDB667 /* Upload dSYM file to Crashlytics */,
 			);
 			buildRules = (
 			);
@@ -208,14 +208,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		932EA5D92065D50400EDB667 /* Run Script */ = {
+		932EA5D92065D50400EDB667 /* Upload dSYM file to Crashlytics */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 			);
-			name = "Run Script";
+			name = "Upload dSYM file to Crashlytics";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
