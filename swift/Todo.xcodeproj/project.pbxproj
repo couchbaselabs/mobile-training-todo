@@ -148,6 +148,7 @@
 				93F4B2BC1C6940D6005FF4D8 /* Frameworks */,
 				93F4B2BD1C6940D6005FF4D8 /* Resources */,
 				932EA5E82065E69A00EDB667 /* Embed Frameworks */,
+				931692802069920D0055E8F0 /* Embed dSYM file */,
 				932EA5D92065D50400EDB667 /* Upload dSYM file to Crashlytics */,
 			);
 			buildRules = (
@@ -208,6 +209,20 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		931692802069920D0055E8F0 /* Embed dSYM file */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Embed dSYM file";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [[ -e \"./Frameworks/CouchbaseLiteSwift.framework.dSYM\" ]]; then\n    cp -r \"./Frameworks/CouchbaseLiteSwift.framework.dSYM\" ${BUILT_PRODUCTS_DIR}\nfi";
+		};
 		932EA5D92065D50400EDB667 /* Upload dSYM file to Crashlytics */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
