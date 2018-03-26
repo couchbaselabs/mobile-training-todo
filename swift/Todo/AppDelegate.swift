@@ -35,9 +35,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
     func application(_ application: UIApplication, didFinishLaunchingWithOptions
         launchOptions: [UIApplicationLaunchOptionsKey : Any]? = nil) -> Bool {
         
-        if kCrashlyticsEnabled {
-            Fabric.with([Crashlytics.self])
-        }
+        initCrashlytics()
         
         if kLoggingEnabled {
             Database.setLogLevel(.verbose, domain: .all);
@@ -193,5 +191,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         replicator.stop()
         replicator.removeChangeListener(withToken: changeListener!)
         changeListener = nil
+    }
+    
+    // MARK: Crashlytics
+    
+    func initCrashlytics() {
+        if !kCrashlyticsEnabled {
+            return
+        }
+        
+        Fabric.with([Crashlytics.self])
+        
+        if let info = Bundle(for: Database.self).infoDictionary {
+            if let version = info["CFBundleShortVersionString"] {
+                Crashlytics.sharedInstance().setObjectValue(version, forKey: "Version")
+            }
+            
+            if let build = info["CFBundleShortVersionString"] {
+                Crashlytics.sharedInstance().setObjectValue(build, forKey: "Build")
+            }
+        }
     }
 }
