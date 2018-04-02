@@ -102,10 +102,10 @@ namespace Training.Core
             try {
                 if(!Model.Delete())
                 {
-                    _dialogs.ShowError("Error: Missing delete access");
+                    _dialogs.Toast("Error: Missing delete access");
                 }
             } catch(Exception e) {
-                _dialogs.ShowError(e.Message);
+                _dialogs.Toast(e.Message);
             }
         }
 
@@ -121,7 +121,7 @@ namespace Training.Core
                 try {
                     Model.Edit(result.Text);
                 } catch(Exception e) {
-                    _dialogs.ShowError(e.Message);
+                    _dialogs.Toast(e.Message);
                 }
             }
         }

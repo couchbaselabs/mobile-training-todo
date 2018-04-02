@@ -133,11 +133,10 @@ namespace Training.Core
                 query = _fullQuery;
             }
 
-            using (var results = query.Execute()) {
-                TasksList.Replace(results.Select(x => new TaskListCellModel(x.GetString(0), x.GetString(1)) {
-                    IncompleteCount = _incompleteCount.ContainsKey(x.GetString(0)) ? _incompleteCount[x.GetString(0)] : 0
-                }));
-            }
+            var results = query.Execute();
+            TasksList.Replace(results.Select(x => new TaskListCellModel(x.GetString(0), x.GetString(1)) {
+                IncompleteCount = _incompleteCount.ContainsKey(x.GetString(0)) ? _incompleteCount[x.GetString(0)] : 0
+            }));
         }
 
         #endregion
@@ -146,35 +145,35 @@ namespace Training.Core
 
         private void SetupQuery()
         {
-            _db.CreateIndex("byName", Index.ValueIndex(ValueIndexItem.Expression(Expression.Property("name"))));
+            _db.CreateIndex("byName", IndexBuilder.ValueIndex(ValueIndexItem.Expression(Expression.Property("name"))));
 
-            _filteredQuery = Query.Select(SelectResult.Expression(Meta.ID), 
+            _filteredQuery = QueryBuilder.Select(SelectResult.Expression(Meta.ID), 
                 SelectResult.Expression(Expression.Property("name")))
                 .From(DataSource.Database(_db))
                 .Where(Expression.Property("name")
                     .Like(Expression.Parameter("searchText"))
-                    .And(Expression.Property("type").EqualTo("task-list")))
+                    .And(Expression.Property("type").EqualTo(Expression.String("task-list"))))
                 .OrderBy(Ordering.Property("name"));
 
-            _fullQuery = Query.Select(SelectResult.Expression(Meta.ID),
+            _fullQuery = QueryBuilder.Select(SelectResult.Expression(Meta.ID),
                     SelectResult.Expression(Expression.Property("name")))
                 .From(DataSource.Database(_db))
                 .Where(Expression.Property("name")
                     .NotNullOrMissing()
-                    .And(Expression.Property("type").EqualTo("task-list")))
+                    .And(Expression.Property("type").EqualTo(Expression.String("task-list"))))
                 .OrderBy(Ordering.Property("name"));
 
-            _incompleteQuery = Query.Select(SelectResult.Expression(Expression.Property("taskList.id")),
-                    SelectResult.Expression(Function.Count(1)))
+            _incompleteQuery = QueryBuilder.Select(SelectResult.Expression(Expression.Property("taskList.id")),
+                    SelectResult.Expression(Function.Count(Expression.All())))
                 .From(DataSource.Database(_db))
-                .Where(Expression.Property("type").EqualTo(TasksModel.TaskType)
-                       .And(Expression.Property("complete").EqualTo(false)))
+                .Where(Expression.Property("type").EqualTo(Expression.String(TasksModel.TaskType))
+                       .And(Expression.Property("complete").EqualTo(Expression.Boolean(false))))
                 .GroupBy(Expression.Property("taskList.id"));
 
             _incompleteQuery.AddChangeListener((sender, args) =>
             {
                 _incompleteCount.Clear();
-                foreach (var result in args.Rows)
+                foreach (var result in args.Results)
                 {
                     _incompleteCount[result.GetString(0)] = result.GetInt(1);
                 }

@@ -30,63 +30,63 @@ using MvvmCross.Wpf.Views;
 namespace Training.WPF
 {
     // The logic for presenting views in WPF.  Needed to track history
-    internal sealed class WpfPresenter : MvxWpfViewPresenter
-    {
+    //internal sealed class WpfPresenter : MvxWpfViewPresenter
+    //{
 
-        #region Variables
+    //    #region Variables
 
-        private readonly ContentControl _contentControl;
-        private Stack<FrameworkElement> _history = new Stack<FrameworkElement>();
-        private bool _first = true;
+    //    private readonly ContentControl _contentControl;
+    //    private Stack<FrameworkElement> _history = new Stack<FrameworkElement>();
+    //    private bool _first = true;
 
-        #endregion
+    //    #endregion
 
-        #region Constructors
+    //    #region Constructors
 
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="contentControl">The parent view to swap children in</param>
-        public WpfPresenter(ContentControl contentControl)
-        {
-            _contentControl = contentControl;
-        }
+    //    /// <summary>
+    //    /// Constructor
+    //    /// </summary>
+    //    /// <param name="contentControl">The parent view to swap children in</param>
+    //    public WpfPresenter(ContentControl contentControl)
+    //    {
+    //        _contentControl = contentControl;
+    //    }
 
-        #endregion
+    //    #endregion
 
-        #region Overrides
+    //    #region Overrides
 
-        public override void Present(FrameworkElement frameworkElement)
-        {
-            if(!_first) {
-                _history.Push(_contentControl.Content as FrameworkElement);
-            }
+    //    public override void Present(FrameworkElement frameworkElement)
+    //    {
+    //        if(!_first) {
+    //            _history.Push(_contentControl.Content as FrameworkElement);
+    //        }
 
-            _first = false;
-            _contentControl.Content = frameworkElement;
-        }
+    //        _first = false;
+    //        _contentControl.Content = frameworkElement;
+    //    }
 
-        public override void ChangePresentation(MvxPresentationHint hint)
-        {
-            if(HandlePresentationChange(hint)) return;
+    //    public override void ChangePresentation(MvxPresentationHint hint)
+    //    {
+    //        if(HandlePresentationChange(hint)) return;
 
             
-            if(_history.Count == 0) {
-                base.ChangePresentation(hint);
-                return;
-            }
+    //        if(_history.Count == 0) {
+    //            base.ChangePresentation(hint);
+    //            return;
+    //        }
 
-            (_contentControl as IDisposable)?.Dispose();
-            _contentControl.Content = _history.Pop();
-        }
+    //        (_contentControl as IDisposable)?.Dispose();
+    //        _contentControl.Content = _history.Pop();
+    //    }
 
-        public override void Close(IMvxViewModel toClose)
-        {
-            (_contentControl as IDisposable)?.Dispose();
-            _contentControl.Content = _history.Pop();
-        }
+    //    public override void Close(IMvxViewModel toClose)
+    //    {
+    //        (_contentControl as IDisposable)?.Dispose();
+    //        _contentControl.Content = _history.Pop();
+    //    }
 
-        #endregion
+    //    #endregion
 
-    }
+    //}
 }

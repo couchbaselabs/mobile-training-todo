@@ -61,7 +61,8 @@ namespace Training.Core
                     {
                         mutableDoc["complete"].Value = value;
                         var doc = _document;
-                        _document = CoreApp.Database.Save(mutableDoc);
+                        CoreApp.Database.Save(mutableDoc);
+                        _document = mutableDoc;
                         doc.Dispose();
                     }
                 } catch(Exception e) {
@@ -140,7 +141,8 @@ namespace Training.Core
                     }
 
                     var doc = _document;
-                    _document = CoreApp.Database.Save(mutableDoc);
+                    CoreApp.Database.Save(mutableDoc);
+                    _document = mutableDoc;
                     doc.Dispose();
                 }
             } catch(Exception e) {
@@ -172,7 +174,8 @@ namespace Training.Core
                 {
                     mutableDoc["task"].String = name;
                     var doc = _document;
-                    _document = CoreApp.Database.Save(mutableDoc);
+                    CoreApp.Database.Save(mutableDoc);
+                    _document = mutableDoc;
                     doc.Dispose();
                 }
             } catch(Exception e) {

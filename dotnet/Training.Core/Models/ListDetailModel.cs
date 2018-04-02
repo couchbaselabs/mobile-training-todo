@@ -79,7 +79,9 @@ namespace Training.Core
         public bool HasModerator(string username)
         {
             var moderatorDocId = $"moderator.{username}";
-            return _db.Contains(moderatorDocId);
+            var doc = _db.GetDocument(moderatorDocId);
+            doc?.Dispose();
+            return doc != null;
         }
 
         /// <summary>

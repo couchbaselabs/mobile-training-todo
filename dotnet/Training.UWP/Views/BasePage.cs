@@ -19,7 +19,8 @@
 // limitations under the License.
 // 
 using System;
-using MvvmCross.WindowsUWP.Views;
+
+using MvvmCross.Uwp.Views;
 
 namespace Training
 {

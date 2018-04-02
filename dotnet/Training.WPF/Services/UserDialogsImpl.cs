@@ -22,7 +22,6 @@
 using System;
 using System.Linq;
 
-using Splat;
 using Ookii.Dialogs.Wpf;
 using Training.WPF.Views;
 
@@ -148,39 +147,21 @@ namespace Acr.UserDialogs
         }
 
 
-        public override void ShowImage(IBitmap image, string message, int timeoutMillis)
-        {
-            throw new NotImplementedException();
-        }
-
-
-        public override void ShowSuccess(string message, int timeoutMillis)
-        {
-            throw new NotImplementedException();
-        }
-
-
         public override IDisposable Toast(ToastConfig config)
         {
-            throw new NotImplementedException();
+            var a = Alert(new AlertConfig
+            {
+                Title = "Error",
+                Message = config.Message
+            });
+
+            return a;
         }
 
 
         protected override IProgressDialog CreateDialogInstance(ProgressDialogConfig config)
         {
             throw new NotImplementedException();
-        }
-
-
-        public override void ShowError(string message, int timeoutMillis)
-        {
-            var a = Alert(new AlertConfig
-            {
-                Title = "Error",
-                Message = message
-            });
-
-            a.Dispose();
         }
 
         #endregion

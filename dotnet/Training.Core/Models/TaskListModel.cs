@@ -97,7 +97,8 @@ namespace Training.Core
                 using(var mutableDoc = _document.ToMutable()) {
                     mutableDoc.SetString("name", name);
                     var document = _document;
-                    _document = CoreApp.Database.Save(mutableDoc);
+                    CoreApp.Database.Save(mutableDoc);
+                    _document = mutableDoc;
                     document.Dispose();
                 }
             } catch(Exception e) {
@@ -112,7 +113,9 @@ namespace Training.Core
         private bool HasModerator(Database db)
         {
             var moderatorDocId = $"moderator.{db.Name}";
-            return db.Contains(moderatorDocId);
+            var doc = db.GetDocument(moderatorDocId);
+            doc?.Dispose();
+            return doc != null;
         }
 
         #endregion

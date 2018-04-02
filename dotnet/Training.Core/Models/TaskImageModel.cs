@@ -55,9 +55,9 @@ namespace Training.Core
                     {
                         mutableTask.SetBlob("image", new Blob("image/png", value));
                     }
-
-                    _taskDocument.Dispose();
-                    _taskDocument = CoreApp.Database.Save(mutableTask);
+                    
+                    CoreApp.Database.Save(mutableTask);
+                    _taskDocument = mutableTask;
                 }
             }
         }

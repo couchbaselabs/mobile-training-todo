@@ -89,11 +89,12 @@ namespace Training.Core
 
         private void CalculateModeratorStatus()
         {
-            //var owner = Model.Owner;
-            //if(Username.Equals(owner) || Model.HasModerator(Username)) {
-            //    HasModeratorStatus = true;
-            //    return;
-            //}
+            var owner = Model.Owner;
+            if (Username.Equals(owner) || Model.HasModerator(Username))
+            {
+                HasModeratorStatus = true;
+                return;
+            }
 
             //Model.TrackModeratorStatus(Username);
             //Model.ModeratorStatusGained += (sender, e) => HasModeratorStatus = true;

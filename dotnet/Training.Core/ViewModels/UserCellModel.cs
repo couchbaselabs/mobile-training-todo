@@ -82,7 +82,7 @@ namespace Training.Core
             try {
                 Model.Delete();
             } catch(Exception e) {
-                _dialogs.ShowError(e.Message);
+                _dialogs.Toast(e.Message);
             }
         }
 

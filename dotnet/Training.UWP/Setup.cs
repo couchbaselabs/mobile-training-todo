@@ -1,7 +1,8 @@
 ﻿using MvvmCross.Core.ViewModels;
 using MvvmCross.Platform.Platform;
-using MvvmCross.WindowsUWP.Platform;
 using Windows.UI.Xaml.Controls;
+
+using MvvmCross.Uwp.Platform;
 
 namespace Training.UWP
 {

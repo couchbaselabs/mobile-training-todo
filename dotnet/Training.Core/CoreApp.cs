@@ -152,7 +152,7 @@ namespace Training.Core
         /// <param name="password">The password to use for replication auth (optional)</param>
         public static void StartReplication(string username, string password = null)
         {
-            var config = new ReplicatorConfiguration(Database, SyncGatewayUrl) {
+            var config = new ReplicatorConfiguration(Database, new URLEndpoint(SyncGatewayUrl)) {
                 ReplicatorType = ReplicatorType.PushAndPull,
                 Continuous = true
             };

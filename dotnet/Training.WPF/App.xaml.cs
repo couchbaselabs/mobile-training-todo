@@ -25,6 +25,7 @@ using System.Windows;
 using Acr.UserDialogs;
 using Couchbase.Lite;
 using MvvmCross.Platform;
+using MvvmCross.Wpf.Views.Presenters;
 using Training.Core;
 using Training.WPF.Services;
 using XLabs.Platform.Device;
@@ -49,7 +50,7 @@ namespace Training.WPF
         {
             LoadMvxAssemblyResources();
 
-            var presenter = new WpfPresenter(MainWindow);
+            var presenter = new MvxWpfViewPresenter(MainWindow);
 
             var setup = new Setup(Dispatcher, presenter);
             setup.Initialize();
@@ -78,7 +79,7 @@ namespace Training.WPF
 
         private void OnStartup(object sender, StartupEventArgs e)
         {
-            Couchbase.Lite.Support.NetDestkop.Activate();
+            Couchbase.Lite.Support.NetDesktop.Activate();
             if(e.Args.Length > 0 && e.Args[0].ToLowerInvariant() == "/clean") {
                 Database.Delete("todo", null);
             }

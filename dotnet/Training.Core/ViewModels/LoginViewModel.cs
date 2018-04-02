@@ -83,12 +83,12 @@ namespace Training.Core
         private async Task Login(string password)
         {
             if(String.IsNullOrWhiteSpace(Username) || String.IsNullOrWhiteSpace(password)) {
-                _dialogs.ShowError("Username or password cannot be empty");
+                _dialogs.Toast("Username or password cannot be empty");
                 return;
             }
 
             if(!LoginModel.IsValidUsername(Username)) {
-                _dialogs.ShowError("Invalid username");
+                _dialogs.Toast("Invalid username");
                 return;
             }
 
@@ -112,11 +112,11 @@ namespace Training.Core
             //            return;
             //        }
             //    } else {
-            //        _dialogs.ShowError($"Login has an error occurred, code = {e.Code}");
+            //        _dialogs.Toast($"Login has an error occurred, code = {e.Code}");
             //        return;
             //    }
             } catch(Exception e) {
-                _dialogs.ShowError($"Login has an error occurred, code = {e}");
+                _dialogs.Toast($"Login has an error occurred, code = {e}");
                 return;
             }
 

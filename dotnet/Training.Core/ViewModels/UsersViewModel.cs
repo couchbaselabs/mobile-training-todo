@@ -108,7 +108,7 @@ namespace Training.Core
                 try {
                     Model.CreateNewUser(result.Text);
                 } catch(Exception e) {
-                    _dialogs.ShowError(e.Message);
+                    _dialogs.Toast(e.Message);
                 }
             }
         }

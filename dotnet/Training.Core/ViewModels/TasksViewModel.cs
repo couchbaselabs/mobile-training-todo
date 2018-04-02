@@ -161,7 +161,7 @@ namespace Training
             try {
                 taskCellModel.SetImage(result);
             } catch(Exception e) {
-                _dialogs.ShowError(e.Message);
+                _dialogs.Toast(e.Message);
                 return;
             }
         }
@@ -184,7 +184,7 @@ namespace Training
             try {
                 Model.CreateNewTask(result.Text);
             } catch(Exception e) {
-                _dialogs.ShowError(e.Message);
+                _dialogs.Toast(e.Message);
             }
         }
 

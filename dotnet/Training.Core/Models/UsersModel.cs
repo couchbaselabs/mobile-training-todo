@@ -115,14 +115,14 @@ namespace Training.Core
         private void SetupQuery()
         {
             var username = Expression.Property("username");
-            _usersLiveQuery = Query.Select(SelectResult.Expression(username))
+            _usersLiveQuery = QueryBuilder.Select(SelectResult.Expression(username))
                 .From(DataSource.Database(_db))
-                .Where(Expression.Property("type").EqualTo(UserType).And(Expression.Property("taskList.id").EqualTo(_taskList.Id)))
+                .Where(Expression.Property("type").EqualTo(Expression.String(UserType)).And(Expression.Property("taskList.id").EqualTo(Expression.String(_taskList.Id))))
                                    .OrderBy(Ordering.Property("username"));
 
             _usersLiveQuery.AddChangeListener((sender, args) =>
             {
-                ListData.Replace(args.Rows.Select(x =>
+                ListData.Replace(args.Results.Select(x =>
                 {
                     var docId = $"{_taskList.Id}.{x.GetString(0)}";
                     return new UserCellModel(docId);

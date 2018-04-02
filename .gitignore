@@ -85,3 +85,4 @@ obj/
 /bot/node_modules
 
 *.key
+dotnet/.vs/

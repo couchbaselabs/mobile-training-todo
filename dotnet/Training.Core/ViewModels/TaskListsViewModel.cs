@@ -172,7 +172,7 @@ namespace Training
             try {
                 Model.CreateTaskList(result.Text);
             } catch(Exception e) {
-                _dialogs.ShowError(e.Message);
+                _dialogs.Toast(e.Message);
             }
         }
 

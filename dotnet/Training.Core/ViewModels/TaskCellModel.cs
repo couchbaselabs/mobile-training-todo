@@ -93,7 +93,7 @@ namespace Training.Core
                     try {
                         Model.IsChecked = value;
                     } catch (Exception e) {
-                        _dialogs.ShowError(e.Message);
+                        _dialogs.Toast(e.Message);
                         return;
                     }
 
@@ -176,7 +176,7 @@ namespace Training.Core
             try {
                 Model.Delete();
             } catch(Exception e) {
-                _dialogs.ShowError(e.Message);
+                _dialogs.Toast(e.Message);
             }
         }
 
@@ -192,7 +192,7 @@ namespace Training.Core
                 try {
                     Model.Edit(result.Text);
                 } catch(Exception e) {
-                    _dialogs.ShowError(e.Message);
+                    _dialogs.Toast(e.Message);
                 }
             }
         }
