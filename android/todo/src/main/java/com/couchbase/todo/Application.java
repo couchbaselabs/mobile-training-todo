@@ -40,6 +40,9 @@ public class Application extends android.app.Application implements ReplicatorCh
     private Replicator replicator;
     private String username = DATABASE_NAME;
 
+    private Database backup = null;
+    private Replicator backupReplicator = null;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -71,6 +74,8 @@ public class Application extends android.app.Application implements ReplicatorCh
         this.username = username;
         startReplication(username, password);
 
+        localBackup(username);
+
         // TODO: After authenticated, move to next screen
         showApp();
     }
@@ -92,6 +97,7 @@ public class Application extends android.app.Application implements ReplicatorCh
             @Override
             public void run() {
                 stopReplication();
+                closeLocalBackup();
                 closeDatabase();
                 Application.this.username = null;
                 showLoginUI();
@@ -171,6 +177,48 @@ public class Application extends android.app.Application implements ReplicatorCh
     private void runOnUiThread(Runnable runnable) {
         new Handler(getApplicationContext().getMainLooper()).post(runnable);
     }
+
+    // EE features
+    private void localBackup(String username) {
+        /*
+        // backup db
+        String dbname = username + "-backup";
+        DatabaseConfiguration config = new DatabaseConfiguration(getApplicationContext());
+        try {
+            backup = new Database(dbname, config);
+        } catch (CouchbaseLiteException e) {
+            Log.e(TAG, "Failed to create Database instance: %s - %s", e, dbname, config);
+        }
+
+        // backup replication
+        Endpoint endpoint = new DatabaseEndpoint(backup);
+        ReplicatorConfiguration replConfig = new ReplicatorConfiguration(database, endpoint)
+                .setReplicatorType(ReplicatorConfiguration.ReplicatorType.PUSH)
+                .setContinuous(true);
+        backupReplicator = new Replicator(replConfig);
+        backupReplicator.addChangeListener(this);
+        backupReplicator.start();
+        */
+    }
+
+    private void closeLocalBackup() {
+        /*
+        // stop replicator
+        if (backupReplicator != null)
+            backupReplicator.stop();
+
+        // close db
+        if (backup != null) {
+            try {
+                backup.close();
+            } catch (CouchbaseLiteException e) {
+                Log.e(TAG, "Failed to close Database", e);
+                // TODO: error handling
+            }
+        }
+        */
+    }
+
 
     // --------------------------------------------------
     // ReplicatorChangeListener implementation

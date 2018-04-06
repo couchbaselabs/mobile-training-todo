@@ -20,12 +20,12 @@ android {
 }
 
 def SUPPORT_LIBRARY_VERSION = "26.+"
-def COUCHBASE_LITE_VERSION = "2.0.0-457"
+def COUCHBASE_LITE_VERSION = "2.0.0"
 
 dependencies {
 
     // Android & Defaults
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
     implementation "com.android.support:appcompat-v7:${SUPPORT_LIBRARY_VERSION}"
     implementation "com.android.support:support-v4:${SUPPORT_LIBRARY_VERSION}"
     implementation "com.android.support:recyclerview-v7:${SUPPORT_LIBRARY_VERSION}"
