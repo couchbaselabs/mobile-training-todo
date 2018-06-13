@@ -15,7 +15,7 @@ import FBSDKCoreKit
 
 // Configuration:
 let kLoggingEnabled = true
-let kLoginFlowEnabled = false
+let kLoginFlowEnabled = true
 let kSyncEnabled = false
 let kSyncEndpoint = "ws://localhost:4984/todo"
 
@@ -45,6 +45,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         if kLoginFlowEnabled {
             FBSDKApplicationDelegate.sharedInstance().application(application,
                                                                   didFinishLaunchingWithOptions: launchOptions)
+            FBSDKAccessToken.setCurrent(nil)
             login(username: nil)
         } else {
             do {
