@@ -15,7 +15,7 @@ import FBSDKCoreKit
 
 // Configuration:
 let kLoggingEnabled = true
-let kLoginFlowEnabled = true
+let kLoginFlowEnabled = false
 let kSyncEnabled = false
 let kSyncEndpoint = "ws://localhost:4984/todo"
 

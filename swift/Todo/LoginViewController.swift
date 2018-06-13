@@ -89,15 +89,14 @@ extension LoginViewController: FBSDKLoginButtonDelegate {
         }
         
         guard result.grantedPermissions.contains("public_profile") else {
-            Ui.showMessage(on: self, title: "Error", message: "Public profile access permission not granted!!")
+            Ui.showMessage(on: self, title: "Error", message: "Public profile access permission not granted!")
             return
         }
         
-        delegate?.login(controller: self, withUsername: "todo", andPassword: "password")
+        delegate?.login(controller: self, withUsername: FBSDKAccessToken.current().userID, andPassword: "password")
     }
     
     func loginButtonDidLogOut(_ loginButton: FBSDKLoginButton!) {
-        // TODO: implement logout
-        print("logout")
+        NSLog("Logging out... ")
     }
 }
