@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		08F1A4E220D0D08D00176DD3 /* Bolts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08F1A4DF20D0D08C00176DD3 /* Bolts.framework */; };
+		08F1A4E320D0D08D00176DD3 /* Bolts.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 08F1A4DF20D0D08C00176DD3 /* Bolts.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		08F1A4E420D0D08D00176DD3 /* FBSDKCoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08F1A4E020D0D08C00176DD3 /* FBSDKCoreKit.framework */; };
+		08F1A4E520D0D08D00176DD3 /* FBSDKCoreKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 08F1A4E020D0D08C00176DD3 /* FBSDKCoreKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		08F1A4E620D0D08D00176DD3 /* FBSDKLoginKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08F1A4E120D0D08D00176DD3 /* FBSDKLoginKit.framework */; };
+		08F1A4E720D0D08D00176DD3 /* FBSDKLoginKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 08F1A4E120D0D08D00176DD3 /* FBSDKLoginKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		932EA5E02065D59300EDB667 /* Fabric.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 932EA5DE2065D59300EDB667 /* Fabric.framework */; };
 		932EA5E12065D59300EDB667 /* Crashlytics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 932EA5DF2065D59300EDB667 /* Crashlytics.framework */; };
 		932EA5E62065E69A00EDB667 /* CouchbaseLiteSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 932EA5E52065E69900EDB667 /* CouchbaseLiteSwift.framework */; };
@@ -36,6 +42,9 @@
 			dstSubfolderSpec = 10;
 			files = (
 				932EA5E72065E69A00EDB667 /* CouchbaseLiteSwift.framework in Embed Frameworks */,
+				08F1A4E520D0D08D00176DD3 /* FBSDKCoreKit.framework in Embed Frameworks */,
+				08F1A4E720D0D08D00176DD3 /* FBSDKLoginKit.framework in Embed Frameworks */,
+				08F1A4E320D0D08D00176DD3 /* Bolts.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -43,6 +52,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		08F1A4DF20D0D08C00176DD3 /* Bolts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Bolts.framework; path = Frameworks/Bolts.framework; sourceTree = "<group>"; };
+		08F1A4E020D0D08C00176DD3 /* FBSDKCoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FBSDKCoreKit.framework; path = Frameworks/FBSDKCoreKit.framework; sourceTree = "<group>"; };
+		08F1A4E120D0D08D00176DD3 /* FBSDKLoginKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = FBSDKLoginKit.framework; path = Frameworks/FBSDKLoginKit.framework; sourceTree = "<group>"; };
 		932EA5DE2065D59300EDB667 /* Fabric.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Fabric.framework; path = Frameworks/Fabric.framework; sourceTree = "<group>"; };
 		932EA5DF2065D59300EDB667 /* Crashlytics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Crashlytics.framework; path = Frameworks/Crashlytics.framework; sourceTree = "<group>"; };
 		932EA5E52065E69900EDB667 /* CouchbaseLiteSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CouchbaseLiteSwift.framework; path = Frameworks/CouchbaseLiteSwift.framework; sourceTree = "<group>"; };
@@ -70,9 +82,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				08F1A4E420D0D08D00176DD3 /* FBSDKCoreKit.framework in Frameworks */,
 				932EA5E62065E69A00EDB667 /* CouchbaseLiteSwift.framework in Frameworks */,
+				08F1A4E620D0D08D00176DD3 /* FBSDKLoginKit.framework in Frameworks */,
 				932EA5E12065D59300EDB667 /* Crashlytics.framework in Frameworks */,
 				932EA5E02065D59300EDB667 /* Fabric.framework in Frameworks */,
+				08F1A4E220D0D08D00176DD3 /* Bolts.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -82,6 +97,9 @@
 		9322DCCA1F1406A600C4ACF7 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				08F1A4DF20D0D08C00176DD3 /* Bolts.framework */,
+				08F1A4E020D0D08C00176DD3 /* FBSDKCoreKit.framework */,
+				08F1A4E120D0D08D00176DD3 /* FBSDKLoginKit.framework */,
 				932EA5E52065E69900EDB667 /* CouchbaseLiteSwift.framework */,
 				932EA5DF2065D59300EDB667 /* Crashlytics.framework */,
 				932EA5DE2065D59300EDB667 /* Fabric.framework */,

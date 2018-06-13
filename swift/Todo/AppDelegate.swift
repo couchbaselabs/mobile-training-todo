@@ -10,6 +10,7 @@ import UIKit
 import CouchbaseLiteSwift
 import Fabric
 import Crashlytics
+import FBSDKCoreKit
 
 
 // Configuration:
@@ -42,6 +43,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         }
         
         if kLoginFlowEnabled {
+            FBSDKApplicationDelegate.sharedInstance().application(application,
+                                                                  didFinishLaunchingWithOptions: launchOptions)
             login(username: nil)
         } else {
             do {

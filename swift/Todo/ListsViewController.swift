@@ -8,6 +8,7 @@
 
 import UIKit
 import CouchbaseLiteSwift
+import FBSDKLoginKit
 
 class ListsViewController: UITableViewController, UISearchResultsUpdating, UISearchBarDelegate {    
     var searchController: UISearchController!
@@ -36,6 +37,14 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating, UISea
         searchController.searchBar.delegate = self
         self.tableView.tableHeaderView = searchController.searchBar
         
+        // hide logout button if not using Login Flow
+        if kLoginFlowEnabled {
+            navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Logout",
+                                                               style: .plain,
+                                                               target: self,
+                                                               action: #selector(logout))
+        }
+        
         // Get database:
         let app = UIApplication.shared.delegate as! AppDelegate
         database = app.database
@@ -44,6 +53,12 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating, UISea
         username = Session.username
         
         reload()
+    }
+    
+    // Login Helpers
+    @objc func logout() {
+        FBSDKAccessToken.setCurrent(nil)
+        // TODO: Add a protocol for logout
     }
     
     // MARK: - Database
