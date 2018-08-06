@@ -2,6 +2,7 @@
 using MvvmCross.Platform.Platform;
 using Windows.UI.Xaml.Controls;
 
+using MvvmCross.Platform.Logging;
 using MvvmCross.Uwp.Platform;
 
 namespace Training.UWP
@@ -21,6 +22,11 @@ namespace Training.UWP
         protected override IMvxTrace CreateDebugTrace()
         {
             return new DebugTrace();
+        }
+
+        protected override MvxLogProviderType GetDefaultLogProviderType()
+        {
+            return MvxLogProviderType.None;
         }
     }
 }

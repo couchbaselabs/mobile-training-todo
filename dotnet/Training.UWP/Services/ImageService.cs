@@ -55,7 +55,7 @@ namespace Training.UWP.Services
 
         #region Private API
 
-        private async Task<InMemoryRandomAccessStream> Shrink(InMemoryRandomAccessStream src, float size)
+        private async Task<InMemoryRandomAccessStream> Shrink(IRandomAccessStream src, float size)
         {
             var srcDecode = await BitmapDecoder.CreateAsync(src);
             var width = srcDecode.PixelWidth;
@@ -115,6 +115,11 @@ namespace Training.UWP.Services
 
         public unsafe byte[] GenerateSolidColor(float size, Color color, string cacheName)
         {
+            var existing = GetExisting(cacheName);
+            if (existing != null) {
+                return existing;
+            }
+
             var bmp = new SoftwareBitmap(BitmapPixelFormat.Rgba8, (int) size, (int) size);
             using (var buffer = bmp.LockBuffer(BitmapBufferAccessMode.Write)) {
                 using (var reference = buffer.CreateReference()) {
@@ -148,17 +153,11 @@ namespace Training.UWP.Services
             if (existing != null) {
                 return existing;
             }
-
-            return await Task.Run<byte[]>(async () =>
-            {
-                using (var ms = new InMemoryRandomAccessStream()) {
-                    await image.CopyToAsync(ms.AsStreamForWrite());
-                    var square = await Shrink(ms, size);
-                    var finalDecoder = await BitmapDecoder.CreateAsync(square);
-                    var bitmap = await finalDecoder.GetSoftwareBitmapAsync();
-                    return await Put(cacheName, bitmap);
-                }
-            });
+            
+            var square = await Shrink(image.AsRandomAccessStream(), size);
+            var finalDecoder = await BitmapDecoder.CreateAsync(square);
+            var bitmap = await finalDecoder.GetSoftwareBitmapAsync();
+            return await Put(cacheName, bitmap);
         }
 
         #endregion

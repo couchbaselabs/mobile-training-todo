@@ -185,7 +185,7 @@ namespace Training.Core
         private static void MonitorIfNeeded(string docID, string user)
         {
             var userAccessDoc = Database.GetDocument(docID);
-            if(!userAccessDoc.Contains("type")) {
+            if(userAccessDoc == null || !userAccessDoc.Contains("type")) {
                 return;
             }
 
