@@ -23,7 +23,9 @@ using Android.App;
 using Android.Content.PM;
 using Android.OS;
 using MvvmCross.Core.Views;
+using MvvmCross.Droid.Platform;
 using MvvmCross.Forms.Droid.Views;
+using MvvmCross.Forms.Platform;
 using MvvmCross.Platform;
 using Training.Core;
 using Xamarin.Forms.Platform.Android;
@@ -48,8 +50,9 @@ namespace Training.Android
 
             // Setup the application
             Xamarin.Forms.Forms.Init(this, bundle);
-            var setup = new Setup(ApplicationContext);
-            setup.Initialize();
+            UserDialogs.Init(this);
+            var setup = MvxAndroidSetupSingleton.EnsureSingletonAvailable(ApplicationContext);
+            setup.EnsureInitialized();
 
             // Register platform specific implementations
             Mvx.RegisterSingleton<IDevice>(() => AndroidDevice.CurrentDevice);
@@ -60,7 +63,7 @@ namespace Training.Android
             var hint = CoreAppStart.CreateHint();
             startup.Start(hint);
 
-            LoadApplication(setup.FormsApplication);
+            LoadApplication(FormsApplication);
         }
     }
 }

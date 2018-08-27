@@ -24,6 +24,7 @@ using MvvmCross.Core.ViewModels;
 using MvvmCross.Platform.Platform;
 using MvvmCross.Droid.Views;
 using MvvmCross.Platform;
+using MvvmCross.Platform.Logging;
 using MvvmCross.Core.Views;
 using MvvmCross.Forms.Platform;
 using Training.Core;
@@ -75,6 +76,11 @@ namespace Training.Android
             }
 
             return (IMvxAndroidViewsContainer)viewsContainer;
+        }
+
+        protected override MvxLogProviderType GetDefaultLogProviderType()
+        {
+            return MvxLogProviderType.None;
         }
     }
 }
