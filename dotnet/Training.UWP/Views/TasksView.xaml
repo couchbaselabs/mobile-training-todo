@@ -33,8 +33,8 @@
                     <Grid>
                         <Grid.ContextFlyout>
                             <MenuFlyout>
-                                <MenuFlyoutItem Text="Edit..." Click="EditRow" />
-                                <MenuFlyoutItem Text="Delete..." Foreground="Red" Click="DeleteRow" />
+                                <MenuFlyoutItem Text="Edit..." Click="EditRow" Command="{Binding EditCommand}" />
+                                <MenuFlyoutItem Text="Delete..." Foreground="Red" Click="DeleteRow" Command="{Binding DeleteCommand}" />
                             </MenuFlyout>
                         </Grid.ContextFlyout>
                         <Grid.ColumnDefinitions>

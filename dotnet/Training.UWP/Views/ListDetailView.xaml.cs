@@ -54,11 +54,11 @@ namespace Training.UWP.Views
             get {
                 return new MvxCommand(() =>
                 {
-                    //if (_tasksView.Visibility == Visibility.Visible) {
+                    if (_tasksMenuItem.IsChecked == true) {
                         (_tasksView.DataContext as TasksViewModel).AddCommand.Execute(null);
-                    //} else {
-                    //    (_usersView.DataContext as UsersViewModel).AddCommand.Execute(null);
-                    //}
+                    } else {
+                        (_usersView.DataContext as UsersViewModel).AddCommand.Execute(null);
+                    }
                 });
             }
         }
@@ -99,8 +99,6 @@ namespace Training.UWP.Views
 
             if (!viewModel.HasModeratorStatus) {
                 viewModel.PropertyChanged += EnableUsersView;
-            } else {
-                //_viewMenu.Visibility = Visibility.Visible;
             }
 
             _initialized = true;
@@ -111,12 +109,6 @@ namespace Training.UWP.Views
             var viewModel = DataContext as ListDetailViewModel;
             if (viewModel == null) {
                 return;
-            }
-
-            if (e.PropertyName == nameof(viewModel.HasModeratorStatus)) {
-                if (viewModel.HasModeratorStatus) {
-                    //_viewMenu.Visibility = Visibility.Visible;
-                }
             }
         }
 
@@ -134,6 +126,7 @@ namespace Training.UWP.Views
                 _usersMenuItem.IsChecked = false;
                 _tasksView.Visibility = Visibility.Visible;
                 _usersView.Visibility = Visibility.Collapsed;
+                _addButton.Label = "Add Task..";
             } else {
                 if (_usersMenuItem.IsChecked == false) {
                     return;
@@ -142,6 +135,7 @@ namespace Training.UWP.Views
                 _tasksMenuItem.IsChecked = false;
                 _usersView.Visibility = Visibility.Visible;
                 _tasksView.Visibility = Visibility.Collapsed;
+                _addButton.Label = "Add User..";
             }
         }
 

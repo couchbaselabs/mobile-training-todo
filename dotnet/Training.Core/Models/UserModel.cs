@@ -19,6 +19,7 @@
 // limitations under the License.
 //
 using Couchbase.Lite;
+using System;
 
 namespace Training.Core
 {
@@ -39,7 +40,7 @@ namespace Training.Core
         /// <summary>
         /// Gets the name of the user
         /// </summary>
-        public string Name => _document.GetString("username");
+        public string Name => _document?.GetString("username");
 
         #endregion
 
@@ -64,7 +65,11 @@ namespace Training.Core
         /// </summary>
         public void Delete()
         {
-            CoreApp.Database.Delete(_document);
+            try {
+                CoreApp.Database.Delete(_document);
+            } catch (Exception e) {
+                throw new Exception("Failed to delete user", e);
+            }
         }
 
         #endregion

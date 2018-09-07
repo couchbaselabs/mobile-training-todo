@@ -44,12 +44,20 @@ namespace Training.UWP.Views
 
         private void DeleteRow(object sender, RoutedEventArgs e)
         {
-
+            var data = ((FrameworkElement)sender).DataContext as TaskCellModel;
+            data.StatusUpdated += UpdateView;
         }
 
         private void EditRow(object sender, RoutedEventArgs e)
         {
+            var data = ((FrameworkElement)sender).DataContext as TaskCellModel;
+            data.StatusUpdated += UpdateView;
+        }
 
+        private void UpdateView()
+        {
+            var viewModel = DataContext as TasksViewModel;
+            viewModel.Model.Filter(null);
         }
 
         #endregion

@@ -36,6 +36,8 @@ namespace Training.Core
         #region Variables
 
         private IUserDialogs _dialogs = Mvx.Resolve<IUserDialogs>();
+        public delegate void StatusUpdatedEventHandler();
+        public event StatusUpdatedEventHandler StatusUpdated;
 
         #endregion
 
@@ -84,6 +86,7 @@ namespace Training.Core
             } catch(Exception e) {
                 _dialogs.Toast(e.Message);
             }
+            StatusUpdated?.Invoke();
         }
 
         #endregion

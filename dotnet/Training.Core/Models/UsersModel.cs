@@ -45,7 +45,7 @@ namespace Training.Core
         private IQuery _filteredQuery;
         private IQuery _fullQuery;
         private IQuery _usersLiveQuery;
-        private Document _taskList;
+        private Document _userList;
         private string _searchUserName;
 
         #endregion
@@ -69,7 +69,7 @@ namespace Training.Core
         public UsersModel(string currentListId)
         {
             _db = CoreApp.Database;
-            _taskList = _db.GetDocument(currentListId);
+            _userList = _db.GetDocument(currentListId);
             SetupQuery();
         }
 
@@ -84,8 +84,8 @@ namespace Training.Core
         public void CreateNewUser(string username)
         {
             var taskListInfo = new Dictionary<string, object> {
-                ["id"] = _taskList.Id,
-                ["owner"] = _taskList.GetString("owner")
+                ["id"] = _userList.Id,
+                ["owner"] = _userList.GetString("owner")
             };
 
             var properties = new Dictionary<string, object> {
@@ -94,7 +94,7 @@ namespace Training.Core
                 ["username"] = username
             };
 
-            var docId = $"{_taskList.Id}.{username}";
+            var docId = $"{_userList.Id}.{username}";
             try {
                 var doc = new MutableDocument(docId, properties);
                 _db.Save(doc);
@@ -122,7 +122,7 @@ namespace Training.Core
             var results = query.Execute();
             UserList.Replace(results.Select(x =>
             {
-                var docId = $"{_taskList.Id}.{x.GetString(0)}";
+                var docId = $"{_userList.Id}.{x.GetString(0)}";
                 return new UserCellModel(docId);
             }));
         }
@@ -135,18 +135,16 @@ namespace Training.Core
         {
             var username = Expression.Property("username");
             var exp1 = Expression.Property("type").EqualTo(Expression.String(UserType));
-            var exp2 = Expression.Property("taskList.id").EqualTo(Expression.String(_taskList.Id));
+            var exp2 = Expression.Property("taskList.id").EqualTo(Expression.String(_userList.Id));
 
-            _filteredQuery = QueryBuilder.Select(SelectResult.Expression(Meta.ID),
-                SelectResult.Expression(username))
+            _filteredQuery = QueryBuilder.Select(SelectResult.Expression(username))
                 .From(DataSource.Database(_db))
                 .Where(username
                     .Like(Expression.Parameter("searchText"))
                     .And((exp1).And(exp2)))
                 .OrderBy(Ordering.Property("username"));
 
-            _fullQuery = QueryBuilder.Select(SelectResult.Expression(Meta.ID),
-                    SelectResult.Expression(username))
+            _fullQuery = QueryBuilder.Select(SelectResult.Expression(username))
                 .From(DataSource.Database(_db))
                 .Where(username
                     .NotNullOrMissing()
@@ -163,7 +161,7 @@ namespace Training.Core
             //{
                 UserList.Replace(results.Select(x =>
                 {
-                    var docId = $"{_taskList.Id}.{x.GetString(0)}";
+                    var docId = $"{_userList.Id}.{x.GetString(0)}";
                     return new UserCellModel(docId);
                 }));
             //});

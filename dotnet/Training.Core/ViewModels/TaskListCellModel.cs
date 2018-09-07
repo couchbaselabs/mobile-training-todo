@@ -29,6 +29,7 @@ using MvvmCross.Platform;
 
 namespace Training.Core
 {
+   
     /// <summary>
     /// The view model for an entry in the TaskListsPage table view
     /// </summary>
@@ -38,6 +39,9 @@ namespace Training.Core
         #region Variables
 
         private IUserDialogs _dialogs = Mvx.Resolve<IUserDialogs>();
+
+        public delegate void StatusUpdatedEventHandler();
+        public event StatusUpdatedEventHandler StatusUpdated;
 
         #endregion
 
@@ -104,6 +108,7 @@ namespace Training.Core
                 {
                     _dialogs.Toast("Error: Missing delete access");
                 }
+                StatusUpdated?.Invoke();
             } catch(Exception e) {
                 _dialogs.Toast(e.Message);
             }
@@ -123,6 +128,7 @@ namespace Training.Core
                 } catch(Exception e) {
                     _dialogs.Toast(e.Message);
                 }
+                StatusUpdated?.Invoke();
             }
         }
 

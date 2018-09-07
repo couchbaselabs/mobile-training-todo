@@ -42,6 +42,9 @@ namespace Training.Core
         private IUserDialogs _dialogs = Mvx.Resolve<IUserDialogs>();
         private string _imageDigest;
 
+        public delegate void StatusUpdatedEventHandler();
+        public event StatusUpdatedEventHandler StatusUpdated;
+
         #endregion
 
         #region Properties
@@ -178,6 +181,7 @@ namespace Training.Core
             } catch(Exception e) {
                 _dialogs.Toast(e.Message);
             }
+            StatusUpdated?.Invoke();
         }
 
         private async Task Edit()
@@ -194,6 +198,7 @@ namespace Training.Core
                 } catch(Exception e) {
                     _dialogs.Toast(e.Message);
                 }
+                StatusUpdated?.Invoke();
             }
         }
 

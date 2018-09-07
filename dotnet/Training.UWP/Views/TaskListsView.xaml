@@ -18,8 +18,8 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <CommandBar>
-            <AppBarButton Label="Add List..." Command="{Binding AddCommand}" />
-            <AppBarButton Label="Logout" Command="{Binding LogoutCommand}" />
+            <AppBarButton Content="Add List" Label="Add List..." Command="{Binding AddCommand}" />
+            <AppBarButton Content="Logout" Label="Logout..." Command="{Binding LogoutCommand}" />
         </CommandBar>
         <TextBox Grid.Row="1" Text="{Binding SearchTerm, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
         <ListView
@@ -38,8 +38,8 @@
                     <Grid>
                         <Grid.ContextFlyout>
                             <MenuFlyout>
-                                <MenuFlyoutItem Text="Edit..." Click="EditRow" />
-                                <MenuFlyoutItem Text="Delete..." Foreground="Red" Command="{Binding DeleteCommand}" />
+                                <MenuFlyoutItem Text="Edit..." Click="EditRow" Command="{Binding EditCommand}" />
+                                <MenuFlyoutItem Text="Delete..." Foreground="Red" Click="DeleteRow" Command="{Binding DeleteCommand}" />
                             </MenuFlyout>
                         </Grid.ContextFlyout>
                         <Grid.ColumnDefinitions>

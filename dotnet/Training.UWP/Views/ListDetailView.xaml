@@ -14,11 +14,11 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <CommandBar>
-            <AppBarToggleButton x:Name="_tasksMenuItem" Label="Tasks" IsChecked="True" Checked="UpdateView"  />
-            <AppBarToggleButton x:Name="_usersMenuItem" Label="Users" Checked="UpdateView"  />
-            <AppBarSeparator Visibility="{Binding ToggleButtonVisibility, ElementName=_self}" />
-            <AppBarButton Label="Back..." Command="{Binding BackCommand}" />
-            <AppBarButton Label="Add Item..."  Command="{Binding AddCommand, ElementName=_self}" />
+            <AppBarToggleButton x:Name="_tasksMenuItem" Content="Tasks" Label="Tasks" IsChecked="True" Checked="UpdateView"  />
+            <AppBarToggleButton x:Name="_usersMenuItem" Content="Users" Label="Users" Checked="UpdateView"  />
+            <AppBarSeparator Visibility="Visible" />
+            <AppBarButton Content="Back" Label="Go Back..." Command="{Binding BackCommand}" />
+            <AppBarButton x:Name="_addButton" Content="Add" Label="Add Task..."  Command="{Binding AddCommand, ElementName=_self}" />
         </CommandBar>
         <views:TasksView x:Name="_tasksView" Grid.Row="1" />
         <views:UsersView x:Name="_usersView" Grid.Row="1" Visibility="Collapsed" />

@@ -12,16 +12,11 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <CommandBar>
-            <AppBarButton Label="Add User..." Command="{Binding AddCommand}" />
-        </CommandBar>
         <TextBox Grid.Row="1" Text="{Binding SearchTerm, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
         <ListView
             Name="_listView"
             Grid.Row="2"
-            ItemsSource="{Binding ListData, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-            ItemClick="OnItemClick"
-            IsItemClickEnabled="True">
+            ItemsSource="{Binding ListData, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -32,7 +27,7 @@
                     <Grid>
                         <Grid.ContextFlyout>
                             <MenuFlyout>
-                                <MenuFlyoutItem Text="Delete..." Foreground="Red" Click="DeleteRow" />
+                                <MenuFlyoutItem Text="Delete..." Foreground="Red" Click="DeleteRow"  Command="{Binding DeleteCommand}" />
                             </MenuFlyout>
                         </Grid.ContextFlyout>
                         <Grid.ColumnDefinitions>
