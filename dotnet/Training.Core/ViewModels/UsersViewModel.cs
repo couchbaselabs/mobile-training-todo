@@ -59,6 +59,18 @@ namespace Training.Core
         }
         private string _searchTerm;
 
+        public UserCellModel SelectedItem
+        {
+            get {
+                return _selectedItem;
+            }
+            set {
+                _selectedItem = value;
+                SetProperty(ref _selectedItem, null); // No "selection" effect
+            }
+        }
+        private UserCellModel _selectedItem;
+
         /// <summary>
         /// Gets the handler for an add request
         /// </summary>
@@ -76,7 +88,7 @@ namespace Training.Core
         public ObservableCollection<UserCellModel> ListData
         {
             get {
-                return Model.ListData;
+                return Model.UserList;
             }
         }
 

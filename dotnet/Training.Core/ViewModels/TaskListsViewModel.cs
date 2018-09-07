@@ -158,8 +158,8 @@ namespace Training
 
         private void Logout()
         {
-            //CoreApp.StopReplication();
-            Model.Dispose();
+            CoreApp.EndSession();
+            //Model.Dispose();
             Close(this);
         }
 

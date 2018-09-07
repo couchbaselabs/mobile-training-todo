@@ -21,11 +21,6 @@ namespace Training.UWP.Views
             var source = e.OriginalSource;
         }
 
-        private void DeleteRow(object sender, RoutedEventArgs e)
-        {
-
-        }
-
         private void OnItemClick(object sender, ItemClickEventArgs e)
         {
             var viewModel = DataContext as TaskListsViewModel;

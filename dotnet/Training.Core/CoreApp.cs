@@ -88,6 +88,12 @@ namespace Training.Core
             }
         }
 
+        public static void EndSession()
+        {
+            StopReplication();
+            CloseDatabase();
+        }
+
         /// <summary>
         /// Installs a premade database for use in the application
         /// </summary>
@@ -259,8 +265,6 @@ namespace Training.Core
                 CoreApp.StartSession(CoreApp.Hint.Username, null, null);
                 ShowViewModel<TaskListsViewModel>(new { loginEnabled = false });
             }
-
-            
         }
 
         #endregion

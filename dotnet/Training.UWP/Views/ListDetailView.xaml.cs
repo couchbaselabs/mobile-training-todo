@@ -22,6 +22,7 @@ using System.Windows.Input;
 using Windows.UI.Xaml;
 using MvvmCross.Core.ViewModels;
 using Training.Core;
+using System.ComponentModel;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -90,23 +91,58 @@ namespace Training.UWP.Views
                 return;
             }
 
-            _initialized = true;
             _tasksView.DataContext = new TasksViewModel(viewModel);
             _tasksView.ViewModel = (TasksViewModel) _tasksView.DataContext;
-            //_usersView.DataContext = _usersView.ViewModel = new UsersViewModel(viewModel);
 
-            //if (!viewModel.HasModeratorStatus) {
-            //    viewModel.PropertyChanged += EnableUsersView;
-            //} else {
-            //    _viewMenu.Visibility = Visibility.Visible;
-            //}
+            _usersView.DataContext = new UsersViewModel(viewModel);
+            _usersView.ViewModel = (UsersViewModel)_usersView.DataContext;
 
+            if (!viewModel.HasModeratorStatus) {
+                viewModel.PropertyChanged += EnableUsersView;
+            } else {
+                //_viewMenu.Visibility = Visibility.Visible;
+            }
 
+            _initialized = true;
+        }
+
+        private void EnableUsersView(object sender, PropertyChangedEventArgs e)
+        {
+            var viewModel = DataContext as ListDetailViewModel;
+            if (viewModel == null) {
+                return;
+            }
+
+            if (e.PropertyName == nameof(viewModel.HasModeratorStatus)) {
+                if (viewModel.HasModeratorStatus) {
+                    //_viewMenu.Visibility = Visibility.Visible;
+                }
+            }
         }
 
         private void UpdateView(object sender, RoutedEventArgs e)
         {
+            if (_usersMenuItem == null) {
+                return;
+            }
 
+            if (e.OriginalSource == _tasksMenuItem) {
+                if (_tasksMenuItem.IsChecked == false) {
+                    return;
+                }
+
+                _usersMenuItem.IsChecked = false;
+                _tasksView.Visibility = Visibility.Visible;
+                _usersView.Visibility = Visibility.Collapsed;
+            } else {
+                if (_usersMenuItem.IsChecked == false) {
+                    return;
+                }
+
+                _tasksMenuItem.IsChecked = false;
+                _usersView.Visibility = Visibility.Visible;
+                _tasksView.Visibility = Visibility.Collapsed;
+            }
         }
 
         #endregion

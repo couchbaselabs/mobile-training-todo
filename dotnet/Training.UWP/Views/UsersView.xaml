@@ -1,16 +1,11 @@
 ﻿<local:BasePage
-    x:Class="Training.UWP.Views.TaskListsView"
+    x:Class="Training.UWP.Views.UsersView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Training"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-    <local:BasePage.Resources>
-        <ResourceDictionary>
-            <local:IncompleteCountToStringConverter x:Key="IncompleteConverter" />
-        </ResourceDictionary>
-    </local:BasePage.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -18,14 +13,13 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <CommandBar>
-            <AppBarButton Label="Add List..." Command="{Binding AddCommand}" />
-            <AppBarButton Label="Logout" Command="{Binding LogoutCommand}" />
+            <AppBarButton Label="Add User..." Command="{Binding AddCommand}" />
         </CommandBar>
         <TextBox Grid.Row="1" Text="{Binding SearchTerm, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
         <ListView
             Name="_listView"
             Grid.Row="2"
-            ItemsSource="{Binding TaskLists}"
+            ItemsSource="{Binding ListData, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             ItemClick="OnItemClick"
             IsItemClickEnabled="True">
             <ListView.ItemContainerStyle>
@@ -38,19 +32,15 @@
                     <Grid>
                         <Grid.ContextFlyout>
                             <MenuFlyout>
-                                <MenuFlyoutItem Text="Edit..." Click="EditRow" />
-                                <MenuFlyoutItem Text="Delete..." Foreground="Red" Command="{Binding DeleteCommand}" />
+                                <MenuFlyoutItem Text="Delete..." Foreground="Red" Click="DeleteRow" />
                             </MenuFlyout>
                         </Grid.ContextFlyout>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="{Binding Name}" Padding="0,10" />
-                        <TextBlock Padding="0,10" Text="{Binding IncompleteCount, Converter={StaticResource IncompleteConverter}}" Grid.Column="2" />
                     </Grid>
-
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

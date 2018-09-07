@@ -42,8 +42,11 @@ namespace Training.Core
         #region Variables
 
         private Database _db;
+        private IQuery _filteredQuery;
+        private IQuery _fullQuery;
         private IQuery _usersLiveQuery;
         private Document _taskList;
+        private string _searchUserName;
 
         #endregion
 
@@ -52,7 +55,8 @@ namespace Training.Core
         /// <summary>
         /// Gets the applicable list of users
         /// </summary>
-        public ExtendedObservableCollection<UserCellModel> ListData { get; } = new ExtendedObservableCollection<UserCellModel>();
+        public ExtendedObservableCollection<UserCellModel> UserList { get; } = 
+            new ExtendedObservableCollection<UserCellModel>();
 
         #endregion
 
@@ -94,6 +98,7 @@ namespace Training.Core
             try {
                 var doc = new MutableDocument(docId, properties);
                 _db.Save(doc);
+                Filter(_searchUserName);
             } catch(Exception e) {
                 throw new Exception("Couldn't create user", e);
             }
@@ -105,7 +110,21 @@ namespace Training.Core
         /// <param name="searchString">The string to filter on.</param>
         public void Filter(string searchString)
         {
-           
+            _searchUserName = searchString;
+            var query = default(IQuery);
+            if (!String.IsNullOrEmpty(searchString)) {
+                query = _filteredQuery;
+                query.Parameters.SetString("searchText", $"%{searchString}%");
+            } else {
+                query = _fullQuery;
+            }
+
+            var results = query.Execute();
+            UserList.Replace(results.Select(x =>
+            {
+                var docId = $"{_taskList.Id}.{x.GetString(0)}";
+                return new UserCellModel(docId);
+            }));
         }
 
         #endregion
@@ -115,19 +134,39 @@ namespace Training.Core
         private void SetupQuery()
         {
             var username = Expression.Property("username");
+            var exp1 = Expression.Property("type").EqualTo(Expression.String(UserType));
+            var exp2 = Expression.Property("taskList.id").EqualTo(Expression.String(_taskList.Id));
+
+            _filteredQuery = QueryBuilder.Select(SelectResult.Expression(Meta.ID),
+                SelectResult.Expression(username))
+                .From(DataSource.Database(_db))
+                .Where(username
+                    .Like(Expression.Parameter("searchText"))
+                    .And((exp1).And(exp2)))
+                .OrderBy(Ordering.Property("username"));
+
+            _fullQuery = QueryBuilder.Select(SelectResult.Expression(Meta.ID),
+                    SelectResult.Expression(username))
+                .From(DataSource.Database(_db))
+                .Where(username
+                    .NotNullOrMissing()
+                    .And((exp1).And(exp2)))
+                .OrderBy(Ordering.Property("username"));
+
             _usersLiveQuery = QueryBuilder.Select(SelectResult.Expression(username))
                 .From(DataSource.Database(_db))
-                .Where(Expression.Property("type").EqualTo(Expression.String(UserType)).And(Expression.Property("taskList.id").EqualTo(Expression.String(_taskList.Id))))
-                                   .OrderBy(Ordering.Property("username"));
+                .Where((exp1).And(exp2)).OrderBy(Ordering.Property("username"));
 
-            _usersLiveQuery.AddChangeListener((sender, args) =>
-            {
-                ListData.Replace(args.Results.Select(x =>
+            var results = _usersLiveQuery.Execute();
+
+            //_usersLiveQuery.AddChangeListener((sender, args) =>
+            //{
+                UserList.Replace(results.Select(x =>
                 {
                     var docId = $"{_taskList.Id}.{x.GetString(0)}";
                     return new UserCellModel(docId);
                 }));
-            });
+            //});
         }
 
         #endregion
