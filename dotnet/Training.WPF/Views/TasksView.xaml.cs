@@ -55,12 +55,20 @@ namespace Training
 
         private void DeleteRow(object sender, RoutedEventArgs e)
         {
+            _lastRightClicked.StatusUpdated += UpdateView;
             _lastRightClicked.DeleteCommand.Execute(null);
         }
 
         private void EditRow(object sender, RoutedEventArgs e)
         {
+            _lastRightClicked.StatusUpdated += UpdateView;
             _lastRightClicked.EditCommand.Execute(null);
+        }
+
+        private void UpdateView()
+        {
+            var viewModel = DataContext as TasksViewModel;
+            viewModel.Model.Filter(null);
         }
 
         private void ListViewItem_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)

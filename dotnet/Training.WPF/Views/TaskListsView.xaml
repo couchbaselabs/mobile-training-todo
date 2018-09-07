@@ -54,7 +54,6 @@
                         <TextBlock Text="{Binding Name}" Padding="0,10" />
                         <TextBlock Padding="0,10" Text="{Binding IncompleteCount, Converter={StaticResource IncompleteConverter}}" Grid.Column="2" />
                     </Grid>
-                    
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
