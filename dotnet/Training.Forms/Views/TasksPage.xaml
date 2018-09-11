@@ -12,9 +12,6 @@
             <local:ByteArrayToImageConverter x:Key="ImageSourceConverter" />
         </ResourceDictionary>
     </ContentPage.Resources>
-    <ContentPage.ToolbarItems>
-        <ToolbarItem Text="+" Command="{Binding AddCommand}"/>
-    </ContentPage.ToolbarItems>
     <ContentPage.Content>
         <ListView ItemsSource="{Binding ListData}" 
                 Header="{Binding .}" 
@@ -29,10 +26,8 @@
                 <DataTemplate>
                     <ViewCell>
                         <ViewCell.ContextActions>
-                            <MenuItem Command="{Binding EditCommand}"
-                               Text="Edit" />
-                            <MenuItem Command="{Binding DeleteCommand}"
-                               Text="Delete" IsDestructive="True" />
+                            <MenuItem Clicked="OnEdit_Clicked" CommandParameter="{Binding DocumentID}" Text="Edit" />
+                            <MenuItem Clicked="OnDelete_Clicked" CommandParameter="{Binding DocumentID}" Text="Delete" IsDestructive="True" />
                         </ViewCell.ContextActions>
                         <Grid>
                             <Grid.ColumnDefinitions>

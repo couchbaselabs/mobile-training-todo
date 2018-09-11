@@ -6,9 +6,6 @@
 		x:Class="Training.UsersPage"
 		Title="Users"
 		Icon="Users.png">
-	<ContentPage.ToolbarItems>
-        <ToolbarItem Text="+" Command="{Binding AddCommand}"/>
-    </ContentPage.ToolbarItems>
     <ContentPage.Content>
 		<ListView ItemsSource="{Binding ListData}" Header="{Binding .}">
             <ListView.HeaderTemplate>
@@ -20,8 +17,7 @@
                 <DataTemplate>
                     <TextCell Text="{Binding Name}">
                         <TextCell.ContextActions>
-                            <MenuItem Command="{Binding DeleteCommand}"
-                               Text="Delete" IsDestructive="True" />
+                            <MenuItem Clicked="OnDelete_Clicked" Text="Delete" IsDestructive="True" />
                         </TextCell.ContextActions>
 					</TextCell>
 				</DataTemplate>

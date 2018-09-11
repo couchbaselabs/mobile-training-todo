@@ -21,7 +21,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 
 using Acr.UserDialogs;
@@ -42,7 +41,7 @@ namespace Training.Core
     {
         #region Constants
 
-        private static readonly Uri SyncGatewayUrl = new Uri("blip://localhost:4984/todo/");
+        private static readonly Uri SyncGatewayUrl = new Uri("wss://ec2-54-164-174-27.compute-1.amazonaws.com");
 
         #endregion
 
@@ -242,9 +241,9 @@ namespace Training.Core
         public static CoreAppStartHint CreateHint()
         {
             var retVal = new CoreAppStartHint {
-                LoginEnabled = false,
+                LoginEnabled = true,
                 EncryptionEnabled = false,
-                SyncEnabled = false,
+                SyncEnabled = true,
                 UsePrebuiltDB = false,
                 Username = "todo"
             };

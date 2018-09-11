@@ -20,6 +20,7 @@
 //
 
 using MvvmCross.Forms.Views;
+using Training.Core;
 using Xamarin.Forms;
 
 namespace Training
@@ -82,6 +83,28 @@ namespace Training
                 ToolbarItems.Remove(_logoutButton);
                 _logoutButton = null;
             }
+        }
+
+        private void OnEdit_Clicked(object sender, System.EventArgs e)
+        {
+            var param = ((MenuItem)sender).CommandParameter;
+            var data = ((MenuItem)sender).BindingContext as TaskListCellModel;
+            data.StatusUpdated += UpdateView;
+            data.EditCommand.Execute(param);
+        }
+
+        private void OnDelete_Clicked(object sender, System.EventArgs e)
+        {
+            var param = ((MenuItem)sender).CommandParameter;
+            var data = ((MenuItem)sender).BindingContext as TaskListCellModel;
+            data.StatusUpdated += UpdateView;
+            data.DeleteCommand.Execute(param);
+        }
+
+        protected void UpdateView()
+        {
+            var viewModel = DataContext as TaskListsViewModel;
+            viewModel.Model.Filter(null);
         }
 
         #endregion

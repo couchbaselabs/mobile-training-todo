@@ -28,10 +28,8 @@
 				<DataTemplate>
 					<local:TaskListCell Name="{Binding Name}" IncompleteTasks="{Binding IncompleteCount, Converter={StaticResource IncompleteToString}}">
                         <local:TaskListCell.ContextActions>
-                            <MenuItem Command="{Binding EditCommand}" CommandParameter="{Binding DocumentID}"
-                               Text="Edit" />
-                            <MenuItem Command="{Binding DeleteCommand}" CommandParameter="{Binding DocumentID}"
-                               Text="Delete" IsDestructive="True" />
+                            <MenuItem Clicked="OnEdit_Clicked" CommandParameter="{Binding DocumentID}" Text="Edit" />
+                            <MenuItem Clicked="OnDelete_Clicked" CommandParameter="{Binding DocumentID}" Text="Delete" IsDestructive="True" />
                          </local:TaskListCell.ContextActions>
 					</local:TaskListCell>
 				</DataTemplate>

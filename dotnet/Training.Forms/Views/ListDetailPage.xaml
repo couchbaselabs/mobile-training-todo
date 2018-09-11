@@ -7,4 +7,8 @@
 		xmlns:core="clr-namespace:Training.Core"
 		x:Class="Training.ListDetailPage"
 		Title="{Binding PageTitle}">
+    <d:MvxTabbedPage.ToolbarItems>
+        <ToolbarItem Text="Users" Clicked="OnPageSelect_Clicked" />
+        <ToolbarItem Text="+" Clicked="OnAdd_Clicked" />
+    </d:MvxTabbedPage.ToolbarItems>
 </d:MvxTabbedPage>

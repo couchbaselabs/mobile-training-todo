@@ -20,6 +20,7 @@
 //
 
 using MvvmCross.Forms.Views;
+using Training.Core;
 using Xamarin.Forms;
 
 namespace Training
@@ -38,6 +39,33 @@ namespace Training
         public TasksPage()
         {
             InitializeComponent();
+        }
+
+        private void OnUsers_Clicked(object sender, System.EventArgs e)
+        {
+
+        }
+
+        private void OnEdit_Clicked(object sender, System.EventArgs e)
+        {
+            var param = ((MenuItem)sender).CommandParameter;
+            var data = ((MenuItem)sender).BindingContext as TaskCellModel;
+            data.StatusUpdated += UpdateView;
+            data.EditCommand.Execute(param);
+        }
+
+        private void OnDelete_Clicked(object sender, System.EventArgs e)
+        {
+            var param = ((MenuItem)sender).CommandParameter;
+            var data = ((MenuItem)sender).BindingContext as TaskCellModel;
+            data.StatusUpdated += UpdateView;
+            data.DeleteCommand.Execute(param);
+        }
+
+        protected void UpdateView()
+        {
+            var viewModel = DataContext as TasksViewModel;
+            viewModel.Model.Filter(null);
         }
 
         #endregion

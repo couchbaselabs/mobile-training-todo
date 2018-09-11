@@ -37,6 +37,7 @@ namespace Training
 
         private NavigationLifecycleHelper _navHelper;
         private UsersPage _usersPage;
+        private TasksPage _tasksPage;
 
         #endregion
 
@@ -82,9 +83,9 @@ namespace Training
                 return;
             }
 
-            var child1 = new TasksPage();
-            child1.ViewModel = new TasksViewModel(viewModel);
-            Children.Add(child1);
+            _tasksPage = new TasksPage();
+            _tasksPage.ViewModel = new TasksViewModel(viewModel);
+            Children.Add(_tasksPage);
 
             _usersPage = new UsersPage();
             _usersPage.ViewModel = new UsersViewModel(viewModel);
@@ -96,11 +97,41 @@ namespace Training
             }
         }
 
+        public void SelectUsersPage()
+        {
+            CurrentPage = _usersPage;
+            this.ToolbarItems[0].Text = "Tasks";
+        }
+
+        public void SelectTasksPage()
+        {
+            CurrentPage = _tasksPage;
+            this.ToolbarItems[0].Text = "Users";
+        }
+
         protected override void OnDisappearing()
         {
             if(_navHelper.OnDisappearing(Navigation)) {
                 ((Children[0] as MvxPage)?.ViewModel as IDisposable)?.Dispose();
                 (_usersPage.ViewModel as IDisposable)?.Dispose();
+            }
+        }
+
+        private void OnPageSelect_Clicked(object sender, System.EventArgs e)
+        {
+            if(this.ToolbarItems[0].Text == "Users") {
+                SelectUsersPage();
+            } else {
+                SelectTasksPage();
+            }
+        }
+
+        private void OnAdd_Clicked(object sender, System.EventArgs e)
+        {
+            if (this.ToolbarItems[0].Text == "Tasks") {
+                ((UsersViewModel)_usersPage.ViewModel).AddCommand.Execute(new object());
+            } else {
+                ((TasksViewModel)_tasksPage.ViewModel).AddCommand.Execute(new object());
             }
         }
 
