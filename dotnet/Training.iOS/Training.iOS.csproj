@@ -87,11 +87,11 @@
     <Reference Include="BTProgressHUD, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\BTProgressHUD.1.2.0.6\lib\Xamarin.iOS10\BTProgressHUD.dll</HintPath>
     </Reference>
-    <Reference Include="Couchbase.Lite, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Couchbase.Lite.2.0.0-db023\lib\netstandard2.0\Couchbase.Lite.dll</HintPath>
+    <Reference Include="Couchbase.Lite, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Couchbase.Lite.Enterprise.2.1.0\lib\netstandard2.0\Couchbase.Lite.dll</HintPath>
     </Reference>
-    <Reference Include="Couchbase.Lite.Support.iOS, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Couchbase.Lite.Support.iOS.2.0.0-db023\lib\xamarinios\Couchbase.Lite.Support.iOS.dll</HintPath>
+    <Reference Include="Couchbase.Lite.Support.iOS, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Couchbase.Lite.Enterprise.Support.iOS.2.1.0\lib\xamarinios\Couchbase.Lite.Support.iOS.dll</HintPath>
     </Reference>
     <Reference Include="ExifLib, Version=1.0.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ExifLib.PCL.1.0.2-pre01\lib\netstandard1.0\ExifLib.dll</HintPath>
@@ -230,11 +230,11 @@
   <Import Project="..\Training.Forms\Training.Forms.projitems" Label="Shared" Condition="Exists('..\Training.Forms\Training.Forms.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <Import Project="..\packages\Xamarin.Forms.2.5.0.91635\build\netstandard1.0\Xamarin.Forms.targets" Condition="Exists('..\packages\Xamarin.Forms.2.5.0.91635\build\netstandard1.0\Xamarin.Forms.targets')" />
-  <Import Project="..\packages\Couchbase.Lite.Support.iOS.2.0.0-db023\build\xamarinios\Couchbase.Lite.Support.iOS.targets" Condition="Exists('..\packages\Couchbase.Lite.Support.iOS.2.0.0-db023\build\xamarinios\Couchbase.Lite.Support.iOS.targets')" />
+  <Import Project="..\packages\Couchbase.Lite.Enterprise.Support.iOS.2.1.0\build\xamarinios\Couchbase.Lite.Enterprise.Support.iOS.targets" Condition="Exists('..\packages\Couchbase.Lite.Enterprise.Support.iOS.2.1.0\build\xamarinios\Couchbase.Lite.Enterprise.Support.iOS.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Couchbase.Lite.Support.iOS.2.0.0-db023\build\xamarinios\Couchbase.Lite.Support.iOS.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Couchbase.Lite.Support.iOS.2.0.0-db023\build\xamarinios\Couchbase.Lite.Support.iOS.targets'))" />
+    <Error Condition="!Exists('..\packages\Couchbase.Lite.Enterprise.Support.iOS.2.1.0\build\xamarinios\Couchbase.Lite.Enterprise.Support.iOS.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Couchbase.Lite.Enterprise.Support.iOS.2.1.0\build\xamarinios\Couchbase.Lite.Enterprise.Support.iOS.targets'))" />
   </Target>
 </Project>
