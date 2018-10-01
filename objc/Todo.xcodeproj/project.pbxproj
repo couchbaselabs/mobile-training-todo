@@ -70,6 +70,7 @@
 		93A843361E3B307D00B4AF2D /* CBLImage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CBLImage.m; sourceTree = "<group>"; };
 		93A843381E3B420B00B4AF2D /* CBLTaskImageViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBLTaskImageViewController.h; sourceTree = "<group>"; };
 		93A843391E3B420B00B4AF2D /* CBLTaskImageViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CBLTaskImageViewController.m; sourceTree = "<group>"; };
+		93BF1ECF2162B2C900666736 /* Todo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Todo.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -132,6 +133,7 @@
 				937EAC151E3AB72200133693 /* Assets.xcassets */,
 				937EAC171E3AB72200133693 /* LaunchScreen.storyboard */,
 				937EAC1A1E3AB72200133693 /* Info.plist */,
+				93BF1ECF2162B2C900666736 /* Todo.entitlements */,
 				937EAC091E3AB72200133693 /* Supporting Files */,
 			);
 			path = Todo;
@@ -194,6 +196,14 @@
 						CreatedOnToolsVersion = 8.2.1;
 						DevelopmentTeam = N2Q372V7W2;
 						ProvisioningStyle = Automatic;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+							com.apple.Push = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
@@ -376,6 +386,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Todo/Todo.entitlements;
 				DEVELOPMENT_TEAM = N2Q372V7W2;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -384,7 +395,7 @@
 				);
 				INFOPLIST_FILE = Todo/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.couchbase.Todo;
+				PRODUCT_BUNDLE_IDENTIFIER = com.couchbase.MobileTrainingTodo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -393,6 +404,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Todo/Todo.entitlements;
 				DEVELOPMENT_TEAM = N2Q372V7W2;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -401,7 +413,7 @@
 				);
 				INFOPLIST_FILE = Todo/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.couchbase.Todo;
+				PRODUCT_BUNDLE_IDENTIFIER = com.couchbase.MobileTrainingTodo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
