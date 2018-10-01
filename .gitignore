@@ -70,7 +70,10 @@ fastlane/screenshots
 # CouchbaseLite
 CouchbaseLite.framework
 CouchbaseLiteSwift.framework
-libsqlcipher.a
+
+# Certificates
+objc/Certificates/*.pem
+swift/Certificates/*.pem
 
 # Others
 *.userprefs
