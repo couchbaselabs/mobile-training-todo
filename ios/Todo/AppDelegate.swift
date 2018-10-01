@@ -7,20 +7,34 @@
 //
 
 import UIKit
+import UserNotifications
 
+// Authentication:
 let kLoginFlowEnabled = false
-let kEncryptionEnabled = false
-let kUseForestDB = false
+
+// Sync:
 let kSyncEnabled = false
 let kSyncGatewayUrl = URL(string: "http://localhost:4984/todo/")!
-let kLoggingEnabled = false
+
+// Push Notification Sync:
+let kSyncWithPushNotification = false
+
+// Logging:
+let kLoggingEnabled = true
+
+// Database Encryption:
+let kEncryptionEnabled = false
+
+// Others:
+let kUseForestDB = false
 let kUsePrebuiltDb = false
 let kConflictResolution = false
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, LoginViewControllerDelegate {
     var window: UIWindow?
 
+    var manager: CBLManager!
     var database: CBLDatabase!
     var pusher: CBLReplication!
     var puller: CBLReplication!
@@ -64,9 +78,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
     
     func startSession(username:String, withPassword password:String? = nil,
         withNewPassword newPassword:String? = nil) throws {
+        try initializeManager()
+        registerRemoteNotification()
         installPrebuiltDb()
         try openDatabase(username: username, withKey: password, withNewKey: newPassword)
         Session.username = username
+        Session.password = password
         startReplication(withUsername: username, andPassword: newPassword ?? password)
         showApp()
         startConflictLiveQuery()
@@ -78,16 +95,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
             return
         }
         
-        let db = CBLManager.sharedInstance().databaseExistsNamed("todo")
-        
+        let db = manager.databaseExistsNamed("todo")
         if (!db) {
             let dbPath = Bundle.main.path(forResource: "todo", ofType: "cblite2")
             do {
-                try CBLManager.sharedInstance().replaceDatabaseNamed("todo", withDatabaseDir: dbPath!)
+                try manager.replaceDatabaseNamed("todo", withDatabaseDir: dbPath!)
             } catch let error as NSError {
                 NSLog("Cannot replace the database %@", error)
             }
         }
+    }
+    
+    func initializeManager() throws {
+        if manager != nil {
+            return
+        }
+        
+        let options = UnsafeMutablePointer<CBLManagerOptions>.allocate(capacity: 1)
+        options.initialize(to: CBLManagerOptions(readOnly: false, fileProtection:
+            .completeFileProtectionUntilFirstUserAuthentication))
+        manager = try CBLManager(directory: CBLManager.defaultDirectory(), options: options)
     }
     
     func openDatabase(username:String, withKey key:String?,
@@ -107,7 +134,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
             }
         }
 
-        try database = CBLManager.sharedInstance().openDatabaseNamed(dbname, with: options)
+        try database = manager.openDatabaseNamed(dbname, with: options)
         if newKey != nil {
             try database.changeEncryptionKey(newKey)
         }
@@ -194,6 +221,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         }
         let oldUsername = Session.username
         Session.username = nil
+        Session.password = nil
         login(username: oldUsername)
     }
 
@@ -306,26 +334,108 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
     }
     
     func replicationProgress(notification: NSNotification) {
-        UIApplication.shared.isNetworkActivityIndicatorVisible =
-            (pusher.status == .active || puller.status == .active)
+        let repl = notification.object as! CBLReplication
         
-        let error = (pusher.lastError ?? puller.lastError) as? NSError;
-        if let errorCode = error?.code {
-            NSLog("Replication Error: \(error!)")
-            if errorCode == 401 {
-                Ui.showMessageDialog(
-                    onController: self.window!.rootViewController!,
-                    withTitle: "Authentication Error",
-                    withMessage:"Your username or password is not correct.",
-                    withError: nil,
-                    onClose: {
-                        self.logout()
-                })
+        UIApplication.shared.isNetworkActivityIndicatorVisible =
+            repl.status == .active
+        
+        if let error = repl.lastError as NSError? {
+            NSLog("Replication Error: \(error)")
+            if error.code == 401 {
+                let state = UIApplication.shared.applicationState
+                if state != .background {
+                    Ui.showMessageDialog(
+                        onController: self.window!.rootViewController!,
+                        withTitle: "Authentication Error",
+                        withMessage:"Your username or password is not correct.",
+                        withError: nil,
+                        onClose: {
+                            self.logout()
+                    })
+                }
             }
         }
     }
+    
+    // MARK: Push Notification Sync
+    
+    func registerRemoteNotification() {
+        guard kSyncWithPushNotification else {
+            return
+        }
+        
+        let center = UNUserNotificationCenter.current();
+        center.delegate = self
+        center.requestAuthorization(options: [.alert, .sound, .badge]) { (granted, error) in
+            if granted {
+                DispatchQueue.main.async {
+                    UIApplication.shared.registerForRemoteNotifications()
+                }
+            } else {
+                NSLog("WARNING: Remote Notification has not been authorized");
+            }
+            if let err = error {
+                NSLog("Register Remote Notification Error: \(err)");
+            }
+        }
+    }
+    
+    func startPushNotificationSync() {
+        guard kSyncWithPushNotification else {
+            return
+        }
+        
+        let push = database.createPushReplication(kSyncGatewayUrl)
+        push.continuous = false
+        NotificationCenter.default.addObserver(self, selector: #selector(replicationProgress(notification:)),
+                                               name: NSNotification.Name.cblReplicationChange, object: push)
+        
+        let pull = database.createPullReplication(kSyncGatewayUrl)
+        pull.continuous = false
+        NotificationCenter.default.addObserver(self, selector: #selector(replicationProgress(notification:)),
+                                               name: NSNotification.Name.cblReplicationChange, object: pull)
+        
+        if kLoginFlowEnabled {
+            if let u = Session.username, let p = Session.password {
+                let authenticator = CBLAuthenticator.basicAuthenticator(withName: u, password: p)
+                push.authenticator = authenticator
+                pull.authenticator = authenticator
+            } else {
+                NSLog("WARNING: no username and password set to replicator")
+            }
+        }
+        
+        push.start()
+        pull.start()
+    }
+    
+    // MARK: UNUserNotificationCenterDelegate
+    
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        // Note: Normally the application will send the device token to
+        // the backend server so that the backend server can use that to
+        // send the push notification to the application. We are just printing
+        // to the console here.
+        let tokenStrs = deviceToken.map { data -> String in
+            return String(format: "%02.2hhx", data)
+        }
+        let token = tokenStrs.joined()
+        NSLog("Push Notification Device Token: \(token)")
+    }
+    
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        NSLog("WARNING: Failed to register for the remote notification: \(error)")
+    }
+    
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        
+        // Start single shot replicator:
+        self.startPushNotificationSync()
+        
+        completionHandler(.newData)
+    }
 
-    // MARK: - Conflicts Resolution
+    // MARK: Conflicts Resolution
     
     // TRAINING: Responding to Live Query changes
     override func observeValue(forKeyPath keyPath: String?, of object: Any?,
