@@ -51,7 +51,7 @@ class Ui {
         onClose closeAction: (() -> Void)? = nil) {
             var mesg: String?
             if let err = error {
-                mesg = "\(message)\n\n\(err.localizedDescription)"
+                mesg = "\(message ?? "")\n\n\(err.localizedDescription)"
                 NSLog("Error: %@ (error=%@)", message!, (error ?? ""))
             } else {
                 mesg = message

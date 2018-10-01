@@ -68,10 +68,11 @@ fastlane/screenshots
 # CouchbaseLite
 CouchbaseLite.framework
 libsqlcipher.a
-*.userprefs
+ios/Certificates/*.pem
 packages/
 bin/
 obj/
+*.userprefs
 
 # Ignore node_modules in /test/
 /test/node_modules
