@@ -187,12 +187,40 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
     // MARK: - Action
     
     @objc func addAction(sender: Any) {
+        if kQEFeaturesEnabled {
+            showQEActions()
+        } else {
+            showCreateTaskInput()
+        }
+    }
+    
+    func showCreateTaskInput() {
         Ui.showTextInput(on: self, title: "New Task", message: nil, textFieldConfig: { text in
             text.placeholder = "Task"
             text.autocapitalizationType = .sentences
         }, onOk: { task in
             self.createTask(task: task)
         })
+    }
+    
+    func showQEActions() {
+        let actions = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        
+        actions.addAction(UIAlertAction(title: "New Task", style: .default) { _ in
+            self.showCreateTaskInput()
+        })
+        
+        actions.addAction(UIAlertAction(title: "Generate Tasks", style: .default) { _ in
+            QE.generateTasks(database: self.database, taskList: self.taskList, numbers: 50, includesPhoto: true)
+        })
+        
+        actions.addAction(UIAlertAction(title: "Generate No Photo Tasks", style: .default) { _ in
+            QE.generateTasks(database: self.database, taskList: self.taskList, numbers: 50, includesPhoto: false)
+        })
+        
+        actions.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in })
+        
+        self.present(actions, animated: true, completion: nil)
     }
     
     // MARK: - UITableViewController

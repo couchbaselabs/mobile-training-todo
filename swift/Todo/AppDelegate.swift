@@ -20,6 +20,9 @@ let kSyncEnabled = false
 let kSyncEndpoint = "ws://localhost:4984/todo"
 let kSyncWithPushNotification = false
 
+// QE:
+let kQEFeaturesEnabled = true
+
 // Crashlytics:
 let kCrashlyticsEnabled = true
 
