@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+                  "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<article>
+  <articleinfo>
+    <title></title>
+  </articleinfo>
+<orderedlist numeration="arabic" spacing="compact">
+  <listitem>
+    <para>
+      Design
+    </para>
+  </listitem>
+</orderedlist>
+<para>
+  Before you start coding, it's important to lay down all the business
+  rules for the application. This section will introduce the
+  application's data models and security rules.
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+      Data Modeling: How to choose the data structure for entities and
+      relationships between those entities.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+      Security: How to convert a set of application requirements and
+      business rules into security rules for Couchbase Mobile.
+    </para>
+  </listitem>
+</itemizedlist>
+<orderedlist numeration="arabic" spacing="compact">
+  <listitem override="2">
+    <para>
+      Develop
+    </para>
+  </listitem>
+</orderedlist>
+<para>
+  The first steps to getting your project off the ground with Couchbase
+  Mobile is to use local persistence with Couchbase Lite. Once your app
+  is built to save data locally it's very easy to plug in the
+  server-side component, Sync Gateway.
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+      Create, Read, Update, Delete, Query: How to use the persistence
+      APIs and query language for simple queries and data aggregation to
+      perform query operations across different model types.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+      Synchronization: How to install Sync Gateway on your development
+      environment, start the synchronization from the application and
+      manage conflicts.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+      Security: How to add access control rules based on each
+      authenticated user and how to add security locally with database
+      encryption and offline login.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+      Integration: How to use webhooks to trigger events on external
+      systems and use the Sync Gateway REST API to import data in
+      Couchbase Mobile.
+    </para>
+  </listitem>
+</itemizedlist>
+<orderedlist numeration="arabic" spacing="compact">
+  <listitem override="3">
+    <para>
+      Test
+    </para>
+  </listitem>
+</orderedlist>
+<para>
+  Before releasing your application you must ensure that the
+  requirements set out in the first section of the training are met.
+  This section covers best practices to test the functional and
+  scalability aspects of the application.
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+      Functional: How to test the security model of the application and
+      make changes to the data model and sync function in the final
+      stages of your release cycle.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+      Scalability &amp; Performance: How to identify the test scenarios
+      that are crucial to your application and implement them with load
+      testing tools.
+    </para>
+  </listitem>
+</itemizedlist>
+<orderedlist numeration="arabic" spacing="compact">
+  <listitem override="4">
+    <para>
+      Deploy
+    </para>
+  </listitem>
+</orderedlist>
+<para>
+  Deploying to the app stores and to the cloud at once can be
+  challenging. This section will walk you through this process.
+</para>
+<itemizedlist>
+  <listitem>
+    <para>
+      Deploy: How to setup cloud deployment for a staging and production
+      environment and how to continuously deploy to the staging servers.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+      Upgrade: How to perform a database upgrade or schema migration of
+      an application that already went live.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+      Scale: How to identify perfomance bottlenecks or a steep increase
+      in the load and responding to it by using several Sync Gateway
+      instances behind a load balancer.
+    </para>
+  </listitem>
+</itemizedlist>
+</article>

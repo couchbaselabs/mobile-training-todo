@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+                  "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<article>
+  <articleinfo>
+    <title>Tutorial Overview</title>
+  </articleinfo>
+<para>
+  Couchbase Mobile brings the power of NoSQL to mobile. It is comprised
+  of three different components: Couchbase Lite, an embedded NoSQL
+  database, Sync Gateway, an internet-facing synchronization mechanism
+  that securely syncs data between device and cloud, and Couchbase
+  Server, a highly scalable and performant NoSQL database in the cloud.
+</para>
+<para>
+  Couchbase Mobile simplifies &quot;offline first&quot; development. As
+  shown on the diagram below, Couchbase Lite runs locally on the device
+  and persists data as JSON and binary format. You can perform CRUD
+  operations directly to the local database.
+</para>
+<figure>
+  <mediaobject>
+    <imageobject>
+      <imagedata fileref="img/image57.png" />
+    </imageobject>
+    <textobject><phrase></phrase></textobject>
+  </mediaobject>
+</figure>
+<para>
+  Sync Gateway is the web tier that exposes a database API for Couchbase
+  Lite databases to replicate to and from Couchbase Server (data is not
+  persisted in Sync Gateway). Couchbase Server is used as a storage
+  engine by Sync Gateway.
+</para>
+<para>
+  In this developer tutorial series, you will build a ToDo List
+  application with Couchbase Mobile and learn how to use the database,
+  add synchronization, and add security.
+</para>
+<para>
+  <block class="ios" />
+</para>
+<para>
+  <img src="./img/image11.png" class="portrait" />
+</para>
+<para>
+  <block class="wpf" />
+</para>
+<para>
+  <img src="./img/image11w.png" class="center-image" />
+</para>
+<para>
+  <block class="xam" />
+</para>
+<para>
+  <emphasis role="strong">iOS</emphasis>
+  <img src="./img/image11.png" class="portrait" />
+  <emphasis role="strong">Android</emphasis>
+  <img src="./img/image11xa.png" class="portrait" />
+</para>
+<para>
+  <block class="android" />
+</para>
+<para>
+  <img src="img/image11a.png" class="portrait" />
+</para>
+<para>
+  <block class="all" />
+</para>
+<sect1 id="course-outline">
+  <title>Course Outline</title>
+  <sect2 id="data-modeling">
+    <title>Data Modeling</title>
+    <para>
+      How to choose the data structure for entities and relationships
+      between those entities.
+    </para>
+    <itemizedlist spacing="compact">
+      <listitem>
+        <para>
+          Documents types
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Relationships between Documents
+        </para>
+      </listitem>
+    </itemizedlist>
+  </sect2>
+  <sect2 id="design">
+    <title>Design</title>
+    <para>
+      How to convert a set of application requirements and business
+      rules into security rules for Couchbase Mobile.
+    </para>
+    <itemizedlist spacing="compact">
+      <listitem>
+        <para>
+          Access to Channels
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          User privileges
+        </para>
+      </listitem>
+    </itemizedlist>
+  </sect2>
+  <sect2 id="using-the-database">
+    <title>Using the Database</title>
+    <para>
+      How to use the persistence APIs and query language for simple
+      queries and data aggregation to perform query operations across
+      different model types.
+    </para>
+    <itemizedlist spacing="compact">
+      <listitem>
+        <para>
+          Querying Data
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Writing Data
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Aggregating Data
+        </para>
+      </listitem>
+    </itemizedlist>
+  </sect2>
+  <sect2 id="adding-synchronization">
+    <title>Adding Synchronization</title>
+    <para>
+      How to install Sync Gateway on your development environment, start
+      the synchronization from the application and manage conflicts.
+    </para>
+    <itemizedlist spacing="compact">
+      <listitem>
+        <para>
+          Installation
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Synchronizing
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Detecting and resolving Conflicts
+        </para>
+      </listitem>
+    </itemizedlist>
+  </sect2>
+  <sect2 id="adding-security">
+    <title>Adding Security</title>
+    <para>
+      How to add access control rules based on each authenticated user
+      and how to add security locally with database encryption and
+      offline login.
+    </para>
+    <itemizedlist spacing="compact">
+      <listitem>
+        <para>
+          User Authentication
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Read/Write Access Controls
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Database Encryption
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Offline Login
+        </para>
+      </listitem>
+    </itemizedlist>
+  </sect2>
+</sect1>
+</article>

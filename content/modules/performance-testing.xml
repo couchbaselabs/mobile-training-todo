@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+                  "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<article>
+  <articleinfo>
+    <title></title>
+  </articleinfo>
+<para>
+  In this lesson you'll learn how to perform performance tests on your
+  Couchbase Mobile application. You'll test the performance of Sync
+  Gateway.
+</para>
+<sect1 id="requirements">
+  <title>Requirements</title>
+  <itemizedlist spacing="compact">
+    <listitem>
+      <para>
+        3 x VMs with RAM &gt;= 2GB
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Node.js 0.6.6 or higher
+      </para>
+    </listitem>
+  </itemizedlist>
+</sect1>
+<sect1 id="getting-started">
+  <title>Getting Started</title>
+  <para>
+    This lesson contains some scripts to run performance tests. Download
+    those scripts below
+  </para>
+  <programlisting language="bash">
+wget https://cl.ly/3Z0D2D0l3R0O/test.zip
+sudo apt-get install unzip
+unzip test.zip
+</programlisting>
+  <para>
+    Throughout this lesson, you will use different scripts located in
+    the <emphasis role="strong">test</emphasis> folder.
+  </para>
+</sect1>
+<sect1 id="testing-environment">
+  <title>Testing environment</title>
+  <para>
+    It's preferable to run performance tests on an environment that
+    would closely ressemble your production environment. If you haven't
+    determined the production environment yet then performance testing
+    can help evaluate that based on the expected load of the
+    application. To follow this lesson you must already have a reverse
+    proxy (prerably NGINX) load balancing to 2 Sync Gateway nodes backed
+    by 1 Couchbase Server instances.
+  </para>
+  <blockquote>
+    <para>
+      <emphasis role="strong">Tip:</emphasis> If you don't have this
+      setup you can jump to the <emphasis role="strong">Deploy &gt;
+      Install</emphasis> lesson to do so.
+    </para>
+  </blockquote>
+  <para>
+    You will use a Node.js script to generate some load on the Sync
+    Gateway instances. You will have the option to specify the following
+    parameters.
+  </para>
+  <informaltable>
+    <tgroup cols="2">
+      <colspec colwidth="12*" align="left" />
+      <colspec colwidth="12*" align="left" />
+      <thead>
+        <row>
+          <entry>
+            Name
+          </entry>
+          <entry>
+            Definition
+          </entry>
+        </row>
+      </thead>
+      <tbody>
+        <row>
+          <entry>
+            <literal>url</literal>
+          </entry>
+          <entry>
+            The URL of the Sync Gateway instance under test.
+          </entry>
+        </row>
+        <row>
+          <entry>
+            <literal>concurrency</literal>
+          </entry>
+          <entry>
+            The number of concurrent users sending requests
+            simultaneously.
+          </entry>
+        </row>
+      </tbody>
+    </tgroup>
+  </informaltable>
+  <para>
+    All scenarios will run for 20 seconds. The result of the test will
+    contain the following.
+  </para>
+  <informaltable>
+    <tgroup cols="2">
+      <colspec align="left" />
+      <colspec align="left" />
+      <thead>
+        <row>
+          <entry>
+            Name
+          </entry>
+          <entry>
+            Definition
+          </entry>
+        </row>
+      </thead>
+      <tbody>
+        <row>
+          <entry>
+            Completed requests
+          </entry>
+          <entry>
+            The total number of requests sent in that time.
+          </entry>
+        </row>
+        <row>
+          <entry>
+            Mean latency
+          </entry>
+          <entry>
+            The average time it took for an operation to complete.
+          </entry>
+        </row>
+        <row>
+          <entry>
+            P50
+          </entry>
+          <entry>
+            50% of the requests sent took less time than the P50 value.
+          </entry>
+        </row>
+        <row>
+          <entry>
+            P90
+          </entry>
+          <entry>
+            90% of the requests sent took less time than the P90 value.
+          </entry>
+        </row>
+        <row>
+          <entry>
+            P95
+          </entry>
+          <entry>
+            95% of the requests sent took less time than the P95 value.
+          </entry>
+        </row>
+        <row>
+          <entry>
+            P99
+          </entry>
+          <entry>
+            99% of the requests sent took less time than the P99 value.
+          </entry>
+        </row>
+      </tbody>
+    </tgroup>
+  </informaltable>
+</sect1>
+<sect1 id="read-performance">
+  <title>Read performance</title>
+  <para>
+    In this scenario you will query the database endpoint and measure
+    the time it takes for each request to complete. The code below
+    starts the timer, then sends a GET <literal>/{db}</literal> request
+    and measures the time of the response.
+  </para>
+  <programlisting language="javascript">
+  function makeRequest() {
+    var start_time = process.hrtime();
+
+    WriteAndReadDocument()
+      .then(function () {
+        results.totalRequests++;
+        var hr_time = process.hrtime(start_time);
+        var elapsed_time = hr_time[0] * 1000 + hr_time[1] / 1000000;
+        results.totalTime += elapsed_time;
+        var rounded = Math.floor(elapsed_time);
+        if (rounded &gt; results.maxLatencyMs) {
+          results.maxLatencyMs = rounded;
+        }
+        if (!results.histogramMs[rounded]) {
+          results.histogramMs[rounded] = 0;
+        }
+        results.histogramMs[rounded] += 1;
+      })
+      .then(function() {
+        makeRequest();
+      });
+    
+  }
+
+  function GetDatabaseEndpoint () {
+    return client.database.get_db({db: 'todo'});
+  }
+</programlisting>
+  <sect2 id="try-it-out">
+    <title>Try it out</title>
+    <orderedlist numeration="arabic">
+      <listitem>
+        <para>
+          Run the test.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Evaluate the results.
+        </para>
+        <programlisting>
+Target URL:          http://user1:pass@138.68.159.166:8000/
+
+Completed requests:  22
+Mean latency:        2384.2 ms
+
+Percentage of the requests served within a certain time
+50%      2122 ms
+90%      3553 ms
+95%      3556 ms
+99%      5415 ms
+</programlisting>
+      </listitem>
+    </orderedlist>
+  </sect2>
+</sect1>
+<sect1 id="write-and-read-performance">
+  <title>Write and Read performance</title>
+  <para>
+    In this scenario you will query the database endpoint and measure
+    the time it takes for each request to complete. The code below
+    inserts a document and then queries the same document ID with a GET
+    <literal>/{db}/{id}</literal> request and measures the time of both
+    operations.
+  </para>
+  <programlisting language="javascript">
+  function makeRequest() {
+    var start_time = process.hrtime();
+
+    WriteAndReadDocument()
+      .then(function () {
+        results.totalRequests++;
+        var hr_time = process.hrtime(start_time);
+        var elapsed_time = hr_time[0] * 1000 + hr_time[1] / 1000000;
+        results.totalTime += elapsed_time;
+        var rounded = Math.floor(elapsed_time);
+        if (rounded &gt; results.maxLatencyMs) {
+          results.maxLatencyMs = rounded;
+        }
+        if (!results.histogramMs[rounded]) {
+          results.histogramMs[rounded] = 0;
+        }
+        results.histogramMs[rounded] += 1;
+      })
+      .then(function() {
+        makeRequest();
+      });
+    
+  }
+  
+  function WriteAndReadDocument() {
+    var list = {&quot;_id&quot;: &quot;user1.&quot; + guid(), &quot;name&quot;: &quot;Groceries&quot;, &quot;owner&quot;: &quot;user1&quot;, &quot;type&quot;: &quot;task-list&quot;};
+    return client.document.post({db: 'todo', body: list})
+      .then(function (res) {
+        return client.document.get({db: 'todo', doc: list._id});
+      })
+      .catch(function (err) {console.log(err)});
+  }
+</programlisting>
+  <sect2 id="try-it-out-1">
+    <title>Try it out</title>
+    <orderedlist numeration="arabic">
+      <listitem>
+        <para>
+          Run the test.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Evaluate the results.
+        </para>
+        <programlisting>
+Target URL:          http://user1:pass@138.68.159.166:8000/
+
+Completed requests:  639
+Mean latency:        184.7 ms
+
+Percentage of the requests served within a certain time
+50%      178 ms
+90%      262 ms
+95%      289 ms
+99%      367 ms
+</programlisting>
+      </listitem>
+    </orderedlist>
+  </sect2>
+</sect1>
+<sect1 id="conclusion">
+  <title>Conclusion</title>
+  <para>
+    Well done! You've completed this lesson on functional testing. In
+    the next lesson you'll learn how to deploy Sync Gateway and
+    Couchbase Server. Feel free to share your feedback, findings or ask
+    any questions on the forums.
+  </para>
+</sect1>
+</article>
