@@ -1,3 +1,5 @@
 name: todo
 title: Tutorial
 version: 'master'
+nav:
+- modules/nav.adoc
