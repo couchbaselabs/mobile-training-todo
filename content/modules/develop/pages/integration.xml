@@ -1,0 +1,592 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+                  "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<article>
+  <articleinfo>
+    <title>Integration</title>
+  </articleinfo>
+<para>
+  In this lesson you’ll learn how to integrate Couchbase Mobile with
+  external systems using Sync Gateway. You’ll use the changes stream for
+  real-time streaming access to data changes and the bulk APIs for bulk
+  import/export operations.
+</para>
+<para>
+  <block class="ios" />
+</para>
+<sect1 id="requirements">
+  <title>Requirements</title>
+  <itemizedlist spacing="compact">
+    <listitem>
+      <para>
+        Xcode 8 (Swift 3)
+      </para>
+    </listitem>
+  </itemizedlist>
+</sect1>
+<sect1 id="getting-started">
+  <title>Getting Started</title>
+  <para>
+    Download the project below.
+  </para>
+  <para>
+    <a href="{{ site.tutorial_project }}" class="button" id="project">
+    <img src="img/download-xcode.png"> </a>
+  </para>
+  <para>
+    Unzip the file and install Couchbase Lite using the install script.
+  </para>
+  <programlisting language="bash">
+$ cd xcode-project
+$ ./install.sh
+</programlisting>
+  <para>
+    Open <emphasis role="strong">Todo.xcodeproj</emphasis> in Xcode.
+    Then build &amp; run the project.
+  </para>
+  <para>
+    <block class="net" />
+  </para>
+</sect1>
+<sect1 id="requirements-1">
+  <title>Requirements</title>
+  <itemizedlist spacing="compact">
+    <listitem>
+      <para>
+        Visual Studio 2015+ (Windows) or Xamarin Studio 6+ (OS X)
+      </para>
+    </listitem>
+  </itemizedlist>
+</sect1>
+<sect1 id="getting-started-1">
+  <title>Getting Started</title>
+  <para>
+    Download the project below.
+  </para>
+  <para>
+    <a href="{{ site.tutorial_project }}" class="button" id="project">
+    <img src="img/download-vs.png"> </a>
+  </para>
+  <para>
+    <block class="android" />
+  </para>
+</sect1>
+<sect1 id="requirements-2">
+  <title>Requirements</title>
+  <itemizedlist spacing="compact">
+    <listitem>
+      <para>
+        Android Studio 2.2
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Android SDK 24
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Android Build Tools 24.0.3
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        JDK 8
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        ⚠️ Docker and x86 Android emulators are
+        <ulink url="http://stackoverflow.com/questions/37397810/android-studio-unable-to-run-avd">not
+        compatible</ulink> (i.e cannot run simultaneously on the same
+        machine). Make sure Docker isn't running in the background when
+        deploying the application to an x86 Android emulator.
+      </para>
+    </listitem>
+  </itemizedlist>
+</sect1>
+<sect1 id="getting-started-2">
+  <title>Getting Started</title>
+  <para>
+    Download the project below.
+  </para>
+  <para>
+    <a href="{{ site.tutorial_project }}" class="button" id="project">
+    <img src="img/download-android.png"> </a>
+  </para>
+  <para>
+    <block class="all" />
+  </para>
+</sect1>
+<sect1 id="changes-stream">
+  <title>Changes stream</title>
+  <sect2 id="connecting">
+    <title>Connecting</title>
+    <para>
+      The changes stream returns a sorted list of changes made to
+      documents in the database. It's the primary API to get notified of
+      changes as they are processed by Sync Gateway and persisted to
+      Couchbase Server.
+    </para>
+    <para>
+      Documents written to Sync Gateway are assigned a sequence value at
+      write time. This sequence is used to order the changes feed. You
+      can query the changes feed using a simple HTTP GET request to
+      <literal>/{db}/_changes</literal> as shown below.
+    </para>
+    <programlisting language="bash">
+$ curl -H 'Content-Type: application/json' -vX GET 'http://localhost:4985/todo/_changes?since=3'
+</programlisting>
+    <blockquote>
+      <para>
+        <emphasis role="strong">Note:</emphasis> The curl executable for
+        Windows can be found
+        <ulink url="https://curl.haxx.se/download.html">on this
+        page</ulink>
+      </para>
+    </blockquote>
+    <para>
+      The <emphasis role="strong">since</emphasis> parameter in the
+      querystring is used to specify which sequence to start from. In
+      this case the response contains changes starting at
+      <literal>seq: 3</literal> because the <literal>since=3</literal>
+      parameter was sent in the querystring.
+    </para>
+    <para>
+      Deleting a document creates a new revision with the
+      <literal>deleted: true</literal> property and no user properties.
+      This is required in order to propagate the deletion to other
+      devices. In the example above the change with sequence 4
+      (<literal>seq: 4</literal>) is a deletion.
+    </para>
+    <sect3 id="try-it-out">
+      <title>Try it out</title>
+      <para>
+        <block class="ios" />
+      </para>
+      <orderedlist numeration="arabic">
+        <listitem>
+          <para>
+            Download Sync Gateway and start it with the configuration
+            file in the root directory of the accompanying project.
+          </para>
+          <programlisting language="bash">
+~/Downloads/couchbase-sync-gateway/bin/sync_gateway sync-gateway-config.json
+</programlisting>
+          <programlisting>
+PS&gt; &amp; 'C:\Program Files (x86)\Couchbase\sync_gateway.exe' sync-gateway-config.json
+</programlisting>
+        </listitem>
+      </orderedlist>
+      <blockquote>
+        <para>
+          <emphasis role="strong">Note:</emphasis> The Sync Gateway
+          service might be running on Windows which will prevent this
+          command from succeeding with the message 'FATAL: Failed to
+          start HTTP server on 127.0.0.1:4985: listen tcp
+          127.0.0.1:4985: bind: Only one usage of each socket address
+          (protocol/network address/port) is normally permitted.' To get
+          around this, stop the 'Couchbase Sync Gateway' service in
+          'services.msc'.
+        </para>
+      </blockquote>
+      <para>
+        <block class="ios" />
+      </para>
+      <orderedlist numeration="arabic">
+        <listitem override="2">
+          <para>
+            Open <emphasis role="strong">AppDelegate.swift</emphasis>
+            and set the following constants to <literal>true</literal>.
+          </para>
+          <programlisting>
+let kLoginFlowEnabled = true
+let kSyncEnabled = true
+</programlisting>
+        </listitem>
+        <listitem>
+          <para>
+            Run the application, login with the
+            <emphasis role="strong">user1/pass</emphasis> credentials
+            and add a new list. It should appear as a new document on
+            the Admin UI of Sync Gateway on
+            <ulink url="http://localhost:4985/_admin/db/todo">http://localhost:4985/_admin/db/todo</ulink>.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            To access the changes stream (also called the changes feed).
+            Open a browser tab at
+            <ulink url="http://localhost:4985/todo/_changes">http://localhost:4985/todo/_changes</ulink>.
+          </para>
+          <figure>
+            <mediaobject>
+              <imageobject>
+                <imagedata fileref="img/image54.png" />
+              </imageobject>
+              <textobject><phrase></phrase></textobject>
+            </mediaobject>
+          </figure>
+        </listitem>
+      </orderedlist>
+      <para>
+        <block class="net" />
+      </para>
+      <orderedlist numeration="arabic">
+        <listitem>
+          <para>
+            Download Sync Gateway and start it with the configuration
+            file in the root directory of the accompanying project.
+          </para>
+          <programlisting language="bash">
+~/Downloads/couchbase-sync-gateway/bin/sync_gateway sync-gateway-config.json
+</programlisting>
+          <programlisting>
+PS&gt; &amp; 'C:\Program Files (x86)\Couchbase\sync_gateway.exe' sync-gateway-config.json
+</programlisting>
+          <blockquote>
+            <para>
+              <emphasis role="strong">Note:</emphasis> The Sync Gateway
+              service might be running on Windows which will prevent
+              this command from succeeding with the message 'FATAL:
+              Failed to start HTTP server on 127.0.0.1:4985: listen tcp
+              127.0.0.1:4985: bind: Only one usage of each socket
+              address (protocol/network address/port) is normally
+              permitted.' To get around this, stop the 'Couchbase Sync
+              Gateway' service in 'services.msc'.
+            </para>
+          </blockquote>
+        </listitem>
+        <listitem>
+          <para>
+            Open <emphasis role="strong">CoreApp.cs</emphasis> and
+            change the <literal>CreateHint()</literal> method as
+            follows:
+          </para>
+          <programlisting language="c#">
+var retVal = new CoreAppStartHint {
+  LoginEnabled = true, // This line needs to be changed
+  EncryptionEnabled = false,
+  SyncEnabled = true, // This line needs to be changed
+  UsePrebuiltDB = false,
+  ConflictResolution = false,
+  Username = &quot;todo&quot;
+};
+
+return retVal;
+</programlisting>
+        </listitem>
+        <listitem>
+          <para>
+            Run the application, login with the
+            <emphasis role="strong">user1/pass</emphasis> credentials
+            and add a new list. It should appear as a new document on
+            the Admin UI of Sync Gateway on
+            <ulink url="http://localhost:4985/_admin/db/todo">http://localhost:4985/_admin/db/todo</ulink>.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            To access the changes stream (also called the changes feed).
+            Open a browser tab at
+            <ulink url="http://localhost:4985/todo/_changes">http://localhost:4985/todo/_changes</ulink>.
+          </para>
+          <figure>
+            <mediaobject>
+              <imageobject>
+                <imagedata fileref="img/image54.png" />
+              </imageobject>
+              <textobject><phrase></phrase></textobject>
+            </mediaobject>
+          </figure>
+        </listitem>
+      </orderedlist>
+      <para>
+        <block class="android" />
+      </para>
+      <orderedlist numeration="arabic">
+        <listitem>
+          <para>
+            Download Sync Gateway and start it with the configuration
+            file in the root directory of the accompanying project.
+          </para>
+          <programlisting language="bash">
+~/Downloads/couchbase-sync-gateway/bin/sync_gateway sync-gateway-config.json
+</programlisting>
+        </listitem>
+        <listitem>
+          <para>
+            Open <emphasis role="strong">Application.java</emphasis> and
+            set the following constants to <literal>true</literal>.
+          </para>
+          <programlisting>
+let mLoginFlowEnabled = true
+let mSyncEnabled = true
+</programlisting>
+        </listitem>
+        <listitem>
+          <para>
+            Run the application, login with the
+            <emphasis role="strong">user1/pass</emphasis> credentials
+            and add a new list. It should appear as a new document on
+            the Admin UI of Sync Gateway on
+            <ulink url="http://localhost:4985/_admin/db/todo">http://localhost:4985/_admin/db/todo</ulink>.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            To access the changes stream (also called the changes feed).
+            Open a browser tab at
+            <ulink url="http://localhost:4985/todo/_changes">http://localhost:4985/todo/_changes</ulink>.
+          </para>
+        </listitem>
+      </orderedlist>
+      <para>
+        <block class="all" />
+      </para>
+    </sect3>
+  </sect2>
+  <sect2 id="subscribing-to-changes">
+    <title>Subscribing to changes</title>
+    <para>
+      In this section you will write a script to subscribe to changes
+      continuously. This becomes particularly useful for integrating
+      Couchbase Mobile with other systems.
+    </para>
+    <para>
+      To be notified of a change as it happens, an HTTP socket must
+      remain open between the client and Sync Gateway. The
+      <literal>feed</literal> querystring option is used in this case
+      and there are 2 different feed types:
+    </para>
+    <itemizedlist spacing="compact">
+      <listitem>
+        <para>
+          <emphasis role="strong">longpoll</emphasis>: The response will
+          contain all the changes since the specified sequence. If seq
+          is the last sequence number (the most recent one) then the
+          connection will remain open until a new document is processed
+          by Sync Gateway and the change event is sent.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          <emphasis role="strong">continuous</emphasis>: In this case,
+          Sync Gateway will hold the connection open forever.
+        </para>
+      </listitem>
+    </itemizedlist>
+    <para>
+      To subscribe to the changes feed you can use any HTTP library to
+      send the <literal>GET /_changes</literal> request with query
+      options. In this lesson however you will use the generated
+      libraries based on the Swagger specs. The code below sends a
+      request to the changes stream every time a response has been
+      received and processed. The <literal>getChanges(seq)</literal>
+      method is called recursively passing the
+      <literal>last_seq</literal> property received in the response as
+      the <literal>since</literal> value in the subsequent request.
+    </para>
+    <programlisting language="javascript">
+var Swagger = require('swagger-client')
+  , fs = require('fs')
+  , spec = require('./spec');
+
+// Use the SwaggerJS module to dynamically load the Swagger spec
+new Swagger({
+  spec: spec,
+  usePromise: true
+})
+  .then(function (res) {
+    client = res;
+    
+    // Start getting changes at seq: 0
+    getChanges(0);
+    
+    function getChanges(seq) {
+      // Use the Swagger client to connect to the changes feed
+      client.database.get_db_changes({db: 'todo', include_docs: true, since: seq, feed: 'longpoll'})
+        .then(function (res) {
+          var results = res.obj.results;
+          console.log(results.length + ' change(s) received');
+          processChanges(results);
+          // Get changes since the last sequence
+          getChanges(res.obj.last_seq);
+        })
+        .catch(function (err) {
+          console.log(err);
+        });
+    }
+
+  });
+</programlisting>
+    <para>
+      Notice that the <literal>get_db_changes</literal> method is used
+      with <literal>since: &lt;seq&gt;</literal> and
+      <literal>feed: longpoll</literal> to get a set of changes since a
+      specified sequence. The <literal>include_docs: true</literal>
+      option is used to include the document body in the response.
+    </para>
+    <sect3 id="try-it-out-1">
+      <title>Try it out</title>
+      <orderedlist numeration="arabic">
+        <listitem>
+          <para>
+            Open a Terminal window in the
+            <emphasis role="strong">bot</emphasis> directory, install
+            the dependencies and start the bot.
+          </para>
+          <programlisting language="bash">
+npm install
+node app.js
+</programlisting>
+        </listitem>
+        <listitem>
+          <para>
+            Make further changes in the application and notice that the
+            number of changes are printed to the console.
+          </para>
+        </listitem>
+      </orderedlist>
+      <para>
+        <block class="ios" />
+      </para>
+      <figure>
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="https://cl.ly/1X0M0J2Q450U/image55.gif" />
+          </imageobject>
+          <textobject><phrase></phrase></textobject>
+        </mediaobject>
+      </figure>
+      <para>
+        <block class="wpf" />
+      </para>
+      <figure>
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="https://cl.ly/0R1q0U1G2i0K/image55w.gif" />
+          </imageobject>
+          <textobject><phrase></phrase></textobject>
+        </mediaobject>
+      </figure>
+      <para>
+        <block class="all" />
+      </para>
+    </sect3>
+  </sect2>
+</sect1>
+<sect1 id="bulk-operations">
+  <title>Bulk operations</title>
+  <para>
+    In this section you will learn how to persist an image as an
+    attachment using the Admin REST API. You will extend the changes
+    feed handling code from the previous section to attach the image to
+    a <emphasis role="strong">task</emphasis> document only if the text
+    value is &quot;apple&quot;, &quot;coffee&quot; or
+    &quot;potatoes&quot;.
+  </para>
+  <para>
+    Similarly to the previous section, you will use the API methods
+    available on the library provided by Swagger.
+  </para>
+  <programlisting language="javascript">
+function processChanges(results) {
+  for (var i = 0; i &lt; results.length; i++) {
+    var doc = results[i].doc;
+    var img;
+    if (doc &amp;&amp; !doc._deleted &amp;&amp; doc.type == 'task' &amp;&amp; !doc._attachments) {
+      switch (doc.task.toLowerCase()) {
+        case 'apple':
+          img = fs.readFileSync('apple.png');
+          break;
+        case 'coffee':
+          img = fs.readFileSync('coffee.png');
+          break;
+        case 'potatoes':
+          img = fs.readFileSync('potatoes.png');
+          break;
+      }
+      if (img) {
+        var base64 = img.toString('base64');
+        doc._attachments = {
+          image: {
+            content_type: 'image\/png',
+            data: base64
+          }
+        };
+        client.database.post_db_bulk_docs({db: 'todo', BulkDocsBody: {docs: [doc]}})
+          .then(function (res) { 
+            console.log('1 change posted');
+          })
+          .catch(function (err) {
+            console.log(err);
+          });
+      }
+    }
+  }
+}
+</programlisting>
+  <para>
+    This code checks that the change is not a deletion and that the
+    document type is &quot;task&quot;. If the
+    <literal>doc.task</literal> property is either &quot;apple&quot;,
+    &quot;coffee&quot; or &quot;potatoes&quot; then it reads the
+    corresponding image as a Base64 string and sets it on the document's
+    <literal>_attachments</literal> dictionary. Finally it persists the
+    document with the attachment back to Sync Gateway using the
+    <literal>post_db_bulk_docs</literal> method.
+  </para>
+  <sect2 id="try-it-out-2">
+    <title>Try it out</title>
+    <orderedlist numeration="arabic">
+      <listitem>
+        <para>
+          Run the application and make sure it's replicating to Sync
+          Gateway.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Start the bot.
+        </para>
+        <programlisting language="bash">
+node app.js
+</programlisting>
+      </listitem>
+      <listitem>
+        <para>
+          Add a task called &quot;Apple&quot;, &quot;Coffee&quot; or
+          &quot;Potatoes&quot; and an image should appear after a few
+          seconds. That's the attachment that was added to Sync Gateway
+          by the bot and in turn replicated to Couchbase Lite.
+        </para>
+      </listitem>
+    </orderedlist>
+    <para>
+      <block class="ios" />
+    </para>
+    <para>
+      <img src="https://cl.ly/060e3a0p3717/image56.gif" />
+    </para>
+    <para>
+      <block class="wpf" />
+    </para>
+    <para>
+      <img src="https://cl.ly/3z3Q2v1n0n0d/image56w.gif" />
+    </para>
+    <para>
+      <block class="all" />
+    </para>
+  </sect2>
+</sect1>
+<sect1 id="conclusion">
+  <title>Conclusion</title>
+  <para>
+    Well done! You've completed this lesson on integration by using the
+    Stream API to subscribe to changes and the REST API to persist a
+    document back to Sync Gateway. Feel free to share your feedback,
+    findings or ask any questions on the forums.
+  </para>
+</sect1>
+</article>

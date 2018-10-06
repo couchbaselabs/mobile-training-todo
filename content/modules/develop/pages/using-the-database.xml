@@ -1,0 +1,1164 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+                  "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<article>
+  <articleinfo>
+    <title>Using the Database</title>
+  </articleinfo>
+<para>
+  In this lesson you’ll be introduced to Couchbase Lite, our embedded
+  NoSQL database. You’ll learn how to create, read, update, delete, and
+  query data using Couchbase Lite.
+</para>
+<para>
+  <block class="ios" />
+</para>
+<sect1 id="requirements">
+  <title>Requirements</title>
+  <itemizedlist spacing="compact">
+    <listitem>
+      <para>
+        Xcode 8 (Swift 3)
+      </para>
+    </listitem>
+  </itemizedlist>
+</sect1>
+<sect1 id="getting-started">
+  <title>Getting Started</title>
+  <para>
+    Download the project below.
+  </para>
+  <para>
+    <a href="{{ site.tutorial_project }}" class="button" id="project">
+    <img src="img/download-xcode.png"> </a>
+  </para>
+  <para>
+    Unzip the file and install Couchbase Lite using the install script.
+  </para>
+  <programlisting language="bash">
+$ cd xcode-project
+$ ./install.sh
+</programlisting>
+  <para>
+    Open <emphasis role="strong">Todo.xcodeproj</emphasis> in Xcode.
+    Then build &amp; run the project.
+  </para>
+  <para>
+    <block class="net" />
+  </para>
+</sect1>
+<sect1 id="requirements-1">
+  <title>Requirements</title>
+  <itemizedlist spacing="compact">
+    <listitem>
+      <para>
+        Visual Studio 2015+ (Windows) or Xamarin Studio 6+ (OS X)
+      </para>
+    </listitem>
+  </itemizedlist>
+</sect1>
+<sect1 id="getting-started-1">
+  <title>Getting Started</title>
+  <para>
+    Download the project below.
+  </para>
+  <para>
+    <a href="{{ site.tutorial_project }}" class="button" id="project">
+    <img src="img/download-vs.png"> </a>
+  </para>
+  <para>
+    <block class="android" />
+  </para>
+</sect1>
+<sect1 id="requirements-2">
+  <title>Requirements</title>
+  <itemizedlist spacing="compact">
+    <listitem>
+      <para>
+        Android Studio 2.2
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Android SDK 24
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Android Build Tools 24.0.3
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        JDK 8
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        ⚠️ Docker and x86 Android emulators are
+        <ulink url="http://stackoverflow.com/questions/37397810/android-studio-unable-to-run-avd">not
+        compatible</ulink> (i.e cannot run simultaneously on the same
+        machine). Make sure Docker isn't running in the background when
+        deploying the application to an x86 Android emulator.
+      </para>
+    </listitem>
+  </itemizedlist>
+</sect1>
+<sect1 id="getting-started-2">
+  <title>Getting Started</title>
+  <para>
+    Download the project below.
+  </para>
+  <para>
+    <a href="{{ site.tutorial_project }}" class="button" id="project">
+    <img src="img/download-android.png"> </a>
+  </para>
+  <para>
+    <block class="all" />
+  </para>
+  <blockquote>
+    <para>
+      <emphasis role="strong">Tip:</emphasis> To make things a bit more
+      exciting, you may want to use the pre-built database containing a
+      list of Groceries. Refer to the
+      <ulink url="/documentation/mobile/1.3/training/develop/create-database/index.html">Create
+      a Database</ulink> lesson to learn how to use it.
+    </para>
+  </blockquote>
+</sect1>
+<sect1 id="create-a-document">
+  <title>Create a Document</title>
+  <para>
+    In Couchbase Lite, the primary entity stored in a database is called
+    a document instead of a &quot;row&quot; or &quot;record&quot;. A
+    document's body takes the form of a JSON object — a collection of
+    key/value pairs where the values can be different types of data such
+    as numbers, strings, arrays or even nested objects. The code below
+    creates a new list document.
+  </para>
+  <para>
+    <block class="ios" />
+  </para>
+  <programlisting>
+// This code can be found in ListsViewController.swift
+// in the createTaskList(name:) method
+let properties: [String : Any] = [
+    &quot;type&quot;: &quot;task-list&quot;,
+    &quot;name&quot;: name,
+    &quot;owner&quot;: username
+]
+
+let docId = username + &quot;.&quot; + NSUUID().uuidString
+guard let doc = database.document(withID: docId) else {
+    Ui.showMessageDialog(onController: self, withTitle: &quot;Error&quot;,
+        withMessage: &quot;Couldn't save task list&quot;)
+    return nil
+}
+
+do {
+    return try doc.putProperties(properties)
+} catch let error as NSError {
+    Ui.showMessageDialog(onController: self, withTitle: &quot;Error&quot;,
+        withMessage: &quot;Couldn't save task list&quot;, withError: error)
+    return nil
+}
+</programlisting>
+  <para>
+    <block class="net" />
+  </para>
+  <programlisting language="c#">
+// This code can be found in TaskListsModel.cs
+// in the CreateTaskList(string) method
+var properties = new Dictionary&lt;string, object&gt; {
+    [&quot;type&quot;] = TaskListType,
+    [&quot;name&quot;] = name,
+    [&quot;owner&quot;] = Username
+};
+
+var docId = $&quot;{Username}.{Guid.NewGuid()}&quot;;
+var doc = default(Document);
+try {
+    doc = _db.GetDocument(docId);
+    return doc.PutProperties(properties);
+} catch(Exception e) {
+    var newException = new ApplicationException(&quot;Couldn't save task list&quot;, e);
+    throw newException;
+}
+</programlisting>
+  <para>
+    <block class="android" />
+  </para>
+  <programlisting language="java">
+// This code can be found in ListsActivity.java
+// in the createTaskList(String) method
+Map&lt;String, Object&gt; properties = new HashMap&lt;String, Object&gt;();
+properties.put(&quot;type&quot;, &quot;task-list&quot;);
+properties.put(&quot;name&quot;, title);
+properties.put(&quot;owner&quot;, mUsername);
+
+String docId = mUsername + &quot;.&quot; + UUID.randomUUID();
+
+Document document = mDatabase.getDocument(docId);
+document.putProperties(properties);
+</programlisting>
+  <para>
+    <block class="all" />
+  </para>
+  <para>
+    Here you're creating an unsaved document instance with a pre-defined
+    <emphasis role="strong">document ID</emphasis> (i.e. the **_id**
+    property in the document’s JSON body) using the
+    <literal>documentWithID</literal> method. The ID follows the form
+    <literal>{username}.{uuid}</literal> where username is the name of
+    the user logged in. Alternatively, you could also use the
+    <literal>createDocument</literal> method to let the database
+    generate a random <emphasis role="strong">ID</emphasis> for you.
+  </para>
+  <sect2 id="try-it-out">
+    <title>Try it out</title>
+    <para>
+      <block class="ios" />
+    </para>
+    <orderedlist numeration="arabic" spacing="compact">
+      <listitem>
+        <para>
+          Build and run.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Create a new list using the '+' button on the application's
+          'Task lists' screen.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          A new list document is saved to the database.
+          <img src="img/image40.png" class="portrait" />
+        </para>
+      </listitem>
+    </orderedlist>
+    <para>
+      <block class="xam" />
+    </para>
+    <orderedlist numeration="arabic" spacing="compact">
+      <listitem>
+        <para>
+          Build and run.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Create a new list using the '+' button on the application's
+          'Task lists' screen.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          A new list document is saved to the database.
+        </para>
+      </listitem>
+    </orderedlist>
+    <para>
+      <emphasis role="strong">iOS</emphasis>
+      <img src="img/image40.png" class="portrait" />
+      <emphasis role="strong">Android</emphasis>
+      <img src="img/image40xa.png" class="portrait" />
+    </para>
+    <para>
+      <block class="wpf" />
+    </para>
+    <orderedlist numeration="arabic" spacing="compact">
+      <listitem>
+        <para>
+          Build and run
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Create a new list using the 'Action -&gt; Add List...'
+          command.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          A new list document is saved to the database.
+        </para>
+      </listitem>
+    </orderedlist>
+    <para>
+      <img src="img/image40w.png" class="center-image" />
+    </para>
+    <para>
+      <block class="android" />
+    </para>
+    <orderedlist numeration="arabic" spacing="compact">
+      <listitem>
+        <para>
+          Build and run.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Create a new list using the '+' button on the application's
+          'Task lists' screen.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          A new list document is saved to the database.
+          <img src="img/image40a.png" class="portrait" />
+        </para>
+      </listitem>
+    </orderedlist>
+    <para>
+      <block class="all" />
+    </para>
+    <blockquote>
+      <para>
+        <emphasis role="strong">Challenge:</emphasis> Update the code to
+        persist your name as the value for the <literal>name</literal>
+        field. Then create a new list and notice that your name is
+        displayed instead of the text input value.
+      </para>
+    </blockquote>
+  </sect2>
+</sect1>
+<sect1 id="update-a-document">
+  <title>Update a Document</title>
+  <para>
+    To update a document, you must retrieve it from the database, modify
+    the desired properties and write them back to the database. The
+    <literal>update</literal> method does this operation for you in the
+    form of a callback. The code below updates a list's name property.
+  </para>
+  <para>
+    <block class="ios" />
+  </para>
+  <programlisting>
+// This code can be found in ListsViewController.swift
+// in the updateTaskList(list:withName:) method
+do {
+    try list.update { newRev in
+        newRev[&quot;name&quot;] = name
+        return true
+    }
+} catch let error as NSError {
+    Ui.showMessageDialog(onController: self, withTitle: &quot;Error&quot;,
+        withMessage: &quot;Couldn't update task list&quot;, withError: error)
+}
+</programlisting>
+  <para>
+    <block class="net" />
+  </para>
+  <programlisting language="c#">
+// This code can be found in TaskListModel.cs
+// in the Edit(string) method
+try {
+    _document.Update(rev =&gt;
+    {
+        var props = rev.UserProperties;
+        var lastName = props[&quot;name&quot;];
+        props[&quot;name&quot;] = name;
+        rev.SetUserProperties(props);
+
+        return !String.Equals(name, lastName);
+    });
+} catch(Exception e) {
+    throw new ApplicationException(&quot;Couldn't edit task list&quot;, e);
+}
+</programlisting>
+  <para>
+    <block class="android" />
+  </para>
+  <programlisting language="java">
+// This code can be in ListsActivity.java
+// in the updateList(Document) method
+list.update(new Document.DocumentUpdater() {
+    @Override
+    public boolean update(UnsavedRevision newRevision) {
+        Map&lt;String, Object&gt; props = newRevision.getUserProperties();
+        props.put(&quot;name&quot;, input.getText().toString());
+        newRevision.setUserProperties(props);
+        return true;
+    }
+});
+</programlisting>
+  <para>
+    <block class="all" />
+  </para>
+  <para>
+    Your callback code can modify this object's properties as it sees
+    fit; after it returns, the modified revision is saved and becomes
+    the current one.
+  </para>
+  <sect2 id="try-it-out-1">
+    <title>Try it out</title>
+    <para>
+      <block class="ios" />
+    </para>
+    <orderedlist numeration="arabic" spacing="compact">
+      <listitem>
+        <para>
+          Build and run.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Swipe to the left on a row to reveal the
+          <emphasis role="strong">Edit</emphasis> button and update the
+          List name in the pop-up.
+          <img src="img/image04.png" class="portrait" />
+        </para>
+      </listitem>
+    </orderedlist>
+    <para>
+      <block class="xam" />
+    </para>
+    <orderedlist numeration="arabic" spacing="compact">
+      <listitem>
+        <para>
+          Build and run
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          On iOS, swipe to the left, and on Android long press on a row
+          to reveal the <emphasis role="strong">Edit</emphasis> button
+          and update the List name in the pop-up.
+        </para>
+      </listitem>
+    </orderedlist>
+    <para>
+      <emphasis role="strong">iOS</emphasis>
+      <img src="img/image04.png" class="portrait" />
+      <emphasis role="strong">Android</emphasis>
+      <img src="img/image04xa.png" class="portrait" />
+    </para>
+    <para>
+      <block class="wpf" />
+    </para>
+    <orderedlist numeration="arabic" spacing="compact">
+      <listitem>
+        <para>
+          Build and run
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Right click on a row to reveal the
+          <emphasis role="strong">Edit</emphasis> context action. Click
+          it and update the List name in the pop-up.
+        </para>
+      </listitem>
+    </orderedlist>
+    <para>
+      <img src="img/image04w.png" class="center-image" />
+    </para>
+    <para>
+      <block class="android" />
+    </para>
+    <orderedlist numeration="arabic" spacing="compact">
+      <listitem>
+        <para>
+          Build and run.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Long press on a row to reveal the action items. Click the
+          update menu to change title of a list.
+        </para>
+      </listitem>
+    </orderedlist>
+    <para>
+      <img src="img/image04a.png" class="portrait" />
+    </para>
+    <blockquote>
+      <para>
+        <emphasis role="strong">Challenge:</emphasis> Modify the code to
+        uppercase the text inserted before persisting the document to
+        the database.
+      </para>
+    </blockquote>
+    <para>
+      <block class="all" />
+    </para>
+  </sect2>
+</sect1>
+<sect1 id="delete-a-document">
+  <title>Delete a Document</title>
+  <para>
+    A document can be deleted using the <literal>delete</literal>
+    method. This operation actually creates a new revision in order to
+    propagate the deletion to other clients. The concept of revisions
+    will be covered in more detail in the next lesson. The code below
+    deletes a list.
+  </para>
+  <para>
+    <block class="ios" />
+  </para>
+  <programlisting>
+// This code can be found in ListsViewController.swift
+// in the deleteTaskList(list:) method
+do {
+    try list.delete()
+} catch let error as NSError {
+    Ui.showMessageDialog(onController: self, withTitle: &quot;Error&quot;,
+        withMessage: &quot;Couldn't delete task list&quot;, withError: error)
+}
+</programlisting>
+  <para>
+    <block class="net" />
+  </para>
+  <programlisting language="c#">
+// This code can be found in TaskListModel.cs
+// in the Delete() method
+try {
+    _document.Delete();
+} catch(Exception e) {
+    throw new ApplicationException(&quot;Couldn't delete task list&quot;, e);
+}
+</programlisting>
+  <para>
+    <block class="android" />
+  </para>
+  <programlisting language="java">
+// This code can be found in ListsActivity.java
+// in the deleteList(Document) method
+try {
+    list.delete();
+} catch (CouchbaseLiteException e) {
+    e.printStackTrace();
+}
+</programlisting>
+  <para>
+    <block class="all" />
+  </para>
+  <blockquote>
+    <para>
+      <emphasis role="strong">Challenge:</emphasis> Add a document
+      change listener to detect when the document gets deleted. The
+      <ulink url="/documentation/mobile/1.3/develop/guides/couchbase-lite/native-api/document/index.html#document-change-notifications">document
+      change notification</ulink> documentation will be helpful for this
+      challenge.
+    </para>
+  </blockquote>
+  <sect2 id="try-it-out-2">
+    <title>Try it out</title>
+    <para>
+      <block class="ios" />
+    </para>
+    <orderedlist numeration="arabic" spacing="compact">
+      <listitem>
+        <para>
+          Build and run.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Click the <emphasis role="strong">Delete</emphasis> action to
+          delete a list.
+          <img class="portrait" src="https://cl.ly/383h2q2C2Z3V/image46.gif" />
+        </para>
+      </listitem>
+    </orderedlist>
+    <para>
+      <block class="xam" />
+    </para>
+    <orderedlist numeration="arabic" spacing="compact">
+      <listitem>
+        <para>
+          Build and run.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          On iOS, swipe to the left, and on Android long press on a row
+          to reveal the <emphasis role="strong">Delete</emphasis>
+          button.
+        </para>
+      </listitem>
+    </orderedlist>
+    <para>
+      <emphasis role="strong">iOS</emphasis>
+      <img src="img/image46.gif" class="portrait" />
+      <emphasis role="strong">Android</emphasis>
+      <img src="img/image46a.gif" class="portrait" />
+    </para>
+    <para>
+      <block class="wpf" />
+    </para>
+    <orderedlist numeration="arabic" spacing="compact">
+      <listitem>
+        <para>
+          Build and run.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Right click on a row to reveal the
+          <emphasis role="strong">Delete</emphasis> context action.
+        </para>
+      </listitem>
+    </orderedlist>
+    <para>
+      <img src="https://cl.ly/2Z1s2z2e0Q0N/image46w.gif" class="center-image" />
+    </para>
+    <para>
+      <block class="android" />
+    </para>
+    <orderedlist numeration="arabic" spacing="compact">
+      <listitem>
+        <para>
+          Build and run.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Click the <emphasis role="strong">Delete</emphasis> action to
+          delete a list.
+          <img class="portrait" src="https://cl.ly/262v3o381j2a/image46a.gif" />
+        </para>
+      </listitem>
+    </orderedlist>
+    <para>
+      <block class="all"/>
+    </para>
+  </sect2>
+</sect1>
+<sect1 id="query-documents">
+  <title>Query Documents</title>
+  <para>
+    The way to query data in Couchbase Lite is by registering a View and
+    then running a Query on it with QueryOptions. The first thing to
+    know about Couchbase Views is that they have nothing to do with UI
+    views.
+  </para>
+  <para>
+    A
+    <ulink url="/documentation/mobile/current/develop/guides/couchbase-lite/native-api/view/index.html">View</ulink>
+    in Couchbase is a persistent index of documents in a database, which
+    you then query to find data. The main component of a View is its map
+    function. It takes a document’s JSON as input, and emits (outputs)
+    any number of key/value pairs to be indexed. First, you will define
+    the view to index the documents of type
+    <emphasis role="strong">task-list</emphasis>. The diagram below
+    shows the result of the code you will review shortly.
+  </para>
+  <figure>
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="img/img.001.png" />
+      </imageobject>
+      <textobject><phrase></phrase></textobject>
+    </mediaobject>
+  </figure>
+  <para>
+    So you can remember that a view index is a list of key/value pairs,
+    sorted by key. In addition, the view’s logic is written in the
+    native language of the platform you’re developing on. The code below
+    indexes documents as shown on the diagram above. Then it create the
+    Query and monitors the result set using a Live Query.
+  </para>
+  <para>
+    <block class="ios" />
+  </para>
+  <programlisting>
+// This code can be found in ListsViewController.swift
+// in the setupViewAndQuery method
+let listsView = database.viewNamed(&quot;list/listsByName&quot;)
+if listsView.mapBlock == nil {
+    listsView.setMapBlock({ (doc, emit) in
+        if let type: String = doc[&quot;type&quot;] as? String, let name = doc[&quot;name&quot;]
+            , type == &quot;task-list&quot; {
+                emit(name, nil)
+        }
+    }, version: &quot;1.0&quot;)
+}
+
+listsLiveQuery = listsView.createQuery().asLive()
+listsLiveQuery.addObserver(self, forKeyPath: &quot;rows&quot;, options: .new, context: nil)
+listsLiveQuery.start()
+</programlisting>
+  <para>
+    <block class="net" />
+  </para>
+  <programlisting language="c#">
+// This code can be found in TaskListsModel.cs
+// in the SetupViewAndQuery() method
+var view = _db.GetView(&quot;list/listsByName&quot;);
+view.SetMap((doc, emit) =&gt;
+{
+    if(!doc.ContainsKey(&quot;type&quot;) || doc[&quot;type&quot;] as string != &quot;task-list&quot; || !doc.ContainsKey(&quot;name&quot;)) {
+        return;
+    }
+
+    emit(doc[&quot;name&quot;], null);
+}, &quot;1.0&quot;);
+
+_byNameQuery = view.CreateQuery().ToLiveQuery();
+
+// ...Changed lamdba omitted for brevity
+
+_byNameQuery.Start();
+</programlisting>
+  <para>
+    <block class="android" />
+  </para>
+  <programlisting language="java">
+// This code can be found in ListsActivity.java
+// in the setupViewAndQuery() method
+com.couchbase.lite.View listsView = mDatabase.getView(&quot;list/listsByName&quot;);
+if (listsView.getMap() == null) {
+    listsView.setMap(new Mapper() {
+        @Override
+        public void map(Map&lt;String, Object&gt; document, Emitter emitter) {
+            String type = (String) document.get(&quot;type&quot;);
+            if (&quot;task-list&quot;.equals(type)) {
+                emitter.emit(document.get(&quot;name&quot;), null);
+            }
+        }
+    }, &quot;1.0&quot;);
+}
+
+listsLiveQuery = listsView.createQuery().toLiveQuery();
+</programlisting>
+  <para>
+    <block class="all" />
+  </para>
+  <para>
+    The <literal>viewNamed</literal> method returns a
+    <ulink url="http://developer.couchbase.com/documentation/mobile/current/develop/guides/couchbase-lite/native-api/view/index.html">View</ulink>
+    object on which the map function can be set. The map function is
+    indexing documents where the type property is equal to
+    &quot;task-list&quot;. Each cell on the screen will contain a list
+    name and nothing else. For that reason, you can emit the name
+    property as the key and nil is the value. If you also wanted to
+    display the owner of the list in the row you could emit the
+    <literal>owner</literal> property as the value.
+  </para>
+  <para>
+    The <literal>listsView.createQuery()</literal> method returns a
+    <ulink url="/documentation/mobile/current/develop/guides/couchbase-lite/native-api/query/index.html">Query</ulink>
+    object which has a <emphasis role="strong">run</emphasis> method to
+    return the results as a
+    <ulink url="/documentation/mobile/current/develop/references/couchbase-lite/couchbase-lite/query/query-enumerator/index.html">QueryEnumerator</ulink>
+    object. However, in this case, you are hooking into a
+    <ulink url="/documentation/mobile/current/develop/guides/couchbase-lite/native-api/query/index.html">Live
+    Query</ulink> to keep monitoring the database for new results. Any
+    time the result of that query changes through user interaction or
+    synchronization, it will notify your application via the change
+    event. A live query provides an easy way to build reactive UIs,
+    which will be especially useful when you enable sync in the
+    <ulink url="/documentation/mobile/current/training/develop/adding-synchronization/index.html">Adding
+    Synchronization</ulink> lesson. The change event is triggered as a
+    result of user interaction locally as well as during synchronization
+    with Sync Gateway.
+  </para>
+  <para>
+    <block class="ios" />
+  </para>
+  <para>
+    In the code blow, the notifications are posted to the application
+    code using the KVO observer method.
+  </para>
+  <programlisting>
+// This code can be found in ListsViewController.swift
+// in the observeValue(forKeyPath:of:_:_:) method
+override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+    if object as? NSObject == listsLiveQuery {
+        reloadTaskLists()
+    } else if object as? NSObject == incompTasksCountsLiveQuery {
+        reloadIncompleteTasksCounts()
+    }
+}
+</programlisting>
+  <para>
+    <block class="net" />
+  </para>
+  <programlisting language="c#">
+// This code can be found in TaskListsModel.cs
+// in the SetupViewAndQuery()
+_byNameQuery.Changed += (sender, args) =&gt;
+{
+    TasksList.Replace(args.Rows.Select(x =&gt; new TaskListCellModel(x.DocumentId)));
+};
+</programlisting>
+  <para>
+    <block class="android" />
+  </para>
+  <para>
+    On Android you are using a utility class named
+    <emphasis role="strong">LiveQueryAdapter</emphasis> which takes care
+    of reloading the list when changes are received.
+  </para>
+  <programlisting language="java">
+// This code can be found in LiveQueryAdapter.java
+// in the public constructor
+query.addChangeListener(new LiveQuery.ChangeListener() {
+    @Override
+    public void changed(final LiveQuery.ChangeEvent event) {
+        ((Activity) LiveQueryAdapter.this.context).runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                enumerator = event.getRows();
+                notifyDataSetChanged();
+            }
+        });
+    }
+});
+query.start();
+</programlisting>
+  <para>
+    <block class="all" />
+  </para>
+  <sect2 id="try-it-out-3">
+    <title>Try it out</title>
+    <orderedlist numeration="arabic" spacing="compact">
+      <listitem>
+        <para>
+          Build and run.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Save a new list to the database and the live query will pick
+          it up instantly and reload the table view.
+        </para>
+      </listitem>
+    </orderedlist>
+    <para>
+      <block class="ios" />
+    </para>
+    <para>
+      <img src="https://cl.ly/3z3i0k1C2W1p/image66.gif" class="portrait" />
+    </para>
+    <para>
+      <block class="wpf" />
+    </para>
+    <para>
+      <img src="https://cl.ly/2L2j2t423Z3k/image66w.gif" class="center-image" />
+    </para>
+    <para>
+      <block class="android" />
+    </para>
+    <para>
+      <img src="https://cl.ly/44433I102l3q/image66a.gif" class="portrait" />
+    </para>
+    <para>
+      <block class="all" />
+    </para>
+    <blockquote>
+      <para>
+        <emphasis role="strong">Challenge:</emphasis> Update the map
+        function to emit the document ID as the key. Don't forget to
+        bump the view version whenever you change the map function. The
+        list view should now display the document ID on each row.
+      </para>
+    </blockquote>
+  </sect2>
+</sect1>
+<sect1 id="aggregating-data">
+  <title>Aggregating Data</title>
+  <para>
+    A problem in typical applications is how to perform data
+    aggregation. Couchbase Lite lets you run those data queries using
+    the full capabilities of map/reduce. To run aggregation queries on
+    the rows emitted by the map function, you can use the reduce
+    function which is the part of map/reduce that takes several rows
+    from the index and aggregates them together in a single object.
+  </para>
+  <para>
+    Let’s write a view to query and display the number of uncompleted
+    tasks for each list. A task is marked as completed if its
+    <emphasis role="strong">complete</emphasis> property is true. You
+    need to define a <emphasis role="strong">map</emphasis> function
+    which:
+  </para>
+  <orderedlist numeration="arabic" spacing="compact">
+    <listitem>
+      <para>
+        Returns the number of uncompleted task documents,
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Groups them by the list they belong to,
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Counts the number of rows in each group.
+      </para>
+    </listitem>
+  </orderedlist>
+  <para>
+    The diagram below shows this process.
+  </para>
+  <figure>
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="./img/image32.png" />
+      </imageobject>
+      <textobject><phrase></phrase></textobject>
+    </mediaobject>
+  </figure>
+  <para>
+    Notice that <emphasis role="strong">groupingLevel = 1</emphasis>
+    coalesces the rows in the view index by their key.
+  </para>
+  <para>
+    <ulink url="/documentation/mobile/current/develop/guides/couchbase-lite/native-api/query/index.html">Grouping</ulink>
+    is a powerful feature of Couchbase Lite. It is available on a
+    <emphasis role="strong">Query</emphasis> using the
+    <emphasis role="strong">groupLevel</emphasis> property, which is a
+    number, and it defaults to 0. It basically takes the entire range of
+    output that the query produces (i.e. the entire range of rows) and
+    it coalesces together adjacent rows with the same key.
+  </para>
+  <para>
+    The most commonly used aggregation functions are Count and Sum:
+  </para>
+  <itemizedlist spacing="compact">
+    <listitem>
+      <para>
+        Count: A function that counts the number of documents contained
+        in the map (used on the diagram above).
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Sum: A function that adds all of the items contained in the map.
+      </para>
+    </listitem>
+  </itemizedlist>
+  <para>
+    The code below indexes documents as shown on the diagram above. Then
+    it create the Query and monitors the result set using a Live Query.
+  </para>
+  <para>
+    <block class="ios" />
+  </para>
+  <programlisting>
+// This code can be found in ListsViewController.swift
+// in the setupViewAndQuery() method
+let incompTasksCountView = database.viewNamed(&quot;list/incompleteTasksCount&quot;)
+if incompTasksCountView.mapBlock == nil {
+    incompTasksCountView.setMapBlock({ (doc, emit) in
+        if let type: String = doc[&quot;type&quot;] as? String , type == &quot;task&quot; {
+            if let list = doc[&quot;taskList&quot;] as? [String: AnyObject], let listId = list[&quot;id&quot;],
+                let complete = doc[&quot;complete&quot;] as? Bool , !complete {
+                emit(listId, nil)
+            }
+        }
+        }, reduce: { (keys, values, reredeuce) in
+        return values.count
+    }, version: &quot;1.0&quot;)
+}
+
+incompTasksCountsLiveQuery = incompTasksCountView.createQuery().asLive()
+incompTasksCountsLiveQuery.groupLevel = 1
+incompTasksCountsLiveQuery.addObserver(self, forKeyPath: &quot;rows&quot;, options: .new, context: nil)
+incompTasksCountsLiveQuery.start()
+</programlisting>
+  <para>
+    <block class="net" />
+  </para>
+  <programlisting language="c#">
+var incompleteTasksView = _db.GetView(&quot;list/incompleteTasksCount&quot;);
+incompleteTasksView.SetMapReduce((doc, emit) =&gt;
+{
+    if(!doc.ContainsKey(&quot;type&quot;) || doc[&quot;type&quot;] as string != &quot;task&quot;) {
+        return;
+    }
+
+    if(!doc.ContainsKey(&quot;taskList&quot;)) {
+        return;
+    }
+
+    var list = JsonUtility.ConvertToNetObject&lt;IDictionary&lt;string, object&gt;&gt;(doc[&quot;taskList&quot;]);
+    if(!list.ContainsKey(&quot;id&quot;) || (doc.ContainsKey(&quot;complete&quot;) &amp;&amp; (bool)doc[&quot;complete&quot;])) {
+        return;
+    }
+
+    emit(list[&quot;id&quot;], null);
+
+ }, BuiltinReduceFunctions.Count, &quot;1.0&quot;);
+
+_incompleteQuery = incompleteTasksView.CreateQuery().ToLiveQuery();
+_incompleteQuery.GroupLevel = 1;
+
+// ...Changed lambda omitted for brevity
+
+ _incompleteQuery.Start();
+</programlisting>
+  <para>
+    <block class="android" />
+  </para>
+  <programlisting language="java">
+// This code can be found in ListsActivity.java
+// in the setupViewAndQuery method
+com.couchbase.lite.View incompTasksCountView = mDatabase.getView(&quot;list/incompleteTasksCount&quot;);
+if (incompTasksCountView.getMap() == null) {
+    incompTasksCountView.setMapReduce(new Mapper() {
+        @Override
+        public void map(Map&lt;String, Object&gt; document, Emitter emitter) {
+            String type = (String) document.get(&quot;type&quot;);
+            if (&quot;task&quot;.equals(type)) {
+                Boolean complete = (Boolean) document.get(&quot;complete&quot;);
+                if (!complete) {
+                    Map&lt;String, Object&gt; taskList = (Map&lt;String, Object&gt;) document.get(&quot;taskList&quot;);
+                    String listId = (String) taskList.get(&quot;id&quot;);
+                    emitter.emit(listId, null);
+                }
+            }
+        }
+    }, new Reducer() {
+        @Override
+        public Object reduce(List&lt;Object&gt; keys, List&lt;Object&gt; values, boolean rereduce) {
+            // keys: [0, 0]
+            // values: [null, null]
+            return values.size();
+        }
+    }, &quot;1.0&quot;);
+}
+
+final LiveQuery incompTasksCountLiveQuery = incompTasksCountView.createQuery().toLiveQuery();
+incompTasksCountLiveQuery.setGroupLevel(1);
+</programlisting>
+  <para>
+    <block class="all" />
+  </para>
+  <para>
+    This time, you call emit only if the document
+    <literal>type</literal> is &quot;task&quot; and
+    <literal>complete</literal> is <literal>false</literal>. The
+    document ID of the list it belongs to
+    (**doc.taskList._id<emphasis role="strong">) serves as the key and
+    the value is nil. The reduce function simply counts the number of
+    rows with the same key. Notice that the </emphasis>groupLevel** is a
+    property on the live query object.
+  </para>
+  <para>
+    Every time there is a change to
+    <literal>incompTasksCountsLiveQuery.rows</literal> the
+    <literal>observeValueForKeyPath</literal> method is called which
+    will reload the list count for each row.
+  </para>
+  <para>
+    <block class="ios" />
+  </para>
+  <programlisting>
+// This code can be found in ListsViewController.swift
+// in the observeValue(forKeyPath:of:_:_:) method
+override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+    if object as? NSObject == listsLiveQuery {
+        reloadTaskLists()
+    } else if object as? NSObject == incompTasksCountsLiveQuery {
+        reloadIncompleteTasksCounts()
+    }
+}
+</programlisting>
+  <para>
+    <block class="net" />
+  </para>
+  <programlisting language="c#">
+ _incompleteQuery.Changed += (sender, e) =&gt; 
+{
+    var newItems = TasksList.ToList();
+    foreach(var row in e.Rows) {
+        var item = newItems.FirstOrDefault(x =&gt; x.DocumentID == row.Key as string);
+        if(item != null) {
+            item.IncompleteCount = (int)row.Value;
+        }
+    }
+
+    TasksList.Replace(newItems);
+};
+</programlisting>
+  <para>
+    <block class="android" />
+  </para>
+  <programlisting language="java">
+incompTasksCountLiveQuery.addChangeListener(new LiveQuery.ChangeListener() {
+    @Override
+    public void changed(LiveQuery.ChangeEvent event) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Map&lt;String, Object&gt; counts = new HashMap&lt;String, Object&gt;();
+                QueryEnumerator rows = incompTasksCountLiveQuery.getRows();
+                for (QueryRow row : rows) {
+                    String listId = (String) row.getKey();
+                    int count = (int) row.getValue();
+                    counts.put(listId, count);
+                }
+                incompCounts = counts;
+                mAdapter.notifyDataSetChanged();
+            }
+        });
+    }
+});
+incompTasksCountLiveQuery.start();
+</programlisting>
+  <para>
+    <block class="all" />
+  </para>
+  <sect2 id="try-it-out-4">
+    <title>Try it out</title>
+    <orderedlist numeration="arabic" spacing="compact">
+      <listitem>
+        <para>
+          Build and run.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          You will see the uncompleted task count for each list.
+        </para>
+      </listitem>
+    </orderedlist>
+    <para>
+      <block class="ios" />
+    </para>
+    <para>
+      <img src="./img/image08.png" class="portrait" />
+    </para>
+    <para>
+      <block class="xam" />
+    </para>
+    <para>
+      <emphasis role="strong">iOS</emphasis>
+      <img src="./img/image08.png" class="portrait" />
+      <emphasis role="strong">Android</emphasis>
+      <img src="./img/image08xa.png" class="portrait" />
+    </para>
+    <para>
+      <block class="wpf" />
+    </para>
+    <para>
+      <img src="./img/image08w.png" class="center-image" />
+    </para>
+    <para>
+      <block class="android" />
+    </para>
+    <para>
+      <img src="img/image08a.png" class="portrait" />
+    </para>
+    <para>
+      <block class="all" />
+    </para>
+  </sect2>
+</sect1>
+<sect1 id="conclusion">
+  <title>Conclusion</title>
+  <para>
+    Well done! You've completed this lesson on using CRUD operations
+    with the database and running aggregation queries. In the next
+    lesson, you'll learn how to use Couchbase Lite's synchronization
+    APIs with Sync Gateway. Feel free to share your feedback, findings
+    or ask any questions on the forums.
+  </para>
+</sect1>
+</article>

@@ -1,0 +1,467 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+                  "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<article>
+  <articleinfo>
+    <title>Create a Database</title>
+  </articleinfo>
+<para>
+  In this lesson you’ll be introduced to Couchbase Lite, our embedded
+  NoSQL database. You’ll learn how to create a new embedded database and
+  optionally use databases pre-packaged in your application.
+</para>
+<para>
+  <block class="ios" />
+</para>
+<sect1 id="requirements">
+  <title>Requirements</title>
+  <itemizedlist spacing="compact">
+    <listitem>
+      <para>
+        Xcode 8 (Swift 3)
+      </para>
+    </listitem>
+  </itemizedlist>
+</sect1>
+<sect1 id="getting-started">
+  <title>Getting Started</title>
+  <para>
+    Download the project below.
+  </para>
+  <para>
+    <a href="{{ site.tutorial_project }}" class="button" id="project">
+    <img src="img/download-xcode.png"> </a>
+  </para>
+  <para>
+    Unzip the file and install Couchbase Lite using the install script.
+  </para>
+  <programlisting language="bash">
+$ cd xcode-project
+$ ./install.sh
+</programlisting>
+  <para>
+    Open <emphasis role="strong">Todo.xcodeproj</emphasis> in Xcode.
+    Then build &amp; run the project.
+  </para>
+  <para>
+    <block class="net" />
+  </para>
+</sect1>
+<sect1 id="requirements-1">
+  <title>Requirements</title>
+  <itemizedlist spacing="compact">
+    <listitem>
+      <para>
+        Visual Studio 2015+ (Windows) or Xamarin Studio 6+ (OS X)
+      </para>
+    </listitem>
+  </itemizedlist>
+</sect1>
+<sect1 id="getting-started-1">
+  <title>Getting Started</title>
+  <para>
+    Download the project below.
+  </para>
+  <para>
+    <a href="{{ site.tutorial_project }}" class="button" id="project">
+    <img src="img/download-vs.png"> </a>
+  </para>
+  <para>
+    <block class="android" />
+  </para>
+</sect1>
+<sect1 id="requirements-2">
+  <title>Requirements</title>
+  <itemizedlist spacing="compact">
+    <listitem>
+      <para>
+        Android Studio 2.2
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Android SDK 24
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Android Build Tools 24.0.3
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        JDK 8
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        ⚠️ Docker and x86 Android emulators are
+        <ulink url="http://stackoverflow.com/questions/37397810/android-studio-unable-to-run-avd">not
+        compatible</ulink> (i.e cannot run simultaneously on the same
+        machine). Make sure Docker isn't running in the background when
+        deploying the application to an x86 Android emulator.
+      </para>
+    </listitem>
+  </itemizedlist>
+</sect1>
+<sect1 id="getting-started-2">
+  <title>Getting Started</title>
+  <para>
+    Download the project below.
+  </para>
+  <para>
+    <a href="{{ site.tutorial_project }}" class="button" id="project">
+    <img src="img/download-android.png"> </a>
+  </para>
+  <para>
+    <block class="all" />
+  </para>
+</sect1>
+<sect1 id="create-a-new-database">
+  <title>Create a new database</title>
+  <para>
+    The entrypoint in the Couchbase Lite SDK is the
+    <ulink url="/documentation/mobile/current/develop/guides/couchbase-lite/native-api/manager/index.html">Manager</ulink>
+    class. There is no limit to how many databases can be created or
+    opened on the device. You can think of a database as a namespace for
+    documents and several databases can be used in the same app (one
+    database per user of the app is a common pattern). The code below
+    creates an empty database.
+  </para>
+  <para>
+    <block class="ios" />
+  </para>
+  <programlisting>
+// This code can be found in AppDelegate.swift
+// in the openDatabase(username:withKey:withNewKey) method
+let dbname = username
+let options = CBLDatabaseOptions()
+options.create = true
+
+if kEncryptionEnabled {
+    if let encryptionKey = key {
+        options.encryptionKey = encryptionKey
+    }
+}
+
+try database = CBLManager.sharedInstance().openDatabaseNamed(dbname, with: options)
+</programlisting>
+  <para>
+    <block class="net" />
+  </para>
+  <programlisting language="c#">
+// This code can be found in CoreApp.cs
+// in the OpenDatabase(string, string, string) method
+var encryptionKey = default(SymmetricKey);
+if(key != null) {
+    encryptionKey = new SymmetricKey(key);
+}
+
+var options = new DatabaseOptions {
+    Create = true,
+    EncryptionKey = encryptionKey
+};
+
+Database = AppWideManager.OpenDatabase(dbName, options);
+if(newKey != null) {
+    Database.ChangeEncryptionKey(new SymmetricKey(newKey));
+}
+</programlisting>
+  <para>
+    <block class="android" />
+  </para>
+  <programlisting language="java">
+// This code can be found in Application.java
+// in the openDatabase(username, key, newKey) method
+String dbname = username;
+DatabaseOptions options = new DatabaseOptions();
+options.setCreate(true);
+
+if (mEncryptionEnabled) {
+    options.setEncryptionKey(key);
+}
+
+Manager manager = null;
+try {
+    manager = new Manager(new AndroidContext(getApplicationContext()), Manager.DEFAULT_OPTIONS);
+} catch (IOException e) {
+    e.printStackTrace();
+}
+try {
+    database = manager.openDatabase(dbname, options);
+} catch (CouchbaseLiteException e) {
+    e.printStackTrace();
+}
+</programlisting>
+  <para>
+    <block class="all" />
+  </para>
+  <para>
+    Here you're using the <literal>openDatabaseNamed</literal> method
+    where the database is the user currently logged in and
+    <literal>options.create</literal> is set to <literal>true</literal>.
+  </para>
+  <blockquote>
+    <para>
+      <emphasis role="strong">Note:</emphasis> You can ignore the
+      encryption flag. Database encryption will be covered in the
+      <ulink url="/documentation/mobile/1.3/training/design/security/index.html">Adding
+      Security</ulink> lesson.
+    </para>
+  </blockquote>
+  <para>
+    <block class="all" />
+  </para>
+  <sect2 id="try-it-out">
+    <title>Try it out</title>
+    <orderedlist numeration="arabic" spacing="compact">
+      <listitem>
+        <para>
+          Build and run.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Create a new list on the application's 'Task lists' screen.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          The task list is persisted to the database.
+        </para>
+      </listitem>
+    </orderedlist>
+    <para>
+      <block class="ios" />
+    </para>
+    <para>
+      <img src="img/image40.png" class="portrait" />
+    </para>
+    <para>
+      <block class="xam" />
+    </para>
+    <para>
+      <img src="img/image40xa.png" class="portrait" />
+    </para>
+    <para>
+      <block class="wpf" />
+    </para>
+    <para>
+      <img src="img/image40w.png" class="portrait" />
+    </para>
+    <para>
+      <block class="android" />
+    </para>
+    <para>
+      <img src="img/image40a.png" class="portrait" />
+    </para>
+    <para>
+      <block class="all" />
+    </para>
+  </sect2>
+</sect1>
+<sect1 id="using-the-pre-built-database">
+  <title>Using the pre-built database</title>
+  <para>
+    In this section, you will learn how to bundle a pre-built Couchbase
+    Lite database in an application. It can be a lot more efficient to
+    bundle a database in your application and install it on the first
+    launch. Even if some of the content changes on the server after you
+    create the app, the app's first pull replication will bring the
+    database up to date. Here, you will use a pre-built database that
+    contains a list of groceries. The code below moves the pre-built
+    database from the bundled location to the application directory.
+  </para>
+  <para>
+    <block class="ios" />
+  </para>
+  <programlisting>
+// This code can be found in AppDelegate.swift
+// in the installPrebuiltDb() method
+guard kUsePrebuiltDb else {
+    return
+}
+
+let db = CBLManager.sharedInstance().databaseExistsNamed(&quot;todo&quot;)
+
+if (!db) {
+    let dbPath = Bundle.main.path(forResource: &quot;todo&quot;, ofType: &quot;cblite2&quot;)
+    do {
+        try CBLManager.sharedInstance().replaceDatabaseNamed(&quot;todo&quot;, withDatabaseDir: dbPath!)
+    } catch let error as NSError {
+        NSLog(&quot;Cannot replace the database %@&quot;, error)
+    }
+}
+</programlisting>
+  <para>
+    <block class="net" />
+  </para>
+  <programlisting language="c#">
+// This code can be found in CoreApp.cs
+// in the InstallPrebuildDB() method
+var db = AppWideManager.GetExistingDatabase(&quot;todo&quot;);
+if(db == null) {
+    try {
+        using(var asset = typeof(CoreApp).Assembly.GetManifestResourceStream(&quot;todo.zip&quot;)) {
+            AppWideManager.ReplaceDatabase(&quot;todo&quot;, asset, false);
+        }
+    } catch(Exception e) {
+        Debug.WriteLine($&quot;Cannot replicate the database: {e}&quot;);
+    }
+}
+</programlisting>
+  <para>
+    <block class="android" />
+  </para>
+  <programlisting language="java">
+// This code can be found in Application.java
+// in the installPrebuiltDb() method
+if (!mUsePrebuiltDb) {
+    return;
+}
+
+try {
+    manager = new Manager(new AndroidContext(getApplicationContext()), Manager.DEFAULT_OPTIONS);
+} catch (IOException e) {
+    e.printStackTrace();
+}
+try {
+    database = manager.getExistingDatabase(&quot;todo&quot;);
+} catch (CouchbaseLiteException e) {
+    e.printStackTrace();
+}
+if (database == null) {
+    try {
+        ZipUtils.unzip(getAssets().open(&quot;todo.zip&quot;), manager.getContext().getFilesDir());
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}
+</programlisting>
+  <para>
+    <block class="all" />
+  </para>
+  <para>
+    The prebuilt database is installed using the database replacement
+    API only if there isn't any existing database called 'todo'. Since
+    you created an empty database called 'todo' in the previous step you
+    must first remove the existing database.
+  </para>
+  <sect2 id="try-it-out-1">
+    <title>Try it out</title>
+    <para>
+      <block class="ios" />
+    </para>
+    <orderedlist numeration="arabic">
+      <listitem>
+        <para>
+          Open <emphasis role="strong">AppDelegate.swift</emphasis> and
+          set the <literal>kUsePrebuiltDb</literal> constant to
+          <literal>true</literal>.
+        </para>
+        <programlisting>
+let kUsePrebuiltDb = true
+</programlisting>
+      </listitem>
+      <listitem>
+        <para>
+          Build and run (⚠️ don't forget to delete the app first).
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          A Groceries list will now be visible on the Lists screen.
+          Click on it to see the tasks.
+          <img src="https://cl.ly/3e1J2I0G1U1U/image45.gif" class="portrait" />
+        </para>
+      </listitem>
+    </orderedlist>
+    <para>
+      <block class="wpf" />
+    </para>
+    <orderedlist numeration="arabic">
+      <listitem>
+        <para>
+          Open <emphasis role="strong">CoreApp.cs</emphasis> and
+          navigate to the <literal>CoreAppStart.CreateHint()</literal>
+          method.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Change the <literal>usePrebuiltDB</literal> on the return
+          value of the function to <literal>true</literal>.
+        </para>
+        <programlisting language="c#">
+retVal.usePrebuiltDB = true;
+</programlisting>
+      </listitem>
+      <listitem>
+        <para>
+          Build and run (⚠️ don't forget to delete the app first).
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          A Groceries list will now be visible on the Lists screen.
+          Click on it to see the tasks.
+        </para>
+        <para>
+          <img src="https://cl.ly/023H36113s2r/image45w.gif" class="center-image" />
+        </para>
+      </listitem>
+    </orderedlist>
+    <para>
+      <block class="xam" /> <emphasis role="strong">iOS</emphasis>
+      <img src="./img/image45.gif" class="portrait" />
+      <emphasis role="strong">Android</emphasis>
+      <img src="./img/image45xa.gif" class="portrait" />
+    </para>
+    <para>
+      <block class="android" />
+    </para>
+    <orderedlist numeration="arabic">
+      <listitem>
+        <para>
+          Open <emphasis role="strong">Application.java</emphasis> and
+          set the <literal>mUsePrebuiltDb</literal> constant to true.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Build and run (⚠️ don't forget to delete the app first).
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          A Groceries list will now be visible on the Lists screen.
+          Click on it to see the tasks.
+        </para>
+        <para>
+          <img src="https://cl.ly/2z4715010K2Z/image45a.gif" class="portrait" />
+        </para>
+      </listitem>
+    </orderedlist>
+    <para>
+      <block class="all" />
+    </para>
+    <blockquote>
+      <para>
+        <emphasis role="strong">Note:</emphasis> Refer to the
+        <ulink url="/documentation/mobile/current/develop/guides/couchbase-lite/native-api/database/index.html">Database</ulink>
+        guide to learn how to create
+        <emphasis role="strong">pre-built</emphasis> databases.
+      </para>
+    </blockquote>
+  </sect2>
+</sect1>
+<sect1 id="conclusion">
+  <title>Conclusion</title>
+  <para>
+    Well done! You've completed this lesson on creating a database. In
+    the next lesson you will learn how to write and query documents from
+    the database. Feel free to share your feedback, findings or ask any
+    questions on the forums.
+  </para>
+</sect1>
+</article>

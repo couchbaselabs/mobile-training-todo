@@ -1,0 +1,1267 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+                  "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<article>
+  <articleinfo>
+    <title>Adding Synchronization</title>
+  </articleinfo>
+<para>
+  In this lesson you’ll be introduced to Sync Gateway, our secure web
+  gateway. You’ll learn how to use Couchbase Lite’s synchronization
+  APIs, set up Sync Gateway for synchronization with the cloud and other
+  devices, and resolve data conflicts within your application.
+</para>
+<para>
+  <block class="ios" />
+</para>
+<sect1 id="requirements">
+  <title>Requirements</title>
+  <itemizedlist spacing="compact">
+    <listitem>
+      <para>
+        Xcode 8 (Swift 3)
+      </para>
+    </listitem>
+  </itemizedlist>
+</sect1>
+<sect1 id="getting-started">
+  <title>Getting Started</title>
+  <para>
+    Download the project below.
+  </para>
+  <para>
+    <a href="{{ site.tutorial_project }}" class="button" id="project">
+    <img src="img/download-xcode.png"> </a>
+  </para>
+  <para>
+    Unzip the file and install Couchbase Lite using the install script.
+  </para>
+  <programlisting language="bash">
+$ cd xcode-project
+$ ./install.sh
+</programlisting>
+  <para>
+    Open <emphasis role="strong">Todo.xcodeproj</emphasis> in Xcode.
+    Then build &amp; run the project.
+  </para>
+  <para>
+    <block class="net" />
+  </para>
+</sect1>
+<sect1 id="requirements-1">
+  <title>Requirements</title>
+  <itemizedlist spacing="compact">
+    <listitem>
+      <para>
+        Visual Studio 2015+ (Windows) or Xamarin Studio 6+ (OS X)
+      </para>
+    </listitem>
+  </itemizedlist>
+</sect1>
+<sect1 id="getting-started-1">
+  <title>Getting Started</title>
+  <para>
+    Download the project below.
+  </para>
+  <para>
+    <a href="{{ site.tutorial_project }}" class="button" id="project">
+    <img src="img/download-vs.png"> </a>
+  </para>
+  <para>
+    <block class="android" />
+  </para>
+</sect1>
+<sect1 id="requirements-2">
+  <title>Requirements</title>
+  <itemizedlist spacing="compact">
+    <listitem>
+      <para>
+        Android Studio 2.2
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Android SDK 24
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Android Build Tools 24.0.3
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        JDK 8
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        ⚠️ Docker and x86 Android emulators are
+        <ulink url="http://stackoverflow.com/questions/37397810/android-studio-unable-to-run-avd">not
+        compatible</ulink> (i.e cannot run simultaneously on the same
+        machine). Make sure Docker isn't running in the background when
+        deploying the application to an x86 Android emulator.
+      </para>
+    </listitem>
+  </itemizedlist>
+</sect1>
+<sect1 id="getting-started-2">
+  <title>Getting Started</title>
+  <para>
+    Download the project below.
+  </para>
+  <para>
+    <a href="{{ site.tutorial_project }}" class="button" id="project">
+    <img src="img/download-android.png"> </a>
+  </para>
+  <para>
+    <block class="all" />
+  </para>
+  <blockquote>
+    <para>
+      <emphasis role="strong">Tip:</emphasis> To make things a bit more
+      exciting, you may want to use the pre-built database containing a
+      list of Groceries. Refer to the
+      <ulink url="/documentation/mobile/current/training/develop/using-the-database/index.html">Create
+      a Database</ulink> lesson to learn how to use it.
+    </para>
+  </blockquote>
+</sect1>
+<sect1 id="install-sync-gateway">
+  <title>Install Sync Gateway</title>
+  <para>
+    Now that your application runs smoothly on the device you are ready
+    to introduce Sync Gateway. Create a new file called
+    <emphasis role="strong">sync-gateway-config.json</emphasis> with the
+    following.
+  </para>
+  <programlisting language="javascript">
+{
+  &quot;interface&quot;:&quot;:4984&quot;,
+  &quot;log&quot;: [&quot;HTTP&quot;, &quot;Auth&quot;],
+  &quot;databases&quot;: {
+    &quot;todo&quot;: {
+      &quot;server&quot;: &quot;walrus:&quot;,
+      &quot;users&quot;: {
+        &quot;GUEST&quot;: {&quot;disabled&quot;: false, &quot;admin_channels&quot;: [&quot;*&quot;] }
+      }
+    }
+  }
+}
+</programlisting>
+  <para>
+    During development, you can set the
+    <emphasis role="strong">server</emphasis> property to
+    <emphasis role="strong">walrus:</emphasis> (also known as the Walrus
+    mode) and it will keep the data in memory. Note that anytime you
+    restart Sync Gateway in walrus mode, the database will be empty.
+  </para>
+  <para>
+    By default, Sync Gateway doesn't allow unauthenticated requests to
+    be processed for security reasons. So you're enabling the
+    <emphasis role="strong">GUEST</emphasis> user which represents all
+    the unauthenticated clients that will be synchronizing with your
+    Sync Gateway instance.
+  </para>
+  <blockquote>
+    <para>
+      <emphasis role="strong">Note:</emphasis> User authentication is
+      covered in more detail in the
+      <ulink url="/documentation/mobile/current/training/develop/adding-security/index.html">Adding
+      Security</ulink> lesson.
+    </para>
+  </blockquote>
+  <para>
+    Sync Gateway is always listening on two ports:
+  </para>
+  <itemizedlist spacing="compact">
+    <listitem>
+      <para>
+        4984: the public port which will be used from the application.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        4985: the admin port used for administrative tasks (for security
+        reasons, it’s only accessible on localhost).
+      </para>
+    </listitem>
+  </itemizedlist>
+  <sect2 id="try-it-out">
+    <title>Try it out</title>
+    <orderedlist numeration="arabic">
+      <listitem>
+        <para>
+          <ulink url="http://www.couchbase.com/nosql-databases/downloads#couchbase-mobile">Download
+          Sync Gateway</ulink>
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Unzip the file and locate the executable at
+          <emphasis role="strong">bin/sync_gateway</emphasis> (macOS) or
+          run the installer (Windows).
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Start Sync Gateway from the command-line in your project
+          directory.
+        </para>
+        <programlisting language="bash">
+sync_gateway sync-gateway-config.json
+</programlisting>
+        <programlisting>
+PS&gt; &amp; 'C:\Program Files (x86)\Couchbase\sync_gateway.exe' sync-gateway-config.json
+</programlisting>
+        <blockquote>
+          <para>
+            <emphasis role="strong">Note:</emphasis> The Sync Gateway
+            service might be running on Windows which will prevent this
+            command from succeeding with the message 'FATAL: Failed to
+            start HTTP server on 127.0.0.1:4985: listen tcp
+            127.0.0.1:4985: bind: Only one usage of each socket address
+            (protocol/network address/port) is normally permitted.' To
+            get around this, stop the 'Couchbase Sync Gateway' service
+            in 'services.msc'.
+          </para>
+        </blockquote>
+      </listitem>
+    </orderedlist>
+  </sect2>
+</sect1>
+<sect1 id="add-synchronization">
+  <title>Add synchronization</title>
+  <para>
+    Typically, an application needs to send data to the server and
+    receive it. In Couchbase Mobile, this is handled by replications
+    which run on the device. A replication requires a Couchbase Lite
+    database and a Sync Gateway URL, and synchronizes data between the
+    two. They can be of two types:
+  </para>
+  <itemizedlist spacing="compact">
+    <listitem>
+      <para>
+        <emphasis role="strong">Push:</emphasis> The data is pushed from
+        Couchbase Lite to Sync Gateway.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        <emphasis role="strong">Pull:</emphasis> The data is pulled from
+        Sync Gateway to Couchbase Lite.
+      </para>
+    </listitem>
+  </itemizedlist>
+  <para>
+    There are a few terminologies that designate the role of each
+    database involved in a replications:
+  </para>
+  <itemizedlist spacing="compact">
+    <listitem>
+      <para>
+        <emphasis role="strong">Source:</emphasis> The database where
+        the data is read.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        <emphasis role="strong">Target:</emphasis> The database where
+        the data is written.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        <emphasis role="strong">Local:</emphasis> The database that
+        resides where the replication is running.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        <emphasis role="strong">Remote:</emphasis> The database to which
+        the replication is sending data.
+      </para>
+    </listitem>
+  </itemizedlist>
+  <para>
+    The following code starts a pull and push replication with progress
+    notifications.
+  </para>
+  <para>
+    <block class="ios" />
+  </para>
+  <programlisting>
+// This code can be found in AppDelegate.swift
+// in the startReplication(withUsername:andPassword:)
+pusher = database.createPushReplication(kSyncGatewayUrl)
+pusher.continuous = true // Runs forever in the background
+NotificationCenter.default.addObserver(self, selector: #selector(replicationProgress(notification:)),
+                                        name: NSNotification.Name.cblReplicationChange, object: pusher)
+
+puller = database.createPullReplication(kSyncGatewayUrl)
+puller.continuous = true // Runs forever in the background
+NotificationCenter.default.addObserver(self, selector: #selector(replicationProgress(notification:)),
+                                        name: NSNotification.Name.cblReplicationChange, object: puller)
+
+if kLoginFlowEnabled {
+    let authenticator = CBLAuthenticator.basicAuthenticator(withName: username, password: password!)
+    pusher.authenticator = authenticator
+    puller.authenticator = authenticator
+}
+
+pusher.start()
+puller.start()
+</programlisting>
+  <para>
+    <block class="net" />
+  </para>
+  <programlisting language="c#">
+// This code can be found in CoreApp.cs
+// in the StartReplication(string, string) method
+var authenticator = default(IAuthenticator);
+if(username != null &amp;&amp; password != null) {
+    authenticator = AuthenticatorFactory.CreateBasicAuthenticator(username, password);
+}
+
+var db = AppWideManager.GetDatabase(username);
+var pusher = db.CreatePushReplication(SyncGatewayUrl);
+pusher.Continuous = true; // Runs forever in the background
+pusher.Authenticator = authenticator;
+
+
+var puller = db.CreatePullReplication(SyncGatewayUrl);
+puller.Continuous = true; // Runs forever in the background
+puller.Authenticator = authenticator;
+
+pusher.Start();
+puller.Start();
+
+_pusher = pusher;
+_puller = puller;
+</programlisting>
+  <para>
+    <block class="android" />
+  </para>
+  <programlisting language="java">
+// This code can be found in Application.java
+// in the startReplication(String, String) method
+URL url = null;
+try {
+    url = new URL(mSyncGatewayUrl);
+} catch (MalformedURLException e) {
+    e.printStackTrace();
+}
+
+pusher = database.createPushReplication(url);
+pusher.setContinuous(true); // Runs forever in the background
+
+puller = database.createPullReplication(url);
+puller.setContinuous(true); // Runs forever in the background
+
+if (mLoginFlowEnabled) {
+    Authenticator authenticator = AuthenticatorFactory.createBasicAuthenticator(username, password);
+    pusher.setAuthenticator(authenticator);
+    puller.setAuthenticator(authenticator);
+}
+
+pusher.start();
+puller.start();
+</programlisting>
+  <para>
+    <block class="all" />
+  </para>
+  <sect2 id="try-it-out-1">
+    <title>Try it out</title>
+    <para>
+      <block class="ios" />
+    </para>
+    <orderedlist numeration="arabic">
+      <listitem>
+        <para>
+          In <emphasis role="strong">AppDelegate.swift</emphasis>, set
+          <literal>kSyncGatewayUrl</literal> to the URL of the Sync
+          Gateway database (http://localhost:4984/todo/).
+        </para>
+        <programlisting>
+let kSyncGatewayUrl = URL(string: &quot;http://localhost:4984/todo/&quot;)!
+</programlisting>
+      </listitem>
+      <listitem>
+        <para>
+          Set <literal>kSyncEnabled</literal> to <literal>true</literal>
+          in <emphasis role="strong">AppDelegate.swift</emphasis>.
+        </para>
+        <programlisting>
+let kSyncEnabled = true
+</programlisting>
+      </listitem>
+      <listitem>
+        <para>
+          Build and run.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Open
+          <ulink url="http://localhost:4985/_admin/db/todo">http://localhost:4985/_admin/db/todo</ulink>
+          in the browser and notice that all the documents are pushed to
+          Sync Gateway! You may have more or less rows depending on how
+          many documents are present in the Couchbase Lite database.
+        </para>
+        <para>
+          <img src="./img/image19.png" />
+        </para>
+      </listitem>
+    </orderedlist>
+    <para>
+      <block class="net" />
+    </para>
+    <orderedlist numeration="arabic">
+      <listitem>
+        <para>
+          In <emphasis role="strong">CoreApp.cs</emphasis> set
+          <literal>SyncGatewayUrl</literal> to the URL of the Sync
+          Gateway database (http://localhost:4984/todo/).
+        </para>
+        <programlisting language="c#">
+private static readonly Uri SyncGatewayUrl = new Uri(&quot;http://localhost:4984/todo/&quot;);
+</programlisting>
+      </listitem>
+      <listitem>
+        <para>
+          In <emphasis role="strong">CoreApp.cs</emphasis> in the
+          <literal>CreateHint()</literal> method, change
+          <literal>SyncEnabled = false</literal> to
+          <literal>SyncEnabled = true</literal>.
+        </para>
+        <programlisting language="c#">
+var retVal = new CoreAppStartHint {
+    LoginEnabled = false,
+    EncryptionEnabled = false,
+    SyncEnabled = true, // Line to change is here
+    UsePrebuiltDB = false,
+    ConflictResolution = false,
+    Username = &quot;todo&quot;
+};
+
+return retVal;
+</programlisting>
+      </listitem>
+      <listitem>
+        <para>
+          Build and run.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Open
+          <ulink url="http://localhost:4985/_admin/db/todo">http://localhost:4985/_admin/db/todo</ulink>
+          in the browser and notice that all the documents are pushed to
+          Sync Gateway! You may have more or less rows depending on how
+          many documents are present in the Couchbase Lite database.
+        </para>
+        <para>
+          <img src="./img/image19w.png" />
+        </para>
+      </listitem>
+    </orderedlist>
+    <para>
+      <block class="android" />
+    </para>
+    <orderedlist numeration="arabic">
+      <listitem>
+        <para>
+          In <emphasis role="strong">Application.java</emphasis>, set
+          <literal>mSyncGatewayUrl</literal> to the URL of the Sync
+          Gateway database (http://localhost:4984/todo/).
+        </para>
+        <programlisting language="java">
+private String mSyncGatewayUrl = &quot;http://10.0.2.2:4984/todo/&quot;;
+</programlisting>
+        <para>
+          For Android stock emulators, the hostname is
+          <literal>10.0.2.2</literal>.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Set <literal>mSyncEnabled</literal> to <literal>true</literal>
+          in <emphasis role="strong">Application.java</emphasis>.
+        </para>
+        <programlisting language="java">
+private Boolean mSyncEnabled = true;
+</programlisting>
+      </listitem>
+      <listitem>
+        <para>
+          Build and run.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Open
+          <ulink url="http://localhost:4985/_admin/db/todo">http://localhost:4985/_admin/db/todo</ulink>
+          in the browser and notice that all the documents are pushed to
+          Sync Gateway! You may have more or less rows depending on how
+          many documents are present in the Couchbase Lite database.
+        </para>
+        <para>
+          <img src="./img/image19a.png" />
+        </para>
+      </listitem>
+    </orderedlist>
+    <para>
+      <block class="all" />
+    </para>
+  </sect2>
+</sect1>
+<sect1 id="resolve-conflicts">
+  <title>Resolve Conflicts</title>
+  <para>
+    Due to the unpredictability of mobile connections it's inevitable
+    that more than one device will update the same document
+    simultaneously. Couchbase Lite provides features to resolve these
+    conflicts. The resolution rules are written by the developer to keep
+    full control over which revision should be picked. The most common
+    resolution methods are:
+  </para>
+  <itemizedlist spacing="compact">
+    <listitem>
+      <para>
+        <emphasis role="strong">Deletes always win:</emphasis> if one
+        side deletes a document it will always stay deleted, even if the
+        other side has made changes to it later on.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        <emphasis role="strong">N-way merge:</emphasis> if both sides
+        have updated different properties, the document will end up with
+        the updates from both sides.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        <emphasis role="strong">Last update wins:</emphasis> if both
+        sides have updated the same property, the value will end up as
+        the last one that was updated.
+      </para>
+    </listitem>
+  </itemizedlist>
+  <para>
+    Revisions form a tree data structure and a conflict occurs when
+    there are multiple branches in the revision tree. On the diagram
+    below the conflict is resolved by deleting one branch of the tree
+    (the branch starting at <emphasis role="strong">3-42cc</emphasis>).
+    The other one is the active branch (i.e the winner) where further
+    child revisions can be persisted
+    (<emphasis role="strong">4-45cb</emphasis> and
+    <emphasis role="strong">5-42bb</emphasis>).
+  </para>
+  <para>
+    <img src="img/image16.png" class="portrait" />
+  </para>
+  <sect2 id="detecting-conflicts">
+    <title>Detecting conflicts</title>
+    <para>
+      To resolve conflicts you must first learn how to detect them. The
+      code below uses an All Docs query which is an index of all the
+      documents in the local database. The
+      <emphasis role="strong">OnlyConflicts</emphasis> option is passed
+      to report only the documents with conflicts and a
+      <emphasis role="strong">LiveQuery</emphasis> is used to
+      continuously monitor the database for changes.
+    </para>
+    <para>
+      <block class="ios" />
+    </para>
+    <programlisting>
+// This code can be found in AppDelegate.swift
+// in the startConflictLiveQuery() method
+guard kConflictResolution else {
+    return
+}
+
+conflictsLiveQuery = database.createAllDocumentsQuery().asLive()
+conflictsLiveQuery!.allDocsMode = .onlyConflicts
+conflictsLiveQuery!.addObserver(self, forKeyPath: &quot;rows&quot;, options: .new, context: nil)
+conflictsLiveQuery!.start()
+</programlisting>
+    <para>
+      The query results are then posted to the application code using
+      the KVO observer method.
+    </para>
+    <programlisting>
+// This code can be found in AppDelegate.swift
+// in the observeValue(forKeyPath:of:change:context:) method
+override func observeValue(forKeyPath keyPath: String?, of object: Any?,
+                            change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+    if object as? NSObject == conflictsLiveQuery {
+        resolveConflicts()
+    }
+}
+</programlisting>
+    <para>
+      <block class="net" />
+    </para>
+    <programlisting language="c#">
+// This code can be found in CoreApp.cs
+// in the StartConflictLiveQuery() method
+_conflictsLiveQuery = Database.CreateAllDocumentsQuery().ToLiveQuery();
+_conflictsLiveQuery.AllDocsMode = AllDocsMode.OnlyConflicts;
+_conflictsLiveQuery.Changed += ResolveConflicts;
+
+_conflictsLiveQuery.Start();
+</programlisting>
+    <para>
+      <block class="android" />
+    </para>
+    <programlisting language="java">
+// This code can be found in Application.java
+// in the startConflictLiveQuery() method
+LiveQuery conflictsLiveQuery = database.createAllDocumentsQuery().toLiveQuery();
+conflictsLiveQuery.setAllDocsMode(Query.AllDocsMode.ONLY_CONFLICTS);
+conflictsLiveQuery.addChangeListener(new LiveQuery.ChangeListener() {
+    @Override
+    public void changed(LiveQuery.ChangeEvent event) {
+        resolveConflicts(event.getRows());
+    }
+});
+conflictsLiveQuery.start();
+</programlisting>
+    <para>
+      <block class="all" />
+    </para>
+    <para>
+      The query results are then posted to the application code using
+      the change callback or change listener.
+    </para>
+  </sect2>
+  <sect2 id="automatic-conflict-resolution">
+    <title>Automatic conflict resolution</title>
+    <para>
+      Even if the conflict isn’t resolved, Couchbase Lite has to return
+      something. It chooses one of the two conflicting revisions as the
+      &quot;winner&quot;. The choice is deterministic, which means that
+      every device that is faced with the same conflict will pick the
+      same winner, without having to communicate.
+    </para>
+    <para>
+      Shown below is a list document created with two conflicting
+      revisions. After deleting the row, the text
+      <emphasis role="strong">Text Changed</emphasis> appears which is
+      the name of the second conflicting revision. The action of
+      deleting a document only deletes the current revision and if there
+      are conflicting revisions it will be promoted as the new current
+      revision.
+    </para>
+    <para>
+      <block class="ios" />
+    </para>
+    <para>
+      <img src="https://cl.ly/0h3T1c0e1V2G/image47.gif" class="portrait" />
+    </para>
+    <blockquote>
+      <para>
+        <emphasis role="strong">Note:</emphasis> During development, the
+        method <literal>saveAllowingConflicts</literal> is used to
+        intentionally create a conflict. You can shake the device
+        (<emphasis role="strong">^⌘Z</emphasis> on the simulator) to
+        create a list conflict. The code is located in the
+        <literal>motionEnded(_:with:)</literal> method of
+        <emphasis role="strong">ListsViewController.swift</emphasis>.
+      </para>
+    </blockquote>
+    <para>
+      <block class="wpf" />
+    </para>
+    <para>
+      <img src="https://cl.ly/0V2I0h1T1j24/image47w.gif" class="center-image" />
+    </para>
+    <blockquote>
+      <para>
+        <emphasis role="strong">Note:</emphasis> During development, the
+        method <literal>Save(bool)</literal> is used to intentionally
+        create a conflict. You can press Ctrl+C to create a list
+        conflict. The code is located in the
+        <literal>TestConflict()</literal> method of
+        <emphasis role="strong">TaskListsModel.cs</emphasis>.
+      </para>
+    </blockquote>
+    <para>
+      <block class="xam" />
+    </para>
+    <para>
+      <emphasis role="strong">iOS</emphasis>
+      <img src="./img/image47.gif" class="portrait" />
+      <emphasis role="strong">Android</emphasis>
+      <img src="./img/image47xa.gif" class="portrait" />
+    </para>
+    <para>
+      <block class="android" />
+    </para>
+    <para>
+      <img src="https://cl.ly/2h0Z2u2S0M1W/image47a.gif" class="portrait" />
+    </para>
+    <blockquote>
+      <para>
+        <emphasis role="strong">Note:</emphasis> During development, the
+        method <literal>save(boolean)</literal> is used to intentionally
+        create a conflict. You can long press the floating action button
+        to create a list conflict. The code is located in the
+        <literal>createListConflict()</literal> method of
+        <emphasis role="strong">ListsActivity.java</emphasis>.
+      </para>
+    </blockquote>
+    <para>
+      <block class="all" />
+    </para>
+    <para>
+      This can be surprising at first but it’s the strength of using a
+      distributed database that defers the conflict resolution logic to
+      the application. It’s your responsibility as the developer to
+      ensure conflicts are resolved! Even if you decide to let Couchbase
+      Lite pick the winner you must remove extraneous conflicting
+      revisions to prevent the behaviour observed above. The code below
+      removes all revisions except the current/winning one.
+    </para>
+    <para>
+      <block class="ios" />
+    </para>
+    <programlisting>
+// This code can be found in AppDelegate.swift
+// in the resolveConflicts(revisions:withProps:andImage:) method
+database.inTransaction {
+    var i = 0
+    for rev in revs as! [CBLSavedRevision] {
+        let newRev = rev.createRevision()
+        if (i == 0) { // Default winning revision
+            newRev.userProperties = props
+            if rev.attachmentNamed(&quot;image&quot;) != image {
+                newRev.setAttachmentNamed(&quot;image&quot;, withContentType: &quot;image/jpg&quot;,
+                    content: image?.content)
+            }
+        } else {
+            newRev.isDeletion = true
+        }
+
+        do {
+            try newRev.saveAllowingConflict()
+        } catch let error as NSError {
+            NSLog(&quot;Cannot resolve conflicts with error: %@&quot;, error)
+            return false
+        }
+        i += 1
+    }
+    return true
+}
+</programlisting>
+    <para>
+      <block class="net" />
+    </para>
+    <programlisting language="c#">
+// This code can be found in CoreApp.cs
+// in the ResolveConflicts(SavedRevision[], IDictionary&lt;string, object&gt;, Attachment) method
+Database.RunInTransaction(() =&gt;
+{
+    var i = 0;
+    foreach(var rev in revs) {
+        var newRev = rev.CreateRevision();
+        if(i == 0) { // Default winning revision
+            newRev.SetUserProperties(props);
+            if(newRev.GetAttachment(&quot;image&quot;) != image) {
+                newRev.SetAttachment(&quot;image&quot;, &quot;image/jpg&quot;, image?.Content);
+            }
+        } else {
+            newRev.IsDeletion = true;
+        }
+
+        try {
+            newRev.Save(true);
+        } catch(Exception e) {
+            Debug.WriteLine($&quot;Cannot resolve conflicts with error: {e}&quot;);
+            return false;
+        }
+
+        i += 1;
+    }
+
+    return true;
+});
+</programlisting>
+    <para>
+      <block class="android" />
+    </para>
+    <programlisting language="java">
+// This code can be found in Application.java
+// in the resolveConflicts(List&lt;SavedRevision&gt;, Map&lt;String, Object&gt;, Attachment)
+private void resolveConflicts(final List&lt;SavedRevision&gt; revs, final Map&lt;String, Object&gt; desiredProps, final Attachment desiredImage) {
+    database.runInTransaction(new TransactionalTask() {
+        @Override
+        public boolean run() {
+            int i = 0;
+            for (SavedRevision rev : revs) {
+                UnsavedRevision newRev = rev.createRevision(); // Create new revision
+                if (i == 0) { // That's the current/winning revision
+                    newRev.setUserProperties(desiredProps);
+                    if (desiredImage != null) {
+                        try {
+                            newRev.setAttachment(&quot;image&quot;, &quot;image/jpg&quot;, desiredImage.getContent());
+                        } catch (CouchbaseLiteException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } else { // That's a conflicting revision, delete it
+                    newRev.setIsDeletion(true);
+                }
+
+                try {
+                    newRev.save(true); // Persist the new revision
+                } catch (CouchbaseLiteException e) {
+                    e.printStackTrace();
+                    return false;
+                }
+                i++;
+            }
+            return true;
+        }
+    });
+}
+</programlisting>
+    <para>
+      <block class="all" />
+    </para>
+    <sect3 id="try-it-out-2">
+      <title>Try it out</title>
+      <para>
+        <block class="ios" />
+      </para>
+      <orderedlist numeration="arabic">
+        <listitem>
+          <para>
+            To enable conflict resolution, set the
+            <literal>kConflictResolution</literal> constant in
+            <emphasis role="strong">AppDelegate.swift</emphasis> to
+            <literal>true</literal>.
+          </para>
+          <programlisting>
+let kConflictResolution = true
+</programlisting>
+        </listitem>
+        <listitem>
+          <para>
+            Perform the same actions and this time deleting the list
+            conflict doesn’t reveal the subsequent conflicting revision
+            anymore.
+          </para>
+          <para>
+            <img class="portrait" src="https://cl.ly/0b2y1o1U1L2u/image48.gif"  />
+          </para>
+        </listitem>
+      </orderedlist>
+      <para>
+        <block class="net" />
+      </para>
+      <orderedlist numeration="arabic" spacing="compact">
+        <listitem>
+          <para>
+            To enable conflict resolution, change
+            <literal>ConflictResolution = false</literal> to
+            <literal>ConflictResolution = true</literal> in the
+            <literal>CreateHint()</literal> method in
+            <emphasis role="strong">CoreApp.cs</emphasis>
+          </para>
+        </listitem>
+      </orderedlist>
+      <para>
+        ```c# var retVal = new CoreAppStartHint { LoginEnabled = false,
+        EncryptionEnabled = false, SyncEnabled = false, UsePrebuiltDB =
+        false, ConflictResolution = true, // The line to change Username
+        = &quot;todo&quot; };
+      </para>
+      <para>
+        return retVal; ```
+      </para>
+      <orderedlist numeration="arabic" spacing="compact">
+        <listitem override="2">
+          <para>
+            Perform the same actions and this time deleting the list
+            conflict doesn’t reveal the subsequent conflicting revision
+            anymore.
+          </para>
+        </listitem>
+      </orderedlist>
+      <para>
+        <block class="wpf" />
+      </para>
+      <para>
+        <img class="center-image" src="https://cl.ly/0o1z380g2w2w/image48w.gif"  />
+      </para>
+      <para>
+        <block class="xam" />
+      </para>
+      <para>
+        <emphasis role="strong">iOS</emphasis>
+        <img class="portrait" src="./img/image48.gif"  />
+        <emphasis role="strong">Android</emphasis>
+        <img class="portrait" src="./img/image48xa.gif"  />
+      </para>
+      <para>
+        <block class="android" />
+      </para>
+      <orderedlist numeration="arabic">
+        <listitem>
+          <para>
+            To enable conflict resolution, set the
+            <literal>mConflictResolution</literal> constant in
+            <emphasis role="strong">Application.java</emphasis> to
+            <literal>true</literal>.
+          </para>
+          <programlisting language="java">
+private Boolean mConflictResolution = true;
+</programlisting>
+        </listitem>
+        <listitem>
+          <para>
+            Perform the same actions and this time deleting the list
+            conflict doesn't reveal the subsequent conflicting revision
+            anymore.
+          </para>
+          <para>
+            <img class="portrait" src="https://cl.ly/1A0u402Z1t08/image48a.gif"  />
+          </para>
+        </listitem>
+      </orderedlist>
+      <para>
+        <block class="all" />
+      </para>
+    </sect3>
+  </sect2>
+  <sect2 id="n-way-conflict-resolution">
+    <title>N-way conflict resolution</title>
+    <para>
+      For task documents, you will follow the same steps as previously
+      except this time the conflict resolution will merge the
+      differences between the conflicting revisions into a new revision
+      before removing them. This time, one revision changes the title of
+      the task while the other revision marks it as completed.
+    </para>
+    <para>
+      <block class="ios" />
+    </para>
+    <para>
+      <img src="https://cl.ly/0q3A3F2E1Z2L/image67.gif" class="portrait" />
+    </para>
+    <blockquote>
+      <para>
+        <emphasis role="strong">Note:</emphasis> To see the same result,
+        open any list and shake the device
+        (<emphasis role="strong">^⌘Z</emphasis> on the simulator) to
+        create a task conflict. The code is located in the
+        <literal>motionEnded(_:with:)</literal> method of
+        <emphasis role="strong">TasksViewController.swift</emphasis>. Be
+        sure to disable conflict resolution to see the same result as
+        the animation above.
+      </para>
+    </blockquote>
+    <para>
+      <block class="wpf" />
+    </para>
+    <para>
+      <img src="https://cl.ly/451n2X1v1r0z/image67w.gif" class="center-image" />
+    </para>
+    <blockquote>
+      <para>
+        <emphasis role="strong">Note:</emphasis> To see the same result,
+        open any list and press Ctrl+C to create a task conflict. The
+        code is located in the <literal>TestConflict()</literal> method
+        of <emphasis role="strong">TasksModel.cs</emphasis>. Be sure to
+        disable conflict resolution to see the same result as the
+        animation above.
+      </para>
+    </blockquote>
+    <para>
+      <block class="android" />
+    </para>
+    <para>
+      <img src="https://cl.ly/1E1O0M1l333r/image67a.gif" class="portrait" />
+    </para>
+    <blockquote>
+      <para>
+        <emphasis role="strong">Note:</emphasis> To see the same result,
+        open any list and long press the floating action button to
+        create a task conflict. The code is located in the
+        <literal>createTaskConflict()</literal> method of
+        <emphasis role="strong">TasksFragment.java</emphasis>. Be sure
+        to disable conflict resolution to see the same result as the
+        animation above.
+      </para>
+    </blockquote>
+    <para>
+      <block class="all" />
+    </para>
+    <para>
+      Similarly to the previous section, you will learn how to resolve
+      conflicts, this time for &quot;task&quot; documents. In this case,
+      the resolution code will <emphasis role="strong">merge the
+      changes</emphasis> (i.e n-way merge) of the conflicting revisions
+      and promote the result as the current revision.
+    </para>
+    <para>
+      <block class="ios" />
+    </para>
+    <programlisting>
+// This code can be found in AppDelegate.swift
+// in the resolveConflicts() method
+let rows = conflictsLiveQuery?.rows
+while let row = rows?.nextRow() {
+    if let revs = row.conflictingRevisions, revs.count &gt; 1 {
+        let defaultWinning = revs[0]
+        let type = (defaultWinning[&quot;type&quot;] as? String) ?? &quot;&quot;
+        switch type {
+        // TRAINING: Automatic conflict resolution
+        case &quot;task-list&quot;, &quot;task-list.user&quot;:
+            let props = defaultWinning.userProperties
+            let image = defaultWinning.attachmentNamed(&quot;image&quot;)
+            resolveConflicts(revisions: revs, withProps: props, andImage: image)
+        // TRAINING: N-way merge conflict resolution
+        case &quot;task&quot;:
+            let merged = nWayMergeConflicts(revs: revs)
+            resolveConflicts(revisions: revs, withProps: merged.props, andImage: merged.image)
+        default:
+            break
+        }
+    }
+}
+</programlisting>
+    <para>
+      <block class="net" />
+    </para>
+    <programlisting language="c#">
+// This code can be found in CoreApp.cs
+// in the ResolveConflicts() method
+var rows = _conflictsLiveQuery?.Rows;
+if(rows == null) {
+    return;
+}
+
+foreach(var row in rows) {
+    var conflicts = row.GetConflictingRevisions().ToArray();
+    if(conflicts.Length &gt; 1) {
+        var defaultWinning = conflicts[0];
+        var type = defaultWinning.GetProperty(&quot;type&quot;) as string ?? &quot;&quot;;
+        switch(type) {
+            // TRAINING: Automatic conflict resolution
+            case &quot;task-list&quot;:
+            case &quot;task-list.user&quot;:
+                var props = defaultWinning.UserProperties;
+                var image = defaultWinning.GetAttachment(&quot;image&quot;);
+                ResolveConflicts(conflicts, props, image);
+                break;
+            // TRAINING: N-way merge conflict resolution
+            case &quot;task&quot;:
+                var merged = NWayMergeConflicts(conflicts);
+                ResolveConflicts(conflicts, merged.Item1, merged.Item2);
+                break;
+            default:
+                break;
+        }
+    }
+}
+</programlisting>
+    <para>
+      <block class="android" />
+    </para>
+    <programlisting language="java">
+// This code can be found in Application.java
+// in the resolveConflicts(QueryEnumerator) method
+for (QueryRow row : rows) {
+    List&lt;SavedRevision&gt; revs = row.getConflictingRevisions();
+    if (revs.size() &gt; 1) {
+        SavedRevision defaultWinning = revs.get(0);
+        String type = (String) defaultWinning.getProperty(&quot;type&quot;);
+        switch (type) {
+            // TRAINING: Automatic conflict resolution
+            case &quot;task-list&quot;:
+            case &quot;task-list.user&quot;:
+                Map&lt;String, Object&gt; props = defaultWinning.getUserProperties();
+                Attachment image = defaultWinning.getAttachment(&quot;image&quot;);
+                resolveConflicts(revs, props, image);
+                break;
+            // TRAINING: N-way merge conflict resolution
+            case &quot;task&quot;:
+                List&lt;Object&gt; mergedPropsAndImage = nWayMergeConflicts(revs);
+                resolveConflicts(revs, (Map&lt;String, Object&gt;) mergedPropsAndImage.get(0), (Attachment) mergedPropsAndImage.get(1));
+                break;
+        }
+    }
+}
+</programlisting>
+    <para>
+      <block class="all" />
+    </para>
+    <para>
+      Notice that for 'task' documents, the
+      <literal>nWayMergeConflicts()</literal> method is called to merge
+      the differences of conflicting revisions. The body of this method
+      is too long to copy here but you can find it in the same file.
+    </para>
+    <sect3 id="try-it-out-3">
+      <title>Try it out</title>
+      <para>
+        <block class="ios" />
+      </para>
+      <orderedlist numeration="arabic">
+        <listitem>
+          <para>
+            Enable conflict resolution.
+          </para>
+          <programlisting>
+let kConflictResolution = true
+</programlisting>
+        </listitem>
+        <listitem>
+          <para>
+            Build and run.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            Create a task conflict using the shake gesture (or
+            <emphasis role="strong">^⌘Z</emphasis>) and this time the
+            row contains the updated text
+            <emphasis role="strong">and</emphasis> is marked as
+            completed. <img src="img/image03.png" class="portrait" />
+          </para>
+        </listitem>
+      </orderedlist>
+      <para>
+        <block class="wpf" />
+      </para>
+      <orderedlist numeration="arabic" spacing="compact">
+        <listitem>
+          <para>
+            Enable conflict resolution
+          </para>
+        </listitem>
+      </orderedlist>
+      <para>
+        ```c# var retVal = new CoreAppStartHint { LoginEnabled = false,
+        EncryptionEnabled = false, SyncEnabled = false, UsePrebuiltDB =
+        false, ConflictResolution = true, // The line to change Username
+        = &quot;todo&quot; };
+      </para>
+      <para>
+        return retVal; ```
+      </para>
+      <orderedlist numeration="arabic">
+        <listitem override="2">
+          <para>
+            Build and run
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            Create a conflict by pressing 'Ctrl+C' and this time the row
+            contains the updated text
+            <emphasis role="strong">and</emphasis> is marked as
+            completed.
+          </para>
+          <figure>
+            <mediaobject>
+              <imageobject>
+                <imagedata fileref="img/image03w.png" />
+              </imageobject>
+              <textobject><phrase></phrase></textobject>
+            </mediaobject>
+          </figure>
+        </listitem>
+      </orderedlist>
+      <para>
+        <block class="xam" />
+      </para>
+      <orderedlist numeration="arabic" spacing="compact">
+        <listitem>
+          <para>
+            Enable conflict resolution
+          </para>
+        </listitem>
+      </orderedlist>
+      <para>
+        ```c# var retVal = new CoreAppStartHint { LoginEnabled = false,
+        EncryptionEnabled = false, SyncEnabled = false, UsePrebuiltDB =
+        false, ConflictResolution = true, // The line to change Username
+        = &quot;todo&quot; };
+      </para>
+      <para>
+        return retVal; ```
+      </para>
+      <orderedlist numeration="arabic" spacing="compact">
+        <listitem override="2">
+          <para>
+            Build and run
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            Create a task conflict using the shake gesture and this time
+            the row contains the updated text
+            <emphasis role="strong">and</emphasis> is marked as
+            completed.
+          </para>
+        </listitem>
+      </orderedlist>
+      <para>
+        <emphasis role="strong">iOS</emphasis> <inlinemediaobject>
+          <imageobject>
+            <imagedata fileref="img/image03.png" />
+          </imageobject>
+        </inlinemediaobject> <emphasis role="strong">Android</emphasis>
+      </para>
+      <para>
+        <block class="android" />
+      </para>
+      <orderedlist numeration="arabic">
+        <listitem>
+          <para>
+            Enable conflict resolution in
+            <emphasis role="strong">Application.java</emphasis>.
+          </para>
+          <programlisting language="java">
+private Boolean mConflictResolution = true;
+</programlisting>
+        </listitem>
+        <listitem>
+          <para>
+            Build and run.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            Create a task conflict using the shake gesture and this time
+            the row contains the updated text
+            <emphasis role="strong">and</emphasis> is marked as
+            completed.
+          </para>
+          <para>
+            <image src="img/image03a.png" class="portrait" />
+          </para>
+        </listitem>
+      </orderedlist>
+      <para>
+        <block class="all" />
+      </para>
+    </sect3>
+  </sect2>
+</sect1>
+<sect1 id="conclusion">
+  <title>Conclusion</title>
+  <para>
+    Well done! You've completed this lesson on enabling synchronization,
+    detecting and resolving conflicts. In the next lesson you'll learn
+    how to implement authentication and define access control rules in
+    the Sync Function. Feel free to share your feedback, findings or ask
+    any questions on the forums.
+  </para>
+</sect1>
+</article>

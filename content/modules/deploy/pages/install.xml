@@ -1,0 +1,912 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+                  "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<article>
+  <articleinfo>
+    <title>Install</title>
+  </articleinfo>
+<para>
+  In this lesson you'll learn how to install Sync Gateway and Couchbase
+  Server, our NoSQL database server.
+</para>
+<sect1 id="requirements">
+  <title>Requirements</title>
+  <para>
+    Three instances with the following:
+  </para>
+  <itemizedlist spacing="compact">
+    <listitem>
+      <para>
+        Centos 7
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        RAM &gt;= 2GB
+      </para>
+    </listitem>
+  </itemizedlist>
+</sect1>
+<sect1 id="getting-started">
+  <title>Getting Started</title>
+  <para>
+    This lesson contains some scripts to automatically deploy and
+    configure Sync Gateway with Couchbase Server. Download those scripts
+    on each VM using wget.
+  </para>
+  <programlisting language="bash">
+ssh vagrant@192.168.34.11
+wget https://cl.ly/1q300A3v3R1D/deploy.zip
+sudo yum install -y unzip
+unzip deploy.zip
+</programlisting>
+  <para>
+    Throughout this lesson, you will use different scripts located in
+    the <emphasis role="strong">deploy</emphasis> folder.
+  </para>
+</sect1>
+<sect1 id="architecture">
+  <title>Architecture</title>
+  <para>
+    The server-side architecture will be comprised of 2 nodes of Sync
+    Gateway and 1 node of Couchbase Server. Each node will run on a
+    different VM. The diagram below describes the architecture:
+  </para>
+  <itemizedlist spacing="compact">
+    <listitem>
+      <para>
+        Couchbase Server is running VM1
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        Sync Gateway is running on VM2 and VM3
+      </para>
+    </listitem>
+  </itemizedlist>
+  <figure>
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="img/image74.png" />
+      </imageobject>
+      <textobject><phrase></phrase></textobject>
+    </mediaobject>
+  </figure>
+</sect1>
+<sect1 id="install-couchbase-server">
+  <title>Install Couchbase Server</title>
+  <para>
+    To deploy Couchbase Mobile to production you must first get familiar
+    with Couchbase Server. It can deployed on a whole host of
+    <ulink url="http://www.couchbase.com/nosql-databases/downloads">operating
+    systems</ulink> and can scale horizontally with multiple nodes or
+    vertically by increasing the VM specs. The following script
+    downloads Couchbase Server and creates a new bucket called todo.
+  </para>
+  <sect2 id="try-it-out">
+    <title>Try it out</title>
+    <orderedlist numeration="arabic">
+      <listitem>
+        <para>
+          Log on VM1 (couchbase-server).
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          <literal>cd deploy</literal>
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Run the
+          <emphasis role="strong">install_couchbase_server.sh</emphasis>
+          script.
+        </para>
+        <programlisting language="bash">
+sudo ./install_couchbase_server.sh
+</programlisting>
+      </listitem>
+      <listitem>
+        <para>
+          Log on the Couchbase Server Admin Console on
+          <ulink url="http://VM1_IP:8091">http://VM1_IP:8091</ulink>
+          with the user credentials that were created above
+          (<emphasis role="strong">Administrator/password</emphasis>).
+        </para>
+        <para>
+          <img src="https://cl.ly/2v400A2s0I2v/image68.gif" class="center-image" />
+        </para>
+      </listitem>
+    </orderedlist>
+  </sect2>
+</sect1>
+<sect1 id="install-sync-gateway">
+  <title>Install Sync Gateway</title>
+  <para>
+    Sync Gateway is the middleman server that exposes a database API for
+    Couchbase Lite databases to replicate to and from. It connects
+    internally to a Couchbase Server bucket to persist the documents.
+  </para>
+  <para>
+    In production, the configuration file should look similar to the one
+    used in development except that instead of using
+    <emphasis role="strong">walrus:</emphasis> for the bucket it will
+    connect to an instance of Couchbase Server URL as shown below.
+  </para>
+  <programlisting language="javascript">
+{
+  &quot;interface&quot;:&quot;:4984&quot;,
+  &quot;log&quot;: [&quot;HTTP&quot;, &quot;Auth&quot;],
+  &quot;databases&quot;: {
+    &quot;todo&quot;: {
+      &quot;server&quot;: &quot;http://localhost:8091&quot;,
+      &quot;bucket&quot;: &quot;todo&quot;,
+      ...
+    }
+  }
+}
+</programlisting>
+  <para>
+    The <literal>install_sync_gateway.sh</literal> script downloads and
+    installs Sync Gateway 1.3. Then it restarts the
+    <literal>sync_gateway</literal> service with the configuration file
+    (<literal>deploy/sync-gateway-config.json</literal>) of the todo
+    application.
+  </para>
+  <sect2 id="try-it-out-1">
+    <title>Try it out</title>
+    <orderedlist numeration="arabic">
+      <listitem>
+        <para>
+          Log on VM2 (sync-gateway).
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          <literal>cd deploy</literal>
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Run the Sync Gateway install script passing the IP of VM1
+          where Couchbase Server is running.
+        </para>
+        <programlisting language="bash">
+sudo ./install_sync_gateway.sh VM1
+</programlisting>
+      </listitem>
+      <listitem>
+        <para>
+          Monitor the log file.
+        </para>
+        <programlisting language="bash">
+sudo tail -f /home/sync_gateway/logs/sync_gateway_error.log
+</programlisting>
+      </listitem>
+      <listitem>
+        <para>
+          Send an <literal>/{db}/_all_docs</literal> request with a
+          user's credentials. A user
+          (<emphasis role="strong">user1/pass</emphasis>) is already
+          defined in the Sync Gateway configuration file.
+        </para>
+        <programlisting language="bash">
+curl -X GET 'http://user1:pass@localhost:4984/todo/_all_docs'
+</programlisting>
+        <figure>
+          <mediaobject>
+            <imageobject>
+              <imagedata fileref="https://cl.ly/1j1q3p333D47/image75.gif" />
+            </imageobject>
+            <textobject><phrase></phrase></textobject>
+          </mediaobject>
+        </figure>
+      </listitem>
+      <listitem>
+        <para>
+          Repeat the same steps on VM3 (sync-gateway).
+        </para>
+      </listitem>
+    </orderedlist>
+  </sect2>
+</sect1>
+<sect1 id="using-a-reverse-proxy">
+  <title>Using a reverse proxy</title>
+  <para>
+    With two Sync Gateway nodes you can now configure the reverse proxy
+    and update the sync endpoint in the mobile app to start replications
+    pointing to the reverse proxy instead of an individual Sync Gateway
+    instance. In this example the NGINX instance will run on VM4.
+  </para>
+  <sect2 id="try-it-out-2">
+    <title>Try it out</title>
+    <orderedlist numeration="arabic">
+      <listitem>
+        <para>
+          Log on VM4 (nginx).
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          <literal>cd deploy</literal>
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Run the NGINX install script passing the IP of VM2 and VM3
+          where the Sync Gateway instances are running.
+        </para>
+        <programlisting language="bash">
+sudo ./configure_nginx.sh VM2 VM3
+</programlisting>
+      </listitem>
+      <listitem>
+        <para>
+          Send an <literal>/{db}/_all_docs</literal> request with a
+          user's credentials to the NGINX port. A user
+          (<emphasis role="strong">user1/pass</emphasis>) is already
+          defined in the Sync Gateway configuration file.
+        </para>
+        <programlisting language="bash">
+curl -X GET 'http://user1:pass@localhost:8000/todo/_all_docs'
+</programlisting>
+        <figure>
+          <mediaobject>
+            <imageobject>
+              <imagedata fileref="https://cl.ly/392N2E2K0J0T/image76.gif" />
+            </imageobject>
+            <textobject><phrase></phrase></textobject>
+          </mediaobject>
+        </figure>
+      </listitem>
+    </orderedlist>
+    <para>
+      <block class="dockercloud">
+    </para>
+  </sect2>
+</sect1>
+<sect1 id="docker-cloud">
+  <title>Docker Cloud</title>
+  <para>
+    In this lesson you'll learn how to deploy Couchbase Server and Sync
+    Gateway on Docker Cloud behind a load balancer.
+  </para>
+  <sect2 id="launch-node-cluster">
+    <title>Launch node cluster</title>
+    <para>
+      Launch a node cluster with the following settings:
+    </para>
+    <itemizedlist spacing="compact">
+      <listitem>
+        <para>
+          Provider: AWS
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Region: us-east-1 (or whatever region makes sense for you)
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          VPC: Auto (if you don't choose auto, you will need to
+          customize your security group)
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Type/Size: m3.medium or greater
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          IAM Roles: None
+        </para>
+      </listitem>
+    </itemizedlist>
+    <figure>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="img/docker_cloud_launch_nodecluster.png" />
+        </imageobject>
+        <textobject><phrase></phrase></textobject>
+      </mediaobject>
+    </figure>
+  </sect2>
+  <sect2 id="create-couchbase-server-service">
+    <title>Create Couchbase Server service</title>
+    <para>
+      Go to <emphasis role="strong">Services</emphasis> and hit the
+      <emphasis role="strong">Create</emphasis> button:
+    </para>
+    <figure>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="img/docker_cloud_service_create.png" />
+        </imageobject>
+        <textobject><phrase></phrase></textobject>
+      </mediaobject>
+    </figure>
+    <para>
+      Click the globe icon and <emphasis role="strong">Search Docker
+      Hub</emphasis> for <literal>couchbase/server</literal>. You should
+      select the <literal>couchbase/server</literal> image:
+    </para>
+    <figure>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="img/docker_cloud_create_cbs_service.png" />
+        </imageobject>
+        <textobject><phrase></phrase></textobject>
+      </mediaobject>
+    </figure>
+    <para>
+      Hit the <emphasis role="strong">Select</emphasis> button and fill
+      out the following values on the Services Wizard:
+    </para>
+    <itemizedlist spacing="compact">
+      <listitem>
+        <para>
+          Service Name: couchbaseserver
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Containers: 2
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Deployment strategy: High Availability
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Autorestart: On failure
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Network: bridge
+        </para>
+      </listitem>
+    </itemizedlist>
+    <figure>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="img/docker_cloud_create_cbs_service2.png" />
+        </imageobject>
+        <textobject><phrase></phrase></textobject>
+      </mediaobject>
+    </figure>
+    <para>
+      In the Ports section: Enable
+      <emphasis role="strong">published</emphasis> on each port and set
+      the Node Port to match the Container Port
+    </para>
+    <figure>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="img/docker_cloud_create_cbs_service3.png" />
+        </imageobject>
+        <textobject><phrase></phrase></textobject>
+      </mediaobject>
+    </figure>
+    <para>
+      Hit the <emphasis role="strong">Create and Deploy</emphasis>
+      button. After a few minutes, you should see the Couchbase Server
+      vervice running:
+    </para>
+    <figure>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="img/docker_cloud_couchbase_server_running.png" />
+        </imageobject>
+        <textobject><phrase></phrase></textobject>
+      </mediaobject>
+    </figure>
+  </sect2>
+  <sect2 id="configure-couchbase-server-container-1-create-buckets">
+    <title>Configure Couchbase Server Container 1 + Create
+    Buckets</title>
+    <para>
+      Go to the <emphasis role="strong">Container</emphasis> section and
+      choose <emphasis role="strong">couchbaseserver-1</emphasis>.
+    </para>
+    <figure>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="img/docker_cloud_couchbase_container1.png" />
+        </imageobject>
+        <textobject><phrase></phrase></textobject>
+      </mediaobject>
+    </figure>
+    <para>
+      Copy and paste the domain name
+      (<literal>eca0fe88-7fee-446b-b006-99e8cae0dabf.node.dockerapp.io</literal>)
+      into your browser, adding 8091 at the end
+      (<literal>eca0fe88-7fee-446b-b006-99e8cae0dabf.node.dockerapp.io:8091</literal>)
+    </para>
+    <para>
+      You should now see the Couchbase Server setup screen:
+    </para>
+    <figure>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="img/docker_cloud_couchbase_setup.png" />
+        </imageobject>
+        <textobject><phrase></phrase></textobject>
+      </mediaobject>
+    </figure>
+    <para>
+      You will need to find the <emphasis>container IP</emphasis> of
+      Couchbase Server in order to configure it. To do that, go to the
+      <emphasis role="strong">Terminal</emphasis> section of
+      <emphasis role="strong">Containers/couchbaseserver-1</emphasis>,
+      and enter <literal>ifconfig</literal>.
+    </para>
+    <figure>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="img/docker_cloud_couchbase_container_terminal.png" />
+        </imageobject>
+        <textobject><phrase></phrase></textobject>
+      </mediaobject>
+    </figure>
+    <para>
+      Look for the <literal>ethwe1</literal> interface and make a note
+      of the ip: <literal>10.7.0.2</literal> -- you will need it in the
+      next step.
+    </para>
+    <para>
+      Switch back to the browser on the Couchbase Server setup screen.
+      Leave the <emphasis role="strong">Start a new cluster</emphasis>
+      button checked. Enter the <literal>10.7.0.2</literal> ip address
+      (or whatever was returned for your <literal>ethwe1</literal>
+      interface) under the <emphasis role="strong">Hostname</emphasis>
+      field.
+    </para>
+    <figure>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="img/docker_cloud_couchbase_server_hostname.png" />
+        </imageobject>
+        <textobject><phrase></phrase></textobject>
+      </mediaobject>
+    </figure>
+    <para>
+      and hit the <emphasis role="strong">Next</emphasis> button.
+    </para>
+    <para>
+      For the rest of the wizard, you can:
+    </para>
+    <itemizedlist spacing="compact">
+      <listitem>
+        <para>
+          skip adding the samples
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          skip adding the default bucket
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          uncheck <emphasis role="strong">Update
+          Notifications</emphasis>
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          leave Product Registration fields blank
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          check &quot;I agree ..&quot;
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          make sure to write down your password somewhere, otherwise you
+          will be locked out of the web interface
+        </para>
+      </listitem>
+    </itemizedlist>
+    <para>
+      Create a new bucket for your application:
+    </para>
+    <figure>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="img/docker_cloud_create_bucket.png" />
+        </imageobject>
+        <textobject><phrase></phrase></textobject>
+      </mediaobject>
+    </figure>
+  </sect2>
+  <sect2 id="configure-couchbase-server-container-2">
+    <title>Configure Couchbase Server Container 2</title>
+    <para>
+      Go to the <emphasis role="strong">Container</emphasis> section and
+      choose <emphasis role="strong">couchbaseserver-2</emphasis>.
+    </para>
+    <para>
+      As in the previous step, copy and paste the domain name
+      (<literal>4d8c7be0-3f47-471b-85df-d2471336af75.node.dockerapp.io</literal>)
+      into your browser, adding 8091 at the end
+      (<literal>4d8c7be0-3f47-471b-85df-d2471336af75.node.dockerapp.io:8091</literal>)
+    </para>
+    <para>
+      Hit <emphasis role="strong">Setup</emphasis> and choose
+      <emphasis role="strong">Join a cluster now</emphasis> with
+      settings:
+    </para>
+    <itemizedlist spacing="compact">
+      <listitem>
+        <para>
+          IP Address: 10.7.0.2 (the IP address you setup the first
+          Couchbase Server node with)
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Username: Administrator (unless you used a different username
+          in the previous step)
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Password: enter the password you used in the previous step
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Configure Server Hostname: 10.7.0.3 (you can double check this
+          by going to the <emphasis role="strong">Terminal</emphasis>
+          for
+          <emphasis role="strong">Containers/couchbaseserver-2</emphasis>
+          and running <literal>ifconfig</literal> and looking for the ip
+          of the <literal>ethwe1</literal> interface)
+        </para>
+      </listitem>
+    </itemizedlist>
+    <figure>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="img/docker_cloud_join_couchbase_cluster.png" />
+        </imageobject>
+        <textobject><phrase></phrase></textobject>
+      </mediaobject>
+    </figure>
+    <para>
+      Trigger a rebalance by hitting the
+      <emphasis role="strong">Rebalance</emphasis> button:
+    </para>
+    <figure>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="img/docker_cloud_trigger_rebalance.png" />
+        </imageobject>
+        <textobject><phrase></phrase></textobject>
+      </mediaobject>
+    </figure>
+  </sect2>
+  <sect2 id="sync-gateway-service">
+    <title>Sync Gateway Service</title>
+    <para>
+      Now create a Sync Gateway service.
+    </para>
+    <para>
+      Before going through the steps in the Docker Cloud web UI, you
+      will need to have a Sync Gateway configuration somewhere on the
+      publicly accessible internet.
+    </para>
+    <para>
+      <emphasis>Warning: This is not a secure solution! Do not use any
+      sensitive passwords if you follow these steps</emphasis>
+    </para>
+    <para>
+      To make it more secure, you could:
+    </para>
+    <itemizedlist spacing="compact">
+      <listitem>
+        <para>
+          Use a Volume mount and have Sync Gateway read the
+          configuration from the container filesystem
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Use a HTTPS + Basic Auth for the URL that hosts the Sync
+          Gateway configuration
+        </para>
+      </listitem>
+    </itemizedlist>
+    <para>
+      Create a Sync Gateway configuration on a
+      <ulink url="https://gist.github.com/tleyden/f260b2d9b2ef828fadfad462f0014aed">github
+      gist</ulink> and get the
+      <ulink url="https://gist.githubusercontent.com/tleyden/f260b2d9b2ef828fadfad462f0014aed/raw/8f544be6b265c0b57848b2ba36fb3e0f958ddcc9/gistfile1.txt">raw
+      url</ulink> for the gist.
+    </para>
+    <itemizedlist spacing="compact">
+      <listitem>
+        <para>
+          Make sure to set the <literal>server</literal> value to
+          <literal>http://couchbaseserver:8091</literal> so that it can
+          connect to the Couchbase Service setup in a previous step.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Use the bucket created in the Couchbase Server setup step
+          above
+        </para>
+      </listitem>
+    </itemizedlist>
+    <para>
+      In the Docker Cloud web UI, go to
+      <emphasis role="strong">Services</emphasis> and hit the
+      <emphasis role="strong">Create</emphasis> button again.
+    </para>
+    <para>
+      Click the globe icon and <emphasis role="strong">Search Docker
+      Hub</emphasis> for <literal>couchbase/sync-gateway</literal>. You
+      should select the <literal>couchbase/sync-gateway</literal> image.
+    </para>
+    <para>
+      Hit the <emphasis role="strong">Select</emphasis> button and fill
+      out the following values on the Services Wizard:
+    </para>
+    <itemizedlist spacing="compact">
+      <listitem>
+        <para>
+          Service Name: sync-gateway
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Containers: 2
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Deployment strategy: High Availability
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Autorestart: On failure
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Network: bridge
+        </para>
+      </listitem>
+    </itemizedlist>
+    <figure>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="img/docker_cloud_sync_gateway_service.png" />
+        </imageobject>
+        <textobject><phrase></phrase></textobject>
+      </mediaobject>
+    </figure>
+    <para>
+      In the <emphasis role="strong">Container Configuration</emphasis>
+      section, customize the <emphasis role="strong">Run
+      Command</emphasis> to use the raw URL of your gist, eg:
+      <literal>https://gist.githubusercontent.com/tleyden/f260b2d9b2ef828fadfad462f0014aed/raw/8f544be6b265c0b57848</literal>
+    </para>
+    <figure>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="img/docker_cloud_configure_sg_service.png" />
+        </imageobject>
+        <textobject><phrase></phrase></textobject>
+      </mediaobject>
+    </figure>
+    <para>
+      In the <emphasis role="strong">Ports</emphasis> section, use the
+      following values:
+    </para>
+    <figure>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="img/docker_cloud_configure_sg_service_ports.png" />
+        </imageobject>
+        <textobject><phrase></phrase></textobject>
+      </mediaobject>
+    </figure>
+    <para>
+      In the <emphasis role="strong">Links</emphasis> section, choose
+      <emphasis role="strong">couchbaseserver</emphasis> and hit the
+      <emphasis role="strong">Plus</emphasis> button
+    </para>
+    <figure>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="img/docker_cloud_sg_service_links.png" />
+        </imageobject>
+        <textobject><phrase></phrase></textobject>
+      </mediaobject>
+    </figure>
+    <para>
+      Click the <emphasis role="strong">Create and Deploy</emphasis>
+      button.
+    </para>
+  </sect2>
+  <sect2 id="verify-sync-gateway">
+    <title>Verify Sync Gateway</title>
+    <para>
+      Click the <emphasis role="strong">Containers</emphasis> section
+      and you should have two Couchbase Server and two Sync Gateway
+      containers running.
+    </para>
+    <figure>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="img/docker_cloud_cbs_sg_containers.png" />
+        </imageobject>
+        <textobject><phrase></phrase></textobject>
+      </mediaobject>
+    </figure>
+    <para>
+      Click the <emphasis role="strong">sync-gateway-1</emphasis>
+      container and get the domain name
+      (<literal>eca0fe88-7fee-446b-b006-99e8cae0dabf.node.dockerapp.io</literal>)
+      and paste it in your browser with a trailing
+      <literal>:4984</literal>, eg
+      <literal>eca0fe88-7fee-446b-b006-99e8cae0dabf.node.dockerapp.io:4984</literal>
+    </para>
+    <para>
+      You should see the following JSON response:
+    </para>
+    <programlisting>
+{
+   &quot;couchdb&quot;:&quot;Welcome&quot;,
+   &quot;vendor&quot;:{
+      &quot;name&quot;:&quot;Couchbase Sync Gateway&quot;,
+      &quot;version&quot;:1.3
+   },
+   &quot;version&quot;:&quot;Couchbase Sync Gateway/1.3.1(16;f18e833)&quot;
+}
+</programlisting>
+  </sect2>
+  <sect2 id="setup-load-balancer">
+    <title>Setup Load Balancer</title>
+    <para>
+      Click the <emphasis role="strong">Services</emphasis> section and
+      hit the <emphasis role="strong">Create</emphasis> button. In the
+      bottom right hand corner look for
+      <emphasis role="strong">Proxies</emphasis> and choose
+      <emphasis role="strong">dockercloud/haproxy</emphasis>
+    </para>
+    <figure>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="img/docker_cloud_create_load_balancer_service1.png" />
+        </imageobject>
+        <textobject><phrase></phrase></textobject>
+      </mediaobject>
+    </figure>
+    <para>
+      General Settings:
+    </para>
+    <itemizedlist spacing="compact">
+      <listitem>
+        <para>
+          Service Name: sgloadbalancer
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Containers: 1
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Deployment Strategy: High Availability
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Autorestart: Always
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Network: Bridge
+        </para>
+      </listitem>
+    </itemizedlist>
+    <para>
+      Ports:
+    </para>
+    <itemizedlist spacing="compact">
+      <listitem>
+        <para>
+          Port 80 should be <emphasis role="strong">Published</emphasis>
+          and the <emphasis role="strong">Node Port</emphasis> should be
+          set to <literal>80</literal>
+        </para>
+      </listitem>
+    </itemizedlist>
+    <para>
+      Links:
+    </para>
+    <itemizedlist spacing="compact">
+      <listitem>
+        <para>
+          Choose <emphasis role="strong">sync-gateway</emphasis> and hit
+          the <emphasis role="strong">Plus</emphasis> button
+        </para>
+      </listitem>
+    </itemizedlist>
+    <figure>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="img/docker_cloud_haproxy_ports_links.png" />
+        </imageobject>
+        <textobject><phrase></phrase></textobject>
+      </mediaobject>
+    </figure>
+    <para>
+      Hit the <emphasis role="strong">Create and Deploy</emphasis>
+      button
+    </para>
+  </sect2>
+  <sect2 id="verify-load-balancer">
+    <title>Verify Load Balancer</title>
+    <para>
+      Click the <emphasis role="strong">Containers</emphasis> section
+      and choose <emphasis role="strong">sgloadbalancer-1</emphasis>.
+    </para>
+    <figure>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="img/docker_cloud_sgloadbalancer_container.png" />
+        </imageobject>
+        <textobject><phrase></phrase></textobject>
+      </mediaobject>
+    </figure>
+    <para>
+      Copy and paste the domain name (eg,
+      <literal>eca0fe88-7fee-446b-b006-99e8cae0dabf.node.dockerapp.io</literal>)
+      into your browser.
+    </para>
+    <para>
+      You should see the following JSON response:
+    </para>
+    <programlisting>
+{
+   &quot;couchdb&quot;:&quot;Welcome&quot;,
+   &quot;vendor&quot;:{
+      &quot;name&quot;:&quot;Couchbase Sync Gateway&quot;,
+      &quot;version&quot;:1.3
+   },
+   &quot;version&quot;:&quot;Couchbase Sync Gateway/1.3.1(16;f18e833)&quot;
+}
+</programlisting>
+    <para>
+      Congratulations! You have just setup a Couchbase Server + Sync
+      Gateway cluster on Docker Cloud.
+    </para>
+    <para>
+      <block class="all" />
+    </para>
+  </sect2>
+  <sect2 id="conclusion">
+    <title>Conclusion</title>
+    <para>
+      Well done! You've completed this lesson on installing Sync Gateway
+      and Couchbase Server. In the next lesson you'll learn how to
+      perform an upgrade on Sync Gateway. Feel free to share your
+      feedback, findings or ask any questions on the forums.
+    </para>
+  </sect2>
+</sect1>
+</article>
