@@ -1,0 +1,753 @@
+= Using the Database
+:source-language: swift
+
+In this lesson you'll be introduced to Couchbase Lite, our embedded NoSQL database.
+You`'ll learn how to create, read, update, delete, and query data using Couchbase Lite.
+
+*NOTE:* To make things a bit more exciting, you may want to use the pre-built database containing a list of Groceries.
+Refer to the xref:{source-language}/create-database.adoc[Create a Database] lesson to learn how to use it.
+
+== Create a Document
+
+In Couchbase Lite, the primary entity stored in a database is called a document instead of a row or record.
+A document's body takes the form of a JSON object -- a collection of key/value pairs where the values can be different types of data such as numbers, strings, arrays or even nested objects.
+The code below creates a new list document.
+
+[source]
+----
+
+// This code can be found in ListsViewController.swift
+// in the createTaskList(name:) method
+let properties: [String : Any] = [
+    type: task-list,
+    name: name,
+    owner: username
+]
+
+let docId = username + . + NSUUID().uuidString
+guard let doc = database.document(withID: docId) else {
+    Ui.showMessageDialog(onController: self, withTitle: Error,
+        withMessage: Couldn't save task list)
+    return nil
+}
+
+do {
+    return try doc.putProperties(properties)
+} catch let error as NSError {
+    Ui.showMessageDialog(onController: self, withTitle: Error,
+        withMessage: Couldn't save task list, withError: error)
+    return nil
+}
+----
+
+[source,c#]
+----
+
+// This code can be found in TaskListsModel.cs
+// in the CreateTaskList(string) method
+var properties = new Dictionarystring, object {
+    [type] = TaskListType,
+    [name] = name,
+    [owner] = Username
+};
+
+var docId = ${Username}.{Guid.NewGuid()};
+var doc = default(Document);
+try {
+    doc = _db.GetDocument(docId);
+    return doc.PutProperties(properties);
+} catch(Exception e) {
+    var newException = new ApplicationException(Couldn't save task list, e);
+    throw newException;
+}
+----
+
+
+// <block class="android"/>
+
+
+[source,java]
+----
+
+// This code can be found in ListsActivity.java
+// in the createTaskList(String) method
+MapString, Object properties = new HashMapString, Object();
+properties.put(type, task-list);
+properties.put(name, title);
+properties.put(owner, mUsername);
+
+String docId = mUsername + . + UUID.randomUUID();
+
+Document document = mDatabase.getDocument(docId);
+document.putProperties(properties);
+----
+
+
+// <block class="all"/>
+
+Here you're creating an unsaved document instance with a pre-defined *document ID* (i.e.
+the **_id** property in the document`'s JSON body) using the `documentWithID` method.
+The ID follows the form `{username}.{uuid}` where username is the name of the user logged in.
+Alternatively, you could also use the `createDocument` method to let the database generate a random *ID* for you.
+
+=== Try it out
+
+. Build and run.
+. Create a new list using the '+' button on the application's 'Task lists' screen.
+. A new list document is saved to the database.
++
+image:image40.png[,400]
+
+. Build and run.
+. Create a new list using the '+' button on the application's 'Task lists' screen.
+. A new list document is saved to the database.
+
+*iOS*
+// <img src="img/image40.png" class="portrait"/>
+*Android*
+// <img src="img/image40xa.png" class="portrait"/>
+
+
+// <block class="wpf"/>
+
+
+. Build and run
+. Create a new list using the 'Action - Add List...' command.
+. A new list document is saved to the database.
+
+
+// <img src="img/image40w.png" class="center-image"/>
+
+
+// <block class="android"/>
+
+
+. Build and run.
+. Create a new list using the '+' button on the application's 'Task lists' screen.
+. A new list document is saved to the database.
++
+// <img src="img/image40a.png" class="portrait"/>
+
+
+// <block class="all"/>
+
+
+*Exercise:* Update the code to persist your name as the value for the `name` field.
+Then create a new list and notice that your name is displayed instead of the text input value.
+
+== Update a Document
+
+To update a document, you must retrieve it from the database, modify the desired properties and write them back to the database.
+The `update` method does this operation for you in the form of a callback.
+The code below updates a list's name property.
+
+[source]
+----
+
+// This code can be found in ListsViewController.swift
+// in the updateTaskList(list:withName:) method
+do {
+    try list.update { newRev in
+        newRev[name] = name
+        return true
+    }
+} catch let error as NSError {
+    Ui.showMessageDialog(onController: self, withTitle: Error,
+        withMessage: Couldn't update task list, withError: error)
+}
+----
+
+
+// <block class="net"/>
+
+
+[source,c#]
+----
+
+// This code can be found in TaskListModel.cs
+// in the Edit(string) method
+try {
+    _document.Update(rev =
+    {
+        var props = rev.UserProperties;
+        var lastName = props[name];
+        props[name] = name;
+        rev.SetUserProperties(props);
+
+        return !String.Equals(name, lastName);
+    });
+} catch(Exception e) {
+    throw new ApplicationException(Couldn't edit task list, e);
+}
+----
+
+
+// <block class="android"/>
+
+
+[source,java]
+----
+
+// This code can be in ListsActivity.java
+// in the updateList(Document) method
+list.update(new Document.DocumentUpdater() {
+    @Override
+    public boolean update(UnsavedRevision newRevision) {
+        MapString, Object props = newRevision.getUserProperties();
+        props.put(name, input.getText().toString());
+        newRevision.setUserProperties(props);
+        return true;
+    }
+});
+----
+
+Your callback code can modify this object's properties as it sees fit; after it returns, the modified revision is saved and becomes the current one.
+
+=== Try it out
+
+. Build and run.
+. Swipe to the left on a row to reveal the *Edit* button and update the List name in the pop-up.
++
+image:image04.png[]
+
+. Build and run
+. On iOS, swipe to the left, and on Android long press on a row to reveal the *Edit* button and update the List name in the pop-up.
+
+*iOS*
+// <img src="img/image04.png" class="portrait"/>
+*Android*
+// <img src="img/image04xa.png" class="portrait"/>
+
+
+// <block class="wpf"/>
+
+
+. Build and run
+. Right click on a row to reveal the *Edit* context action. Click it and update the List name in the pop-up.
+
+
+// <img src="img/image04w.png" class="center-image"/>
+
+
+// <block class="android"/>
+
+
+. Build and run.
+. Long press on a row to reveal the action items. Click the update menu to change title of a list.
+
+
+// <img src="img/image04a.png" class="portrait"/>
+
+
+*Challenge:* Modify the code to uppercase the text inserted before persisting the document to the database.
+
+
+// <block class="all"/>
+
+
+== Delete a Document
+
+A document can be deleted using the `delete` method.
+This operation actually creates a new revision in order to propagate the deletion to other clients.
+The concept of revisions will be covered in more detail in the next lesson.
+The code below deletes a list.
+
+[source]
+----
+
+// This code can be found in ListsViewController.swift
+// in the deleteTaskList(list:) method
+do {
+    try list.delete()
+} catch let error as NSError {
+    Ui.showMessageDialog(onController: self, withTitle: Error,
+        withMessage: Couldn't delete task list, withError: error)
+}
+----
+
+
+// <block class="net"/>
+
+
+[source,c#]
+----
+
+// This code can be found in TaskListModel.cs
+// in the Delete() method
+try {
+    _document.Delete();
+} catch(Exception e) {
+    throw new ApplicationException(Couldn't delete task list, e);
+}
+----
+
+
+// <block class="android"/>
+
+
+[source,java]
+----
+
+// This code can be found in ListsActivity.java
+// in the deleteList(Document) method
+try {
+    list.delete();
+} catch (CouchbaseLiteException e) {
+    e.printStackTrace();
+}
+----
+
+*Challenge:* Add a document change listener to detect when the document gets deleted.
+The https://docs.couchbase.com/couchbase-lite/1.4/{source-language}.html#document-change-notifications[document change notification] documentation will be helpful for this challenge.
+
+=== Try it out
+
+. Build and run.
+. Click the *Delete* action to delete a list.
++
+image:image46.gif[,400]
+
+. Build and run.
+. On iOS, swipe to the left, and on Android long press on a row to reveal the *Delete* button.
+
+*iOS*
+// <img src="img/image46.gif" class="portrait"/>
+*Android*
+// <img src="img/image46a.gif" class="portrait"/>
+
+
+// <block class="wpf"/>
+
+
+. Build and run.
+. Right click on a row to reveal the *Delete* context action.
+
+
+// <img src="https://cl.ly/2Z1s2z2e0Q0N/image46w.gif" class="center-image"/>
+
+
+// <block class="android"/>
+
+
+. Build and run.
+. Click the *Delete* action to delete a list.
++
+// <img class="portrait" src="https://cl.ly/262v3o381j2a/image46a.gif"/>
+
+
+// <block class="all"/>
+
+
+== Query Documents
+
+The way to query data in Couchbase Lite is by registering a View and then running a Query on it with QueryOptions.
+The first thing to know about Couchbase Views is that they have nothing to do with UI views.
+
+A https://docs.couchbase.com/couchbase-lite/1.4/{source-language}.html#view[View] in Couchbase is a persistent index of documents in a database, which you then query to find data.
+The main component of a View is its map function.
+It takes a document`'s JSON as input, and emits (outputs) any number of key/value pairs to be indexed.
+First, you will define the view to index the documents of type **task-list**.
+The diagram below shows the result of the code you will review shortly.
+
+image:img.001.png[]
+
+So you can remember that a view index is a list of key/value pairs, sorted by key.
+In addition, the view`'s logic is written in the native language of the platform you`'re developing on.
+The code below indexes documents as shown on the diagram above.
+Then it create the Query and monitors the result set using a Live Query.
+
+[source]
+----
+
+// This code can be found in ListsViewController.swift
+// in the setupViewAndQuery method
+let listsView = database.viewNamed(list/listsByName)
+if listsView.mapBlock == nil {
+    listsView.setMapBlock({ (doc, emit) in
+        if let type: String = doc[type] as? String, let name = doc[name]
+            , type == task-list {
+                emit(name, nil)
+        }
+    }, version: 1.0)
+}
+
+listsLiveQuery = listsView.createQuery().asLive()
+listsLiveQuery.addObserver(self, forKeyPath: rows, options: .new, context: nil)
+listsLiveQuery.start()
+----
+
+
+// <block class="net"/>
+
+
+[source,c#]
+----
+
+// This code can be found in TaskListsModel.cs
+// in the SetupViewAndQuery() method
+var view = _db.GetView(list/listsByName);
+view.SetMap((doc, emit) =
+{
+    if(!doc.ContainsKey(type) || doc[type] as string != task-list || !doc.ContainsKey(name)) {
+        return;
+    }
+
+    emit(doc[name], null);
+}, 1.0);
+
+_byNameQuery = view.CreateQuery().ToLiveQuery();
+
+// ...Changed lamdba omitted for brevity
+
+_byNameQuery.Start();
+----
+
+
+// <block class="android"/>
+
+
+[source,java]
+----
+
+// This code can be found in ListsActivity.java
+// in the setupViewAndQuery() method
+com.couchbase.lite.View listsView = mDatabase.getView(list/listsByName);
+if (listsView.getMap() == null) {
+    listsView.setMap(new Mapper() {
+        @Override
+        public void map(MapString, Object document, Emitter emitter) {
+            String type = (String) document.get(type);
+            if (task-list.equals(type)) {
+                emitter.emit(document.get(name), null);
+            }
+        }
+    }, 1.0);
+}
+
+listsLiveQuery = listsView.createQuery().toLiveQuery();
+----
+
+The `viewNamed` method returns a `View` object on which the map function can be set.
+The map function is indexing documents where the type property is equal to task-list.
+Each cell on the screen will contain a list name and nothing else.
+For that reason, you can emit the name property as the key and nil is the value.
+If you also wanted to display the owner of the list in the row you could emit the `owner` property as the value.
+
+The `listsView.createQuery()` method returns a `Query` object which has a *run* method to return the results as a `QueryEnumerator` object.
+However, in this case, you are hooking into a `Live
+    Query` to keep monitoring the database for new results.
+Any time the result of that query changes through user interaction or synchronization, it will notify your application via the change event.
+A live query provides an easy way to build reactive UIs, which will be especially useful when you enable sync in the xref:{source-language}/adding-synchronization.adoc[Adding
+    Synchronization] lesson.
+The change event is triggered as a result of user interaction locally as well as during synchronization with Sync Gateway.
+
+In the code blow, the notifications are posted to the application code using the KVO observer method.
+
+[source]
+----
+
+// This code can be found in ListsViewController.swift
+// in the observeValue(forKeyPath:of:_:_:) method
+override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+    if object as? NSObject == listsLiveQuery {
+        reloadTaskLists()
+    } else if object as? NSObject == incompTasksCountsLiveQuery {
+        reloadIncompleteTasksCounts()
+    }
+}
+----
+
+
+// <block class="net"/>
+
+
+[source,c#]
+----
+
+// This code can be found in TaskListsModel.cs
+// in the SetupViewAndQuery()
+_byNameQuery.Changed += (sender, args) =
+{
+    TasksList.Replace(args.Rows.Select(x = new TaskListCellModel(x.DocumentId)));
+};
+----
+
+
+// <block class="android"/>
+
+On Android you are using a utility class named *LiveQueryAdapter* which takes care of reloading the list when changes are received.
+
+[source,java]
+----
+
+// This code can be found in LiveQueryAdapter.java
+// in the public constructor
+query.addChangeListener(new LiveQuery.ChangeListener() {
+    @Override
+    public void changed(final LiveQuery.ChangeEvent event) {
+        ((Activity) LiveQueryAdapter.this.context).runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                enumerator = event.getRows();
+                notifyDataSetChanged();
+            }
+        });
+    }
+});
+query.start();
+----
+
+=== Try it out
+
+. Build and run.
+. Save a new list to the database and the live query will pick it up instantly and reload the table view.
++
+image:image66.gif[]
+
+// <block class="wpf"/>
+
+
+// <img src="https://cl.ly/2L2j2t423Z3k/image66w.gif" class="center-image"/>
+
+
+// <block class="android"/>
+
+
+// <img src="https://cl.ly/44433I102l3q/image66a.gif" class="portrait"/>
+
+
+// <block class="all"/>
+
+*Challenge:* Update the map function to emit the document ID as the key.
+Don't forget to bump the view version whenever you change the map function.
+The list view should now display the document ID on each row.
+
+== Aggregating Data
+
+A problem in typical applications is how to perform data aggregation.
+Couchbase Lite lets you run those data queries using the full capabilities of map/reduce.
+To run aggregation queries on the rows emitted by the map function, you can use the reduce function which is the part of map/reduce that takes several rows from the index and aggregates them together in a single object.
+
+Let`'s write a view to query and display the number of uncompleted tasks for each list.
+A task is marked as completed if its *complete* property is true.
+You need to define a *map* function which:
+
+. Returns the number of uncompleted task documents,
+. Groups them by the list they belong to,
+. Counts the number of rows in each group.
+
+The diagram below shows this process.
+
+image:image32.png[]
+
+Notice that *groupingLevel = 1* coalesces the rows in the view index by their key.
+
+https://docs.couchbase.com/couchbase-lite/1.4/{source-language}.html#grouping-by-key[Grouping] is a powerful feature of Couchbase Lite.
+It is available on a *Query* using the *groupLevel* property, which is a number, and it defaults to 0.
+It basically takes the entire range of output that the query produces (i.e.
+the entire range of rows) and it coalesces together adjacent rows with the same key.
+
+The most commonly used aggregation functions are Count and Sum:
+
+* Count: A function that counts the number of documents contained in the map (used on the diagram above).
+* Sum: A function that adds all of the items contained in the map.
+
+The code below indexes documents as shown on the diagram above.
+Then it create the Query and monitors the result set using a Live Query.
+
+[source]
+----
+
+// This code can be found in ListsViewController.swift
+// in the setupViewAndQuery() method
+let incompTasksCountView = database.viewNamed(list/incompleteTasksCount)
+if incompTasksCountView.mapBlock == nil {
+    incompTasksCountView.setMapBlock({ (doc, emit) in
+        if let type: String = doc[type] as? String , type == task {
+            if let list = doc[taskList] as? [String: AnyObject], let listId = list[id],
+                let complete = doc[complete] as? Bool , !complete {
+                emit(listId, nil)
+            }
+        }
+        }, reduce: { (keys, values, reredeuce) in
+        return values.count
+    }, version: 1.0)
+}
+
+incompTasksCountsLiveQuery = incompTasksCountView.createQuery().asLive()
+incompTasksCountsLiveQuery.groupLevel = 1
+incompTasksCountsLiveQuery.addObserver(self, forKeyPath: rows, options: .new, context: nil)
+incompTasksCountsLiveQuery.start()
+----
+
+
+// <block class="net"/>
+
+
+[source,c#]
+----
+
+var incompleteTasksView = _db.GetView(list/incompleteTasksCount);
+incompleteTasksView.SetMapReduce((doc, emit) =
+{
+    if(!doc.ContainsKey(type) || doc[type] as string != task) {
+        return;
+    }
+
+    if(!doc.ContainsKey(taskList)) {
+        return;
+    }
+
+    var list = JsonUtility.ConvertToNetObjectIDictionarystring, object(doc[taskList]);
+    if(!list.ContainsKey(id) || (doc.ContainsKey(complete)  (bool)doc[complete])) {
+        return;
+    }
+
+    emit(list[id], null);
+
+ }, BuiltinReduceFunctions.Count, 1.0);
+
+_incompleteQuery = incompleteTasksView.CreateQuery().ToLiveQuery();
+_incompleteQuery.GroupLevel = 1;
+
+// ...Changed lambda omitted for brevity
+
+ _incompleteQuery.Start();
+----
+
+
+// <block class="android"/>
+
+
+[source,java]
+----
+
+// This code can be found in ListsActivity.java
+// in the setupViewAndQuery method
+com.couchbase.lite.View incompTasksCountView = mDatabase.getView(list/incompleteTasksCount);
+if (incompTasksCountView.getMap() == null) {
+    incompTasksCountView.setMapReduce(new Mapper() {
+        @Override
+        public void map(MapString, Object document, Emitter emitter) {
+            String type = (String) document.get(type);
+            if (task.equals(type)) {
+                Boolean complete = (Boolean) document.get(complete);
+                if (!complete) {
+                    MapString, Object taskList = (MapString, Object) document.get(taskList);
+                    String listId = (String) taskList.get(id);
+                    emitter.emit(listId, null);
+                }
+            }
+        }
+    }, new Reducer() {
+        @Override
+        public Object reduce(ListObject keys, ListObject values, boolean rereduce) {
+            // keys: [0, 0]
+            // values: [null, null]
+            return values.size();
+        }
+    }, 1.0);
+}
+
+final LiveQuery incompTasksCountLiveQuery = incompTasksCountView.createQuery().toLiveQuery();
+incompTasksCountLiveQuery.setGroupLevel(1);
+----
+
+This time, you call emit only if the document `type` is task and `complete` is ``false``.
+The document ID of the list it belongs to (**doc.taskList._id**) serves as the key and
+    the value is nil. The reduce function simply counts the number of
+    rows with the same key. Notice that the **groupLevel** is a property on the live query object.
+
+Every time there is a change to `incompTasksCountsLiveQuery.rows` the `observeValueForKeyPath` method is called which will reload the list count for each row.
+
+[source]
+----
+
+// This code can be found in ListsViewController.swift
+// in the observeValue(forKeyPath:of:_:_:) method
+override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+    if object as? NSObject == listsLiveQuery {
+        reloadTaskLists()
+    } else if object as? NSObject == incompTasksCountsLiveQuery {
+        reloadIncompleteTasksCounts()
+    }
+}
+----
+
+[source,c#]
+----
+
+ _incompleteQuery.Changed += (sender, e) =
+{
+    var newItems = TasksList.ToList();
+    foreach(var row in e.Rows) {
+        var item = newItems.FirstOrDefault(x = x.DocumentID == row.Key as string);
+        if(item != null) {
+            item.IncompleteCount = (int)row.Value;
+        }
+    }
+
+    TasksList.Replace(newItems);
+};
+----
+
+[source,java]
+----
+
+incompTasksCountLiveQuery.addChangeListener(new LiveQuery.ChangeListener() {
+    @Override
+    public void changed(LiveQuery.ChangeEvent event) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                MapString, Object counts = new HashMapString, Object();
+                QueryEnumerator rows = incompTasksCountLiveQuery.getRows();
+                for (QueryRow row : rows) {
+                    String listId = (String) row.getKey();
+                    int count = (int) row.getValue();
+                    counts.put(listId, count);
+                }
+                incompCounts = counts;
+                mAdapter.notifyDataSetChanged();
+            }
+        });
+    }
+});
+incompTasksCountLiveQuery.start();
+----
+
+=== Try it out
+
+. Build and run.
+. You will see the uncompleted task count for each list.
++
+image:image08.png[,400]
+
+// <block class="xam"/>
+
+*iOS*
+// <img src="./img/image08.png" class="portrait"/>
+*Android*
+// <img src="./img/image08xa.png" class="portrait"/>
+
+
+// <block class="wpf"/>
+
+
+// <img src="./img/image08w.png" class="center-image"/>
+
+
+// <block class="android"/>
+
+
+// <img src="img/image08a.png" class="portrait"/>
+
+
+// <block class="all"/>
+
+
+== Conclusion
+
+Well done! You've completed this lesson on using CRUD operations with the database and running aggregation queries.
+In the next lesson, you'll learn how to use Couchbase Lite's synchronization APIs with Sync Gateway.
+Feel free to share your feedback, findings or ask any questions on the forums.
