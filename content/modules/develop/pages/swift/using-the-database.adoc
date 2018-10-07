@@ -4,7 +4,7 @@
 In this lesson you'll be introduced to Couchbase Lite, our embedded NoSQL database.
 You`'ll learn how to create, read, update, delete, and query data using Couchbase Lite. 
 
-*NOTE:* To make things a bit more exciting, you may want to use the pre-built database containing a list of Groceries.
+*TIP:* To make things a bit more exciting, you may want to use the pre-built database containing a list of Groceries.
 Refer to the xref:{source-language}/create-database.adoc[Create a Database] lesson to learn how to use it.
 
 == Create a Document
