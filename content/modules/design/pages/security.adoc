@@ -13,17 +13,13 @@ The access control requirements for the application are the following.
 . A moderator has access to all lists. 
 . A moderator can create new tasks and invte users. 
 
-
-[[_routing]]
 == Routing
 
 Sync Gateway provides an ability to assign documents to something we call channels.
 You control assigning documents to channels through the Sync Function.
 The image below specifies that the List and Task documents are assigned to the same channel ("list.user1.dk39-4kd9-lw9d"). 
 
-
-image::img/02-list-channel.png[]
-
+image:02-list-channel.png[]
 
 == Read Access
 
@@ -34,11 +30,10 @@ In doing so, that user will have read access to all the documents in the channel
 The following image specifies the `access` call to grant read access to the list channel. 
 
 
-image::img/03-read-access.png[]
+image:03-read-access.png[]
 
 
-[quote]
-*Tip:* As shown above, you can route documents of different types to the same channel.
+NOTE: As shown above, you can route documents of different types to the same channel.
 The `access` method can then be invoked once since the list and its tasks are in the same channel. 
 
 === Multiple users
@@ -52,7 +47,7 @@ The image below adds the List User model.
 When processing a document of type "list-user", the Sync Function must grant the user (``doc.name``) access to the list (``doc.list``). 
 
 
-image::img/04-multiple-users.png[]
+image:04-multiple-users.png[]
 
 
 == Write Access
@@ -65,7 +60,7 @@ Generally that means checking that the user is allowed to perform the operation 
 The image below adds a rule to ensure that only the List owner can persist those documents. 
 
 
-image::img/05-write-by-user.png[]
+image:05-write-by-user.png[]
 
 The List model is the straightforward case, it checks that the user synchronizing the document is indeed the owner of the list (``doc.owner``). 
 
@@ -77,7 +72,7 @@ The image below adds a rule to allow invited users to create tasks.
 If the user sending the task has access to the list channel ("user1.dk39-4kd9-lw9d") then it must have been invited and therefore can persist the task. 
 
 
-image::img/06-write-by-access.png[]
+image:06-write-by-access.png[]
 
 
 == Roles
@@ -89,7 +84,7 @@ A user can be elected to be a moderator by users with the admin role only.
 The image below adds a new Moderator model for this purpose. 
 
 
-image::img/07-role.png[]
+image:07-role.png[]
 
 The following security changes to routing, read and write permissions were added. 
 
@@ -101,4 +96,4 @@ The following security changes to routing, read and write permissions were added
 
 Well done! You've completed this lesson on designing the security model for each scenario in the application.
 In the next lesson you'll learn how to create an empty database to store documents.
-Feel free to share your feedback, findings or ask any questions on the forums. 
+Feel free to share your feedback, findings or ask any questions on the forums.
