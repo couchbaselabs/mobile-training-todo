@@ -1,13 +1,13 @@
-* xref:ROOT:introduction.adoc[Introduction]
+* xref:todo-app:introduction.adoc[Introduction]
 
 .Design
-* xref:design:data-modeling.adoc[Data Modeling]
-* xref:design:security.adoc[Security]
+* xref:todo-app:design/data-modeling.adoc[Data Modeling]
+* xref:todo-app:design/security.adoc[Security]
 
 .Develop
 * Swift
-** xref:develop:swift/create-database.adoc[Create Database]
-** xref:develop:swift/using-the-database.adoc[Using the Database]
-** xref:develop:swift/adding-synchronization.adoc[Adding Synchronization]
-** xref:develop:swift/adding-security.adoc[Adding Security]
-** xref:develop:swift/integration.adoc[Integration]
+** xref:todo-app:develop/swift/create-database.adoc[Create Database]
+** xref:todo-app:develop/swift/using-the-database.adoc[Using the Database]
+** xref:todo-app:develop/swift/adding-synchronization.adoc[Adding Synchronization]
+** xref:todo-app:develop/swift/adding-security.adoc[Adding Security]
+** xref:todo-app:develop/swift/integration.adoc[Integration]
