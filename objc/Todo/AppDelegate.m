@@ -12,8 +12,8 @@
 #import <UserNotifications/UserNotifications.h>
 
 #define kLoggingEnabled YES
-#define kLoginFlowEnabled NO
-#define kSyncEnabled NO
+#define kLoginFlowEnabled YES
+#define kSyncEnabled YES
 #define kSyncEndpoint @"ws://localhost:4984/todo"
 #define kSyncWithPushNotification NO
 
@@ -27,7 +27,7 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     if (kLoggingEnabled) {
-        [CBLDatabase setLogLevel:kCBLLogLevelVerbose domain:kCBLLogDomainAll];
+        CBLDatabase.log.console.level = kCBLLogLevelVerbose;
     }
     
     if (kLoginFlowEnabled) {

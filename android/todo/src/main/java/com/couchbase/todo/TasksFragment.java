@@ -14,6 +14,7 @@ import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.FileProvider;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,7 +29,6 @@ import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
-import com.couchbase.lite.internal.support.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -220,7 +220,7 @@ public class TasksFragment extends Fragment {
             db.save(mDoc);
             return db.getDocument(mDoc.getId());
         } catch (CouchbaseLiteException e) {
-            Log.e(TAG, "Failed to save the doc - %s", e, mDoc);
+            Log.e(TAG, "Failed to save the document", e);
             //TODO: Error handling
             return null;
         }
@@ -233,7 +233,7 @@ public class TasksFragment extends Fragment {
             db.save(task);
             return db.getDocument(task.getId());
         } catch (CouchbaseLiteException e) {
-            Log.e(TAG, "Failed to save the doc - %s", e, task);
+            Log.e(TAG, "Failed to save the document", e);
             //TODO: Error handling
             return null;
         }
@@ -244,7 +244,7 @@ public class TasksFragment extends Fragment {
         try {
             db.delete(task);
         } catch (CouchbaseLiteException e) {
-            Log.e(TAG, "Failed to delete the doc - %s", e, task);
+            Log.e(TAG, "Failed to delete the document", e);
             //TODO: Error handling
         }
     }
@@ -261,7 +261,7 @@ public class TasksFragment extends Fragment {
             db.save(task);
             return db.getDocument(task.getId());
         } catch (CouchbaseLiteException e) {
-            Log.e(TAG, "Failed to save the doc - %s", e, task);
+            Log.e(TAG, "Failed to save the document", e);
             //TODO: Error handling
             return null;
         }

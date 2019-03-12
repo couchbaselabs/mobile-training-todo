@@ -21,7 +21,6 @@ import com.couchbase.lite.QueryChangeListener;
 import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
-import com.couchbase.lite.internal.support.Log;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -62,7 +61,6 @@ public class ListsAdapter extends ArrayAdapter<String> {
                 ResultSet rs = change.getResults();
                 Result result;
                 while ((result = rs.next()) != null) {
-                    Log.e(TAG, "result -> " + result.toMap());
                     incompCounts.put(result.getString(0), result.getInt(1));
                 }
                 notifyDataSetChanged();
@@ -86,8 +84,6 @@ public class ListsAdapter extends ArrayAdapter<String> {
         } else {
             countText.setText("");
         }
-
-        Log.e(TAG, "getView(): pos -> %d, docID -> %s, name -> %s, name2 -> %s, all -> %s", position, list.getId(), list.getString("name"), list.getValue("name"), list.toMap());
         return convertView;
     }
 
