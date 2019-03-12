@@ -14,8 +14,8 @@ import Crashlytics
 
 // Configuration:
 let kLoggingEnabled = true
-let kLoginFlowEnabled = false
-let kSyncEnabled = false
+let kLoginFlowEnabled = true
+let kSyncEnabled = true
 let kSyncEndpoint = "ws://localhost:4984/todo"
 
 // Crashlytics:
@@ -38,7 +38,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         initCrashlytics()
         
         if kLoggingEnabled {
-            Database.setLogLevel(.verbose, domain: .all);
+            Database.log.console.level = .verbose
         }
         
         if kLoginFlowEnabled {

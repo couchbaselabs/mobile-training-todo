@@ -1,5 +1,6 @@
 package com.couchbase.todo;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,7 +26,6 @@ import com.couchbase.lite.QueryChangeListener;
 import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
-import com.couchbase.lite.internal.support.Log;
 
 
 public class TasksAdapter extends ArrayAdapter<String> {
@@ -121,7 +121,7 @@ public class TasksAdapter extends ArrayAdapter<String> {
             db.save(task);
             return db.getDocument(task.getId());
         } catch (CouchbaseLiteException e) {
-            Log.e(TAG, "Failed to save the doc - %s", e, task);
+            Log.e(TAG, "Failed to save the document", e);
             //TODO: Error handling
             return null;
         }

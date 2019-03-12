@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,7 +21,6 @@ import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
-import com.couchbase.lite.internal.support.Log;
 
 import java.util.UUID;
 
@@ -189,7 +189,7 @@ public class ListsActivity extends AppCompatActivity {
             db.save(mDoc);
             return db.getDocument(mDoc.getId());
         } catch (CouchbaseLiteException e) {
-            Log.e(TAG, "Failed to save the doc - %s", e, mDoc);
+            Log.e(TAG, "Failed to save the document", e);
             //TODO: Error handling
             return null;
         }
@@ -202,7 +202,7 @@ public class ListsActivity extends AppCompatActivity {
             db.save(list);
             return db.getDocument(list.getId());
         } catch (CouchbaseLiteException e) {
-            Log.e(TAG, "Failed to save the doc - %s", e, list);
+            Log.e(TAG, "Failed to save the document", e);
             //TODO: Error handling
             return null;
         }
@@ -213,7 +213,7 @@ public class ListsActivity extends AppCompatActivity {
         try {
             db.delete(list);
         } catch (CouchbaseLiteException e) {
-            Log.e(TAG, "Failed to delete the doc - %s", e, list);
+            Log.e(TAG, "Failed to delete the document", e);
             //TODO: Error handling
         }
         return list;

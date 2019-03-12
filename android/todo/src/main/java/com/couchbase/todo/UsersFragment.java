@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,7 +19,6 @@ import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
-import com.couchbase.lite.internal.support.Log;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -116,8 +116,7 @@ public class UsersFragment extends Fragment {
         try {
             db.save(mDoc);
         } catch (CouchbaseLiteException e) {
-            Log.e(TAG, "Failed to save the doc - %s", e, mDoc);
-            //TODO: Error handling
+            Log.e(TAG, "Failed to save the doc", e);
         }
     }
 
@@ -125,8 +124,7 @@ public class UsersFragment extends Fragment {
         try {
             db.delete(doc);
         } catch (CouchbaseLiteException e) {
-            Log.e(TAG, "Failed to delete the doc - %s", e, doc);
-            //TODO: Error handling
+            Log.e(TAG, "Failed to delete the doc", e);
         }
     }
 }

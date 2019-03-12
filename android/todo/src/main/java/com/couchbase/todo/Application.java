@@ -2,6 +2,7 @@ package com.couchbase.todo;
 
 import android.content.Intent;
 import android.os.Handler;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.couchbase.lite.BasicAuthenticator;
@@ -9,12 +10,12 @@ import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.DatabaseConfiguration;
 import com.couchbase.lite.Endpoint;
+import com.couchbase.lite.LogLevel;
 import com.couchbase.lite.Replicator;
 import com.couchbase.lite.ReplicatorChange;
 import com.couchbase.lite.ReplicatorChangeListener;
 import com.couchbase.lite.ReplicatorConfiguration;
 import com.couchbase.lite.URLEndpoint;
-import com.couchbase.lite.internal.support.Log;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -30,8 +31,9 @@ public class Application extends android.app.Application implements ReplicatorCh
 
     private static final String TAG = Application.class.getSimpleName();
 
-    private final static boolean LOGIN_FLOW_ENABLED = true;
-    private final static boolean SYNC_ENABLED = true;
+    private final static boolean LOGIN_FLOW_ENABLED = false;
+    private final static boolean SYNC_ENABLED = false;
+    private final static boolean LOGGING_ENABLED = true;
 
     private final static String DATABASE_NAME = "todo";
     private final static String SYNCGATEWAY_URL = "ws://10.0.2.2:4984/todo/";
@@ -50,6 +52,9 @@ public class Application extends android.app.Application implements ReplicatorCh
             showLoginUI();
         else
             startSession(DATABASE_NAME, null);
+
+        if (LOGGING_ENABLED)
+            Database.log.getConsole().setLevel(LogLevel.VERBOSE);
     }
 
     @Override
@@ -76,7 +81,6 @@ public class Application extends android.app.Application implements ReplicatorCh
 
         localBackup(username);
 
-        // TODO: After authenticated, move to next screen
         showApp();
     }
 
@@ -120,8 +124,7 @@ public class Application extends android.app.Application implements ReplicatorCh
         try {
             database = new Database(dbname, config);
         } catch (CouchbaseLiteException e) {
-            Log.e(TAG, "Failed to create Database instance: %s - %s", e, dbname, config);
-            // TODO: error handling
+            Log.e(TAG, "Failed to create Database instance", e);
         }
     }
 
@@ -131,7 +134,6 @@ public class Application extends android.app.Application implements ReplicatorCh
                 database.close();
             } catch (CouchbaseLiteException e) {
                 Log.e(TAG, "Failed to close Database", e);
-                // TODO: error handling
             }
         }
     }
@@ -150,7 +152,7 @@ public class Application extends android.app.Application implements ReplicatorCh
         try {
             uri = new URI(SYNCGATEWAY_URL);
         } catch (URISyntaxException e) {
-            Log.e(TAG, "Failed parse URI: %s", e, SYNCGATEWAY_URL);
+            Log.e(TAG, "Failed parse URI: " + SYNCGATEWAY_URL, e);
             return;
         }
 
@@ -225,7 +227,7 @@ public class Application extends android.app.Application implements ReplicatorCh
     // --------------------------------------------------
     @Override
     public void changed(ReplicatorChange change) {
-        Log.i(TAG, "[Todo] Replicator: status -> %s", change.getStatus());
+        Log.i(TAG, "[Todo] Replicator status : " + change.getStatus());
         if (change.getStatus().getError() != null && change.getStatus().getError().getCode() == 401) {
             Toast.makeText(getApplicationContext(), "Authentication Error: Your username or password is not correct.", Toast.LENGTH_LONG).show();
             logout();
