@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+
 import com.couchbase.lite.Blob;
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.DataSource;
@@ -31,9 +32,9 @@ import com.couchbase.lite.SelectResult;
 public class TasksAdapter extends ArrayAdapter<String> {
     private static final String TAG = TasksAdapter.class.getSimpleName();
 
-    private TasksFragment fragment;
-    private Database db;
-    private String listID;
+    private final TasksFragment fragment;
+    private final Database db;
+    private final String listID;
 
     public TasksAdapter(TasksFragment fragment, Database db, String listID) {
         super(fragment.getContext(), 0);
@@ -47,8 +48,7 @@ public class TasksAdapter extends ArrayAdapter<String> {
                 clear();
                 ResultSet rs = change.getResults();
                 Result result;
-                while ((result = rs.next()) != null)
-                    add(result.getString(0));
+                while ((result = rs.next()) != null) { add(result.getString(0)); }
                 notifyDataSetChanged();
             }
         });
@@ -56,21 +56,19 @@ public class TasksAdapter extends ArrayAdapter<String> {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        if (convertView == null)
+        if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.view_task, parent, false);
+        }
 
         String docID = getItem(position);
         final Document task = db.getDocument(docID);
-        if (task == null)
-            throw new IllegalStateException("Document does not exists: " + docID);
+        if (task == null) { throw new IllegalStateException("Document does not exists: " + docID); }
 
         // image view
         ImageView imageView = convertView.findViewById(R.id.photo);
         Blob thumbnail = task.getBlob("image");
-        if (thumbnail != null)
-            Glide.with(getContext()).load(thumbnail.getContent()).into(imageView);
-        else
-            imageView.setImageResource(R.drawable.ic_camera_light);
+        if (thumbnail != null) { Glide.with(getContext()).load(thumbnail.getContent()).into(imageView); }
+        else { imageView.setImageResource(R.drawable.ic_camera_light); }
         imageView.setOnClickListener(new android.view.View.OnClickListener() {
             @Override
             public void onClick(android.view.View v) {
@@ -86,7 +84,7 @@ public class TasksAdapter extends ArrayAdapter<String> {
         // checkbox
         final CheckBox checkBox = convertView.findViewById(R.id.checked);
         Boolean checkedProperty = task.getBoolean("complete");
-        boolean checked = checkedProperty != null ? checkedProperty.booleanValue() : false;
+        boolean checked = checkedProperty != null && checkedProperty.booleanValue();
         checkBox.setChecked(checked);
         checkBox.setOnClickListener(new android.view.View.OnClickListener() {
             @Override
@@ -109,10 +107,10 @@ public class TasksAdapter extends ArrayAdapter<String> {
         Ordering ORDERBY_TASK = Ordering.property("task");
 
         return QueryBuilder.select(SR_DOC_ID, SR_TASK, SR_COMPLETE, SR_IMAGE)
-                .from(DataSource.database(db))
-                .where(EXPR_TYPE.equalTo(Expression.string("task"))
-                        .and(EXPR_TASKLIST_ID.equalTo(Expression.string(listID))))
-                .orderBy(ORDERBY_CREATED_AT, ORDERBY_TASK);
+            .from(DataSource.database(db))
+            .where(EXPR_TYPE.equalTo(Expression.string("task"))
+                .and(EXPR_TASKLIST_ID.equalTo(Expression.string(listID))))
+            .orderBy(ORDERBY_CREATED_AT, ORDERBY_TASK);
     }
 
     private Document updateCheckedStatus(MutableDocument task, boolean checked) {
@@ -120,7 +118,8 @@ public class TasksAdapter extends ArrayAdapter<String> {
         try {
             db.save(task);
             return db.getDocument(task.getId());
-        } catch (CouchbaseLiteException e) {
+        }
+        catch (CouchbaseLiteException e) {
             Log.e(TAG, "Failed to save the document", e);
             //TODO: Error handling
             return null;

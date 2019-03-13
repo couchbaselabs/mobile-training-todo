@@ -15,13 +15,14 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 
-import java.util.HashMap;
-import java.util.Map;
 
 public class UsersFragment extends Fragment {
 
@@ -78,7 +79,6 @@ public class UsersFragment extends Fragment {
         switch (item.getItemId()) {
             case R.id.delete:
                 delete(doc);
-                return;
         }
     }
 
@@ -91,8 +91,7 @@ public class UsersFragment extends Fragment {
         alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 String title = input.getText().toString();
-                if (title.length() == 0)
-                    return;
+                if (title.length() == 0) { return; }
                 createUser(title);
             }
         });
@@ -109,13 +108,14 @@ public class UsersFragment extends Fragment {
         MutableDocument mDoc = new MutableDocument(docId);
         mDoc.setString("type", "task-list.user");
         mDoc.setString("username", username);
-        Map<String, Object> taskListInfo = new HashMap<String, Object>();
+        Map<String, Object> taskListInfo = new HashMap<>();
         taskListInfo.put("id", taskList.getId());
         taskListInfo.put("owner", taskList.getString("owner"));
         mDoc.setValue("taskList", taskListInfo);
         try {
             db.save(mDoc);
-        } catch (CouchbaseLiteException e) {
+        }
+        catch (CouchbaseLiteException e) {
             Log.e(TAG, "Failed to save the doc", e);
         }
     }
@@ -123,7 +123,8 @@ public class UsersFragment extends Fragment {
     private void delete(Document doc) {
         try {
             db.delete(doc);
-        } catch (CouchbaseLiteException e) {
+        }
+        catch (CouchbaseLiteException e) {
             Log.e(TAG, "Failed to delete the doc", e);
         }
     }

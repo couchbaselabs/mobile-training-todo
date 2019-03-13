@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.Document;
 
+
 public class ListDetailActivity extends AppCompatActivity {
 
     private Database db;

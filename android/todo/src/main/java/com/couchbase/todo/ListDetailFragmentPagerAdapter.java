@@ -4,8 +4,9 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
+
 public class ListDetailFragmentPagerAdapter extends FragmentPagerAdapter {
-    private String tabTitles[] = new String[]{"Tasks", "Users"};
+    private final String[] tabTitles = new String[] {"Tasks", "Users"};
     private final int pageCount;
 
     public ListDetailFragmentPagerAdapter(FragmentManager fm) {
