@@ -1,36 +1,28 @@
 # ToDo Application
-ToDo iOS sample app built with [CouchbaseLite 2.0 Developer Preview](https://github.com/couchbase/couchbase-lite-ios/tree/feature/2.0). 
-The application has both Objective-C and Swift version.
-
-## Requirements
-- XCode 8.3
+ToDo sample app. 
 
 ## How to build and run?
-1. Clone the project and checkout `feature/2.0` branch.
+1. Clone the project.
 
  ```
  $ git clone https://github.com/couchbaselabs/mobile-training-todo.git
- $ git checkout feature/2.0
  ```
- 
-2. cd into the project either `objc` or `swift`.
+2. Go into the folder based on your platform selection.
 
-3. Download `CouchbaseLite.framework` or `CouchbaseLiteSwift.framework` from [here](https://developer.couchbase.com/documentation/mobile/2.0/whatsnew.html?language=ios).
+3. For the iOS platform (objc or swift), download the latest [Couchbase Lite](https://www.couchbase.com/downloads) for Objectve-C or Swift. Copy `CouchbaseLite.framework` for Objective-C or `CouchbaseLiteSwift.framework` for Swift into the `Frameworks` folder.
 
-4. Copy `CouchbaseLite.framework` for `objc` or `CouchbaseLiteSwift.framework` for `swift` into the `Frameworks` folder.
- 
-5. Open Todo.xcodeproj with your XCode.
+4. Depending on your selected platform, use an appropriate IDE (XCode for iOS, Android Studio for Android, and Xamarin Studio for .NET) to open the ToDo application project.
 
-6. Select `Todo` scheme and Run.
+5. Run the application.
 
 ## How to use the replication feature?
 
-1. [Download Sync Gateway 1.5 beta](https://developer.couchbase.com/documentation/mobile/2.0/whatsnew.html?language=ios)
-2. Start Sync Gateway with the configuration file in the root of this project.
+1. Download the latest [Sync Gateway](https://www.couchbase.com/downloads).
+2. Start Sync Gateway with the the configuration from [here](https://github.com/couchbaselabs/mobile-training-todo/blob/master/objc/sync-gateway-config.json) as follows:
 
  ```
 ~/Downloads/couchbase-sync-gateway/bin/sync_gateway sync-gateway-config.json
  ```
-3. From the AppDelegate in the XCode project, change kLoginFlowEnabled and kSyncEnabled variable to YES/true.
-4. From the AppDelegate in the XCode project, change the hostname of the kSyncGatewayUrl as needed.
-5. Rerun the Todo app.
+3. Depending on your selected platform, enable Login and Sync feature from the source code (e.g. `AppDelegate.m` for Objective-C, `AppDelegate.swift` for Swift or `Application.java` for Android). Then change the `hostname` variable in the same source code to point to your sync-gateway URL.
+
+4. Rerun the application.
