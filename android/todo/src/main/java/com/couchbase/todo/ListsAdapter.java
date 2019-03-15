@@ -7,6 +7,9 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.couchbase.lite.DataSource;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.Document;
@@ -22,21 +25,20 @@ import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
 
-import java.util.HashMap;
-import java.util.Map;
 
 public class ListsAdapter extends ArrayAdapter<String> {
     private static final String TAG = ListsAdapter.class.getSimpleName();
 
+    private final Map<String, Integer> incompCounts = new HashMap<>();
+
     private Database db;
-    private Query listsQuery = null;
-    private Query incompTasksCountQuery = null;
-    private Map<String, Integer> incompCounts = new HashMap<>();
+    private Query listsQuery;
+    private Query incompTasksCountQuery;
 
     public ListsAdapter(Context context, Database db) {
         super(context, 0);
 
-        if (db == null) throw new IllegalArgumentException();
+        if (db == null) { throw new IllegalArgumentException(); }
         this.db = db;
 
         this.listsQuery = listsQuery();
@@ -72,8 +74,9 @@ public class ListsAdapter extends ArrayAdapter<String> {
     public View getView(int position, View convertView, ViewGroup parent) {
         String id = getItem(position);
         Document list = db.getDocument(id);
-        if (convertView == null)
+        if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.view_list, parent, false);
+        }
 
         TextView text = convertView.findViewById(R.id.text);
         text.setText(list.getString("name"));
@@ -81,7 +84,8 @@ public class ListsAdapter extends ArrayAdapter<String> {
         TextView countText = convertView.findViewById(R.id.task_count);
         if (incompCounts.get(list.getId()) != null) {
             countText.setText(String.valueOf(((int) incompCounts.get(list.getId()))));
-        } else {
+        }
+        else {
             countText.setText("");
         }
         return convertView;
@@ -89,9 +93,9 @@ public class ListsAdapter extends ArrayAdapter<String> {
 
     private Query listsQuery() {
         return QueryBuilder.select(SelectResult.expression(Meta.id))
-                .from(DataSource.database(db))
-                .where(Expression.property("type").equalTo(Expression.string("task-list")))
-                .orderBy(Ordering.property("name").ascending());
+            .from(DataSource.database(db))
+            .where(Expression.property("type").equalTo(Expression.string("task-list")))
+            .orderBy(Ordering.property("name").ascending());
     }
 
     private Query incompTasksCountQuery() {
@@ -101,8 +105,9 @@ public class ListsAdapter extends ArrayAdapter<String> {
         SelectResult srTaskListID = SelectResult.expression(exprTaskListId);
         SelectResult srCount = SelectResult.expression(Function.count(Expression.all()));
         return QueryBuilder.select(srTaskListID, srCount)
-                .from(DataSource.database(db))
-                .where(exprType.equalTo(Expression.string("task")).and(exprComplete.equalTo(Expression.booleanValue(false))))
-                .groupBy(exprTaskListId);
+            .from(DataSource.database(db))
+            .where(exprType.equalTo(Expression.string("task"))
+                .and(exprComplete.equalTo(Expression.booleanValue(false))))
+            .groupBy(exprTaskListId);
     }
 }
