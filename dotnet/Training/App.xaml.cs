@@ -36,7 +36,7 @@ namespace Training
 
         void RegisterServices()
         {
-            ServiceContainer.Register<IUserDialogs>(UserDialogs.Instance);
+            ServiceContainer.Register(UserDialogs.Instance);
             ServiceContainer.Register<IMediaService>(new MediaService());
 
             NavigationService = new NavigationService();

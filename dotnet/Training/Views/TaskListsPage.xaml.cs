@@ -100,7 +100,7 @@ namespace Training.Views
         protected void UpdateView()
         {
             var viewModel = BindingContext as TaskListsViewModel;
-            //viewModel.Model.Filter(null);
+            viewModel.Model.Filter(null);
         }
 
         #endregion

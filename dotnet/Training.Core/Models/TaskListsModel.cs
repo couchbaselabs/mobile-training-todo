@@ -20,11 +20,12 @@
 // 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
-
+using System.Threading.Tasks;
+using Acr.UserDialogs;
 using Couchbase.Lite;
 using Couchbase.Lite.Query;
-using Couchbase.Lite.Util;
 using Training.Core;
 using Training.ViewModels;
 
@@ -43,6 +44,7 @@ namespace Training.Models
 
         #region Variables
 
+        private readonly IUserDialogs _dialogs;
         private Database _db;
         private IQuery _filteredQuery;
         private IQuery _fullQuery;
@@ -57,8 +59,8 @@ namespace Training.Models
         /// <summary>
         /// Gets the list of task lists currently saved
         /// </summary>
-        public ExtendedObservableCollection<TaskListCellModel> TasksList { get; } =
-            new ExtendedObservableCollection<TaskListCellModel>();
+        public ObservableCollection<TaskListCellModel> TasksList { get; set; } =
+            new ObservableCollection<TaskListCellModel>();
 
         /// <summary>
         /// Gets the username of the user using the app
@@ -73,8 +75,9 @@ namespace Training.Models
         /// Constructor
         /// </summary>
         /// <param name="db">The database to use</param>
-        public TaskListsModel()
+        public TaskListsModel(IUserDialogs dialogs)
         {
+            _dialogs = dialogs;
             _db = CoreApp.Database;
             SetupQuery();
             Filter(null);

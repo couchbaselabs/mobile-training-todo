@@ -20,11 +20,13 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 using Couchbase.Lite;
 using Couchbase.Lite.Query;
 using Training.Core;
+using Training.ViewModels;
 
 namespace Training.Models
 {
@@ -56,8 +58,8 @@ namespace Training.Models
         /// <summary>
         /// Gets the applicable list of users
         /// </summary>
-        //public ExtendedObservableCollection<UserCellModel> UserList { get; } = 
-        //    new ExtendedObservableCollection<UserCellModel>();
+        public ObservableCollection<UserCellModel> UserList { get; } =
+            new ObservableCollection<UserCellModel>();
 
         #endregion
 
@@ -160,11 +162,11 @@ namespace Training.Models
 
             //_usersLiveQuery.AddChangeListener((sender, args) =>
             //{
-                //UserList.Replace(results.Select(x =>
-                //{
-                //    var docId = $"{_userList.Id}.{x.GetString(0)}";
-                //    return new UserCellModel(docId);
-                //}));
+            //    UserList.Replace(results.Select(x =>
+            //    {
+            //        var docId = $"{_userList.Id}.{x.GetString(0)}";
+            //        return new UserCellModel(docId);
+            //    }));
             //});
         }
 

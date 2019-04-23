@@ -23,7 +23,6 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 
 using Acr.UserDialogs;
-using Couchbase.Lite;
 using CouchbaseLabs.MVVM.Input;
 using CouchbaseLabs.MVVM.Services;
 using Training.Core;
@@ -45,7 +44,7 @@ namespace Training.ViewModels
 
         #region Properties
 
-        TaskListsModel Model;
+        public TaskListsModel Model { get; set; }
 
         /// <summary>
         /// Gets whether or not login is enabled
@@ -118,7 +117,7 @@ namespace Training.ViewModels
         public TaskListsViewModel(INavigationService navigationService, IUserDialogs dialogs) : base(navigationService, dialogs)
         {
             _dialogs = dialogs;
-            Model = new TaskListsModel();
+            Model = new TaskListsModel(_dialogs);
         }
 
         #endregion
