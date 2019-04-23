@@ -26,17 +26,16 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Acr.UserDialogs;
-using MvvmCross.Core.ViewModels;
-using MvvmCross.Platform;
+using CouchbaseLabs.MVVM.Services;
 using Training.Core;
 
-namespace Training
+namespace Training.ViewModels
 {
     /// <summary>
     /// The view model for the list of tasks page
     /// </summary>
-    public class TasksViewModel : BaseViewModel<TasksModel>, IDisposable
-    {
+    public class TasksViewModel : BaseNavigationViewModel, IDisposable
+    {//TasksModel
 
         #region Variables
 
@@ -61,7 +60,7 @@ namespace Training
 
                 _selectedItem = value;
                 value.IsChecked = !value.IsChecked;
-                SetProperty(ref _selectedItem, null);
+                SetPropertyChanged(ref _selectedItem, null);
             }
         }
         private TaskCellModel _selectedItem;
@@ -70,7 +69,7 @@ namespace Training
         /// Gets the list of tasks for display in the list view
         /// </summary>
         /// <value>The list data.</value>
-        public ObservableCollection<TaskCellModel> ListData => Model.ListData;
+        public ObservableCollection<TaskCellModel> ListData;// => Model.ListData;
 
         /// <summary>
         /// Gets or sets the current text being searched for in the list
@@ -81,8 +80,8 @@ namespace Training
                 return _searchTerm;
             }
             set {
-                if(SetProperty(ref _searchTerm, value)) {
-                    Model.Filter(value);
+                if(SetPropertyChanged(ref _searchTerm, value)) {
+                    //Model.Filter(value);
                 }
             }
         }
@@ -92,34 +91,39 @@ namespace Training
         /// Gets the command that is fired when the add button is pressed
         /// </summary>
         /// <value>The add command.</value>
-        public ICommand AddCommand => new MvxCommand(AddNewItem);
+        public ICommand AddCommand;// => new MvxCommand(AddNewItem);
 
         #endregion
 
         #region Constructors
 
+        public TasksViewModel(INavigationService navigationService, IUserDialogs dialogs) : base(navigationService, dialogs)
+        {
+            _dialogs = dialogs;
+        }
+
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="parent">The parent view model (this is a nested view model).</param>
-        public TasksViewModel(ListDetailViewModel parent) : base(new TasksModel(parent.CurrentListID))
-        {
-            _dialogs = Mvx.Resolve<IUserDialogs>();
-            _imageChooser = new ImageChooser(new ImageChooserConfig {
-                Dialogs = _dialogs
-            });
+        //public TasksViewModel(ListDetailViewModel parent) : base(new TasksModel(parent.CurrentListID))
+        //{
+        //    _dialogs = Mvx.Resolve<IUserDialogs>();
+        //    _imageChooser = new ImageChooser(new ImageChooserConfig {
+        //        Dialogs = _dialogs
+        //    });
 
-            ListData.CollectionChanged += (sender, e) => 
-            {
-                if(e.NewItems == null) {
-                    return;
-                }
+        //    ListData.CollectionChanged += (sender, e) => 
+        //    {
+        //        if(e.NewItems == null) {
+        //            return;
+        //        }
 
-                UpdateButtons(e.NewItems);
-            };
+        //        UpdateButtons(e.NewItems);
+        //    };
 
-            UpdateButtons(ListData);
-        }
+        //    UpdateButtons(ListData);
+        //}
 
         #endregion
 
@@ -130,7 +134,7 @@ namespace Training
             if(!taskDocument.HasImage()) {
                 await ChooseImage(taskDocument);
             } else {
-                ShowViewModel<TaskImageViewModel>(new { documentID = taskDocument.DocumentID });
+                //ShowViewModel<TaskImageViewModel>(new { documentID = taskDocument.DocumentID });
             }
         }
 
@@ -142,7 +146,7 @@ namespace Training
         {
             foreach (TaskCellModel item in newItems) {
                 if (item.AddImageCommand == null) {
-                    item.AddImageCommand = new MvxAsyncCommand<TaskCellModel>(ShowOrChooseImage);
+                    //item.AddImageCommand = new MvxAsyncCommand<TaskCellModel>(ShowOrChooseImage);
                 }
             }
         }
@@ -182,7 +186,7 @@ namespace Training
             }
 
             try {
-                Model.CreateNewTask(result.Text);
+                //Model.CreateNewTask(result.Text);
             } catch(Exception e) {
                 _dialogs.Toast(e.Message);
             }
@@ -194,7 +198,7 @@ namespace Training
 
         public void Dispose()
         {
-            Model.Dispose();
+            //Model.Dispose();
         }
 
         #endregion

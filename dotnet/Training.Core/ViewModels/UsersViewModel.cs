@@ -24,16 +24,15 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Acr.UserDialogs;
-using MvvmCross.Core.ViewModels;
-using MvvmCross.Platform;
+using CouchbaseLabs.MVVM.Services;
 
-namespace Training.Core
+namespace Training.ViewModels
 {
     /// <summary>
     /// The view model for the users page
     /// </summary>
-    public class UsersViewModel : BaseViewModel<UsersModel>
-    {
+    public class UsersViewModel : BaseNavigationViewModel
+    {//UsersModel
 
         #region Variables
 
@@ -52,8 +51,8 @@ namespace Training.Core
                 return _searchTerm;
             }
             set {
-                if(SetProperty(ref _searchTerm, value)) {
-                    Model.Filter(value);
+                if(SetPropertyChanged(ref _searchTerm, value)) {
+                    //Model.Filter(value);
                 }
             }
         }
@@ -66,7 +65,7 @@ namespace Training.Core
             }
             set {
                 _selectedItem = value;
-                SetProperty(ref _selectedItem, null); // No "selection" effect
+                SetPropertyChanged(ref _selectedItem, null); // No "selection" effect
             }
         }
         private UserCellModel _selectedItem;
@@ -76,9 +75,10 @@ namespace Training.Core
         /// </summary>
         public ICommand AddCommand
         {
-            get {
-                return new MvxAsyncCommand(AddNewUser);
-            }
+            get;
+            //get {
+            //    return new MvxAsyncCommand(AddNewUser);
+            //}
         }
 
         /// <summary>
@@ -87,23 +87,29 @@ namespace Training.Core
         /// <value>The list data.</value>
         public ObservableCollection<UserCellModel> ListData
         {
-            get {
-                return Model.UserList;
-            }
+            get;
+            //get {
+            //    return Model.UserList;
+            //}
         }
 
         #endregion
 
         #region Constructors
 
+        public UsersViewModel(INavigationService navigationService, IUserDialogs dialogs) : base(navigationService, dialogs)
+        {
+            _dialogs = dialogs;
+        }
+
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="parent">The parent view model (this is a nested view model).</param>
-        public UsersViewModel(ListDetailViewModel parent) : base(new UsersModel(parent.CurrentListID))
-        {
-            _dialogs = Mvx.Resolve<IUserDialogs>();
-        }
+        //public UsersViewModel(ListDetailViewModel parent) : base(new UsersModel(parent.CurrentListID))
+        //{
+        //    _dialogs = Mvx.Resolve<IUserDialogs>();
+        //}
 
         #endregion
 
@@ -118,7 +124,7 @@ namespace Training.Core
 
             if(result.Ok) {
                 try {
-                    Model.CreateNewUser(result.Text);
+                    //Model.CreateNewUser(result.Text);
                 } catch(Exception e) {
                     _dialogs.Toast(e.Message);
                 }

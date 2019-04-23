@@ -5,10 +5,11 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Acr.UserDialogs" Version="7.0.1" />
-    <PackageReference Include="Couchbase.Lite.Enterprise" Version="2.1.0" />
+    <PackageReference Include="Couchbase.Lite.Enterprise" Version="2.1.2" />
     <PackageReference Include="XLabs.Platform" Version="2.3.0-pre05" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
-    <PackageReference Include="MvvmCross" Version="5.6.3" />
   </ItemGroup>
-
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\userprofile-couchbase-mobile-xamarin\modules\userprofile\examples\src\CouchbaseLabs.MVVM\CouchbaseLabs.MVVM.csproj" />
+  </ItemGroup>
 </Project>

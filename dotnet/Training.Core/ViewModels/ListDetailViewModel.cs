@@ -18,17 +18,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+using CouchbaseLabs.MVVM.Services;
 using System;
+using Training.Models;
 
-namespace Training.Core
+namespace Training.ViewModels
 {
     /// <summary>
     /// The view model for the task list / users tabbed view of the application
     /// </summary>
-    public class ListDetailViewModel : BaseViewModel<ListDetailModel>, IDisposable
+    public class ListDetailViewModel : BaseNavigationViewModel, IDisposable
     {
 
         #region Properties
+
+        ListDetailModel Model;
 
         /// <summary>
         /// Gets or sets whether the current user has moderator status
@@ -40,7 +44,7 @@ namespace Training.Core
                 return _hasModeratorStatus;
             }
             set {
-                SetProperty(ref _hasModeratorStatus, value);
+                SetPropertyChanged(ref _hasModeratorStatus, value);
             }
         }
         private bool _hasModeratorStatus;
@@ -66,6 +70,14 @@ namespace Training.Core
 
         #endregion
 
+        #region Constructor
+        public ListDetailViewModel(INavigationService navigationService,
+                                   string docID) : base(navigationService)
+        {
+            Model = new ListDetailModel(docID);
+        }
+        #endregion
+
         #region Public API
 
         /// <summary>
@@ -79,7 +91,7 @@ namespace Training.Core
             Username = username;
             //PageTitle = name;
             CurrentListID = listID;
-            Model = new ListDetailModel(listID);
+            //Model = new ListDetailModel(listID);
             CalculateModeratorStatus();
         }
 
@@ -89,12 +101,12 @@ namespace Training.Core
 
         private void CalculateModeratorStatus()
         {
-            var owner = Model.Owner;
-            if (Username.Equals(owner) || Model.HasModerator(Username))
-            {
-                HasModeratorStatus = true;
-                return;
-            }
+            //var owner = Model.Owner;
+            //if (Username.Equals(owner) || Model.HasModerator(Username))
+            //{
+            //    HasModeratorStatus = true;
+            //    return;
+            //}
 
             //Model.TrackModeratorStatus(Username);
             //Model.ModeratorStatusGained += (sender, e) => HasModeratorStatus = true;
@@ -106,7 +118,7 @@ namespace Training.Core
 
         public void Dispose()
         {
-            Model.Dispose();
+            //Model.Dispose();
         }
 
         #endregion

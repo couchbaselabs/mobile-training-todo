@@ -20,11 +20,13 @@
 //
 
 using Foundation;
-using MvvmCross.Forms.iOS;
-using MvvmCross.iOS.Platform;
-using MvvmCross.Platform;
 using Training.Core;
+using Training.Forms;
+
 using UIKit;
+
+using Xamarin.Forms.Platform.iOS;
+
 using XLabs.Platform.Device;
 
 namespace Training.iOS
@@ -33,7 +35,7 @@ namespace Training.iOS
     /// The app delegate for the overall iOS app lifecycle
     /// </summary>
     [Register("AppDelegate")]
-    public partial class AppDelegate : MvxFormsApplicationDelegate
+    public partial class AppDelegate : FormsApplicationDelegate
     {
 
         #region Properties
@@ -63,11 +65,15 @@ namespace Training.iOS
             Mvx.RegisterSingleton<IImageService>(() => new ImageService());
 
             //Start the application
+            var a = new App();
+                a.MainPage.W
             var startup = new CoreAppStart();
             var hint = CoreAppStart.CreateHint();
             startup.Start(hint);
 
             LoadApplication(setup.FormsApplication);
+
+            
 
             Window.MakeKeyAndVisible();
 

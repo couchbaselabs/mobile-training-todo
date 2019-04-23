@@ -21,13 +21,14 @@
 using System.IO;
 
 using Couchbase.Lite;
+using Training.Core;
 
-namespace Training.Core
+namespace Training.Models
 {
     /// <summary>
     /// The model for the page that displays a task's saved image
     /// </summary>
-    public sealed class TaskImageModel : BaseModel
+    public sealed class TaskImageModel
     {
 
         #region Variables

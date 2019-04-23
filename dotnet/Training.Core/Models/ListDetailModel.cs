@@ -21,14 +21,15 @@
 using System;
 
 using Couchbase.Lite;
+using Training.Core;
 
-namespace Training.Core
+namespace Training.Models
 {
     /// <summary>
     /// The model for the list detail page (tabbed page containing tasks list
     /// and users list as children)
     /// </summary>
-    public sealed class ListDetailModel : BaseModel, IDisposable
+    public sealed class ListDetailModel : IDisposable
     {
 
         #region Variables

@@ -24,13 +24,14 @@ using System.Linq;
 using System.Threading;
 
 using Couchbase.Lite;
+using Training.Core;
 
-namespace Training.Core
+namespace Training.Models
 {
     /// <summary>
     /// The model for an entry in the TasksPage table view
     /// </summary>
-    public sealed class TaskModel : BaseModel
+    public sealed class TaskModel
     {
 
         #region Variables

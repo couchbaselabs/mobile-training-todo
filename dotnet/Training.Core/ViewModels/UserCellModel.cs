@@ -22,20 +22,19 @@ using System;
 using System.Windows.Input;
 
 using Acr.UserDialogs;
-using MvvmCross.Core.ViewModels;
-using MvvmCross.Platform;
+using CouchbaseLabs.MVVM.Services;
 
-namespace Training.Core
+namespace Training.ViewModels
 {
     /// <summary>
     /// The view model for an entry in the 
     /// </summary>
-    public sealed class UserCellModel : BaseViewModel<UserModel>
-    {
+    public sealed class UserCellModel : BaseNavigationViewModel
+    {//UserModel
 
         #region Variables
 
-        private IUserDialogs _dialogs = Mvx.Resolve<IUserDialogs>();
+        private readonly IUserDialogs _dialogs;
         public delegate void StatusUpdatedEventHandler();
         public event StatusUpdatedEventHandler StatusUpdated;
 
@@ -48,9 +47,10 @@ namespace Training.Core
         /// </summary>
         public ICommand DeleteCommand
         {
-            get {
-                return new MvxCommand(Delete);
-            }
+            get;
+            //get {
+            //    return new MvxCommand(Delete);
+            //}
         }
 
         /// <summary>
@@ -58,9 +58,10 @@ namespace Training.Core
         /// </summary>
         public string Name 
         {
-            get {
-                return Model.Name;
-            }
+            get;
+            //get {
+            //    return Model.Name;
+            //}
         }
 
         #endregion
@@ -71,8 +72,11 @@ namespace Training.Core
         /// Constructor
         /// </summary>
         /// <param name="documentID">The ID of the document containing the user information</param>
-        public UserCellModel(string documentID) : base(new UserModel(documentID))
+        public UserCellModel(INavigationService navigationService, 
+                             IUserDialogs dialogs,
+                             string documentID) : base(navigationService, dialogs)//base(new UserModel(documentID))
         {
+            _dialogs = dialogs;
         }
 
         #endregion
@@ -82,7 +86,7 @@ namespace Training.Core
         private void Delete()
         {
             try {
-                Model.Delete();
+                //Model.Delete();
             } catch(Exception e) {
                 _dialogs.Toast(e.Message);
             }

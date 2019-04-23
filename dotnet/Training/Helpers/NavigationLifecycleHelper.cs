@@ -1,5 +1,5 @@
 ﻿//
-// UserModel.cs
+// NavigationLifecycleHelper.cs
 //
 // Author:
 // 	Jim Borden  <jim.borden@couchbase.com>
@@ -18,30 +18,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-using Couchbase.Lite;
 using System;
-using Training.Core;
+using System.Linq;
 
-namespace Training.Models
+using Xamarin.Forms;
+
+namespace Training
 {
     /// <summary>
-    /// The model for an entry in the UsersPage table view
+    /// A helper class to dispose view models when a page disappears
     /// </summary>
-    public sealed class UserModel
+    public sealed class NavigationLifecycleHelper
     {
 
         #region Variables
 
-        private readonly Document _document;
-
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// Gets the name of the user
-        /// </summary>
-        public string Name => _document?.GetString("username");
+        private readonly Page _page;
 
         #endregion
 
@@ -50,11 +42,10 @@ namespace Training.Models
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="documentId">The ID of the document containing information about
-        /// the user</param>
-        public UserModel(string documentId)
+        /// <param name="page">The page to monitor.</param>
+        public NavigationLifecycleHelper(Page page)
         {
-            _document = CoreApp.Database.GetDocument(documentId);
+            _page = page;
         }
 
         #endregion
@@ -62,18 +53,23 @@ namespace Training.Models
         #region Public API
 
         /// <summary>
-        /// Deletes the user
+        /// Handles a disappear event
         /// </summary>
-        public void Delete()
+        /// <returns><c>true</c>, if the page disappeared and was processed, <c>false</c> otherwise.</returns>
+        /// <param name="navigation">The navigation item in question when the disappear happened.</param>
+        public bool OnDisappearing(INavigation navigation)
         {
-            try {
-                CoreApp.Database.Delete(_document);
-            } catch (Exception e) {
-                throw new Exception("Failed to delete user", e);
-            }
+            //if(navigation.NavigationStack.Last() == _page) {
+            //    ((_page as MvxPage)?.ViewModel as IDisposable)?.Dispose();
+            //    return true;
+            //}
+
+            return false;
         }
 
         #endregion
+
     }
 }
+
 

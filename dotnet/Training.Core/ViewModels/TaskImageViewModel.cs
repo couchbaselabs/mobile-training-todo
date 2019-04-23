@@ -22,16 +22,17 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-using Acr.UserDialogs;
-using MvvmCross.Core.ViewModels;
-using XLabs.Platform.Services.Media;
+using CouchbaseLabs.MVVM.Services;
 
-namespace Training.Core
+using Training.Core;
+using Training.Models;
+
+namespace Training.ViewModels
 {
     /// <summary>
     /// The view model for the page that displays a task's image
     /// </summary>
-    public class TaskImageViewModel : BaseViewModel<TaskImageModel>
+    public class TaskImageViewModel : BaseNavigationViewModel
     {
 
         #region Variables
@@ -42,10 +43,12 @@ namespace Training.Core
 
         #region Properties
 
+        TaskImageModel Model;
+
         /// <summary>
         /// Gets the command to handle an edit request
         /// </summary>
-        public ICommand EditCommand => new MvxAsyncCommand(EditImage);
+        public ICommand EditCommand;// => new MvxAsyncCommand(EditImage);
 
         /// <summary>
         /// Gets the stream containing the image data
@@ -56,7 +59,7 @@ namespace Training.Core
             get => Model.Image ?? Stream.Null;
             set {
                 Model.Image = value;
-                RaisePropertyChanged();
+                //SetPropertyChanged(ref Model.Image, value);
             }
         }
 
@@ -64,19 +67,24 @@ namespace Training.Core
 
         #region Constructors
 
+        public TaskImageViewModel(INavigationService navigationService) : base(navigationService)
+        {
+            //Model = new TaskImageModel(docID);
+        }
+
         /// <summary>
         /// Constructor (not to be called directly)
         /// </summary>
         /// <param name="dialogs">The interface responsible for showing dialogs.</param>
         /// <param name="mediaPicker">The interface responsible for getting photos.</param>
-        public TaskImageViewModel(IUserDialogs dialogs, IMediaPicker mediaPicker)
-        {
-            _imageChooser = new ImageChooser(new ImageChooserConfig {
-                Dialogs = dialogs,
-                MediaPicker = mediaPicker,
-                DeleteText = "Delete"
-            });
-        }
+        //public TaskImageViewModel(IUserDialogs dialogs, IMediaPicker mediaPicker)
+        //{
+        //    _imageChooser = new ImageChooser(new ImageChooserConfig {
+        //        Dialogs = dialogs,
+        //        MediaPicker = mediaPicker,
+        //        DeleteText = "Delete"
+        //    });
+        //}
 
         #endregion
 

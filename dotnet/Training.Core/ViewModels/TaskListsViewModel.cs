@@ -23,15 +23,18 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 
 using Acr.UserDialogs;
-using MvvmCross.Core.ViewModels;
+using Couchbase.Lite;
+using CouchbaseLabs.MVVM.Input;
+using CouchbaseLabs.MVVM.Services;
 using Training.Core;
+using Training.Models;
 
-namespace Training
+namespace Training.ViewModels
 {
     /// <summary>
     /// The view model for the list of task lists page
     /// </summary>
-    public class TaskListsViewModel : BaseViewModel<TaskListsModel>
+    public class TaskListsViewModel : BaseNavigationViewModel
     {
 
         #region Variables
@@ -41,6 +44,8 @@ namespace Training
         #endregion
 
         #region Properties
+
+        TaskListsModel Model;
 
         /// <summary>
         /// Gets whether or not login is enabled
@@ -59,7 +64,7 @@ namespace Training
                 return _searchTerm;
             }
             set {
-                if(SetProperty(ref _searchTerm, value)) {
+                if(SetPropertyChanged(ref _searchTerm, value)) {
                     Model.Filter(value);
                 }
             }
@@ -77,9 +82,9 @@ namespace Training
             }
             set {
                 _selectedItem = value;
-                SetProperty(ref _selectedItem, null); // No "selection" effect
+                SetPropertyChanged(ref _selectedItem, null); // No "selection" effect
                 if(value != null) {
-                    ShowViewModel<ListDetailViewModel>(new { username = Model.Username, name = value.Name, listID = value.DocumentID });
+                    //ShowViewModel<ListDetailViewModel>(new { username = Model.Username, name = value.Name, listID = value.DocumentID });
                 }
             }
         }
@@ -98,19 +103,9 @@ namespace Training
         /// <summary>
         /// Gets the command that is fired when the add button is pressed
         /// </summary>
-        public ICommand AddCommand
-        {
-            get {
-                return new MvxCommand(AddNewItem);
-            }
-        }
+        public ICommand AddCommand => new Command(() => AddNewItem());
 
-        public ICommand LogoutCommand
-        {
-            get {
-                return new MvxCommand(Logout);
-            }
-        }
+        public ICommand LogoutCommand => new Command(() => Logout());
 
         #endregion
 
@@ -120,9 +115,10 @@ namespace Training
         /// Constructor, not to be called directly.
         /// </summary>
         /// <param name="dialogs">The interface responsible for displaying dialogs (from IoC container)</param>
-        public TaskListsViewModel(IUserDialogs dialogs) : base(new TaskListsModel(CoreApp.Database))
+        public TaskListsViewModel(INavigationService navigationService, IUserDialogs dialogs) : base(navigationService, dialogs)
         {
             _dialogs = dialogs;
+            Model = new TaskListsModel();
         }
 
         #endregion
@@ -159,8 +155,8 @@ namespace Training
         private void Logout()
         {
             CoreApp.EndSession();
-            //Model.Dispose();
-            Close(this);
+            //ViewModel.Dispose();
+            //Close(this);
         }
 
         private void CreateNewItem(PromptResult result)

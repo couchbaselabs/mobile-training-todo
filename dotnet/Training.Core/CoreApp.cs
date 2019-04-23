@@ -22,26 +22,19 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
-
-using Acr.UserDialogs;
 using Couchbase.Lite;
 using Couchbase.Lite.Sync;
-using MvvmCross.Core.ViewModels;
-using MvvmCross.Platform;
-using MvvmCross.Platform.IoC;
-using XLabs.Platform.Device;
-using XLabs.Platform.Services.Media;
 
 namespace Training.Core
 {
     /// <summary>
     /// This is the first location to be reached in the actual shared application
     /// </summary>
-    public sealed class CoreApp : MvxApplication
+    public sealed class CoreApp
     {
         #region Constants
 
-        private static readonly Uri SyncGatewayUrl = new Uri("wss://ec2-54-164-174-27.compute-1.amazonaws.com");
+        private static readonly Uri SyncGatewayUrl = new Uri("ws://ec2-3-85-244-123.compute-1.amazonaws.com:4984/todo");
 
         #endregion
 
@@ -208,28 +201,12 @@ namespace Training.Core
 
         #endregion
 
-        #region Overrides
-
-        public override void Initialize()
-        {
-            CreatableTypes()
-            .EndingWith("ViewModel")
-            .AsTypes()
-            .RegisterAsDynamic();
-
-            Mvx.RegisterSingleton<IUserDialogs>(() => UserDialogs.Instance);
-            Mvx.RegisterType<IMediaPicker>(() => Mvx.Resolve<IDevice>().MediaPicker);
-            RegisterCustomAppStart<CoreAppStart>();
-        }
-
-        #endregion
-
     }
 
     /// <summary>
     /// A custom start logic class for MvvmCross
     /// </summary>
-    public sealed class CoreAppStart : MvxNavigatingObject, IMvxAppStart
+    public sealed class CoreAppStart
     {
 
         #region Public API
@@ -258,12 +235,14 @@ namespace Training.Core
         public void Start(object hint = null)
         {
             CoreApp.Hint = (CoreAppStartHint)hint;
-            if(CoreApp.Hint.LoginEnabled) {
-                ShowViewModel<LoginViewModel>();
-            } else {
-                CoreApp.StartSession(CoreApp.Hint.Username, null, null);
-                ShowViewModel<TaskListsViewModel>(new { loginEnabled = false });
-            }
+            //    if(CoreApp.Hint.LoginEnabled) {
+            //        Navigation.ReplaceRoot(ServiceContainer.GetInstance<TaskListsViewModel>());
+            //        //ShowViewModel<LoginViewModel>();
+            //    } else {
+            //        CoreApp.StartSession(CoreApp.Hint.Username, null, null);
+            //        Navigation.ReplaceRoot(ServiceContainer.GetInstance<TaskListsViewModel>());
+            //        //ShowViewModel<TaskListsViewModel>(new { loginEnabled = false });
+            //    }
         }
 
         #endregion

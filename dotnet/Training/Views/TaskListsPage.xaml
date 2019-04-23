@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<d:BaseContentPage
+    xmlns:d="clr-namespace:CouchbaseLabs.MVVM.Forms.Pages;assembly=CouchbaseLabs.MVVM.Forms"
+    xmlns:vm="clr-namespace:Training.ViewModels;assembly=Training.Core"
+    xmlns="http://xamarin.com/schemas/2014/forms" 
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+	xmlns:local="clr-namespace:Training"
+    xmlns:localForms="clr-namespace:Training.Views"
+    x:TypeArguments="vm:TaskListsViewModel"
+    x:Class="Training.Views.TaskListsPage"
+    Title="Task Lists">
+	<ContentPage.Resources>
+		<ResourceDictionary>
+            <local:IncompleteCountToStringConverter x:Key="IncompleteToString" />
+		</ResourceDictionary>
+	</ContentPage.Resources>
+    <ContentPage.ToolbarItems>
+		<ToolbarItem Text="+" Command="{Binding AddCommand}"/>
+		<ToolbarItem x:Name="_logoutButton" Text="Logout" Command="{Binding LogoutCommand}" Priority="1" />
+	</ContentPage.ToolbarItems>
+	<ContentPage.Content>
+        <ListView ItemsSource="{Binding TaskLists}" 
+				SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+				Header="{Binding .}">
+			<ListView.HeaderTemplate>
+                <DataTemplate>
+                    <SearchBar Text="{Binding SearchTerm, Mode=TwoWay}" />
+                </DataTemplate>
+            </ListView.HeaderTemplate>
+            <ListView.ItemTemplate>
+				<DataTemplate>
+					<localForms:TaskListCell Name="{Binding Name}" IncompleteTasks="{Binding IncompleteCount, Converter={StaticResource IncompleteToString}}">
+                        <localForms:TaskListCell.ContextActions>
+                            <MenuItem Clicked="OnEdit_Clicked" CommandParameter="{Binding DocumentID}" Text="Edit" />
+                            <MenuItem Clicked="OnDelete_Clicked" CommandParameter="{Binding DocumentID}" Text="Delete" IsDestructive="True" />
+                         </localForms:TaskListCell.ContextActions>
+					</localForms:TaskListCell>
+				</DataTemplate>
+			</ListView.ItemTemplate>
+		</ListView>
+	</ContentPage.Content>
+</d:BaseContentPage>

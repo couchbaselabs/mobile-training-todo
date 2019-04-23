@@ -21,13 +21,14 @@
 using System;
 
 using Couchbase.Lite;
+using Training.Core;
 
-namespace Training.Core
+namespace Training.Models
 {
     /// <summary>
     /// The model for an entry in the TaskListsPage table view
     /// </summary>
-    public class TaskListModel : BaseModel
+    public class TaskListModel
     {
 
         #region Variables

@@ -104,36 +104,10 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Converters\ByteArrayToImageConverter.cs" />
-    <Compile Include="Converters\IncompleteCountToStringConverter.cs" />
-    <Compile Include="DebugTrace.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\Device.cs" />
-    <Compile Include="Services\ImageService.cs" />
-    <Compile Include="Services\MediaPicker.cs" />
-    <Compile Include="Setup.cs" />
-    <Compile Include="Views\BasePage.cs" />
-    <Compile Include="Views\ListDetailView.xaml.cs">
-      <DependentUpon>ListDetailView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\LoginView.xaml.cs">
-      <DependentUpon>LoginView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\TaskImageView.xaml.cs">
-      <DependentUpon>TaskImageView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\TaskListsView.xaml.cs">
-      <DependentUpon>TaskListsView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\TasksView.xaml.cs">
-      <DependentUpon>TasksView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\UsersView.xaml.cs">
-      <DependentUpon>UsersView.xaml</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -160,34 +134,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\ListDetailView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\LoginView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\TaskImageView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\TaskListsView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\TasksView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\UsersView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Couchbase.Lite.Enterprise">
-      <Version>2.1.0</Version>
+    <PackageReference Include="Couchbase.Lite.Enterprise.Support.UWP">
+      <Version>2.1.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Caching.Memory">
       <Version>1.1.1</Version>
@@ -195,17 +145,20 @@
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>6.0.8</Version>
     </PackageReference>
-    <PackageReference Include="MvvmCross">
-      <Version>5.6.3</Version>
+    <PackageReference Include="XLabs.Platform">
+      <Version>2.3.0-pre05</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Training.Core\Training.Core.csproj">
-      <Project>{b8545a2e-0a45-4965-a86f-be35142c6158}</Project>
-      <Name>Training.Core</Name>
+    <ProjectReference Include="..\..\..\userprofile-couchbase-mobile-xamarin\modules\userprofile\examples\src\CouchbaseLabs.MVVM.Forms\CouchbaseLabs.MVVM.Forms.csproj">
+      <Project>{adbb1833-5916-4ecf-9213-98edc64bd722}</Project>
+      <Name>CouchbaseLabs.MVVM.Forms</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Training\Training.csproj">
+      <Project>{dd47e1ce-cbb5-4fb8-867d-a9d37db89493}</Project>
+      <Name>Training</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>

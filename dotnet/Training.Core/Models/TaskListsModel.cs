@@ -25,13 +25,15 @@ using System.Linq;
 using Couchbase.Lite;
 using Couchbase.Lite.Query;
 using Couchbase.Lite.Util;
+using Training.Core;
+using Training.ViewModels;
 
-namespace Training.Core
+namespace Training.Models
 {
     /// <summary>
     /// The model for the list of task lists page
     /// </summary>
-    public sealed class TaskListsModel : BaseModel, IDisposable
+    public sealed class TaskListsModel : IDisposable
     {
         #region Constants
 
@@ -55,7 +57,7 @@ namespace Training.Core
         /// <summary>
         /// Gets the list of task lists currently saved
         /// </summary>
-        public ExtendedObservableCollection<TaskListCellModel> TasksList { get; } = 
+        public ExtendedObservableCollection<TaskListCellModel> TasksList { get; } =
             new ExtendedObservableCollection<TaskListCellModel>();
 
         /// <summary>
@@ -71,9 +73,9 @@ namespace Training.Core
         /// Constructor
         /// </summary>
         /// <param name="db">The database to use</param>
-        public TaskListsModel(Database db)
+        public TaskListsModel()
         {
-            _db = db;
+            _db = CoreApp.Database;
             SetupQuery();
             Filter(null);
         }
@@ -134,9 +136,10 @@ namespace Training.Core
             }
 
             var results = query.Execute();
-            TasksList.Replace(results.Select(x => new TaskListCellModel(x.GetString(0), x.GetString(1)) {
-                IncompleteCount = _incompleteCount.ContainsKey(x.GetString(0)) ? _incompleteCount[x.GetString(0)] : 0
-            }));
+            //TasksList.Replace(results.Select(x => new TaskListCellModel(x.GetString(0), x.GetString(1))
+            //{
+            //    IncompleteCount = _incompleteCount.ContainsKey(x.GetString(0)) ? _incompleteCount[x.GetString(0)] : 0
+            //}));
         }
 
         #endregion
@@ -178,8 +181,7 @@ namespace Training.Core
                     _incompleteCount[result.GetString(0)] = result.GetInt(1);
                 }
 
-                foreach (var row in TasksList)
-                {
+                foreach (var row in TasksList) {
                     row.IncompleteCount = _incompleteCount.ContainsKey(row.DocumentID)
                         ? _incompleteCount[row.DocumentID]
                         : 0;

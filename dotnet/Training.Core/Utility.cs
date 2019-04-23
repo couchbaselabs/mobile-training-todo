@@ -29,7 +29,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Acr.UserDialogs;
-using MvvmCross.Platform;
 using Newtonsoft.Json.Linq;
 using XLabs.Platform.Services.Media;
 
@@ -381,12 +380,12 @@ namespace Training.Core
         /// <summary>
         /// Gets or sets the interface controlling UI dialog elements
         /// </summary>
-        public IUserDialogs Dialogs { get; set; } = Mvx.Resolve<IUserDialogs>();
+        public IUserDialogs Dialogs { get; set; }
 
         /// <summary>
         /// Gets or sets the interface that controls choosing media
         /// </summary>
-        public IMediaPicker MediaPicker { get; set; } = Mvx.Resolve<IMediaPicker>();
+        public IMediaPicker MediaPicker { get; set; }
 
         #endregion
 

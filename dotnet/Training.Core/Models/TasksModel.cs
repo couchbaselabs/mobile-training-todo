@@ -24,13 +24,14 @@ using System.Linq;
 
 using Couchbase.Lite;
 using Couchbase.Lite.Query;
+using Training.Core;
 
-namespace Training.Core
+namespace Training.Models
 {
     /// <summary>
     /// The model for the list of tasks page
     /// </summary>
-    public sealed class TasksModel : BaseModel, IDisposable
+    public sealed class TasksModel : IDisposable
     {
 
         #region Constants
@@ -53,8 +54,8 @@ namespace Training.Core
         /// <summary>
         /// Gets the list of tasks for the current list
         /// </summary>
-        public ExtendedObservableCollection<TaskCellModel> ListData { get; } = 
-            new ExtendedObservableCollection<TaskCellModel>();
+        //public ExtendedObservableCollection<TaskCellModel> ListData { get; } = 
+        //    new ExtendedObservableCollection<TaskCellModel>();
 
         /// <summary>
         /// Gets the name of the database being worked on
@@ -125,7 +126,7 @@ namespace Training.Core
             }
 
             var results = query.Execute();
-            ListData.Replace(results.Select(x => new TaskCellModel(x.GetString(0))));
+            //ListData.Replace(results.Select(x => new TaskCellModel(x.GetString(0))));
         }
 
         private void SetupQuery()
@@ -150,7 +151,7 @@ namespace Training.Core
 
         public void Dispose()
         {
-            ListData.Clear();
+            //ListData.Clear();
             _tasksFilteredQuery.Dispose();
             _tasksFullQuery.Dispose();
         }

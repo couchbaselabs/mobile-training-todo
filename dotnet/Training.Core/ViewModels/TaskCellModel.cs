@@ -26,20 +26,21 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Acr.UserDialogs;
-using MvvmCross.Core.ViewModels;
-using MvvmCross.Platform;
+using CouchbaseLabs.MVVM.Services;
+using Training.Core.Services;
+using Training.Models;
 
-namespace Training.Core
+namespace Training.ViewModels
 {
     /// <summary>
     /// The model for a cell in the list on the Tasks page
     /// </summary>
-    public sealed class TaskCellModel : BaseViewModel<TaskModel>
+    public sealed class TaskCellModel : BaseNavigationViewModel
     {
 
         #region Variables
 
-        private IUserDialogs _dialogs = Mvx.Resolve<IUserDialogs>();
+        private readonly IUserDialogs _dialogs;
         private string _imageDigest;
 
         public delegate void StatusUpdatedEventHandler();
@@ -49,15 +50,17 @@ namespace Training.Core
 
         #region Properties
 
+        TaskModel Model;
+
         /// <summary>
         /// Gets the command that handles a delete request
         /// </summary>
-        public ICommand DeleteCommand => new MvxCommand(Delete);
+        public ICommand DeleteCommand;// => new MvxCommand(Delete);
 
         /// <summary>
         /// Gets the command that handles an edit request
         /// </summary>
-        public ICommand EditCommand => new MvxAsyncCommand(Edit);
+        public ICommand EditCommand;// => new MvxAsyncCommand(Edit);
 
         /// <summary>
         /// Gets the ID of the document being tracked
@@ -79,7 +82,7 @@ namespace Training.Core
         public byte[] Thumbnail
         {
             get => _thumbnail;
-            private set => SetProperty(ref _thumbnail, value);
+            private set => SetPropertyChanged(ref _thumbnail, value);
         }
         private byte[] _thumbnail;
 
@@ -92,7 +95,7 @@ namespace Training.Core
                 return _checked;
             }
             set {
-                if (SetProperty(ref _checked, value))  {
+                if (SetPropertyChanged(ref _checked, value))  {
                     try {
                         Model.IsChecked = value;
                     } catch (Exception e) {
@@ -100,7 +103,7 @@ namespace Training.Core
                         return;
                     }
 
-                    RaisePropertyChanged(nameof(CheckedImage));
+                    SetPropertyChanged(nameof(CheckedImage));
                 }
             }
         }
@@ -117,9 +120,11 @@ namespace Training.Core
         public ICommand AddImageCommand
         {
             get => _addImageCommand;
-            set => SetProperty(ref _addImageCommand, value);
+            set => SetPropertyChanged(ref _addImageCommand, value);
         }
         private ICommand _addImageCommand;
+
+        IMediaService MediaService { get; set; }
 
         #endregion
 
@@ -129,14 +134,18 @@ namespace Training.Core
         /// Constructor
         /// </summary>
         /// <param name="documentID">The ID of the document to use</param>
-        public TaskCellModel(string documentID)
+        public TaskCellModel(INavigationService navigationService,
+                             IUserDialogs dialogs,
+                             IMediaService mediaService, 
+                             string documentID) : base(navigationService, dialogs)
         {
             DocumentID = documentID;
             Model = new TaskModel(documentID);
             Name = Model.Name;
             _imageDigest = Model.GetImageDigest();
             _checked = Model.IsChecked;
-            GenerateThumbnail();
+            _dialogs = dialogs;
+            MediaService = mediaService;
         }
 
         #endregion
@@ -164,13 +173,9 @@ namespace Training.Core
 
         private async Task GenerateThumbnail()
         {
-            var service = Mvx.Resolve<IImageService>();
-            using(var fullImage = GetImage()) {
-                if(fullImage == null) {
-                    Thumbnail = service.GenerateSolidColor(44, Color.LightGray, "defaultTaskCell");
-                } else {
-                    Thumbnail = await service.Square(fullImage, 44, _imageDigest);
-                }
+            var fullImage = await MediaService.PickPhotoAsync();
+            if (fullImage != null) {
+                Thumbnail = fullImage;
             }
         }
 
@@ -178,7 +183,7 @@ namespace Training.Core
         {
             try {
                 Model.Delete();
-            } catch(Exception e) {
+            } catch (Exception e) {
                 _dialogs.Toast(e.Message);
             }
             StatusUpdated?.Invoke();
@@ -195,7 +200,7 @@ namespace Training.Core
             if(result.Ok) {
                 try {
                     Model.Edit(result.Text);
-                } catch(Exception e) {
+                } catch (Exception e) {
                     _dialogs.Toast(e.Message);
                 }
                 StatusUpdated?.Invoke();

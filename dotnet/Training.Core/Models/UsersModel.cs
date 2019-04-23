@@ -24,13 +24,14 @@ using System.Linq;
 
 using Couchbase.Lite;
 using Couchbase.Lite.Query;
+using Training.Core;
 
-namespace Training.Core
+namespace Training.Models
 {
     /// <summary>
     /// The model for UsersViewModel
     /// </summary>
-    public class UsersModel : BaseModel
+    public class UsersModel
     {
 
         #region Constants
@@ -55,8 +56,8 @@ namespace Training.Core
         /// <summary>
         /// Gets the applicable list of users
         /// </summary>
-        public ExtendedObservableCollection<UserCellModel> UserList { get; } = 
-            new ExtendedObservableCollection<UserCellModel>();
+        //public ExtendedObservableCollection<UserCellModel> UserList { get; } = 
+        //    new ExtendedObservableCollection<UserCellModel>();
 
         #endregion
 
@@ -120,11 +121,11 @@ namespace Training.Core
             }
 
             var results = query.Execute();
-            UserList.Replace(results.Select(x =>
-            {
-                var docId = $"{_userList.Id}.{x.GetString(0)}";
-                return new UserCellModel(docId);
-            }));
+            //UserList.Replace(results.Select(x =>
+            //{
+            //    var docId = $"{_userList.Id}.{x.GetString(0)}";
+            //    return new UserCellModel(docId);
+            //}));
         }
 
         #endregion
@@ -159,11 +160,11 @@ namespace Training.Core
 
             //_usersLiveQuery.AddChangeListener((sender, args) =>
             //{
-                UserList.Replace(results.Select(x =>
-                {
-                    var docId = $"{_userList.Id}.{x.GetString(0)}";
-                    return new UserCellModel(docId);
-                }));
+                //UserList.Replace(results.Select(x =>
+                //{
+                //    var docId = $"{_userList.Id}.{x.GetString(0)}";
+                //    return new UserCellModel(docId);
+                //}));
             //});
         }
 
