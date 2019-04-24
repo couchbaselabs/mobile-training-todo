@@ -60,21 +60,22 @@ namespace Training.ViewModels
 
         internal string CurrentListID
         {
-            get; private set;
+            get; set;
         }
 
         internal string Username
         {
-            get; private set;
+            get; set;
         }
 
         #endregion
 
         #region Constructor
         public ListDetailViewModel(INavigationService navigationService,
-                                   string docID) : base(navigationService)
+                                   string docID,
+                                   string userName) : base(navigationService)
         {
-            Model = new ListDetailModel(docID);
+            Model = new ListDetailModel(docID, userName);
         }
         #endregion
 

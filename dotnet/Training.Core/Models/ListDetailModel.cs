@@ -61,9 +61,10 @@ namespace Training.Models
         /// Constructor
         /// </summary>
         /// <param name="documentId">The ID of the document containing the list details</param>
-        public ListDetailModel(string documentId)
+        public ListDetailModel(string documentId, string userName)
         {
             _db = CoreApp.Database;
+            _username = userName;
             _document = _db.GetDocument(documentId);
         }
 

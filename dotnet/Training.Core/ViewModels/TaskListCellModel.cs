@@ -24,8 +24,10 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Acr.UserDialogs;
+using Couchbase.Lite;
 using CouchbaseLabs.MVVM.Input;
 using CouchbaseLabs.MVVM.Services;
+using Training.Core;
 using Training.Models;
 
 namespace Training.ViewModels
@@ -41,6 +43,8 @@ namespace Training.ViewModels
 
         private readonly IUserDialogs _dialogs;
 
+        private Document _document;
+
         public delegate void StatusUpdatedEventHandler();
         public event StatusUpdatedEventHandler StatusUpdated;
 
@@ -48,12 +52,10 @@ namespace Training.ViewModels
 
         #region Properties
 
-        TaskListModel Model;
-
         /// <summary>
         /// Gets the document ID of the document being tracked
         /// </summary>
-        public string DocumentID { get; }
+        public string DocumentID { get; set; }
 
         /// <summary>
         /// Gets the handler for an edit request
@@ -78,25 +80,33 @@ namespace Training.ViewModels
         /// <summary>
         /// Gets the name of the list
         /// </summary>
-        public string Name 
+        public string Name
         {
             get => _name;
             set => SetPropertyChanged(ref _name, value);
         }
         private string _name;
 
+        /// <summary>
+        /// Gets the name of the list
+        /// </summary>
+        //public string Name => _document?.GetString("name");
+
         #endregion
 
         #region Constructors
 
-        public TaskListCellModel(IUserDialogs dialogs, string documentId, string name) : base(dialogs)
+        public TaskListCellModel(INavigationService navigationService, IUserDialogs dialogs, string documentId, string name) 
+            : base(navigationService, dialogs)
         {
             DocumentID = documentId;
-            _incompleteCount = -1;
             Name = name;
-            Model = new TaskListModel(DocumentID);
+            _incompleteCount = -1;
+            _document = CoreApp.Database.GetDocument(documentId);
             _dialogs = dialogs;
         }
+
+      
 
         ///// <summary>
         ///// Constructor
@@ -111,14 +121,80 @@ namespace Training.ViewModels
         //    Name = name;
         //}
 
+        #region Public API
+
+        /// <summary>
+        /// Deletes the list entry
+        /// </summary>
+        public bool DeleteItem()
+        {
+            if (_document == null)
+            {
+                return true;
+            }
+
+            var db = CoreApp.Database;
+            if (_document.GetString("owner") != db.Name && !HasModerator(db))
+            {
+                return false;
+            }
+
+            try
+            {
+                db.Delete(_document);
+                _document = null;
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Couldn't delete task list", e);
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Edits the list entry's name
+        /// </summary>
+        /// <param name="name">The new name to use.</param>
+        public void Edit(string name)
+        {
+            try
+            {
+                using (var mutableDoc = _document.ToMutable())
+                {
+                    mutableDoc.SetString("name", name);
+                    var document = _document;
+                    CoreApp.Database.Save(mutableDoc);
+                    _document = mutableDoc;
+                    document.Dispose();
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Couldn't edit task list", e);
+            }
+        }
+
+
+
         #endregion
 
         #region Private API
 
+        private bool HasModerator(Database db)
+        {
+            var moderatorDocId = $"moderator.{db.Name}";
+            var doc = db.GetDocument(moderatorDocId);
+            doc?.Dispose();
+            return doc != null;
+        }
+
+        #endregion
+
         private void Delete()
         {
             try {
-                if (!Model.Delete()) {
+                if (!DeleteItem()) {
                     _dialogs.Toast("Error: Missing delete access");
                 }
                 StatusUpdated?.Invoke();
@@ -137,7 +213,7 @@ namespace Training.ViewModels
 
             if(result.Ok) {
                 try {
-                    Model.Edit(result.Text);
+                    Edit(result.Text);
                 } catch (Exception e) {
                     _dialogs.Toast(e.Message);
                 }

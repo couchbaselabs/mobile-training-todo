@@ -51,7 +51,9 @@ namespace Training.ViewModels
         private Database _db = CoreApp.Database;
 
         private readonly IUserDialogs _dialogs;
-        
+        INavigationService _navigationService;
+
+
         private IQuery _filteredQuery;
         private IQuery _fullQuery;
         private IQuery _incompleteQuery;
@@ -98,9 +100,9 @@ namespace Training.ViewModels
             set {
                 _selectedItem = value;
                 SetPropertyChanged(ref _selectedItem, null); // No "selection" effect
-                if(value != null) {
-                    Navigation.ReplaceRoot(ServiceContainer.GetInstance<ListDetailViewModel>());
-                    //ShowViewModel<ListDetailViewModel>(new { username = Username, name = value.Name, listID = value.DocumentID }));
+                if(value != null)
+                {
+                    Navigation.PushAsync(ServiceContainer.GetInstance<TaskListCellModel>());
                 }
             }
         }
@@ -131,6 +133,20 @@ namespace Training.ViewModels
 
         public ICommand LogoutCommand => new Command(() => Logout());
 
+        ICommand _selectCommand;
+        public ICommand SelectCommand
+        {
+            get
+            {
+                if (_selectCommand == null)
+                {
+                    _selectCommand = new Command<KeyValuePair<string, TaskListCellModel>>((pair) => SelectList(pair));
+                }
+
+                return _selectCommand;
+            }
+        }
+
         #endregion
 
         #region Constructors
@@ -142,6 +158,7 @@ namespace Training.ViewModels
         public TaskListsViewModel(INavigationService navigationService, IUserDialogs dialogs) 
             : base(navigationService, dialogs)
         {
+            _navigationService = navigationService;
             _dialogs = dialogs;
             SetupQuery();
             Filter(null);
@@ -168,6 +185,11 @@ namespace Training.ViewModels
         #endregion
 
         #region Private API
+
+        private void SelectList(KeyValuePair<string, TaskListCellModel> pair)
+        {
+            SelectedItem = pair.Value;
+        }
 
         private void AddNewItem()
         {
@@ -244,10 +266,13 @@ namespace Training.ViewModels
                 if (name == null) {
                     _db.Delete(document);
                 } else {
-                    if (_items.ContainsKey(idKey)) {
+                    if (_items.ContainsKey(idKey))
+                    {
                         _items[idKey].Name = name;
-                    } else {
-                        var task = new TaskListCellModel(_dialogs, idKey, name);
+                    }
+                    else
+                    {
+                        var task = new TaskListCellModel(_navigationService, _dialogs, idKey, name);
                         Items.Add(idKey, task);
                     }
                 }
