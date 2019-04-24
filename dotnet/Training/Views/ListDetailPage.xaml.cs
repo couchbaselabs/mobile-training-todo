@@ -18,11 +18,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+using CouchbaseLabs.MVVM.Forms.Pages;
+using System;
 using System.ComponentModel;
+using Training.ViewModels;
 using Xamarin.Forms;
 
 namespace Training.Views
 {
+
     /// <summary>
     /// The high level page containing a list of tasks and list of users
     /// </summary>
@@ -45,6 +49,7 @@ namespace Training.Views
         public ListDetailPage()
         {
             InitializeComponent();
+
             _navHelper =  new NavigationLifecycleHelper(this);
         }
 
@@ -54,84 +59,84 @@ namespace Training.Views
 
         private void AddUsersTab(object sender, PropertyChangedEventArgs e)
         {
-            //var viewModel = ViewModel as ListDetailViewModel;
-            //if(viewModel == null) {
-            //    return;
-            //}
+            var viewModel = BindingContext as ListDetailViewModel;
+            if (viewModel == null) {
+                return;
+            }
 
-            //if(e.PropertyName == nameof(viewModel.HasModeratorStatus)) {
-            //    if(viewModel.HasModeratorStatus && Children.Count < 2) {
-            //        Children.Add(_usersPage);
-            //    }
-            //}
+            if (e.PropertyName == nameof(viewModel.HasModeratorStatus)) {
+                if (viewModel.HasModeratorStatus && Children.Count < 2) {
+                    Children.Add(_usersPage);
+                }
+            }
         }
 
         #endregion
 
-        //#region Overrides
+        #region Overrides
 
-        //protected override void OnBindingContextChanged()
-        //{
-        //    base.OnBindingContextChanged();
+        protected override void OnBindingContextChanged()
+        {
+            base.OnBindingContextChanged();
 
-        //    var viewModel = ViewModel as ListDetailViewModel;
-        //    if(viewModel == null || Children.Count > 0) {
-        //        return;
-        //    }
+            var viewModel = BindingContext as ListDetailViewModel;
+            if (viewModel == null || Children.Count > 0) {
+                return;
+            }
 
-        //    _tasksPage = new TasksPage();
-        //    _tasksPage.ViewModel = new TasksViewModel(viewModel);
-        //    Children.Add(_tasksPage);
+            _tasksPage = new TasksPage();
+            _tasksPage.ViewModel = new TasksViewModel(viewModel.NavigationService, viewModel.Dialogs, viewModel);
+            Children.Add(_tasksPage);
 
-        //    _usersPage = new UsersPage();
-        //    _usersPage.ViewModel = new UsersViewModel(viewModel);
+            _usersPage = new UsersPage();
+            _usersPage.ViewModel = new UsersViewModel(viewModel.NavigationService, viewModel.Dialogs, viewModel);
 
-        //    if(!viewModel.HasModeratorStatus) {
-        //        viewModel.PropertyChanged += AddUsersTab;
-        //    } else {
-        //        Children.Add(_usersPage);
-        //    }
-        //}
+            if (!viewModel.HasModeratorStatus) {
+                viewModel.PropertyChanged += AddUsersTab;
+            } else {
+                Children.Add(_usersPage);
+            }
+        }
 
-        //public void SelectUsersPage()
-        //{
-        //    CurrentPage = _usersPage;
-        //    this.ToolbarItems[0].Text = "Tasks";
-        //}
+        public void SelectUsersPage()
+        {
+            CurrentPage = _usersPage;
+            this.ToolbarItems[0].Text = "Tasks";
+        }
 
-        //public void SelectTasksPage()
-        //{
-        //    CurrentPage = _tasksPage;
-        //    this.ToolbarItems[0].Text = "Users";
-        //}
+        public void SelectTasksPage()
+        {
+            CurrentPage = _tasksPage;
+            this.ToolbarItems[0].Text = "Users";
+        }
 
-        //protected override void OnDisappearing()
-        //{
-        //    if(_navHelper.OnDisappearing(Navigation)) {
-        //        ((Children[0] as MvxPage)?.ViewModel as IDisposable)?.Dispose();
-        //        (_usersPage.ViewModel as IDisposable)?.Dispose();
-        //    }
-        //}
+        protected override void OnDisappearing()
+        {
+            if (_navHelper.OnDisappearing(Navigation)) {
+                //((Children[0] as MvxPage)?.ViewModel as IDisposable)?.Dispose();
+                (_usersPage.ViewModel as IDisposable)?.Dispose();
+            }
+        }
 
-        //private void OnPageSelect_Clicked(object sender, System.EventArgs e)
-        //{
-        //    if(this.ToolbarItems[0].Text == "Users") {
-        //        SelectUsersPage();
-        //    } else {
-        //        SelectTasksPage();
-        //    }
-        //}
+        private void OnPageSelect_Clicked(object sender, System.EventArgs e)
+        {
+            if (this.ToolbarItems[0].Text == "Users") {
+                SelectUsersPage();
+            } else {
+                SelectTasksPage();
+            }
+        }
 
-        //private void OnAdd_Clicked(object sender, System.EventArgs e)
-        //{
-        //    if (this.ToolbarItems[0].Text == "Tasks") {
-        //        ((UsersViewModel)_usersPage.ViewModel).AddCommand.Execute(new object());
-        //    } else {
-        //        ((TasksViewModel)_tasksPage.ViewModel).AddCommand.Execute(new object());
-        //    }
-        //}
+        private void OnAdd_Clicked(object sender, System.EventArgs e)
+        {
+            if (this.ToolbarItems[0].Text == "Tasks") {
+                ((UsersViewModel)_usersPage.ViewModel).AddCommand.Execute(new object());
+            } else {
+                ((TasksViewModel)_tasksPage.ViewModel).AddCommand.Execute(new object());
+            }
+        }
 
-        //#endregion
+        #endregion
 
     }
 }

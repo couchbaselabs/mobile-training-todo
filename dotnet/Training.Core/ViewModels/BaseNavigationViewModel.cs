@@ -2,6 +2,7 @@
 using Acr.UserDialogs;
 using CouchbaseLabs.MVVM.Services;
 using CouchbaseLabs.MVVM.ViewModels;
+using Training.Models;
 
 namespace Training.ViewModels
 {
@@ -10,11 +11,6 @@ namespace Training.ViewModels
         protected INavigationService Navigation { get; set; }
 
         protected IUserDialogs Dialogs { get; }
-
-        protected BaseNavigationViewModel(IUserDialogs dialogs)
-        {
-            Dialogs = dialogs;
-        }
 
         protected BaseNavigationViewModel(INavigationService navigationService)
         {
@@ -28,5 +24,46 @@ namespace Training.ViewModels
         }
 
         public Task Dismiss() => Navigation.PopAsync();
+    }
+
+    /// <summary>
+    /// Another base view model that contains a property for its corresponding model
+    /// </summary>
+    public abstract class BaseNavigationViewModel<T> : BaseNavigationViewModel where T : BaseModel
+    {
+        #region Properties
+
+        /// <summary>
+        /// Gets (or sets in derived classes) the model that this view model
+        /// will interact with
+        /// </summary>
+        public T Model { get; protected set; }
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        protected BaseNavigationViewModel(INavigationService navigation) : base(navigation)
+        {
+        }
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="model">The model that this view model will interact with.</param>
+        protected BaseNavigationViewModel(INavigationService navigation, T model) : base(navigation)
+        {
+            Model = model;
+        }
+
+        protected BaseNavigationViewModel(INavigationService navigation, IUserDialogs dialogs, T model) : base(navigation, dialogs)
+        {
+            Model = model;
+        }
+
+        #endregion
     }
 }

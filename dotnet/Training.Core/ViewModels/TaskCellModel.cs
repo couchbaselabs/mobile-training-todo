@@ -35,7 +35,7 @@ namespace Training.ViewModels
     /// <summary>
     /// The model for a cell in the list on the Tasks page
     /// </summary>
-    public sealed class TaskCellModel : BaseNavigationViewModel
+    public sealed class TaskCellModel : BaseNavigationViewModel<TaskModel>
     {
 
         #region Variables
@@ -49,8 +49,6 @@ namespace Training.ViewModels
         #endregion
 
         #region Properties
-
-        TaskModel Model;
 
         /// <summary>
         /// Gets the command that handles a delete request
@@ -137,10 +135,9 @@ namespace Training.ViewModels
         public TaskCellModel(INavigationService navigationService,
                              IUserDialogs dialogs,
                              IMediaService mediaService, 
-                             string documentID) : base(navigationService, dialogs)
+                             string documentID) : base(navigationService, dialogs, new TaskModel(documentID))
         {
             DocumentID = documentID;
-            Model = new TaskModel(documentID);
             Name = Model.Name;
             _imageDigest = Model.GetImageDigest();
             _checked = Model.IsChecked;

@@ -25,14 +25,15 @@ using System.Windows.Input;
 
 using Acr.UserDialogs;
 using CouchbaseLabs.MVVM.Services;
+using Training.Models;
 
 namespace Training.ViewModels
 {
     /// <summary>
     /// The view model for the users page
     /// </summary>
-    public class UsersViewModel : BaseNavigationViewModel
-    {//UsersModel
+    public class UsersViewModel : BaseNavigationViewModel<UsersModel>
+    {
 
         #region Variables
 
@@ -97,7 +98,8 @@ namespace Training.ViewModels
 
         #region Constructors
 
-        public UsersViewModel(INavigationService navigationService, IUserDialogs dialogs) : base(navigationService, dialogs)
+        public UsersViewModel(INavigationService navigationService, IUserDialogs dialogs, ListDetailViewModel parent) 
+            : base(navigationService, dialogs, new UsersModel(parent.CurrentListID))
         {
             _dialogs = dialogs;
         }

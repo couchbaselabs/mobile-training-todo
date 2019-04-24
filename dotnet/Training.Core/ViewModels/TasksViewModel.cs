@@ -28,13 +28,14 @@ using System.Windows.Input;
 using Acr.UserDialogs;
 using CouchbaseLabs.MVVM.Services;
 using Training.Core;
+using Training.Models;
 
 namespace Training.ViewModels
 {
     /// <summary>
     /// The view model for the list of tasks page
     /// </summary>
-    public class TasksViewModel : BaseNavigationViewModel, IDisposable
+    public class TasksViewModel : BaseNavigationViewModel<TasksModel>, IDisposable
     {//TasksModel
 
         #region Variables
@@ -97,7 +98,8 @@ namespace Training.ViewModels
 
         #region Constructors
 
-        public TasksViewModel(INavigationService navigationService, IUserDialogs dialogs) : base(navigationService, dialogs)
+        public TasksViewModel(INavigationService navigationService, IUserDialogs dialogs, ListDetailViewModel parent) 
+            : base(navigationService, dialogs, new TasksModel(parent.CurrentListID))
         {
             _dialogs = dialogs;
         }

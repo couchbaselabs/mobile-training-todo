@@ -31,7 +31,7 @@ namespace Training.Models
     /// <summary>
     /// The model for an entry in the TasksPage table view
     /// </summary>
-    public sealed class TaskModel
+    public sealed class TaskModel : BaseModel
     {
 
         #region Variables

@@ -53,7 +53,6 @@ namespace Training.ViewModels
         private readonly IUserDialogs _dialogs;
         INavigationService _navigationService;
 
-
         private IQuery _filteredQuery;
         private IQuery _fullQuery;
         private IQuery _incompleteQuery;
@@ -102,7 +101,11 @@ namespace Training.ViewModels
                 SetPropertyChanged(ref _selectedItem, null); // No "selection" effect
                 if(value != null)
                 {
-                    Navigation.PushAsync(ServiceContainer.GetInstance<TaskListCellModel>());
+                    var vm = ServiceContainer.GetInstance<ListDetailViewModel>();
+                    if(vm == null)
+                        vm = new ListDetailViewModel(_navigationService, _dialogs, 
+                            Username, value.Name, value.DocumentID);
+                    Navigation.PushAsync(vm);
                 }
             }
         }
@@ -177,11 +180,6 @@ namespace Training.ViewModels
             LoginEnabled = loginEnabled;
         }
 
-        //public void TestConflict()
-        //{
-        //    Model.TestConflict();
-        //}
-
         #endregion
 
         #region Private API
@@ -234,7 +232,7 @@ namespace Training.ViewModels
                 doc["name"].Value = taskListName;
                 doc["owner"].Value = Username;
                 _db.Save(doc);
-                Filter(_searchText);
+                Filter(null);
                 return doc;
             } catch (Exception e) {
                 var newException = new Exception("Couldn't save task list", e);
@@ -255,8 +253,9 @@ namespace Training.ViewModels
 
             var results = query.Execute();
             var allResult = results.AllResults();
-            if (allResult.Count < Items.Count)
+            if (allResult.Count < Items.Count) {
                 Items = new ObservableConcurrentDictionary<string, TaskListCellModel>();
+            }
             Parallel.For(0, allResult.Count, i =>
             {
                 var result = allResult[i];
@@ -273,11 +272,19 @@ namespace Training.ViewModels
                     else
                     {
                         var task = new TaskListCellModel(_navigationService, _dialogs, idKey, name);
+                        task.StatusUpdated += Task_StatusUpdated;
                         Items.Add(idKey, task);
                     }
                 }
                 _items[idKey].IncompleteCount = _incompleteCount.ContainsKey(idKey) ? _incompleteCount[idKey] : 0;
             });
+        }
+
+        private void Task_StatusUpdated(object sender, State state)
+        {
+            TaskListCellModel listCell = (TaskListCellModel)sender;
+            if (state == State.DELETED)
+                Items.Remove(listCell.DocumentID);
         }
 
         #region Private Methods

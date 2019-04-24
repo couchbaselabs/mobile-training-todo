@@ -33,7 +33,7 @@ namespace Training.Models
     /// <summary>
     /// The model for UsersViewModel
     /// </summary>
-    public class UsersModel
+    public class UsersModel : BaseModel
     {
 
         #region Constants

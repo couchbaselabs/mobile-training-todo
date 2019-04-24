@@ -18,8 +18,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+using Acr.UserDialogs;
+using Couchbase.Lite;
 using CouchbaseLabs.MVVM.Services;
 using System;
+using Training.Core;
 using Training.Models;
 
 namespace Training.ViewModels
@@ -27,12 +30,10 @@ namespace Training.ViewModels
     /// <summary>
     /// The view model for the task list / users tabbed view of the application
     /// </summary>
-    public class ListDetailViewModel : BaseNavigationViewModel, IDisposable
+    public class ListDetailViewModel : BaseNavigationViewModel<ListDetailModel>, IDisposable
     {
 
         #region Properties
-
-        ListDetailModel Model;
 
         /// <summary>
         /// Gets or sets whether the current user has moderator status
@@ -68,14 +69,28 @@ namespace Training.ViewModels
             get; set;
         }
 
+        public INavigationService NavigationService { get; set; }
+        public IUserDialogs Dialogs { get; set; }
+
         #endregion
 
         #region Constructor
-        public ListDetailViewModel(INavigationService navigationService,
-                                   string docID,
-                                   string userName) : base(navigationService)
+
+        /// <summary>
+        /// Initializes the view model with data passed to it
+        /// </summary>
+        /// <param name="username">The username of the current user.</param>
+        /// <param name="name">The name of the task.</param>
+        /// <param name="listID">The task document ID.</param>
+        public ListDetailViewModel(INavigationService navigationService, IUserDialogs dialogs,
+            string username, string name, string listID)
+            : base(navigationService, dialogs, new ListDetailModel(listID))
         {
-            Model = new ListDetailModel(docID, userName);
+            Username = username;
+            CurrentListID = listID;
+            NavigationService = navigationService;
+            Dialogs = dialogs;
+            CalculateModeratorStatus();
         }
         #endregion
 
@@ -90,9 +105,8 @@ namespace Training.ViewModels
         public void Init(string username, string name, string listID)
         {
             Username = username;
-            //PageTitle = name;
             CurrentListID = listID;
-            //Model = new ListDetailModel(listID);
+            Model = new ListDetailModel(listID);
             CalculateModeratorStatus();
         }
 
@@ -102,15 +116,11 @@ namespace Training.ViewModels
 
         private void CalculateModeratorStatus()
         {
-            //var owner = Model.Owner;
-            //if (Username.Equals(owner) || Model.HasModerator(Username))
-            //{
-            //    HasModeratorStatus = true;
-            //    return;
-            //}
-
-            //Model.TrackModeratorStatus(Username);
-            //Model.ModeratorStatusGained += (sender, e) => HasModeratorStatus = true;
+            var owner = Model.Owner;
+            if (Username.Equals(owner) || Model.HasModerator(Username)) {
+                HasModeratorStatus = true;
+                return;
+            }
         }
 
         #endregion
@@ -119,7 +129,7 @@ namespace Training.ViewModels
 
         public void Dispose()
         {
-            //Model.Dispose();
+            Model.Dispose();
         }
 
         #endregion

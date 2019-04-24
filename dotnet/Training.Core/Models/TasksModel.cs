@@ -31,7 +31,7 @@ namespace Training.Models
     /// <summary>
     /// The model for the list of tasks page
     /// </summary>
-    public sealed class TasksModel : IDisposable
+    public sealed class TasksModel : BaseModel, IDisposable
     {
 
         #region Constants
