@@ -80,8 +80,10 @@ namespace Training.ViewModels
         /// </summary>
         public string Name 
         {
-            get;
+            get => _name;
+            set => SetPropertyChanged(ref _name, value);
         }
+        private string _name;
 
         #endregion
 

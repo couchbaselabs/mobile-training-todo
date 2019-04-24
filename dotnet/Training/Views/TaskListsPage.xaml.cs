@@ -81,26 +81,10 @@ namespace Training.Views
             }
         }
 
-        //private void OnEdit_Clicked(object sender, System.EventArgs e)
-        //{
-        //    var param = ((MenuItem)sender).CommandParameter;
-        //    var data = ((MenuItem)sender).BindingContext as TaskListCellModel;
-        //    data.StatusUpdated += UpdateView;
-        //    data.EditCommand.Execute(param);
-        //}
-
-        //private void OnDelete_Clicked(object sender, System.EventArgs e)
-        //{
-        //    var param = ((MenuItem)sender).CommandParameter;
-        //    var data = ((MenuItem)sender).BindingContext as TaskListCellModel;
-        //    data.StatusUpdated += UpdateView;
-        //    data.DeleteCommand.Execute(param);
-        //}
-
         protected void UpdateView()
         {
             var viewModel = BindingContext as TaskListsViewModel;
-            viewModel.Model.Filter(null);
+            viewModel.Filter(null);
         }
 
         #endregion

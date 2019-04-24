@@ -19,10 +19,15 @@
 // limitations under the License.
 //
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Acr.UserDialogs;
+using Couchbase.Lite;
+using Couchbase.Lite.Query;
+using CouchbaseLabs.MVVM;
 using CouchbaseLabs.MVVM.Input;
 using CouchbaseLabs.MVVM.Services;
 using Training.Core;
@@ -35,16 +40,27 @@ namespace Training.ViewModels
     /// </summary>
     public class TaskListsViewModel : BaseNavigationViewModel
     {
+        #region Constants
+
+        private const string TaskListType = "task-list";
+
+        #endregion
 
         #region Variables
 
+        private Database _db = CoreApp.Database;
+
         private readonly IUserDialogs _dialogs;
+        
+        private IQuery _filteredQuery;
+        private IQuery _fullQuery;
+        private IQuery _incompleteQuery;
+        private string _searchText;
+        private readonly IDictionary<string, int> _incompleteCount = new Dictionary<string, int>();
 
         #endregion
 
         #region Properties
-
-        public TaskListsModel Model { get; set; }
 
         /// <summary>
         /// Gets whether or not login is enabled
@@ -64,7 +80,7 @@ namespace Training.ViewModels
             }
             set {
                 if(SetPropertyChanged(ref _searchTerm, value)) {
-                    Model.Filter(value);
+                    Filter(value);
                 }
             }
         }
@@ -83,7 +99,8 @@ namespace Training.ViewModels
                 _selectedItem = value;
                 SetPropertyChanged(ref _selectedItem, null); // No "selection" effect
                 if(value != null) {
-                    //ShowViewModel<ListDetailViewModel>(new { username = Model.Username, name = value.Name, listID = value.DocumentID });
+                    Navigation.ReplaceRoot(ServiceContainer.GetInstance<ListDetailViewModel>());
+                    //ShowViewModel<ListDetailViewModel>(new { username = Username, name = value.Name, listID = value.DocumentID }));
                 }
             }
         }
@@ -92,12 +109,20 @@ namespace Training.ViewModels
         /// <summary>
         /// Gets the list of task lists for display in the list view
         /// </summary>
-        public ObservableCollection<TaskListCellModel> TaskLists
+        ObservableConcurrentDictionary<string, TaskListCellModel> _items = new ObservableConcurrentDictionary<string, TaskListCellModel>();
+        public ObservableConcurrentDictionary<string, TaskListCellModel> Items
         {
-            get {
-                return Model.TasksList;
+            get { return _items; }
+            set {
+                _items = value;
+                SetPropertyChanged(ref _items, value);
             }
         }
+
+        /// <summary>
+        /// Gets the username of the user using the app
+        /// </summary>
+        public string Username => _db?.Name;
 
         /// <summary>
         /// Gets the command that is fired when the add button is pressed
@@ -114,10 +139,12 @@ namespace Training.ViewModels
         /// Constructor, not to be called directly.
         /// </summary>
         /// <param name="dialogs">The interface responsible for displaying dialogs (from IoC container)</param>
-        public TaskListsViewModel(INavigationService navigationService, IUserDialogs dialogs) : base(navigationService, dialogs)
+        public TaskListsViewModel(INavigationService navigationService, IUserDialogs dialogs) 
+            : base(navigationService, dialogs)
         {
             _dialogs = dialogs;
-            Model = new TaskListsModel(_dialogs);
+            SetupQuery();
+            Filter(null);
         }
 
         #endregion
@@ -154,7 +181,6 @@ namespace Training.ViewModels
         private void Logout()
         {
             CoreApp.EndSession();
-            //ViewModel.Dispose();
             //Close(this);
         }
 
@@ -165,10 +191,113 @@ namespace Training.ViewModels
             }
 
             try {
-                Model.CreateTaskList(result.Text);
+                CreateTaskList(result.Text);
             } catch(Exception e) {
                 _dialogs.Toast(e.Message);
             }
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Creates a new task list
+        /// </summary>
+        /// <param name="taskListName">The name of the task list.</param>
+        public Document CreateTaskList(string taskListName)
+        {
+            var docId = $"{Username}.{Guid.NewGuid()}";
+            try {
+                var doc = new MutableDocument(docId);
+                doc["type"].Value = TaskListType;
+                doc["name"].Value = taskListName;
+                doc["owner"].Value = Username;
+                _db.Save(doc);
+                Filter(_searchText);
+                return doc;
+            } catch (Exception e) {
+                var newException = new Exception("Couldn't save task list", e);
+                throw newException;
+            }
+        }
+
+        public void Filter(string searchText)
+        {
+            _searchText = searchText;
+            var query = default(IQuery);
+            if (!String.IsNullOrEmpty(searchText)) {
+                query = _filteredQuery;
+                query.Parameters.SetString("searchText", $"%{searchText}%");
+            } else {
+                query = _fullQuery;
+            }
+
+            var results = query.Execute();
+            var allResult = results.AllResults();
+            if (allResult.Count < Items.Count)
+                Items = new ObservableConcurrentDictionary<string, TaskListCellModel>();
+            Parallel.For(0, allResult.Count, i =>
+            {
+                var result = allResult[i];
+                var idKey = result.GetString("id");
+                var document = _db.GetDocument(idKey);
+                var name = result.GetString("name");
+                if (name == null) {
+                    _db.Delete(document);
+                } else {
+                    if (_items.ContainsKey(idKey)) {
+                        _items[idKey].Name = name;
+                    } else {
+                        var task = new TaskListCellModel(_dialogs, idKey, name);
+                        Items.Add(idKey, task);
+                    }
+                }
+                _items[idKey].IncompleteCount = _incompleteCount.ContainsKey(idKey) ? _incompleteCount[idKey] : 0;
+            });
+        }
+
+        #region Private Methods
+
+        private void SetupQuery()
+        {
+            _db.CreateIndex("byName", IndexBuilder.ValueIndex(ValueIndexItem.Expression(Expression.Property("name"))));
+
+            _filteredQuery = QueryBuilder.Select(SelectResult.Expression(Meta.ID),
+                SelectResult.Expression(Expression.Property("name")))
+                .From(DataSource.Database(_db))
+                .Where(Expression.Property("name")
+                    .Like(Expression.Parameter("searchText"))
+                    .And(Expression.Property("type").EqualTo(Expression.String("task-list"))))
+                .OrderBy(Ordering.Property("name"));
+
+            _fullQuery = QueryBuilder.Select(SelectResult.Expression(Meta.ID),
+                    SelectResult.Expression(Expression.Property("name")))
+                .From(DataSource.Database(_db))
+                .Where(Expression.Property("name")
+                    .NotNullOrMissing()
+                    .And(Expression.Property("type").EqualTo(Expression.String("task-list"))))
+                .OrderBy(Ordering.Property("name"));
+
+            _incompleteQuery = QueryBuilder.Select(SelectResult.Expression(Expression.Property("taskList.id")),
+                    SelectResult.Expression(Function.Count(Expression.All())))
+                .From(DataSource.Database(_db))
+                .Where(Expression.Property("type").EqualTo(Expression.String(TasksModel.TaskType))
+                       .And(Expression.Property("complete").EqualTo(Expression.Boolean(false))))
+                .GroupBy(Expression.Property("taskList.id"));
+
+            _incompleteQuery.AddChangeListener((sender, args) =>
+            {
+                _incompleteCount.Clear();
+                foreach (var result in args.Results) {
+                    _incompleteCount[result.GetString(0)] = result.GetInt(1);
+                }
+
+                foreach (var row in Items) {
+                    var item = ((KeyValuePair<string, TaskListCellModel>)row).Value;
+                    item.IncompleteCount = _incompleteCount.ContainsKey(item.DocumentID)
+                        ? _incompleteCount[item.DocumentID]
+                        : 0;
+                }
+            });
         }
 
         #endregion
