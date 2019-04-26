@@ -21,17 +21,19 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Acr.UserDialogs;
+
 using Couchbase.Lite;
 using Couchbase.Lite.Query;
+
+using Prototype.Mvvm.Input;
 using Prototype.Mvvm.Services;
+
 using Training.Core;
-using Training.Models;
 
 namespace Training.ViewModels
 {
@@ -54,7 +56,7 @@ namespace Training.ViewModels
 
         private IQuery _tasksFilteredQuery;
         private IQuery _tasksFullQuery;
-        private Database _db;
+        private Database _db = CoreApp.Database;
         private Document _taskList;
 
         #endregion
@@ -90,7 +92,7 @@ namespace Training.ViewModels
             }
             set {
                 if(SetPropertyChanged(ref _searchTerm, value)) {
-                    //Model.Filter(value);
+                    Filter(value);
                 }
             }
         }
@@ -100,7 +102,21 @@ namespace Training.ViewModels
         /// Gets the command that is fired when the add button is pressed
         /// </summary>
         /// <value>The add command.</value>
-        public ICommand AddCommand;// => new MvxCommand(AddNewItem);
+        public ICommand AddCommand => new Command(() => AddNewItem());
+
+        ICommand _selectCommand;
+        public ICommand SelectCommand
+        {
+            get
+            {
+                if (_selectCommand == null)
+                {
+                    _selectCommand = new Command<KeyValuePair<string, TaskCellModel>>((pair) => SelectList(pair));
+                }
+
+                return _selectCommand;
+            }
+        }
 
         /// <summary>
         /// Gets the list of tasks for display in the list view
@@ -125,13 +141,33 @@ namespace Training.ViewModels
 
         #region Constructors
 
-        public TasksViewModel(INavigationService navigationService, IUserDialogs dialogs, ListDetailViewModel parent) 
+        public TasksViewModel(INavigationService navigationService, IUserDialogs dialogs) 
             : base(navigationService, dialogs)
         {
             _dialogs = dialogs;
 
-            _db = CoreApp.Database;
-            _taskList = _db.GetDocument(parent.CurrentListID);
+            _imageChooser = new ImageChooser(new ImageChooserConfig
+            {
+                Dialogs = _dialogs
+            });
+
+            //ListData.CollectionChanged += (sender, e) =>
+            //{
+            //    if (e.NewItems == null)
+            //    {
+            //        return;
+            //    }
+
+            //    UpdateButtons(e.NewItems);
+            //};
+
+            //UpdateButtons(ListData);
+            
+        }
+
+        public void Init(string docID)
+        {
+            _taskList = _db.GetDocument(docID);
             SetupQuery();
             Filter(null);
         }
@@ -161,71 +197,6 @@ namespace Training.ViewModels
 
         #endregion
 
-        /// <summary>
-        /// Creates a new task in the current list
-        /// </summary>
-        /// <param name="taskName">The name of the task</param>
-        public Document CreateNewTask(string taskName)
-        {
-            var taskListInfo = new Dictionary<string, object>
-            {
-                ["id"] = _taskList.Id,
-                ["owner"] = _taskList.GetString("owner")
-            };
-
-            var properties = new Dictionary<string, object>
-            {
-                ["type"] = TaskType,
-                ["taskList"] = taskListInfo,
-                ["createdAt"] = DateTimeOffset.UtcNow,
-                ["task"] = taskName,
-                ["complete"] = false
-            };
-
-            try {
-                var doc = new MutableDocument(properties);
-                _db.Save(doc);
-                Filter(null);
-                return doc;
-            } catch (Exception e) {
-                throw new Exception("Couldn't save task", e);
-            }
-        }
-
-        /// <summary>
-        /// Filters the list of tasks based on a given search string.
-        /// </summary>
-        /// <param name="searchString">The search string to filter on.</param>
-        public void Filter(string searchString)
-        {
-            var query = default(IQuery);
-            if (!String.IsNullOrEmpty(searchString)) {
-                query = _tasksFilteredQuery;
-                query.Parameters.SetString("searchString", $"%{searchString}%");
-            } else {
-                query = _tasksFullQuery;
-            }
-
-            var results = query.Execute();
-            //ListData.Replace(results.Select(x => new TaskCellModel(x.GetString(0))));
-        }
-
-        private void SetupQuery()
-        {
-            _tasksFilteredQuery = QueryBuilder.Select(SelectResult.Expression(Meta.ID))
-                .From(DataSource.Database(_db))
-                .Where(Expression.Property("type").EqualTo(Expression.String(TaskType))
-                    .And(Expression.Property("taskList.id").EqualTo(Expression.String(_taskList.Id)))
-                    .And(Expression.Property("task").Like(Expression.Parameter("searchString"))))
-                .OrderBy(Ordering.Property("createdAt"));
-
-            _tasksFullQuery = QueryBuilder.Select(SelectResult.Expression(Meta.ID))
-                .From(DataSource.Database(_db))
-                .Where(Expression.Property("type").EqualTo(Expression.String(TaskType))
-                    .And(Expression.Property("taskList.id").EqualTo(Expression.String(_taskList.Id))))
-                .OrderBy(Ordering.Property("createdAt"));
-        }
-
         #region Internal API
 
         internal async Task ShowOrChooseImage(TaskCellModel taskDocument)
@@ -240,6 +211,11 @@ namespace Training.ViewModels
         #endregion
 
         #region Private API
+
+        private void SelectList(KeyValuePair<string, TaskCellModel> pair)
+        {
+            SelectedItem = pair.Value;
+        }
 
         private void UpdateButtons(IList newItems)
         {
@@ -285,10 +261,81 @@ namespace Training.ViewModels
             }
 
             try {
-                //Model.CreateNewTask(result.Text);
+                CreateNewTask(result.Text);
             } catch(Exception e) {
                 _dialogs.Toast(e.Message);
             }
+        }
+
+        /// <summary>
+        /// Creates a new task in the current list
+        /// </summary>
+        /// <param name="taskName">The name of the task</param>
+        public Document CreateNewTask(string taskName)
+        {
+            var taskListInfo = new Dictionary<string, object>
+            {
+                ["id"] = _taskList.Id,
+                ["owner"] = _taskList.GetString("owner")
+            };
+
+            var properties = new Dictionary<string, object>
+            {
+                ["type"] = TaskType,
+                ["taskList"] = taskListInfo,
+                ["createdAt"] = DateTimeOffset.UtcNow,
+                ["task"] = taskName,
+                ["complete"] = false
+            };
+
+            try
+            {
+                var doc = new MutableDocument(properties);
+                _db.Save(doc);
+                Filter(null);
+                return doc;
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Couldn't save task", e);
+            }
+        }
+
+        /// <summary>
+        /// Filters the list of tasks based on a given search string.
+        /// </summary>
+        /// <param name="searchString">The search string to filter on.</param>
+        public void Filter(string searchString)
+        {
+            var query = default(IQuery);
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                query = _tasksFilteredQuery;
+                query.Parameters.SetString("searchString", $"%{searchString}%");
+            }
+            else
+            {
+                query = _tasksFullQuery;
+            }
+
+            var results = query.Execute();
+            //ListData.Replace(results.Select(x => new TaskCellModel(x.GetString(0))));
+        }
+
+        private void SetupQuery()
+        {
+            _tasksFilteredQuery = QueryBuilder.Select(SelectResult.Expression(Meta.ID))
+                .From(DataSource.Database(_db))
+                .Where(Expression.Property("type").EqualTo(Expression.String(TaskType))
+                    .And(Expression.Property("taskList.id").EqualTo(Expression.String(_taskList.Id)))
+                    .And(Expression.Property("task").Like(Expression.Parameter("searchString"))))
+                .OrderBy(Ordering.Property("createdAt"));
+
+            _tasksFullQuery = QueryBuilder.Select(SelectResult.Expression(Meta.ID))
+                .From(DataSource.Database(_db))
+                .Where(Expression.Property("type").EqualTo(Expression.String(TaskType))
+                    .And(Expression.Property("taskList.id").EqualTo(Expression.String(_taskList.Id))))
+                .OrderBy(Ordering.Property("createdAt"));
         }
 
         #endregion

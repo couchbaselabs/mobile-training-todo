@@ -20,11 +20,11 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Acr.UserDialogs;
+
 using Couchbase.Lite;
 using Couchbase.Lite.Query;
 
@@ -32,7 +32,6 @@ using Prototype.Mvvm.Input;
 using Prototype.Mvvm.Services;
 
 using Training.Core;
-using Training.Models;
 
 namespace Training.ViewModels
 {
@@ -103,10 +102,11 @@ namespace Training.ViewModels
                 if(value != null)
                 {
                     var vm = GetViewModel<ListDetailViewModel>();
+                    vm.Init(Username, value.Name, value.DocumentID);
                     //if(vm == null)
                     //    vm = new ListDetailViewModel(_navigationService, _dialogs, 
                     //        Username, value.Name, value.DocumentID);
-                    Navigation.PushAsync(vm);
+                    _navigationService.PushAsync(vm);
                 }
             }
         }

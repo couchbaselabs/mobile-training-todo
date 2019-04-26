@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Acr.UserDialogs;
 using Prototype.Mvvm.Services;
 using Prototype.Mvvm.ViewModels;

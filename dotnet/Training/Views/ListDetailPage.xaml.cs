@@ -84,11 +84,11 @@ namespace Training.Views
             }
 
             _tasksPage = new TasksPage();
-            _tasksPage.ViewModel = new TasksViewModel(ViewModel.NavigationService, ViewModel.Dialogs, ViewModel);
+            //_tasksPage.ViewModel = new TasksViewModel(ViewModel.NavigationService, ViewModel.Dialogs, ViewModel);
             Children.Add(_tasksPage);
 
             _usersPage = new UsersPage();
-            _usersPage.ViewModel = new UsersViewModel(ViewModel.NavigationService, ViewModel.Dialogs, ViewModel);
+            //_usersPage.ViewModel = new UsersViewModel(ViewModel.NavigationService, ViewModel.Dialogs, ViewModel);
 
             if (!ViewModel.HasModeratorStatus) {
                 ViewModel.PropertyChanged += AddUsersTab;
@@ -119,19 +119,25 @@ namespace Training.Views
 
         private void OnPageSelect_Clicked(object sender, System.EventArgs e)
         {
-            if (this.ToolbarItems[0].Text == "Users") {
+            if (this.ToolbarItems[0].Text == "Users")
+            {
                 SelectUsersPage();
-            } else {
+            }
+            else
+            {
                 SelectTasksPage();
             }
         }
 
         private void OnAdd_Clicked(object sender, System.EventArgs e)
         {
-            if (this.ToolbarItems[0].Text == "Tasks") {
-                ((UsersViewModel)_usersPage.ViewModel).AddCommand.Execute(new object());
-            } else {
-                ((TasksViewModel)_tasksPage.ViewModel).AddCommand.Execute(new object());
+            if (this.ToolbarItems[0].Text == "Tasks")
+            {
+                ((UsersViewModel)ViewModel.ViewModels[1]).AddCommand.Execute(new object());
+            }
+            else
+            {
+                ((TasksViewModel)ViewModel.ViewModels[0]).AddCommand.Execute(new object());
             }
         }
 

@@ -19,14 +19,12 @@
 // limitations under the License.
 //
 using Acr.UserDialogs;
-using Couchbase.Lite;
+using Prototype.Mvvm.Input;
 using Prototype.Mvvm.Services;
-using Prototype.Mvvm.ViewModels;
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using Training.Core;
+using System.Windows.Input;
 using Training.Models;
 
 namespace Training.ViewModels
@@ -73,8 +71,7 @@ namespace Training.ViewModels
             get; set;
         }
 
-        public INavigationService NavigationService { get; set; }
-        public IUserDialogs Dialogs { get; set; }
+        public ICommand AddCommand => new Command(() => AddNewItem());
 
         #endregion
 
@@ -92,11 +89,47 @@ namespace Training.ViewModels
             CurrentListID = listID;
             Model = new ListDetailModel(listID);
             CalculateModeratorStatus();
+            var taskVM = GetViewModel<TasksViewModel>();
+            taskVM.Init(CurrentListID);
+            ViewModels.Add(taskVM);
+
+            if (!HasModeratorStatus)
+            {
+                PropertyChanged += AddUsersTab;
+            }
+            else
+            {
+                AddUserPage();
+            }
+            
         }
 
         #endregion
 
         #region Private API
+
+        private void AddNewItem()
+        {
+            var t = this.PageTitle;
+        }
+
+        private void AddUserPage()
+        {
+            var userVM = GetViewModel<UsersViewModel>();
+            userVM.Init(CurrentListID);
+            ViewModels.Add(userVM);
+        }
+
+        private void AddUsersTab(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(HasModeratorStatus))
+            {
+                if (HasModeratorStatus && ViewModels.Count < 2)
+                {
+                    AddUserPage();
+                }
+            }
+        }
 
         private void CalculateModeratorStatus()
         {
