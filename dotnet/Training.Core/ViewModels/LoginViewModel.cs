@@ -25,11 +25,9 @@ using System.Windows.Input;
 using Acr.UserDialogs;
 
 using Couchbase.Lite;
-
-using CouchbaseLabs.MVVM;
-using CouchbaseLabs.MVVM.Input;
-using CouchbaseLabs.MVVM.Services;
-
+using Prototype.Mvvm;
+using Prototype.Mvvm.Input;
+using Prototype.Mvvm.Services;
 using Training.Core;
 
 namespace Training.ViewModels
@@ -124,7 +122,7 @@ namespace Training.ViewModels
                 return;
             }
 
-            Navigation.ReplaceRoot(ServiceContainer.GetInstance<TaskListsViewModel>());
+            await Navigation.SetDetailAsync(GetViewModel<TaskListsViewModel>());
         }
 
         /// <summary>

@@ -18,11 +18,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+using Prototype.Mvvm.Services;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
-
-using CouchbaseLabs.MVVM.Services;
 
 using Training.Core;
 using Training.Models;

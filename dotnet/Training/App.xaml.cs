@@ -1,6 +1,7 @@
 ﻿using Acr.UserDialogs;
-using CouchbaseLabs.MVVM;
-using CouchbaseLabs.MVVM.Services;
+
+using Prototype.Mvvm;
+using Prototype.Mvvm.Services;
 
 using Training.Core;
 using Training.Core.Services;
@@ -28,9 +29,9 @@ namespace Training
             start.Start(hint);
 
             if (hint.LoginEnabled) {
-                NavigationService.ReplaceRoot(ServiceContainer.GetInstance<LoginViewModel>(), false);
+                NavigationService.SetDetailAsync(ServiceContainer.GetInstance<LoginViewModel>(), false);
             } else {
-                NavigationService.ReplaceRoot(ServiceContainer.GetInstance<TaskListsViewModel>(), false);
+                NavigationService.SetDetailAsync(ServiceContainer.GetInstance<TaskListsViewModel>(), false);
         }
     }
 

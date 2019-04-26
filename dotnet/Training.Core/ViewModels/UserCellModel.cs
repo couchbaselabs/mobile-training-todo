@@ -22,7 +22,7 @@ using System;
 using System.Windows.Input;
 
 using Acr.UserDialogs;
-using CouchbaseLabs.MVVM.Services;
+using Prototype.Mvvm.Services;
 
 namespace Training.ViewModels
 {

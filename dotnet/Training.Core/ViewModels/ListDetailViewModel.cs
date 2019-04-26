@@ -20,8 +20,12 @@
 //
 using Acr.UserDialogs;
 using Couchbase.Lite;
-using CouchbaseLabs.MVVM.Services;
+using Prototype.Mvvm.Services;
+using Prototype.Mvvm.ViewModels;
+
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using Training.Core;
 using Training.Models;
 
@@ -30,7 +34,7 @@ namespace Training.ViewModels
     /// <summary>
     /// The view model for the task list / users tabbed view of the application
     /// </summary>
-    public class ListDetailViewModel : BaseNavigationViewModel<ListDetailModel>, IDisposable
+    public class ListDetailViewModel : BaseCollectionViewModel<ListDetailModel>, IDisposable
     {
 
         #region Properties
@@ -72,26 +76,6 @@ namespace Training.ViewModels
         public INavigationService NavigationService { get; set; }
         public IUserDialogs Dialogs { get; set; }
 
-        #endregion
-
-        #region Constructor
-
-        /// <summary>
-        /// Initializes the view model with data passed to it
-        /// </summary>
-        /// <param name="username">The username of the current user.</param>
-        /// <param name="name">The name of the task.</param>
-        /// <param name="listID">The task document ID.</param>
-        public ListDetailViewModel(INavigationService navigationService, IUserDialogs dialogs,
-            string username, string name, string listID)
-            : base(navigationService, dialogs, new ListDetailModel(listID))
-        {
-            Username = username;
-            CurrentListID = listID;
-            NavigationService = navigationService;
-            Dialogs = dialogs;
-            CalculateModeratorStatus();
-        }
         #endregion
 
         #region Public API

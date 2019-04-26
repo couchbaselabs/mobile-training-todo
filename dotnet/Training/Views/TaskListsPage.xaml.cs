@@ -19,7 +19,7 @@
 // limitations under the License.
 //
 
-using CouchbaseLabs.MVVM.Forms.Pages;
+using Prototype.Mvvm.Forms.Pages;
 using Training.ViewModels;
 
 namespace Training.Views

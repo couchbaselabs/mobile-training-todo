@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <d:BaseContentPage
-    xmlns:d="clr-namespace:CouchbaseLabs.MVVM.Forms.Pages;assembly=CouchbaseLabs.MVVM.Forms"
+    xmlns:d="clr-namespace:Prototype.Mvvm.Forms.Pages;assembly=Prototype.Mvvm.Forms"
     xmlns:vm="clr-namespace:Training.ViewModels;assembly=Training.Core"
-    xmlns:controls="clr-namespace:CouchbaseLabs.MVVM.Forms.Controls;assembly=CouchbaseLabs.MVVM.Forms"
+    xmlns:controls="clr-namespace:Training.Controls"
     xmlns="http://xamarin.com/schemas/2014/forms" 
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
 	xmlns:local="clr-namespace:Training"

@@ -27,9 +27,10 @@ using System.Windows.Input;
 using Acr.UserDialogs;
 using Couchbase.Lite;
 using Couchbase.Lite.Query;
-using CouchbaseLabs.MVVM;
-using CouchbaseLabs.MVVM.Input;
-using CouchbaseLabs.MVVM.Services;
+
+using Prototype.Mvvm.Input;
+using Prototype.Mvvm.Services;
+
 using Training.Core;
 using Training.Models;
 
@@ -101,10 +102,10 @@ namespace Training.ViewModels
                 SetPropertyChanged(ref _selectedItem, null); // No "selection" effect
                 if(value != null)
                 {
-                    var vm = ServiceContainer.GetInstance<ListDetailViewModel>();
-                    if(vm == null)
-                        vm = new ListDetailViewModel(_navigationService, _dialogs, 
-                            Username, value.Name, value.DocumentID);
+                    var vm = GetViewModel<ListDetailViewModel>();
+                    //if(vm == null)
+                    //    vm = new ListDetailViewModel(_navigationService, _dialogs, 
+                    //        Username, value.Name, value.DocumentID);
                     Navigation.PushAsync(vm);
                 }
             }
@@ -312,7 +313,7 @@ namespace Training.ViewModels
             _incompleteQuery = QueryBuilder.Select(SelectResult.Expression(Expression.Property("taskList.id")),
                     SelectResult.Expression(Function.Count(Expression.All())))
                 .From(DataSource.Database(_db))
-                .Where(Expression.Property("type").EqualTo(Expression.String(TasksModel.TaskType))
+                .Where(Expression.Property("type").EqualTo(Expression.String(TasksViewModel.TaskType))
                        .And(Expression.Property("complete").EqualTo(Expression.Boolean(false))))
                 .GroupBy(Expression.Property("taskList.id"));
 

@@ -25,8 +25,8 @@ using System.Windows.Input;
 
 using Acr.UserDialogs;
 using Couchbase.Lite;
-using CouchbaseLabs.MVVM.Input;
-using CouchbaseLabs.MVVM.Services;
+using Prototype.Mvvm.Input;
+using Prototype.Mvvm.Services;
 using Training.Core;
 using Training.Models;
 

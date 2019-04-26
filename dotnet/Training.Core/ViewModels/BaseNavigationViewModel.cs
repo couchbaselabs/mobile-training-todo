@@ -1,7 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Acr.UserDialogs;
-using CouchbaseLabs.MVVM.Services;
-using CouchbaseLabs.MVVM.ViewModels;
+using Prototype.Mvvm.Services;
+using Prototype.Mvvm.ViewModels;
 using Training.Models;
 
 namespace Training.ViewModels
@@ -50,6 +51,11 @@ namespace Training.ViewModels
         {
         }
 
+        protected BaseNavigationViewModel(INavigationService navigation, IUserDialogs dialogs)
+            : base(navigation, dialogs)
+        {
+        }
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -63,6 +69,19 @@ namespace Training.ViewModels
         {
             Model = model;
         }
+
+        #endregion
+    }
+
+    public abstract class BaseCollectionViewModel<T> : BaseCollectionViewModel where T : BaseModel
+    {
+        #region Properties
+
+        /// <summary>
+        /// Gets (or sets in derived classes) the model that this view model
+        /// will interact with
+        /// </summary>
+        public T Model { get; protected set; }
 
         #endregion
     }

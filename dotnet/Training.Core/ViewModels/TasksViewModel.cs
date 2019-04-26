@@ -20,13 +20,16 @@
 //
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Acr.UserDialogs;
-using CouchbaseLabs.MVVM.Services;
+using Couchbase.Lite;
+using Couchbase.Lite.Query;
+using Prototype.Mvvm.Services;
 using Training.Core;
 using Training.Models;
 
@@ -35,13 +38,24 @@ namespace Training.ViewModels
     /// <summary>
     /// The view model for the list of tasks page
     /// </summary>
-    public class TasksViewModel : BaseNavigationViewModel<TasksModel>, IDisposable
-    {//TasksModel
+    public class TasksViewModel : BaseNavigationViewModel, IDisposable
+    {
+
+        #region Constants
+
+        internal const string TaskType = "task";
+
+        #endregion
 
         #region Variables
 
         private readonly IUserDialogs _dialogs;
         private readonly ImageChooser _imageChooser;
+
+        private IQuery _tasksFilteredQuery;
+        private IQuery _tasksFullQuery;
+        private Database _db;
+        private Document _taskList;
 
         #endregion
 
@@ -67,12 +81,6 @@ namespace Training.ViewModels
         private TaskCellModel _selectedItem;
 
         /// <summary>
-        /// Gets the list of tasks for display in the list view
-        /// </summary>
-        /// <value>The list data.</value>
-        public ObservableCollection<TaskCellModel> ListData;// => Model.ListData;
-
-        /// <summary>
         /// Gets or sets the current text being searched for in the list
         /// </summary>
         public string SearchTerm
@@ -94,14 +102,38 @@ namespace Training.ViewModels
         /// <value>The add command.</value>
         public ICommand AddCommand;// => new MvxCommand(AddNewItem);
 
+        /// <summary>
+        /// Gets the list of tasks for display in the list view
+        /// </summary>
+        /// <value>The list data.</value>
+        ObservableConcurrentDictionary<string, TaskCellModel> _items = new ObservableConcurrentDictionary<string, TaskCellModel>();
+        public ObservableConcurrentDictionary<string, TaskCellModel> ListData
+        {
+            get { return _items; }
+            set {
+                _items = value;
+                SetPropertyChanged(ref _items, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets the name of the database being worked on
+        /// </summary>
+        public string DatabaseName => _db.Name;
+
         #endregion
 
         #region Constructors
 
         public TasksViewModel(INavigationService navigationService, IUserDialogs dialogs, ListDetailViewModel parent) 
-            : base(navigationService, dialogs, new TasksModel(parent.CurrentListID))
+            : base(navigationService, dialogs)
         {
             _dialogs = dialogs;
+
+            _db = CoreApp.Database;
+            _taskList = _db.GetDocument(parent.CurrentListID);
+            SetupQuery();
+            Filter(null);
         }
 
         /// <summary>
@@ -128,6 +160,71 @@ namespace Training.ViewModels
         //}
 
         #endregion
+
+        /// <summary>
+        /// Creates a new task in the current list
+        /// </summary>
+        /// <param name="taskName">The name of the task</param>
+        public Document CreateNewTask(string taskName)
+        {
+            var taskListInfo = new Dictionary<string, object>
+            {
+                ["id"] = _taskList.Id,
+                ["owner"] = _taskList.GetString("owner")
+            };
+
+            var properties = new Dictionary<string, object>
+            {
+                ["type"] = TaskType,
+                ["taskList"] = taskListInfo,
+                ["createdAt"] = DateTimeOffset.UtcNow,
+                ["task"] = taskName,
+                ["complete"] = false
+            };
+
+            try {
+                var doc = new MutableDocument(properties);
+                _db.Save(doc);
+                Filter(null);
+                return doc;
+            } catch (Exception e) {
+                throw new Exception("Couldn't save task", e);
+            }
+        }
+
+        /// <summary>
+        /// Filters the list of tasks based on a given search string.
+        /// </summary>
+        /// <param name="searchString">The search string to filter on.</param>
+        public void Filter(string searchString)
+        {
+            var query = default(IQuery);
+            if (!String.IsNullOrEmpty(searchString)) {
+                query = _tasksFilteredQuery;
+                query.Parameters.SetString("searchString", $"%{searchString}%");
+            } else {
+                query = _tasksFullQuery;
+            }
+
+            var results = query.Execute();
+            //ListData.Replace(results.Select(x => new TaskCellModel(x.GetString(0))));
+        }
+
+        private void SetupQuery()
+        {
+            _tasksFilteredQuery = QueryBuilder.Select(SelectResult.Expression(Meta.ID))
+                .From(DataSource.Database(_db))
+                .Where(Expression.Property("type").EqualTo(Expression.String(TaskType))
+                    .And(Expression.Property("taskList.id").EqualTo(Expression.String(_taskList.Id)))
+                    .And(Expression.Property("task").Like(Expression.Parameter("searchString"))))
+                .OrderBy(Ordering.Property("createdAt"));
+
+            _tasksFullQuery = QueryBuilder.Select(SelectResult.Expression(Meta.ID))
+                .From(DataSource.Database(_db))
+                .Where(Expression.Property("type").EqualTo(Expression.String(TaskType))
+                    .And(Expression.Property("taskList.id").EqualTo(Expression.String(_taskList.Id))))
+                .OrderBy(Ordering.Property("createdAt"));
+        }
 
         #region Internal API
 
@@ -201,6 +298,11 @@ namespace Training.ViewModels
         public void Dispose()
         {
             //Model.Dispose();
+            
+                //ListData.Clear();
+                _tasksFilteredQuery.Dispose();
+                _tasksFullQuery.Dispose();
+            
         }
 
         #endregion

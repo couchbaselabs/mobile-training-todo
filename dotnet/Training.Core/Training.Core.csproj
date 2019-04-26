@@ -10,6 +10,6 @@
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\userprofile-couchbase-mobile-xamarin\modules\userprofile\examples\src\CouchbaseLabs.MVVM\CouchbaseLabs.MVVM.csproj" />
+    <ProjectReference Include="..\..\..\Prototype.Mvvm\src\Prototype.Mvvm\Prototype.Mvvm.csproj" />
   </ItemGroup>
 </Project>

@@ -18,11 +18,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-using CouchbaseLabs.MVVM.Forms.Pages;
-using System;
+using Prototype.Mvvm.Forms.Pages;
 using System.ComponentModel;
 using Training.ViewModels;
-using Xamarin.Forms;
+
+using Xamarin.Forms.Xaml;
 
 namespace Training.Views
 {
@@ -30,7 +30,8 @@ namespace Training.Views
     /// <summary>
     /// The high level page containing a list of tasks and list of users
     /// </summary>
-    public partial class ListDetailPage : TabbedPage
+    [XamlCompilation(XamlCompilationOptions.Compile)]
+    public partial class ListDetailPage : BaseTabbedPage<ListDetailViewModel>
     {
 
         #region Variables
@@ -59,13 +60,12 @@ namespace Training.Views
 
         private void AddUsersTab(object sender, PropertyChangedEventArgs e)
         {
-            var viewModel = BindingContext as ListDetailViewModel;
-            if (viewModel == null) {
+            if (ViewModel == null) {
                 return;
             }
 
-            if (e.PropertyName == nameof(viewModel.HasModeratorStatus)) {
-                if (viewModel.HasModeratorStatus && Children.Count < 2) {
+            if (e.PropertyName == nameof(ViewModel.HasModeratorStatus)) {
+                if (ViewModel.HasModeratorStatus && Children.Count < 2) {
                     Children.Add(_usersPage);
                 }
             }
@@ -79,20 +79,19 @@ namespace Training.Views
         {
             base.OnBindingContextChanged();
 
-            var viewModel = BindingContext as ListDetailViewModel;
-            if (viewModel == null || Children.Count > 0) {
+            if (ViewModel == null || Children.Count > 0) {
                 return;
             }
 
             _tasksPage = new TasksPage();
-            _tasksPage.ViewModel = new TasksViewModel(viewModel.NavigationService, viewModel.Dialogs, viewModel);
+            _tasksPage.ViewModel = new TasksViewModel(ViewModel.NavigationService, ViewModel.Dialogs, ViewModel);
             Children.Add(_tasksPage);
 
             _usersPage = new UsersPage();
-            _usersPage.ViewModel = new UsersViewModel(viewModel.NavigationService, viewModel.Dialogs, viewModel);
+            _usersPage.ViewModel = new UsersViewModel(ViewModel.NavigationService, ViewModel.Dialogs, ViewModel);
 
-            if (!viewModel.HasModeratorStatus) {
-                viewModel.PropertyChanged += AddUsersTab;
+            if (!ViewModel.HasModeratorStatus) {
+                ViewModel.PropertyChanged += AddUsersTab;
             } else {
                 Children.Add(_usersPage);
             }
@@ -112,10 +111,10 @@ namespace Training.Views
 
         protected override void OnDisappearing()
         {
-            if (_navHelper.OnDisappearing(Navigation)) {
-                //((Children[0] as MvxPage)?.ViewModel as IDisposable)?.Dispose();
-                (_usersPage.ViewModel as IDisposable)?.Dispose();
-            }
+            //if (_navHelper.OnDisappearing(Navigation)) {
+            //    ((Children[0] as MvxPage)?.ViewModel as IDisposable)?.Dispose();
+            //    (_usersPage.ViewModel as IDisposable)?.Dispose();
+            //}
         }
 
         private void OnPageSelect_Clicked(object sender, System.EventArgs e)

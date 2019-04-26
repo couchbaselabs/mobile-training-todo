@@ -13,7 +13,7 @@
     <PackageReference Include="Xamarin.Forms" Version="3.6.0.344457" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\userprofile-couchbase-mobile-xamarin\modules\userprofile\examples\src\CouchbaseLabs.MVVM.Forms\CouchbaseLabs.MVVM.Forms.csproj" />
+    <ProjectReference Include="..\..\..\Prototype.Mvvm\src\Prototype.Mvvm.Forms\Prototype.Mvvm.Forms.csproj" />
     <ProjectReference Include="..\Training.Core\Training.Core.csproj" />
   </ItemGroup>
   <ItemGroup>

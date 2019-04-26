@@ -150,9 +150,9 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\userprofile-couchbase-mobile-xamarin\modules\userprofile\examples\src\CouchbaseLabs.MVVM.Forms\CouchbaseLabs.MVVM.Forms.csproj">
-      <Project>{adbb1833-5916-4ecf-9213-98edc64bd722}</Project>
-      <Name>CouchbaseLabs.MVVM.Forms</Name>
+    <ProjectReference Include="..\..\..\Prototype.Mvvm\src\Prototype.Mvvm.Forms\Prototype.Mvvm.Forms.csproj">
+      <Project>{9567169f-10a1-4ad6-b8f2-daaf800d4c02}</Project>
+      <Name>Prototype.Mvvm.Forms</Name>
     </ProjectReference>
     <ProjectReference Include="..\Training\Training.csproj">
       <Project>{dd47e1ce-cbb5-4fb8-867d-a9d37db89493}</Project>
