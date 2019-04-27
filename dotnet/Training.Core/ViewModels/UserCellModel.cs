@@ -52,10 +52,12 @@ namespace Training.ViewModels
         /// <summary>
         /// Gets the name of the user
         /// </summary>
-        public string Name 
+        public string Name
         {
-            get; set;
+            get => _name;
+            set => SetPropertyChanged(ref _name, value);
         }
+        string _name = "";
 
         /// <summary>
         /// Gets the document ID of the document being tracked

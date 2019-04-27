@@ -284,20 +284,20 @@ namespace Training.ViewModels
             Parallel.For(0, allResult.Count, i =>
             {
                 var result = allResult[i];
-                var idKey = result.GetString("id");
-                var document = _db.GetDocument(idKey);
                 var name = result.GetString("username");
-                if (name == null) {
-                    _db.Delete(document);
-                } else {
-                    if (_items.ContainsKey(idKey)) {
-                        _items[idKey].Name = name;
-                    } else {
-                        var task = new UserCellModel(_navigationService, _dialogs, idKey);
-                        task.StatusUpdated += Task_StatusUpdated;
-                        ListData.Add(idKey, task);
-                    }
+                var idKey = $"{_userList.Id}.{name}";
+
+                if (_items.ContainsKey(idKey))
+                {
+                    _items[idKey].Name = name;
                 }
+                else
+                {
+                    var user = new UserCellModel(_navigationService, _dialogs, idKey);
+                    user.StatusUpdated += Task_StatusUpdated;
+                    ListData.Add(idKey, user);
+                }
+
             });
         }
 

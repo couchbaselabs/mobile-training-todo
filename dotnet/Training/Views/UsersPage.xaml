@@ -17,9 +17,9 @@
             </controls:ListView.HeaderTemplate>
             <controls:ListView.ItemTemplate>
                 <DataTemplate>
-                    <TextCell Text="{Binding Name}">
+                    <TextCell Text="{Binding Value.Name}">
                         <TextCell.ContextActions>
-                            <MenuItem Clicked="OnDelete_Clicked" Text="Delete" IsDestructive="True" />
+                            <MenuItem Command="{Binding Value.DeleteCommand}" Text="Delete" IsDestructive="True" />
                         </TextCell.ContextActions>
 					</TextCell>
 				</DataTemplate>
