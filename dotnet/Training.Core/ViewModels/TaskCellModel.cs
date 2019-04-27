@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Acr.UserDialogs;
+using Prototype.Mvvm.Input;
 using Prototype.Mvvm.Services;
 using Training.Core.Services;
 using Training.Models;
@@ -43,7 +44,7 @@ namespace Training.ViewModels
         private readonly IUserDialogs _dialogs;
         private string _imageDigest;
 
-        public delegate void StatusUpdatedEventHandler();
+        public delegate void StatusUpdatedEventHandler(object sender, State state);
         public event StatusUpdatedEventHandler StatusUpdated;
 
         #endregion
@@ -53,26 +54,28 @@ namespace Training.ViewModels
         /// <summary>
         /// Gets the command that handles a delete request
         /// </summary>
-        public ICommand DeleteCommand;// => new MvxCommand(Delete);
+        public ICommand DeleteCommand => new Command(() => Delete());
 
         /// <summary>
         /// Gets the command that handles an edit request
         /// </summary>
-        public ICommand EditCommand;// => new MvxAsyncCommand(Edit);
+        public ICommand EditCommand => new Command(async() => await Edit());
 
         /// <summary>
         /// Gets the ID of the document being tracked
         /// </summary>
         /// <value>The document identifier.</value>
-        public string DocumentID { get; }
+        public string DocumentID { get; set; }
 
         /// <summary>
         /// Gets the name of the task
         /// </summary>
         public string Name
         {
-            get;
+            get => _name;
+            set => SetPropertyChanged(ref _name, value);
         }
+        string _name = "";
 
         /// <summary>
         /// Gets the thumbnail of the image stored with the task, if it exists
@@ -183,7 +186,7 @@ namespace Training.ViewModels
             } catch (Exception e) {
                 _dialogs.Toast(e.Message);
             }
-            StatusUpdated?.Invoke();
+            StatusUpdated?.Invoke(this, State.DELETED);
         }
 
         private async Task Edit()
@@ -200,7 +203,7 @@ namespace Training.ViewModels
                 } catch (Exception e) {
                     _dialogs.Toast(e.Message);
                 }
-                StatusUpdated?.Invoke();
+                StatusUpdated?.Invoke(this, State.EDITED);
             }
         }
 

@@ -34,6 +34,7 @@ using Prototype.Mvvm.Input;
 using Prototype.Mvvm.Services;
 
 using Training.Core;
+using Training.Core.Services;
 
 namespace Training.ViewModels
 {
@@ -52,7 +53,9 @@ namespace Training.ViewModels
         #region Variables
 
         private readonly IUserDialogs _dialogs;
+        private readonly INavigationService _navigationService;
         private readonly ImageChooser _imageChooser;
+        private readonly IMediaService _mediaService;
 
         private IQuery _tasksFilteredQuery;
         private IQuery _tasksFullQuery;
@@ -145,6 +148,7 @@ namespace Training.ViewModels
             : base(navigationService, dialogs)
         {
             _dialogs = dialogs;
+            _navigationService = navigationService;
 
             _imageChooser = new ImageChooser(new ImageChooserConfig
             {
@@ -319,7 +323,36 @@ namespace Training.ViewModels
             }
 
             var results = query.Execute();
-            //ListData.Replace(results.Select(x => new TaskCellModel(x.GetString(0))));
+
+            var allResult = results.AllResults();
+            if (allResult.Count < ListData.Count) {
+                ListData = new ObservableConcurrentDictionary<string, TaskCellModel>();
+            }
+            Parallel.For(0, allResult.Count, i =>
+            {
+                var result = allResult[i];
+                var idKey = result.GetString("id");
+                var document = _db.GetDocument(idKey);
+                var name = document.GetString("task");
+                if (name == null) {
+                    _db.Delete(document);
+                } else {
+                    if (_items.ContainsKey(idKey)) {
+                        _items[idKey].Name = name;
+                    } else {
+                        var task = new TaskCellModel(_navigationService, _dialogs, _mediaService, idKey);
+                        task.StatusUpdated += Task_StatusUpdated;
+                        ListData.Add(idKey, task);
+                    }
+                }
+            });
+        }
+
+        private void Task_StatusUpdated(object sender, State state)
+        {
+            TaskCellModel listCell = (TaskCellModel)sender;
+            if (state == State.DELETED)
+                ListData.Remove(listCell.DocumentID);
         }
 
         private void SetupQuery()
@@ -344,12 +377,10 @@ namespace Training.ViewModels
 
         public void Dispose()
         {
-            //Model.Dispose();
-            
-                //ListData.Clear();
-                _tasksFilteredQuery.Dispose();
-                _tasksFullQuery.Dispose();
-            
+            ListData = new ObservableConcurrentDictionary<string, TaskCellModel>();
+            _tasksFilteredQuery.Dispose();
+            _tasksFullQuery.Dispose();
+
         }
 
         #endregion

@@ -23,7 +23,7 @@
         <controls:ListView ItemsSource="{Binding Items}" 
                            ItemTappedCommand="{Binding SelectCommand}"
                            SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
-                           Header="{Binding .}">
+                           Header="{Binding .}" >
             <controls:ListView.HeaderTemplate>
                 <DataTemplate>
                     <SearchBar Text="{Binding SearchTerm, Mode=TwoWay}" />

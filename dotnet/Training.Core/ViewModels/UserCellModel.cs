@@ -22,20 +22,22 @@ using System;
 using System.Windows.Input;
 
 using Acr.UserDialogs;
+using Prototype.Mvvm.Input;
 using Prototype.Mvvm.Services;
+using Training.Models;
 
 namespace Training.ViewModels
 {
     /// <summary>
     /// The view model for an entry in the 
     /// </summary>
-    public sealed class UserCellModel : BaseNavigationViewModel
-    {//UserModel
+    public sealed class UserCellModel : BaseNavigationViewModel<UserModel>
+    {
 
         #region Variables
 
         private readonly IUserDialogs _dialogs;
-        public delegate void StatusUpdatedEventHandler();
+        public delegate void StatusUpdatedEventHandler(object sender, State state);
         public event StatusUpdatedEventHandler StatusUpdated;
 
         #endregion
@@ -45,24 +47,20 @@ namespace Training.ViewModels
         /// <summary>
         /// Gets the handler for a delete request
         /// </summary>
-        public ICommand DeleteCommand
-        {
-            get;
-            //get {
-            //    return new MvxCommand(Delete);
-            //}
-        }
+        public ICommand DeleteCommand => new Command(() => Delete());
 
         /// <summary>
         /// Gets the name of the user
         /// </summary>
         public string Name 
         {
-            get;
-            //get {
-            //    return Model.Name;
-            //}
+            get; set;
         }
+
+        /// <summary>
+        /// Gets the document ID of the document being tracked
+        /// </summary>
+        public string DocumentID { get; set; }
 
         #endregion
 
@@ -74,9 +72,11 @@ namespace Training.ViewModels
         /// <param name="documentID">The ID of the document containing the user information</param>
         public UserCellModel(INavigationService navigationService, 
                              IUserDialogs dialogs,
-                             string documentID) : base(navigationService, dialogs)//base(new UserModel(documentID))
+                             string documentID) 
+            : base(navigationService, dialogs, new UserModel(documentID))
         {
             _dialogs = dialogs;
+            DocumentID = documentID;
         }
 
         #endregion
@@ -86,11 +86,11 @@ namespace Training.ViewModels
         private void Delete()
         {
             try {
-                //Model.Delete();
+                Model.Delete();
             } catch(Exception e) {
                 _dialogs.Toast(e.Message);
             }
-            StatusUpdated?.Invoke();
+            StatusUpdated?.Invoke(this, State.DELETED);
         }
 
         #endregion

@@ -37,8 +37,6 @@ namespace Training.Views
         #region Variables
 
         private NavigationLifecycleHelper _navHelper;
-        private UsersPage _usersPage;
-        private TasksPage _tasksPage;
 
         #endregion
 
@@ -56,58 +54,7 @@ namespace Training.Views
 
         #endregion
 
-        #region Private API
-
-        private void AddUsersTab(object sender, PropertyChangedEventArgs e)
-        {
-            if (ViewModel == null) {
-                return;
-            }
-
-            if (e.PropertyName == nameof(ViewModel.HasModeratorStatus)) {
-                if (ViewModel.HasModeratorStatus && Children.Count < 2) {
-                    Children.Add(_usersPage);
-                }
-            }
-        }
-
-        #endregion
-
         #region Overrides
-
-        protected override void OnBindingContextChanged()
-        {
-            base.OnBindingContextChanged();
-
-            if (ViewModel == null || Children.Count > 0) {
-                return;
-            }
-
-            _tasksPage = new TasksPage();
-            //_tasksPage.ViewModel = new TasksViewModel(ViewModel.NavigationService, ViewModel.Dialogs, ViewModel);
-            Children.Add(_tasksPage);
-
-            _usersPage = new UsersPage();
-            //_usersPage.ViewModel = new UsersViewModel(ViewModel.NavigationService, ViewModel.Dialogs, ViewModel);
-
-            if (!ViewModel.HasModeratorStatus) {
-                ViewModel.PropertyChanged += AddUsersTab;
-            } else {
-                Children.Add(_usersPage);
-            }
-        }
-
-        public void SelectUsersPage()
-        {
-            CurrentPage = _usersPage;
-            this.ToolbarItems[0].Text = "Tasks";
-        }
-
-        public void SelectTasksPage()
-        {
-            CurrentPage = _tasksPage;
-            this.ToolbarItems[0].Text = "Users";
-        }
 
         protected override void OnDisappearing()
         {
@@ -115,30 +62,6 @@ namespace Training.Views
             //    ((Children[0] as MvxPage)?.ViewModel as IDisposable)?.Dispose();
             //    (_usersPage.ViewModel as IDisposable)?.Dispose();
             //}
-        }
-
-        private void OnPageSelect_Clicked(object sender, System.EventArgs e)
-        {
-            if (this.ToolbarItems[0].Text == "Users")
-            {
-                SelectUsersPage();
-            }
-            else
-            {
-                SelectTasksPage();
-            }
-        }
-
-        private void OnAdd_Clicked(object sender, System.EventArgs e)
-        {
-            if (this.ToolbarItems[0].Text == "Tasks")
-            {
-                ((UsersViewModel)ViewModel.ViewModels[1]).AddCommand.Execute(new object());
-            }
-            else
-            {
-                ((TasksViewModel)ViewModel.ViewModels[0]).AddCommand.Execute(new object());
-            }
         }
 
         #endregion

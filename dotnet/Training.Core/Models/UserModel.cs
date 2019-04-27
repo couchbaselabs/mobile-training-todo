@@ -27,7 +27,7 @@ namespace Training.Models
     /// <summary>
     /// The model for an entry in the UsersPage table view
     /// </summary>
-    public sealed class UserModel
+    public sealed class UserModel : BaseModel
     {
 
         #region Variables

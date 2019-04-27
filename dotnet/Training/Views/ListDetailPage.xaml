@@ -8,7 +8,8 @@
     x:Class="Training.Views.ListDetailPage"
     Title="{Binding PageTitle}">
     <d:BaseTabbedPage.ToolbarItems>
-        <ToolbarItem Text="Users" Clicked="OnPageSelect_Clicked" />
+        <ToolbarItem Text="Back" Command="{Binding BackCommand}" />
+        <ToolbarItem Text="{Binding SwitchTabText}" Command="{Binding SwitchCommand}" />
         <ToolbarItem Text="+" Command="{Binding AddCommand}" />
     </d:BaseTabbedPage.ToolbarItems>
 </d:BaseTabbedPage>

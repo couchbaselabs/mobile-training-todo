@@ -8,14 +8,13 @@
     xmlns:local="clr-namespace:Training"
     x:TypeArguments="vm:TasksViewModel"
     x:Class="Training.Views.TasksPage"
-    Title="Tasks"
     Icon="Tasks.png">
-    <ContentPage.Resources>
+    <d:BaseContentPage.Resources>
         <ResourceDictionary>
             <local:ByteArrayToImageConverter x:Key="ImageSourceConverter" />
         </ResourceDictionary>
-    </ContentPage.Resources>
-    <ContentPage.Content>
+    </d:BaseContentPage.Resources>
+    <d:BaseContentPage.Content>
         <controls:ListView ItemsSource="{Binding ListData}" 
                            ItemTappedCommand="{Binding SelectCommand}"
                            Header="{Binding .}" 
@@ -30,8 +29,8 @@
                 <DataTemplate>
                     <ViewCell>
                         <ViewCell.ContextActions>
-                            <MenuItem Clicked="OnEdit_Clicked" CommandParameter="{Binding DocumentID}" Text="Edit" />
-                            <MenuItem Clicked="OnDelete_Clicked" CommandParameter="{Binding DocumentID}" Text="Delete" IsDestructive="True" />
+                            <MenuItem Command="{Binding Value.EditCommand}" CommandParameter="{Binding DocumentID}" Text="Edit" />
+                            <MenuItem Command="{Binding Value.DeleteCommand}"  CommandParameter="{Binding DocumentID}" Text="Delete" IsDestructive="True" />
                         </ViewCell.ContextActions>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -39,14 +38,14 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Image Source="{Binding Thumbnail, Converter={StaticResource ImageSourceConverter}}" WidthRequest="44" HeightRequest="44" VerticalOptions="Center" />
-                            <Button Command="{Binding AddImageCommand}" CommandParameter="{Binding .}" WidthRequest="44" HeightRequest="44" VerticalOptions="Center" BackgroundColor="Transparent" />
-                            <Label Text="{Binding Name}" Grid.Column="1" VerticalOptions="Center" />
-                            <Image Source="{Binding CheckedImage}" Grid.Column="2" VerticalOptions="Center" HeightRequest="44" />
+                            <Image Source="{Binding Value.Thumbnail, Converter={StaticResource ImageSourceConverter}}" WidthRequest="44" HeightRequest="44" VerticalOptions="Center" />
+                            <Button Command="{Binding Value.AddImageCommand}" CommandParameter="{Binding .}" WidthRequest="44" HeightRequest="44" VerticalOptions="Center" BackgroundColor="Transparent" />
+                            <Label Text="{Binding Value.Name}" Grid.Column="1" VerticalOptions="Center" />
+                            <Image Source="{Binding Value.CheckedImage}" Grid.Column="2" VerticalOptions="Center" HeightRequest="44" />
                         </Grid>
                     </ViewCell>
                 </DataTemplate>
             </controls:ListView.ItemTemplate>
         </controls:ListView>
-    </ContentPage.Content>
+    </d:BaseContentPage.Content>
 </d:BaseContentPage>

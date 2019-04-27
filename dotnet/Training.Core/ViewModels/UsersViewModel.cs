@@ -48,6 +48,7 @@ namespace Training.ViewModels
         #region Variables
 
         private IUserDialogs _dialogs;
+        INavigationService _navigationService;
 
         private Database _db = CoreApp.Database;
         private IQuery _filteredQuery;
@@ -130,6 +131,7 @@ namespace Training.ViewModels
             : base(navigationService, dialogs)
         {
             _dialogs = dialogs;
+            _navigationService = navigationService;
         }
 
         public void Init(string docID)
@@ -223,7 +225,7 @@ namespace Training.ViewModels
                 query = _fullQuery;
             }
 
-            var results = query.Execute();
+            QueryRun(query);
             //UserList.Replace(results.Select(x =>
             //{
             //    var docId = $"{_userList.Id}.{x.GetString(0)}";
@@ -259,16 +261,51 @@ namespace Training.ViewModels
                 .From(DataSource.Database(_db))
                 .Where((exp1).And(exp2)).OrderBy(Ordering.Property("username"));
 
-            var results = _usersLiveQuery.Execute();
+            _usersLiveQuery.AddChangeListener((sender, args) =>
+            {
+                QueryRun(_usersLiveQuery);
+                //UserList.Replace(results.Select(x =>
+                //{
+                //    var docId = $"{_userList.Id}.{x.GetString(0)}";
+                //    return new UserCellModel(docId);
+                //}));
+            });
 
-            //_usersLiveQuery.AddChangeListener((sender, args) =>
-            //{
-            //    UserList.Replace(results.Select(x =>
-            //    {
-            //        var docId = $"{_userList.Id}.{x.GetString(0)}";
-            //        return new UserCellModel(docId);
-            //    }));
-            //});
+            
+        }
+
+        void QueryRun(IQuery query)
+        {
+            var results = query.Execute();
+            var allResult = results.AllResults();
+            if (allResult.Count < ListData.Count) {
+                ListData = new ObservableConcurrentDictionary<string, UserCellModel>();
+            }
+            Parallel.For(0, allResult.Count, i =>
+            {
+                var result = allResult[i];
+                var idKey = result.GetString("id");
+                var document = _db.GetDocument(idKey);
+                var name = result.GetString("username");
+                if (name == null) {
+                    _db.Delete(document);
+                } else {
+                    if (_items.ContainsKey(idKey)) {
+                        _items[idKey].Name = name;
+                    } else {
+                        var task = new UserCellModel(_navigationService, _dialogs, idKey);
+                        task.StatusUpdated += Task_StatusUpdated;
+                        ListData.Add(idKey, task);
+                    }
+                }
+            });
+        }
+
+        private void Task_StatusUpdated(object sender, State state)
+        {
+            UserCellModel listCell = (UserCellModel)sender;
+            if (state == State.DELETED)
+                ListData.Remove(listCell.DocumentID);
         }
 
         #endregion

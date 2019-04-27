@@ -102,11 +102,8 @@ namespace Training.ViewModels
                 if(value != null)
                 {
                     var vm = GetViewModel<ListDetailViewModel>();
-                    vm.Init(Username, value.Name, value.DocumentID);
-                    //if(vm == null)
-                    //    vm = new ListDetailViewModel(_navigationService, _dialogs, 
-                    //        Username, value.Name, value.DocumentID);
-                    _navigationService.PushAsync(vm);
+                    vm.Init(Username, value.Name, value.DocumentID, _navigationService);
+                    Navigation.PushAsync(vm);
                 }
             }
         }

@@ -24,6 +24,7 @@ using Prototype.Mvvm.Services;
 
 using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Training.Models;
 
@@ -34,8 +35,15 @@ namespace Training.ViewModels
     /// </summary>
     public class ListDetailViewModel : BaseCollectionViewModel<ListDetailModel>, IDisposable
     {
+        #region constants
+
+        String[] TabNames = new string[] { "Tasks", "Users" };
+
+        #endregion
 
         #region Properties
+
+        INavigationService _navigation;
 
         /// <summary>
         /// Gets or sets whether the current user has moderator status
@@ -52,14 +60,32 @@ namespace Training.ViewModels
         }
         private bool _hasModeratorStatus;
 
+        
+        public string SwitchTabText
+        {
+            get {
+                return _switchTabText;
+            }
+            set {
+                SetPropertyChanged(ref _switchTabText, value);
+            }
+        }
+        private string _switchTabText = "Users";
+
         /// <summary>
         /// Gets the title of the page
         /// </summary>
         /// <value>The page title.</value>
         public string PageTitle
         {
-            get; private set;
+            get {
+                return _pageTitle;
+            }
+            set {
+                SetPropertyChanged(ref _pageTitle, value);
+            }
         }
+        private string _pageTitle = "Tasks";
 
         internal string CurrentListID
         {
@@ -71,7 +97,21 @@ namespace Training.ViewModels
             get; set;
         }
 
-        public ICommand AddCommand => new Command(() => AddNewItem());
+        public ICommand AddCommand => new Command(async () => await AddNewItem());
+
+        public ICommand BackCommand => new Command(async () => { await _navigation.PopAsync(); });
+
+        public ICommand SwitchCommand
+        {
+            get {
+                if (_switchCommand == null) {
+                    _switchCommand = new Command(SwitchSelected);
+                }
+
+                return _switchCommand;
+            }
+        }
+        ICommand _switchCommand;
 
         #endregion
 
@@ -83,12 +123,14 @@ namespace Training.ViewModels
         /// <param name="username">The username of the current user.</param>
         /// <param name="name">The name of the task.</param>
         /// <param name="listID">The task document ID.</param>
-        public void Init(string username, string name, string listID)
+        public void Init(string username, string name, string listID, INavigationService navigation)
         {
+            _navigation = navigation;
             Username = username;
             CurrentListID = listID;
             Model = new ListDetailModel(listID);
             CalculateModeratorStatus();
+
             var taskVM = GetViewModel<TasksViewModel>();
             taskVM.Init(CurrentListID);
             ViewModels.Add(taskVM);
@@ -101,16 +143,28 @@ namespace Training.ViewModels
             {
                 AddUserPage();
             }
-            
+            SelectedViewModel = ViewModels[0];
         }
 
         #endregion
 
         #region Private API
 
-        private void AddNewItem()
+        async Task AddNewItem()
         {
-            var t = this.PageTitle;
+            if (SelectedIndex == 0)
+                ((TasksViewModel)SelectedViewModel).AddCommand.Execute(new object());
+            else
+                ((UsersViewModel)SelectedViewModel).AddCommand.Execute(new object());
+        }
+
+        void SwitchSelected()
+        {
+            var newIndex = SelectedIndex == 0 ? 1 : 0;
+            SwitchTabText = TabNames[SelectedIndex];
+            PageTitle = TabNames[newIndex];
+            SelectedViewModel = ViewModels[newIndex];
+            SelectedIndex = newIndex;
         }
 
         private void AddUserPage()
