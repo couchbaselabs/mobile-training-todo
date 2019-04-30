@@ -3,7 +3,7 @@ ToDo iOS sample app built with [CouchbaseLite 2.5.0](https://github.com/couchbas
 The application has Android, DotNet, Objective-C and Swift versions.
 
 ## Requirements
-- XCode 8.3
+- XCode 10.0
 
 
 ## How to build and run?
