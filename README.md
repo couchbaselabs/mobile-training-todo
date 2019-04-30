@@ -14,7 +14,7 @@ The application has Android, DotNet, Objective-C and Swift versions.
  $ git checkout feature/2.5
  ```
  
-2. cd into the project, `android`, `dotnet`, `objc` or `swift`.
+2. cd into the project: `android`, `dotnet`, `objc` or `swift`.
 
 3. Download framework from [here](https://www.couchbase.com/downloads)(from mobile section) for the respective platform. 
 
