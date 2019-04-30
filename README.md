@@ -7,7 +7,7 @@ The application has Android, DotNet, Objective-C and Swift versions.
 
 
 ## How to build and run?
-1. Clone the project and checkout `release/iridium` branch.
+1. Clone the project and checkout `feature/2.5` branch.
 
  ```
  $ git clone https://github.com/couchbaselabs/mobile-training-todo.git
