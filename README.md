@@ -33,7 +33,7 @@ The application has Android, DotNet, Objective-C and Swift versions.
  ```
 ~/Downloads/couchbase-sync-gateway/bin/sync_gateway sync-gateway-config.json
  ```
-### iOS Specific
+### iOS
 1. From the AppDelegate in the XCode project, change kLoginFlowEnabled and kSyncEnabled variable to YES/true.
 2. From the AppDelegate in the XCode project, change the hostname of the kSyncGatewayUrl as needed.
 3. Rerun the Todo app.
