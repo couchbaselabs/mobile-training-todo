@@ -20,6 +20,10 @@ let kSyncEnabled = true
 let kSyncEndpoint = "ws://localhost:4984/todo"
 let kSyncWithPushNotification = false
 
+// Database Encryption:
+// Note: changing this value requires to delete the app before rerun:
+let kDatabaseEncryptionKey: String? = nil
+
 // QE:
 let kQEFeaturesEnabled = true
 
@@ -71,7 +75,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
     
     func openDatabase(username:String) throws {
-        database = try Database(name: username)
+        let config = DatabaseConfiguration()
+        if let password = kDatabaseEncryptionKey {
+            config.encryptionKey = EncryptionKey.password(password)
+        }
+        database = try Database(name: username, config: config)
         createDatabaseIndex()
     }
 
