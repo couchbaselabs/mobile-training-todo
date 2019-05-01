@@ -12,6 +12,7 @@ import com.couchbase.lite.BasicAuthenticator;
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.DatabaseConfiguration;
+import com.couchbase.lite.EncryptionKey;
 import com.couchbase.lite.Endpoint;
 import com.couchbase.lite.LogLevel;
 import com.couchbase.lite.Replicator;
@@ -29,14 +30,17 @@ public interface ReplicatorChangeListener {
 }
  */
 public class Application extends android.app.Application implements ReplicatorChangeListener {
-
     private static final String TAG = Application.class.getSimpleName();
 
+    // Database Name:
+    private final static String DATABASE_NAME = "todo";
+
+    // Configuration:
     private final static boolean LOGIN_FLOW_ENABLED = true;
     private final static boolean SYNC_ENABLED = true;
     private final static boolean LOGGING_ENABLED = true;
-
-    private final static String DATABASE_NAME = "todo";
+    // NOTE: Change this value requires to delete the app before rerunning:
+    private final static String DATABASE_ENCRYPTION_EKY = null;
 
     private Database database = null;
     private Replicator replicator;
@@ -118,6 +122,9 @@ public class Application extends android.app.Application implements ReplicatorCh
 
     private void openDatabase(String dbname) {
         DatabaseConfiguration config = new DatabaseConfiguration(getApplicationContext());
+        if (DATABASE_ENCRYPTION_EKY != null) {
+            config.setEncryptionKey(new EncryptionKey(DATABASE_ENCRYPTION_EKY));
+        }
         try {
             database = new Database(dbname, config);
         }
