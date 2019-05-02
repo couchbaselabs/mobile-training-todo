@@ -115,20 +115,25 @@ namespace Training.Core
         /// Opens a given database by name for the session
         /// </summary>
         /// <param name="dbName">The name of the database to open</param>
-        /// <param name="key">The key for the database (i.e. password, optional)</param>
-        /// <param name="newKey">The updated key for the database (optional)</param>
+        /// <param name="key">The key for the database (i.e. password)</param>
+        /// <param name="newKey">The updated key for the database</param>
         public static void OpenDatabase(string dbName, string key, string newKey)
         {
             // TRAINING: Create a database
-            //var encryptionKey = default(SymmetricKey);
-            //if(key != null) {
-            //    encryptionKey = new SymmetricKey(key);
-            //}
+            if (key != null) {
+                var config = new DatabaseConfiguration
+                {
+                    EncryptionKey = new EncryptionKey(key)
+                };
 
-            Database =new Database(dbName);
-            //if(newKey != null) {
-            //    Database.ChangeEncryptionKey(new SymmetricKey(newKey));
-            //}
+                Database = new Database(dbName, config);
+            } else {
+                Database = new Database(dbName);
+            }
+
+            if (newKey != null) {
+                Database.ChangeEncryptionKey(new EncryptionKey(newKey));
+            }
 
             Database.AddChangeListener((sender, args) =>
             {
