@@ -10,4 +10,5 @@ import Foundation
 
 class Session {
     static var username: String?
+    static var password: String?
 }

@@ -28,9 +28,9 @@ import com.couchbase.lite.SelectResult;
 
 public class UsersAdapter extends ArrayAdapter<String> {
     private static final String TAG = UsersAdapter.class.getSimpleName();
-    UsersFragment fragment;
-    private Database db;
-    private String listID;
+    final UsersFragment fragment;
+    private final Database db;
+    private final String listID;
 
     public UsersAdapter(UsersFragment fragment, Database db, String listID) {
         super(fragment.getContext(), 0);
@@ -55,13 +55,13 @@ public class UsersAdapter extends ArrayAdapter<String> {
 
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        if (convertView == null)
+        if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.view_user, parent, false);
+        }
 
         String id = getItem(position);
         final Document user = db.getDocument(id);
-        if (user == null)
-            return convertView;
+        if (user == null) { return convertView; }
 
         // text
         TextView userText = convertView.findViewById(R.id.user_name);
@@ -72,8 +72,8 @@ public class UsersAdapter extends ArrayAdapter<String> {
 
     private Query query() {
         return QueryBuilder.select(SelectResult.expression(Meta.id))
-                .from(DataSource.database(db))
-                .where(Expression.property("type").equalTo(Expression.string("task-list.user"))
-                        .and(Expression.property("taskList.id").equalTo(Expression.string(listID))));
+            .from(DataSource.database(db))
+            .where(Expression.property("type").equalTo(Expression.string("task-list.user"))
+                .and(Expression.property("taskList.id").equalTo(Expression.string(listID))));
     }
 }

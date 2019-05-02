@@ -148,6 +148,11 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating, UISea
             self.createTaskList(name: name)
         })
     }
+    
+    @IBAction func logOut(sender: Any) {
+        let app = UIApplication.shared.delegate as! AppDelegate
+        app.logout()
+    }
    
     // MARK: - UITableViewController
     

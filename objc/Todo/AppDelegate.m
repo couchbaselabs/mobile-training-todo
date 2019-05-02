@@ -5,18 +5,19 @@
 //  Created by Pasin Suriyentrakorn on 1/26/17.
 //  Copyright © 2017 Pasin Suriyentrakorn. All rights reserved.
 //
-
 #import "AppDelegate.h"
 #import "CBLLoginViewController.h"
 #import "CBLSession.h"
 #import "CBLUi.h"
+#import <UserNotifications/UserNotifications.h>
 
 #define kLoggingEnabled YES
-#define kLoginFlowEnabled NO
-#define kSyncEnabled NO
+#define kLoginFlowEnabled YES
+#define kSyncEnabled YES
 #define kSyncEndpoint @"ws://localhost:4984/todo"
+#define kSyncWithPushNotification NO
 
-@interface AppDelegate () <CBLLoginViewControllerDelegate> {
+@interface AppDelegate () <CBLLoginViewControllerDelegate, UNUserNotificationCenterDelegate> {
     CBLReplicator *_replicator;
 }
 
@@ -26,7 +27,7 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     if (kLoggingEnabled) {
-        [CBLDatabase setLogLevel:kCBLLogLevelVerbose domain:kCBLLogDomainAll];
+        CBLDatabase.log.console.level = kCBLLogLevelVerbose;
     }
     
     if (kLoginFlowEnabled) {
@@ -43,9 +44,11 @@
 
 - (BOOL)startSession: (NSString *)username password: (NSString *)password error: (NSError **)error {
     if ([self openDatabase:username error: error]) {
-        [CBLSession sharedInstance].username = username;
+        CBLSession.sharedInstance.username = username;
+        CBLSession.sharedInstance.password = password;
         [self startReplicator:username password:password];
         [self showApp];
+        [self registerRemoteNotification];
         return YES;
     }
     return NO;
@@ -109,7 +112,8 @@
         NSLog(@"Cannot close database: %@", error);
     
     NSString *oldUsername = [CBLSession sharedInstance].username;
-    [CBLSession sharedInstance].username = nil;
+    CBLSession.sharedInstance.username = nil;
+    CBLSession.sharedInstance.password = nil;
     [self loginWithUsername:oldUsername];
 }
 
@@ -196,6 +200,77 @@
         default:
             return @"UNKNOWN";
     }
+}
+
+#pragma mark - Push Notification Sync
+    
+- (void)registerRemoteNotification {
+    if (!kSyncWithPushNotification)
+        return;
+    
+    UNUserNotificationCenter *center = UNUserNotificationCenter.currentNotificationCenter;
+    center.delegate = self;
+    [center requestAuthorizationWithOptions:(UNAuthorizationOptionSound | UNAuthorizationOptionAlert | UNAuthorizationOptionBadge)
+                          completionHandler:
+     ^(BOOL granted, NSError * _Nullable error) {
+         if (granted) {
+             dispatch_async(dispatch_get_main_queue(), ^(void) {
+                 [[UIApplication sharedApplication] registerForRemoteNotifications];
+             });
+         } else {
+             NSLog(@"WARNING: Remote Notification has not been authorized");
+         }
+         if (error) {
+             NSLog(@"Register Remote Notification Error: %@", error);
+         }
+    }];
+}
+    
+- (void)startPushNotificationSync {
+    if (!kSyncWithPushNotification)
+        return;
+    
+    CBLURLEndpoint *target = [[CBLURLEndpoint alloc] initWithURL:[NSURL URLWithString:kSyncEndpoint]];
+    CBLReplicatorConfiguration *config = [[CBLReplicatorConfiguration alloc] initWithDatabase:_database target:target];
+    CBLSession *session = CBLSession.sharedInstance;
+    if (kLoginFlowEnabled && session.username && session.password) {
+        config.authenticator = [[CBLBasicAuthenticator alloc] initWithUsername:session.username password:session.password];
+    }
+    
+    CBLReplicator *repl = [[CBLReplicator alloc] initWithConfig:config];
+    __weak typeof(self) wSelf = self;
+    [repl addChangeListener:^(CBLReplicatorChange *change) {
+        CBLReplicatorStatus *s =  change.status;
+        NSError *e = s.error;
+        NSLog(@"[Todo] Push-Notification-Replicator: %@ %llu/%llu, error: %@",
+              [wSelf ativityLevel: s.activity], s.progress.completed, s.progress.total, e);
+        [UIApplication.sharedApplication setNetworkActivityIndicatorVisible: s.activity == kCBLReplicatorBusy];
+        if (e.code == 401) {
+            NSLog(@"ERROR: Authentication Error, username or password is not correct");
+        }
+    }];
+    [repl start];
+}
+
+#pragma mark - UNUserNotificationCenterDelegate
+    
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
+    // Note: Normally the application will send the device token to
+    // the backend server so that the backend server can use that to
+    // send the push notification to the application. We are just printing
+    // to the console here.
+    NSString *token = [[deviceToken description] stringByTrimmingCharactersInSet: [NSCharacterSet characterSetWithCharactersInString:@"<>"]];
+    token = [token stringByReplacingOccurrencesOfString:@" " withString:@""];
+    NSLog(@"Push Notification Device Token: %@", token);
+}
+    
+- (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
+    NSLog(@"WARNING: Failed to register for the remote notification: %@", error);
+}
+    
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
+    [self startPushNotificationSync];
+    completionHandler(UIBackgroundFetchResultNewData);
 }
 
 @end

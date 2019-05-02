@@ -1,6 +1,7 @@
 package com.couchbase.todo;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -14,6 +15,7 @@ import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.FileProvider;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,13 +24,6 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.PopupMenu;
-
-import com.couchbase.lite.Blob;
-import com.couchbase.lite.CouchbaseLiteException;
-import com.couchbase.lite.Database;
-import com.couchbase.lite.Document;
-import com.couchbase.lite.MutableDocument;
-import com.couchbase.lite.internal.support.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -39,8 +34,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.couchbase.lite.Blob;
+import com.couchbase.lite.CouchbaseLiteException;
+import com.couchbase.lite.Database;
+import com.couchbase.lite.Document;
+import com.couchbase.lite.MutableDocument;
+
 import static android.app.Activity.RESULT_OK;
 import static android.os.Build.VERSION_CODES.M;
+
 
 public class TasksFragment extends Fragment {
     private static final String TAG = TasksFragment.class.getSimpleName();
@@ -106,7 +108,6 @@ public class TasksFragment extends Fragment {
                 return;
             case R.id.delete:
                 deleteTask(task);
-                return;
         }
     }
 
@@ -120,8 +121,7 @@ public class TasksFragment extends Fragment {
         alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 String title = input.getText().toString();
-                if (title.length() == 0)
-                    return;
+                if (title.length() == 0) { return; }
                 createTask(title);
             }
         });
@@ -158,16 +158,19 @@ public class TasksFragment extends Fragment {
             File photoFile = null;
             try {
                 photoFile = createImageFile();
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 e.printStackTrace();
             }
 
             if (photoFile != null) {
                 // NOTE: API 24 or higher.....
+                Context ctxt = getContext().getApplicationContext();
                 if (Build.VERSION.SDK_INT > M) {
-                    Uri photoURI = FileProvider.getUriForFile(getContext(), getContext().getApplicationContext().getPackageName() + ".provider", photoFile);
+                    Uri photoURI = FileProvider.getUriForFile(ctxt, ctxt.getPackageName() + ".provider", photoFile);
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                } else {
+                }
+                else {
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(photoFile));
                 }
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
@@ -209,7 +212,7 @@ public class TasksFragment extends Fragment {
     private Document createTask(String title) {
         MutableDocument mDoc = new MutableDocument();
         mDoc.setString("type", "task");
-        Map<String, Object> taskListInfo = new HashMap<String, Object>();
+        Map<String, Object> taskListInfo = new HashMap<>();
         taskListInfo.put("id", taskList.getId());
         taskListInfo.put("owner", taskList.getString("owner"));
         mDoc.setValue("taskList", taskListInfo);
@@ -219,8 +222,9 @@ public class TasksFragment extends Fragment {
         try {
             db.save(mDoc);
             return db.getDocument(mDoc.getId());
-        } catch (CouchbaseLiteException e) {
-            Log.e(TAG, "Failed to save the doc - %s", e, mDoc);
+        }
+        catch (CouchbaseLiteException e) {
+            Log.e(TAG, "Failed to save the document", e);
             //TODO: Error handling
             return null;
         }
@@ -232,8 +236,9 @@ public class TasksFragment extends Fragment {
         try {
             db.save(task);
             return db.getDocument(task.getId());
-        } catch (CouchbaseLiteException e) {
-            Log.e(TAG, "Failed to save the doc - %s", e, task);
+        }
+        catch (CouchbaseLiteException e) {
+            Log.e(TAG, "Failed to save the document", e);
             //TODO: Error handling
             return null;
         }
@@ -243,8 +248,9 @@ public class TasksFragment extends Fragment {
     private void deleteTask(final Document task) {
         try {
             db.delete(task);
-        } catch (CouchbaseLiteException e) {
-            Log.e(TAG, "Failed to delete the doc - %s", e, task);
+        }
+        catch (CouchbaseLiteException e) {
+            Log.e(TAG, "Failed to delete the document", e);
             //TODO: Error handling
         }
     }
@@ -260,8 +266,9 @@ public class TasksFragment extends Fragment {
         try {
             db.save(task);
             return db.getDocument(task.getId());
-        } catch (CouchbaseLiteException e) {
-            Log.e(TAG, "Failed to save the doc - %s", e, task);
+        }
+        catch (CouchbaseLiteException e) {
+            Log.e(TAG, "Failed to save the document", e);
             //TODO: Error handling
             return null;
         }

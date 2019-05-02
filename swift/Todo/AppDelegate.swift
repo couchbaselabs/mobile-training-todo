@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import UserNotifications
 import CouchbaseLiteSwift
 import Fabric
 import Crashlytics
@@ -14,9 +15,17 @@ import Crashlytics
 
 // Configuration:
 let kLoggingEnabled = true
-let kLoginFlowEnabled = false
-let kSyncEnabled = false
+let kLoginFlowEnabled = true
+let kSyncEnabled = true
 let kSyncEndpoint = "ws://localhost:4984/todo"
+let kSyncWithPushNotification = false
+
+// Database Encryption:
+// Note: changing this value requires to delete the app before rerun:
+let kDatabaseEncryptionKey: String? = nil
+
+// QE:
+let kQEFeaturesEnabled = true
 
 // Crashlytics:
 let kCrashlyticsEnabled = true
@@ -25,7 +34,7 @@ let kCrashlyticsEnabled = true
 let kActivities = ["Stopped", "Offline", "Connecting", "Idle", "Busy"]
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, LoginViewControllerDelegate {
     var window: UIWindow?
     
     var database: Database!
@@ -38,7 +47,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         initCrashlytics()
         
         if kLoggingEnabled {
-            Database.setLogLevel(.verbose, domain: .all);
+            Database.log.console.level = .verbose
         }
         
         if kLoginFlowEnabled {
@@ -59,12 +68,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
     func startSession(username:String, withPassword password:String? = nil) throws {
         try openDatabase(username: username)
         Session.username = username
+        Session.password = password
         startReplication(withUsername: username, andPassword: password)
         showApp()
+        registerRemoteNotification()
     }
     
     func openDatabase(username:String) throws {
-        database = try Database(name: username)
+        let config = DatabaseConfiguration()
+        if let password = kDatabaseEncryptionKey {
+            config.encryptionKey = EncryptionKey.password(password)
+        }
+        database = try Database(name: username, config: config)
         createDatabaseIndex()
     }
 
@@ -116,6 +131,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         }
         let oldUsername = Session.username
         Session.username = nil
+        Session.password = nil
         login(username: oldUsername)
     }
     
@@ -191,6 +207,83 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         replicator.stop()
         replicator.removeChangeListener(withToken: changeListener!)
         changeListener = nil
+    }
+    
+    // MARK: Push Notification Sync
+    
+    func registerRemoteNotification() {
+        guard kSyncWithPushNotification else {
+            return
+        }
+        
+        let center = UNUserNotificationCenter.current();
+        center.delegate = self
+        center.requestAuthorization(options: [.alert, .sound, .badge]) { (granted, error) in
+            if granted {
+                DispatchQueue.main.async {
+                    UIApplication.shared.registerForRemoteNotifications()
+                }
+            } else {
+                NSLog("WARNING: Remote Notification has not been authorized");
+            }
+            if let err = error {
+                NSLog("Register Remote Notification Error: \(err)");
+            }
+        }
+    }
+    
+    func startPushNotificationSync() {
+        guard kSyncWithPushNotification else {
+            return
+        }
+        
+        let target = URLEndpoint(url: URL(string: kSyncEndpoint)!)
+        let config = ReplicatorConfiguration(database: database, target: target)
+        if kLoginFlowEnabled, let u = Session.username, let p = Session.password {
+            config.authenticator = BasicAuthenticator(username: u, password: p)
+        }
+        
+        let repl = Replicator(config: config)
+        changeListener = repl.addChangeListener({ (change) in
+            let s = change.status
+            let activity = kActivities[Int(s.activity.rawValue)]
+            let e = change.status.error as NSError?
+            let error = e != nil ? ", error: \(e!.description)" : ""
+            NSLog("[Todo] Push-Notification-Replicator: \(activity), \(s.progress.completed)/\(s.progress.total)\(error)")
+            UIApplication.shared.isNetworkActivityIndicatorVisible = (s.activity == .busy)
+            if let code = e?.code {
+                if code == 401 {
+                    NSLog("ERROR: Authentication Error, username or password is not correct");
+                }
+            }
+        })
+        repl.start()
+    }
+    
+    // MARK: UNUserNotificationCenterDelegate
+    
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        // Note: Normally the application will send the device token to
+        // the backend server so that the backend server can use that to
+        // send the push notification to the application. We are just printing
+        // to the console here.
+        let tokenStrs = deviceToken.map { data -> String in
+            return String(format: "%02.2hhx", data)
+        }
+        let token = tokenStrs.joined()
+        NSLog("Push Notification Device Token: \(token)")
+    }
+    
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+        NSLog("WARNING: Failed to register for the remote notification: \(error)")
+    }
+    
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        
+        // Start single shot replicator:
+        self.startPushNotificationSync()
+        
+        completionHandler(.newData)
     }
     
     // MARK: Crashlytics

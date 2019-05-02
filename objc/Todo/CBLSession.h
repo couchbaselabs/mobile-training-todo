@@ -11,6 +11,7 @@
 @interface CBLSession : NSObject
 
 @property (nonatomic, copy) NSString* username;
+@property (nonatomic, copy) NSString* password;
 
 + (instancetype) sharedInstance;
 
