@@ -28,7 +28,7 @@ using System.Windows.Input;
 using Acr.UserDialogs;
 using Prototype.Mvvm.Input;
 using Prototype.Mvvm.Services;
-using Training.Core.Services;
+using Training.Core;
 using Training.Models;
 
 namespace Training.ViewModels
@@ -42,6 +42,7 @@ namespace Training.ViewModels
         #region Variables
 
         private readonly IUserDialogs _dialogs;
+        private readonly IImageService _imageService;
         private string _imageDigest;
 
         public delegate void StatusUpdatedEventHandler(object sender, State state);
@@ -125,8 +126,6 @@ namespace Training.ViewModels
         }
         private ICommand _addImageCommand;
 
-        IMediaService MediaService { get; set; }
-
         #endregion
 
         #region Constructors
@@ -135,17 +134,18 @@ namespace Training.ViewModels
         /// Constructor
         /// </summary>
         /// <param name="documentID">The ID of the document to use</param>
-        public TaskCellModel(INavigationService navigationService,
-                             IUserDialogs dialogs,
-                             IMediaService mediaService, 
-                             string documentID) : base(navigationService, dialogs, new TaskModel(documentID))
+        public TaskCellModel(INavigationService navigation,
+                             IUserDialogs dialogs, IImageService imageService,
+                             string documentID) : base(navigation, dialogs, new TaskModel(documentID))
         {
             DocumentID = documentID;
             Name = Model.Name;
             _imageDigest = Model.GetImageDigest();
             _checked = Model.IsChecked;
             _dialogs = dialogs;
-            MediaService = mediaService;
+            _imageService = imageService;
+
+            GenerateThumbnail();
         }
 
         #endregion
@@ -173,9 +173,10 @@ namespace Training.ViewModels
 
         private async Task GenerateThumbnail()
         {
-            var fullImage = await MediaService.PickPhotoAsync();
-            if (fullImage != null) {
-                Thumbnail = fullImage;
+            using (var fullImage = GetImage()) {
+                if (fullImage != null) {
+                    Thumbnail = await _imageService.Square(fullImage, _imageDigest);
+                }
             }
         }
 

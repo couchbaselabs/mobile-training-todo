@@ -30,7 +30,7 @@ using Couchbase.Lite.Query;
 
 using Prototype.Mvvm.Input;
 using Prototype.Mvvm.Services;
-
+using Prototype.Mvvm.ViewModels;
 using Training.Core;
 
 namespace Training.ViewModels
@@ -49,10 +49,6 @@ namespace Training.ViewModels
         #region Variables
 
         private Database _db = CoreApp.Database;
-
-        private readonly IUserDialogs _dialogs;
-        INavigationService _navigationService;
-
         private IQuery _filteredQuery;
         private IQuery _fullQuery;
         private IQuery _incompleteQuery;
@@ -102,8 +98,8 @@ namespace Training.ViewModels
                 if(value != null)
                 {
                     var vm = GetViewModel<ListDetailViewModel>();
-                    vm.Init(Username, value.Name, value.DocumentID, _navigationService);
-                    Navigation.PushAsync(vm);
+                    vm.Init(Username, value.Name, value.DocumentID, Navigation);
+                    Navigation.PushModalAsync(vm);
                 }
             }
         }
@@ -156,11 +152,10 @@ namespace Training.ViewModels
         /// Constructor, not to be called directly.
         /// </summary>
         /// <param name="dialogs">The interface responsible for displaying dialogs (from IoC container)</param>
-        public TaskListsViewModel(INavigationService navigationService, IUserDialogs dialogs) 
-            : base(navigationService, dialogs)
+        public TaskListsViewModel(INavigationService navigation, IUserDialogs dialogs) : base(navigation, dialogs)
         {
-            _navigationService = navigationService;
-            _dialogs = dialogs;
+            Navigation = navigation;
+            Dialogs = dialogs;
             SetupQuery();
             Filter(null);
         }
@@ -189,7 +184,7 @@ namespace Training.ViewModels
 
         private void AddNewItem()
         {
-            _dialogs.Prompt(new PromptConfig {
+            Dialogs.Prompt(new PromptConfig {
                 OnAction = CreateNewItem,
                 Title = "New Task List",
                 Placeholder = "List Name"
@@ -211,7 +206,7 @@ namespace Training.ViewModels
             try {
                 CreateTaskList(result.Text);
             } catch(Exception e) {
-                _dialogs.Toast(e.Message);
+                Dialogs.Toast(e.Message);
             }
         }
 
@@ -269,7 +264,7 @@ namespace Training.ViewModels
                     }
                     else
                     {
-                        var task = new TaskListCellModel(_navigationService, _dialogs, idKey, name);
+                        var task = new TaskListCellModel(Navigation, Dialogs, idKey, name);
                         task.StatusUpdated += Task_StatusUpdated;
                         Items.Add(idKey, task);
                     }

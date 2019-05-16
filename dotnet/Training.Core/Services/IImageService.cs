@@ -1,5 +1,5 @@
 ﻿//
-// TasksPage.xaml.cs
+// IImageService.cs
 //
 // Author:
 // 	Jim Borden  <jim.borden@couchbase.com>
@@ -18,35 +18,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+using System.Drawing;
+using System.IO;
+using System.Threading.Tasks;
 
-using Prototype.Mvvm.Forms.Pages;
-using Training.ViewModels;
-
-namespace Training.Views
+namespace Training.Core
 {
     /// <summary>
-    /// The page that display the tasks in a given task list
+    /// A service that will crop and resize an image to a square of a given size
     /// </summary>
-    public partial class TasksPage : BaseContentPage<TasksViewModel>
+    public interface IImageService
     {
-
-        #region Constructors
-
         /// <summary>
-        /// Constructor
+        /// Crop the given image data to a square and reduce it to the given size.
         /// </summary>
-        public TasksPage()
-        {
-            InitializeComponent();
-        }
-
-        private void OnUsers_Clicked(object sender, System.EventArgs e)
-        {
-
-        }
-
-        #endregion
-
+        /// <param name="image">The image data to work with.</param>
+        /// <param name="size">The size to reduce to.</param>
+        /// <param name="cacheName">The ID for the cache to store the result in.</param>
+        /// <returns>An awaitable task that will contain a stream of data containing the result
+        /// of the operation upon completion</returns>
+        Task<byte[]> Square(Stream image, string cacheName);
     }
 }
 

@@ -36,7 +36,6 @@ namespace Training.ViewModels
 
         #region Variables
 
-        private readonly IUserDialogs _dialogs;
         public delegate void StatusUpdatedEventHandler(object sender, State state);
         public event StatusUpdatedEventHandler StatusUpdated;
 
@@ -72,12 +71,12 @@ namespace Training.ViewModels
         /// Constructor
         /// </summary>
         /// <param name="documentID">The ID of the document containing the user information</param>
-        public UserCellModel(INavigationService navigationService, 
+        public UserCellModel(INavigationService navigation,
                              IUserDialogs dialogs,
                              string documentID) 
-            : base(navigationService, dialogs, new UserModel(documentID))
+            : base(navigation, dialogs, new UserModel(documentID))
         {
-            _dialogs = dialogs;
+            Dialogs = dialogs;
             DocumentID = documentID;
         }
 
@@ -90,7 +89,7 @@ namespace Training.ViewModels
             try {
                 Model.Delete();
             } catch(Exception e) {
-                _dialogs.Toast(e.Message);
+                Dialogs.Toast(e.Message);
             }
             StatusUpdated?.Invoke(this, State.DELETED);
         }

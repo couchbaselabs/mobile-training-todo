@@ -34,7 +34,7 @@ using Prototype.Mvvm.Input;
 using Prototype.Mvvm.Services;
 
 using Training.Core;
-using Training.Core.Services;
+using XLabs.Platform.Services.Media;
 
 namespace Training.ViewModels
 {
@@ -52,10 +52,9 @@ namespace Training.ViewModels
 
         #region Variables
 
-        private readonly IUserDialogs _dialogs;
-        private readonly INavigationService _navigationService;
         private readonly ImageChooser _imageChooser;
-        private readonly IMediaService _mediaService;
+        protected IImageService _imageService;
+        protected IMediaPicker _mediaPicker;
 
         private IQuery _tasksFilteredQuery;
         private IQuery _tasksFullQuery;
@@ -144,29 +143,21 @@ namespace Training.ViewModels
 
         #region Constructors
 
-        public TasksViewModel(INavigationService navigationService, IUserDialogs dialogs) 
-            : base(navigationService, dialogs)
+        public TasksViewModel(INavigationService navigation
+            , IUserDialogs dialogs, IImageService imageService, IMediaPicker mediaPicker) 
+            : base(navigation, dialogs)
         {
-            _dialogs = dialogs;
-            _navigationService = navigationService;
+            Navigation = navigation;
+            Dialogs = dialogs;
+
+            _imageService = imageService;
+            _mediaPicker = mediaPicker;
 
             _imageChooser = new ImageChooser(new ImageChooserConfig
             {
-                Dialogs = _dialogs
+                Dialogs = dialogs,
+                MediaPicker = mediaPicker
             });
-
-            //ListData.CollectionChanged += (sender, e) =>
-            //{
-            //    if (e.NewItems == null)
-            //    {
-            //        return;
-            //    }
-
-            //    UpdateButtons(e.NewItems);
-            //};
-
-            //UpdateButtons(ListData);
-            
         }
 
         public void Init(string docID)
@@ -176,40 +167,19 @@ namespace Training.ViewModels
             Filter(null);
         }
 
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="parent">The parent view model (this is a nested view model).</param>
-        //public TasksViewModel(ListDetailViewModel parent) : base(new TasksModel(parent.CurrentListID))
-        //{
-        //    _dialogs = Mvx.Resolve<IUserDialogs>();
-        //    _imageChooser = new ImageChooser(new ImageChooserConfig {
-        //        Dialogs = _dialogs
-        //    });
-
-        //    ListData.CollectionChanged += (sender, e) => 
-        //    {
-        //        if(e.NewItems == null) {
-        //            return;
-        //        }
-
-        //        UpdateButtons(e.NewItems);
-        //    };
-
-        //    UpdateButtons(ListData);
-        //}
-
         #endregion
 
         #region Internal API
 
         internal async Task ShowOrChooseImage(TaskCellModel taskDocument)
         {
-            if(!taskDocument.HasImage()) {
+            //if(!taskDocument.HasImage()) {
                 await ChooseImage(taskDocument);
-            } else {
-                //ShowViewModel<TaskImageViewModel>(new { documentID = taskDocument.DocumentID });
-            }
+            //} else {
+            //    var taskImageVM = new TaskImageViewModel(Navigation, Dialogs, _mediaPicker);
+            //    taskImageVM.Init(taskDocument.DocumentID);
+            //    await Navigation.PushAsync(taskImageVM);
+            //}
         }
 
         #endregion
@@ -219,15 +189,6 @@ namespace Training.ViewModels
         private void SelectList(KeyValuePair<string, TaskCellModel> pair)
         {
             SelectedItem = pair.Value;
-        }
-
-        private void UpdateButtons(IList newItems)
-        {
-            foreach (TaskCellModel item in newItems) {
-                if (item.AddImageCommand == null) {
-                    //item.AddImageCommand = new MvxAsyncCommand<TaskCellModel>(ShowOrChooseImage);
-                }
-            }
         }
 
         private async Task ChooseImage(TaskCellModel taskCellModel)
@@ -244,14 +205,14 @@ namespace Training.ViewModels
             try {
                 taskCellModel.SetImage(result);
             } catch(Exception e) {
-                _dialogs.Toast(e.Message);
+                Dialogs.Toast(e.Message);
                 return;
             }
         }
     
         private void AddNewItem()
         {
-            _dialogs.Prompt(new PromptConfig {
+            Dialogs.Prompt(new PromptConfig {
                 OnAction = CreateNewItem,
                 Title = "New Task",
                 Placeholder = "Task Name"
@@ -267,7 +228,7 @@ namespace Training.ViewModels
             try {
                 CreateNewTask(result.Text);
             } catch(Exception e) {
-                _dialogs.Toast(e.Message);
+                Dialogs.Toast(e.Message);
             }
         }
 
@@ -340,8 +301,9 @@ namespace Training.ViewModels
                     if (_items.ContainsKey(idKey)) {
                         _items[idKey].Name = name;
                     } else {
-                        var task = new TaskCellModel(_navigationService, _dialogs, _mediaService, idKey);
+                        var task = new TaskCellModel(Navigation, Dialogs, _imageService, idKey);
                         task.StatusUpdated += Task_StatusUpdated;
+                        task.AddImageCommand = new Command<KeyValuePair<string, TaskCellModel>>(async (t) => await ShowOrChooseImage(t.Value));
                         ListData.Add(idKey, task);
                     }
                 }

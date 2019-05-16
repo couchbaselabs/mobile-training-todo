@@ -18,12 +18,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // 
+using Prototype.Mvvm;
 using System;
+using Training.Core;
+using Training.UWP.Services;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
+using XLabs.Platform.Services.Media;
 
 namespace Training.UWP
 {
@@ -40,10 +44,13 @@ namespace Training.UWP
         /// </summary>
         public App()
         {
-            Couchbase.Lite.Support.UWP.Activate();
-
             this.InitializeComponent();
             this.Suspending += OnSuspending;
+
+            Couchbase.Lite.Support.UWP.Activate();
+
+            ServiceContainer.Register<IImageService>(new ImageService());
+            ServiceContainer.Register<IMediaPicker>(new MediaPicker());
         }
 
         #endregion

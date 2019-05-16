@@ -7,7 +7,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
     x:TypeArguments="vm:UsersViewModel"
     x:Class="Training.Views.UsersPage"
-    Icon="Users.png">
+    Icon="Users.png"
+    Title="Users">
     <ContentPage.Content>
         <controls:ListView ItemsSource="{Binding ListData}" Header="{Binding .}" >
             <controls:ListView.HeaderTemplate>

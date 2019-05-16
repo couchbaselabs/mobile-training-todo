@@ -26,6 +26,7 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Training.Core;
 using Training.Models;
 
 namespace Training.ViewModels
@@ -43,7 +44,7 @@ namespace Training.ViewModels
 
         #region Properties
 
-        INavigationService _navigation;
+        INavigationService Navigation { get; set; }
 
         /// <summary>
         /// Gets or sets whether the current user has moderator status
@@ -99,7 +100,7 @@ namespace Training.ViewModels
 
         public ICommand AddCommand => new Command(async () => await AddNewItem());
 
-        public ICommand BackCommand => new Command(async () => { await _navigation.PopAsync(); });
+        public ICommand BackCommand => new Command(async () => { await Navigation.PopModalAsync(); });
 
         public ICommand SwitchCommand
         {
@@ -123,9 +124,10 @@ namespace Training.ViewModels
         /// <param name="username">The username of the current user.</param>
         /// <param name="name">The name of the task.</param>
         /// <param name="listID">The task document ID.</param>
-        public void Init(string username, string name, string listID, INavigationService navigation)
+        public void Init(string username, string name, string listID, 
+            INavigationService navigation)
         {
-            _navigation = navigation;
+            Navigation = navigation;
             Username = username;
             CurrentListID = listID;
             Model = new ListDetailModel(listID);

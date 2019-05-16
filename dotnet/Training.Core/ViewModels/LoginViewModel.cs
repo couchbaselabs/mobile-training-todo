@@ -73,7 +73,7 @@ namespace Training.ViewModels
         ///// Constructor(not to be called directly)
         ///// </summary>
         ///// <param name = "dialogs" > The interface controlling UI dialogs</param>
-        public LoginViewModel(INavigationService navigationService, IUserDialogs dialogs) : base(navigationService, dialogs)
+        public LoginViewModel(INavigationService navigation, IUserDialogs dialogs) : base(navigation, dialogs)
         {
             _dialogs = dialogs;
         }

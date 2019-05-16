@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<d:BaseContentPage 
-    xmlns:d="clr-namespace:Prototype.Mvvm.Forms.Pages;assembly=Prototype.Mvvm.Forms"
+<pages:BaseContentPage 
+    xmlns:pages="clr-namespace:Prototype.Mvvm.Forms.Pages;assembly=Prototype.Mvvm.Forms"
     xmlns:vm="clr-namespace:Training.ViewModels;assembly=Training.Core"
     xmlns:controls="clr-namespace:Training.Controls"
     xmlns="http://xamarin.com/schemas/2014/forms" 
@@ -8,13 +8,14 @@
     xmlns:local="clr-namespace:Training"
     x:TypeArguments="vm:TasksViewModel"
     x:Class="Training.Views.TasksPage"
-    Icon="Tasks.png">
-    <d:BaseContentPage.Resources>
+    Icon="Tasks.png"
+    Title="Tasks">
+    <pages:BaseContentPage.Resources>
         <ResourceDictionary>
             <local:ByteArrayToImageConverter x:Key="ImageSourceConverter" />
         </ResourceDictionary>
-    </d:BaseContentPage.Resources>
-    <d:BaseContentPage.Content>
+    </pages:BaseContentPage.Resources>
+    <pages:BaseContentPage.Content>
         <controls:ListView ItemsSource="{Binding ListData}" 
                            ItemTappedCommand="{Binding SelectCommand}"
                            Header="{Binding .}" 
@@ -32,20 +33,22 @@
                             <MenuItem Command="{Binding Value.EditCommand}" CommandParameter="{Binding DocumentID}" Text="Edit" />
                             <MenuItem Command="{Binding Value.DeleteCommand}"  CommandParameter="{Binding DocumentID}" Text="Delete" IsDestructive="True" />
                         </ViewCell.ContextActions>
-                        <Grid>
+                        <Grid Padding="5,0,0,0" Margin="0,5,0,5">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Image Source="{Binding Value.Thumbnail, Converter={StaticResource ImageSourceConverter}}" WidthRequest="44" HeightRequest="44" VerticalOptions="Center" />
+                            <Image Source="{Binding Value.Thumbnail, Converter={StaticResource ImageSourceConverter}}" WidthRequest="44" HeightRequest="44" VerticalOptions="Center" BackgroundColor="LightGray" />
                             <Button Command="{Binding Value.AddImageCommand}" CommandParameter="{Binding .}" WidthRequest="44" HeightRequest="44" VerticalOptions="Center" BackgroundColor="Transparent" />
                             <Label Text="{Binding Value.Name}" Grid.Column="1" VerticalOptions="Center" />
-                            <Image Source="{Binding Value.CheckedImage}" Grid.Column="2" VerticalOptions="Center" HeightRequest="44" />
+                            <Frame Padding="5" VerticalOptions="Center" BorderColor="Red" Grid.Column="2" BackgroundColor="Beige" CornerRadius="0">
+                                <Image Source="{Binding Value.CheckedImage}"  WidthRequest="34" HeightRequest="34" />
+                            </Frame>
                         </Grid>
                     </ViewCell>
                 </DataTemplate>
             </controls:ListView.ItemTemplate>
         </controls:ListView>
-    </d:BaseContentPage.Content>
-</d:BaseContentPage>
+    </pages:BaseContentPage.Content>
+</pages:BaseContentPage>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<d:BaseContentPage
-    xmlns:d="clr-namespace:Prototype.Mvvm.Forms.Pages;assembly=Prototype.Mvvm.Forms"
+<pages:BaseContentPage
+    xmlns:pages="clr-namespace:Prototype.Mvvm.Forms.Pages;assembly=Prototype.Mvvm.Forms"
     xmlns:vm="clr-namespace:Training.ViewModels;assembly=Training.Core"
     xmlns:controls="clr-namespace:Training.Controls"
     xmlns="http://xamarin.com/schemas/2014/forms" 
@@ -36,7 +36,7 @@
                             <MenuItem Command="{Binding Value.EditCommand}" CommandParameter="{Binding Value.DocumentID}" Text="Edit" />
                             <MenuItem Command="{Binding Value.DeleteCommand}" CommandParameter="{Binding Value.DocumentID}" Text="Delete" IsDestructive="True" />
                         </ViewCell.ContextActions>
-                        <StackLayout Padding="5,0,0,0" VerticalOptions="StartAndExpand" Orientation="Vertical" Margin="0,5,0,5" BackgroundColor="AliceBlue">
+                        <StackLayout Padding="5,0,0,0" Margin="0,5,0,5" VerticalOptions="StartAndExpand" Orientation="Vertical" BackgroundColor="AliceBlue">
                             <Label Text="{Binding Value.Name}" VerticalTextAlignment="Center" HorizontalOptions="StartAndExpand" FontSize="Small" />
                             <Label Text="{Binding Value.IncompleteCount}" VerticalTextAlignment="Center" HorizontalOptions="StartAndExpand" FontSize="Small" />
                         </StackLayout>
@@ -51,4 +51,4 @@
 			</controls:ListView.ItemTemplate>
 		</controls:ListView>
 	</ContentPage.Content>
-</d:BaseContentPage>
+</pages:BaseContentPage>

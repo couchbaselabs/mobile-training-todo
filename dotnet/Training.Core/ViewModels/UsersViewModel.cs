@@ -48,7 +48,6 @@ namespace Training.ViewModels
         #region Variables
 
         private IUserDialogs _dialogs;
-        INavigationService _navigationService;
 
         private Database _db = CoreApp.Database;
         private IQuery _filteredQuery;
@@ -127,11 +126,11 @@ namespace Training.ViewModels
 
         #region Constructors
 
-        public UsersViewModel(INavigationService navigationService, IUserDialogs dialogs) 
-            : base(navigationService, dialogs)
+        public UsersViewModel(INavigationService navigation, IUserDialogs dialogs) 
+            : base(navigation, dialogs)
         {
+            Navigation = navigation;
             _dialogs = dialogs;
-            _navigationService = navigationService;
         }
 
         public void Init(string docID)
@@ -293,7 +292,8 @@ namespace Training.ViewModels
                 }
                 else
                 {
-                    var user = new UserCellModel(_navigationService, _dialogs, idKey);
+                    var user = new UserCellModel(Navigation, _dialogs, idKey);
+                    user.Name = name;
                     user.StatusUpdated += Task_StatusUpdated;
                     ListData.Add(idKey, user);
                 }

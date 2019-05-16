@@ -40,20 +40,6 @@ namespace Training.Views
             InitializeComponent();
         }
 
-        private void OnDelete_Clicked(object sender, System.EventArgs e)
-        {
-            //var param = ((MenuItem)sender).CommandParameter;
-            //var data = ((MenuItem)sender).BindingContext as UserCellModel;
-            //data.StatusUpdated += UpdateView;
-            //data.DeleteCommand.Execute(param);
-        }
-
-        protected void UpdateView()
-        {
-            //var viewModel = DataContext as UsersViewModel;
-            //viewModel.Model.Filter(null);
-        }
-
         #endregion
 
     }

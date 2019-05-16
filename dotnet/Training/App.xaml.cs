@@ -4,8 +4,7 @@ using Prototype.Mvvm;
 using Prototype.Mvvm.Services;
 
 using Training.Core;
-using Training.Core.Services;
-using Training.Services;
+
 using Training.ViewModels;
 
 using Xamarin.Forms;
@@ -38,7 +37,6 @@ namespace Training
         void RegisterServices()
         {
             ServiceContainer.Register(UserDialogs.Instance);
-            ServiceContainer.Register<IMediaService>(new MediaService());
 
             NavigationService = new NavigationService();
             NavigationService.AutoRegister(typeof(App).Assembly);

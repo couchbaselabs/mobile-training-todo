@@ -18,6 +18,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+using Acr.UserDialogs;
+using Couchbase.Lite;
+using Prototype.Mvvm.Input;
 using Prototype.Mvvm.Services;
 using System.IO;
 using System.Threading.Tasks;
@@ -25,6 +28,7 @@ using System.Windows.Input;
 
 using Training.Core;
 using Training.Models;
+using XLabs.Platform.Services.Media;
 
 namespace Training.ViewModels
 {
@@ -36,29 +40,36 @@ namespace Training.ViewModels
 
         #region Variables
 
+        private Document _taskDocument;
         private ImageChooser _imageChooser;
 
         #endregion
 
         #region Properties
 
-        TaskImageModel Model;
-
         /// <summary>
         /// Gets the command to handle an edit request
         /// </summary>
-        public ICommand EditCommand;// => new MvxAsyncCommand(EditImage);
+        public ICommand EditCommand => new Command(async() => await EditImage());
 
         /// <summary>
-        /// Gets the stream containing the image data
+        /// The image stored on the task
         /// </summary>
         /// <value>The image.</value>
         public Stream Image
         {
-            get => Model.Image ?? Stream.Null;
+            get => _taskDocument.GetBlob("image")?.ContentStream;
             set {
-                Model.Image = value;
-                //SetPropertyChanged(ref Model.Image, value);
+                using (var mutableTask = _taskDocument.ToMutable()) {
+                    if (value == null) {
+                        mutableTask.Remove("image");
+                    } else {
+                        mutableTask.SetBlob("image", new Blob("image/png", value));
+                    }
+
+                    CoreApp.Database.Save(mutableTask);
+                    _taskDocument = mutableTask;
+                }
             }
         }
 
@@ -66,24 +77,21 @@ namespace Training.ViewModels
 
         #region Constructors
 
-        public TaskImageViewModel(INavigationService navigationService) : base(navigationService)
-        {
-            //Model = new TaskImageModel(docID);
-        }
-
         /// <summary>
         /// Constructor (not to be called directly)
         /// </summary>
         /// <param name="dialogs">The interface responsible for showing dialogs.</param>
         /// <param name="mediaPicker">The interface responsible for getting photos.</param>
-        //public TaskImageViewModel(IUserDialogs dialogs, IMediaPicker mediaPicker)
-        //{
-        //    _imageChooser = new ImageChooser(new ImageChooserConfig {
-        //        Dialogs = dialogs,
-        //        MediaPicker = mediaPicker,
-        //        DeleteText = "Delete"
-        //    });
-        //}
+        public TaskImageViewModel(INavigationService navigation, IUserDialogs dialogs, IMediaPicker mediaPicker)
+            :base(navigation, dialogs)
+        {
+            _imageChooser = new ImageChooser(new ImageChooserConfig
+            {
+                Dialogs = dialogs,
+                MediaPicker = mediaPicker,
+                DeleteText = "Delete"
+            });
+        }
 
         #endregion
 
@@ -95,7 +103,7 @@ namespace Training.ViewModels
         /// <param name="documentID">The ID of the task document</param>
         public void Init(string documentID)
         {
-            Model = new TaskImageModel(documentID);
+            _taskDocument = CoreApp.Database.GetDocument(documentID);
         }
 
         #endregion

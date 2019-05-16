@@ -10,7 +10,7 @@ namespace Training.ViewModels
     {
         protected INavigationService Navigation { get; set; }
 
-        protected IUserDialogs Dialogs { get; }
+        protected IUserDialogs Dialogs { get; set; }
 
         protected BaseNavigationViewModel(INavigationService navigationService)
         {
