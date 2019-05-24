@@ -34,12 +34,13 @@ namespace Training.Core
     {
         #region Constants
 
-        private static readonly Uri SyncGatewayUrl = new Uri("ws://ec2-3-85-244-123.compute-1.amazonaws.com:4984/todo");
+        //private static readonly Uri SyncGatewayUrl = new Uri("ws://ec2-3-85-244-123.compute-1.amazonaws.com:4984/todo");
+        private static readonly Uri SyncGatewayUrl = new Uri("ws://192.168.0.14:4987/test1");
 
         #endregion
 
         #region Variables
-        
+
         private static Replicator _replication;
         private static Exception _syncError;
         private static HashSet<Document> _accessDocuments = new HashSet<Document>();
@@ -155,7 +156,7 @@ namespace Training.Core
                 Continuous = true
             };
 
-            if(username != null && password != null) {
+            if (username != null && password != null) {
                 config.Authenticator = new BasicAuthenticator(username, password);
             }
 

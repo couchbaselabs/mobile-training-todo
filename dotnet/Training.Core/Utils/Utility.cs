@@ -30,6 +30,8 @@ using System.Threading.Tasks;
 
 using Acr.UserDialogs;
 using Newtonsoft.Json.Linq;
+using Plugin.Media;
+using Training.Models;
 using XLabs.Platform.Services.Media;
 
 namespace Training.Core
@@ -289,6 +291,28 @@ namespace Training.Core
 
     }
 
+    public interface IMediaService
+    {
+        Task<byte[]> PickPhotoAsync();
+    }
+
+    public class MediaService : IMediaService
+    {
+        public async Task<byte[]> PickPhotoAsync()
+        {
+            var result = await CrossMedia.Current.PickPhotoAsync();
+            return result != null ? GetBytesFromStream(result.GetStream()) : null;
+        }
+
+        byte[] GetBytesFromStream(Stream stream)
+        {
+            using (var ms = new MemoryStream()) {
+                stream.CopyTo(ms);
+                return ms.ToArray();
+            }
+        }
+    }
+
     /// <summary>
     /// A utility for choosing or taking an image
     /// </summary>
@@ -347,7 +371,6 @@ namespace Training.Core
             } else if(result == _config.DeleteText) {
                 return Stream.Null;
             }
-
             return photoResult?.Source;
         }
 

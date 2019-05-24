@@ -21,6 +21,7 @@
 using System;
 
 using Couchbase.Lite;
+using Prototype.Mvvm;
 using Training.Core;
 
 namespace Training.Models
@@ -28,7 +29,7 @@ namespace Training.Models
     /// <summary>
     /// The model for an entry in the TaskListsPage table view
     /// </summary>
-    public class TaskListModel : BaseModel
+    public class TaskListModel : BaseNotify
     {
 
         #region Variables

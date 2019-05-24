@@ -6,6 +6,7 @@
   <ItemGroup>
     <PackageReference Include="Acr.UserDialogs" Version="7.0.1" />
     <PackageReference Include="Couchbase.Lite.Enterprise" Version="2.5.0" />
+    <PackageReference Include="Xam.Plugin.Media" Version="4.0.1.5" />
     <PackageReference Include="XLabs.Platform" Version="2.3.0-pre05" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
   </ItemGroup>

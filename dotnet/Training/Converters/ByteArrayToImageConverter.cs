@@ -31,21 +31,21 @@ namespace Training
     /// </summary>
     public class ByteArrayToImageConverter : IValueConverter
     {
-
         #region IValueConverter
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if(targetType != typeof(ImageSource) && targetType != typeof(StreamImageSource)) {
-                throw new NotSupportedException();
+            ImageSource retSource = null;
+
+            try {
+                if (value != null) {
+                    retSource = ImageSource.FromStream(() => new MemoryStream((byte[])value));
+                }
+            } catch (Exception ex) {
+                Console.WriteLine($"ByteToImageFieldConverter Exception: {ex.Message}");
             }
 
-            var source = value as byte[];
-            if(source == null) {
-                return null;
-            }
-
-            return ImageSource.FromStream(() => new MemoryStream(source));
+            return retSource ?? null;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -54,7 +54,6 @@ namespace Training
         }
 
         #endregion
-
     }
 }
 

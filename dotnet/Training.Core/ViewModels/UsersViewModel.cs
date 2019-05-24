@@ -239,7 +239,7 @@ namespace Training.ViewModels
         private void SetupQuery()
         {
             var username = Expression.Property("username");
-            var exp1 = Expression.Property("type").EqualTo(Expression.String(UserType));
+            var exp1 = Expression.Property("type").EqualTo(Expression.String(UserType)); //"task-list.user"
             var exp2 = Expression.Property("taskList.id").EqualTo(Expression.String(_userList.Id));
 
             _filteredQuery = QueryBuilder.Select(SelectResult.Expression(username))
@@ -292,22 +292,14 @@ namespace Training.ViewModels
                 }
                 else
                 {
-                    var user = new UserCellModel(Navigation, _dialogs, idKey);
+                    var user = new UserCellModel(_dialogs, idKey, ListData);
                     user.Name = name;
-                    user.StatusUpdated += Task_StatusUpdated;
                     ListData.Add(idKey, user);
                 }
 
             });
         }
-
-        private void Task_StatusUpdated(object sender, State state)
-        {
-            UserCellModel listCell = (UserCellModel)sender;
-            if (state == State.DELETED)
-                ListData.Remove(listCell.DocumentID);
-        }
-
+        
         #endregion
 
     }

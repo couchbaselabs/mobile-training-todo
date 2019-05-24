@@ -52,7 +52,7 @@ namespace Training.ViewModels
 
         #region Variables
 
-        private readonly ImageChooser _imageChooser;
+        
         protected IImageService _imageService;
         protected IMediaPicker _mediaPicker;
 
@@ -78,7 +78,7 @@ namespace Training.ViewModels
                 }
 
                 _selectedItem = value;
-                value.IsChecked = !value.IsChecked;
+                SetCheck(_selectedItem);
                 SetPropertyChanged(ref _selectedItem, null);
             }
         }
@@ -152,12 +152,6 @@ namespace Training.ViewModels
 
             _imageService = imageService;
             _mediaPicker = mediaPicker;
-
-            _imageChooser = new ImageChooser(new ImageChooserConfig
-            {
-                Dialogs = dialogs,
-                MediaPicker = mediaPicker
-            });
         }
 
         public void Init(string docID)
@@ -171,16 +165,16 @@ namespace Training.ViewModels
 
         #region Internal API
 
-        internal async Task ShowOrChooseImage(TaskCellModel taskDocument)
-        {
-            //if(!taskDocument.HasImage()) {
-                await ChooseImage(taskDocument);
-            //} else {
-            //    var taskImageVM = new TaskImageViewModel(Navigation, Dialogs, _mediaPicker);
-            //    taskImageVM.Init(taskDocument.DocumentID);
-            //    await Navigation.PushAsync(taskImageVM);
-            //}
-        }
+        //internal async Task ShowOrChooseImage(TaskCellModel taskDocument)
+        //{
+        //    //if(!taskDocument.HasImage()) {
+        //        await ChooseImage(taskDocument);
+        //    //} else {
+        //    //    var taskImageVM = new TaskImageViewModel(Navigation, Dialogs, _mediaPicker);
+        //    //    taskImageVM.Init(taskDocument.DocumentID);
+        //    //    await Navigation.PushAsync(taskImageVM);
+        //    //}
+        //}
 
         #endregion
 
@@ -191,23 +185,9 @@ namespace Training.ViewModels
             SelectedItem = pair.Value;
         }
 
-        private async Task ChooseImage(TaskCellModel taskCellModel)
+        private void SetCheck(TaskCellModel taskCell)
         {
-            var result = await _imageChooser.GetPhotoAsync();
-            if(result == null) {
-                return;
-            }
-
-            if(result == Stream.Null) {
-                result = null;
-            }
-
-            try {
-                taskCellModel.SetImage(result);
-            } catch(Exception e) {
-                Dialogs.Toast(e.Message);
-                return;
-            }
+            taskCell.SetCheck();
         }
     
         private void AddNewItem()
@@ -301,9 +281,9 @@ namespace Training.ViewModels
                     if (_items.ContainsKey(idKey)) {
                         _items[idKey].Name = name;
                     } else {
-                        var task = new TaskCellModel(Navigation, Dialogs, _imageService, idKey);
-                        task.StatusUpdated += Task_StatusUpdated;
-                        task.AddImageCommand = new Command<KeyValuePair<string, TaskCellModel>>(async (t) => await ShowOrChooseImage(t.Value));
+                        var task = new TaskCellModel(Dialogs, _imageService, _mediaPicker, idKey, _items);
+                        task.Name = name;
+                        //task.AddImageCommand = new Command<KeyValuePair<string, TaskCellModel>>(async (t) => await ShowOrChooseImage(t.Value));
                         ListData.Add(idKey, task);
                     }
                 }
@@ -321,14 +301,14 @@ namespace Training.ViewModels
         {
             _tasksFilteredQuery = QueryBuilder.Select(SelectResult.Expression(Meta.ID))
                 .From(DataSource.Database(_db))
-                .Where(Expression.Property("type").EqualTo(Expression.String(TaskType))
+                .Where(Expression.Property("type").EqualTo(Expression.String(TaskType))//"task"
                     .And(Expression.Property("taskList.id").EqualTo(Expression.String(_taskList.Id)))
                     .And(Expression.Property("task").Like(Expression.Parameter("searchString"))))
                 .OrderBy(Ordering.Property("createdAt"));
 
             _tasksFullQuery = QueryBuilder.Select(SelectResult.Expression(Meta.ID))
                 .From(DataSource.Database(_db))
-                .Where(Expression.Property("type").EqualTo(Expression.String(TaskType))
+                .Where(Expression.Property("type").EqualTo(Expression.String(TaskType))//"task"
                     .And(Expression.Property("taskList.id").EqualTo(Expression.String(_taskList.Id))))
                 .OrderBy(Ordering.Property("createdAt"));
         }

@@ -22,8 +22,10 @@ using System;
 using System.Windows.Input;
 
 using Acr.UserDialogs;
+using Prototype.Mvvm;
 using Prototype.Mvvm.Input;
 using Prototype.Mvvm.Services;
+using Training.Core;
 using Training.Models;
 
 namespace Training.ViewModels
@@ -31,17 +33,30 @@ namespace Training.ViewModels
     /// <summary>
     /// The view model for an entry in the 
     /// </summary>
-    public sealed class UserCellModel : BaseNavigationViewModel<UserModel>
+    public sealed class UserCellModel : BaseNotify
     {
 
         #region Variables
 
-        public delegate void StatusUpdatedEventHandler(object sender, State state);
-        public event StatusUpdatedEventHandler StatusUpdated;
+        IUserDialogs _dialogs;
 
         #endregion
 
         #region Properties
+
+        ObservableConcurrentDictionary<string, UserCellModel> _users;
+        public ObservableConcurrentDictionary<string, UserCellModel> Users
+        {
+            get => _users;
+            set => SetPropertyChanged(ref _users, value);
+        }
+
+        UserModel _user;
+        public UserModel User
+        {
+            get => _user;
+            set => SetPropertyChanged(ref _user, value);
+        }
 
         /// <summary>
         /// Gets the handler for a delete request
@@ -71,13 +86,12 @@ namespace Training.ViewModels
         /// Constructor
         /// </summary>
         /// <param name="documentID">The ID of the document containing the user information</param>
-        public UserCellModel(INavigationService navigation,
-                             IUserDialogs dialogs,
-                             string documentID) 
-            : base(navigation, dialogs, new UserModel(documentID))
+        public UserCellModel(IUserDialogs dialogs, string documentID, ObservableConcurrentDictionary<string, UserCellModel> users) 
         {
-            Dialogs = dialogs;
+            _dialogs = dialogs;
             DocumentID = documentID;
+            User = new UserModel(DocumentID);
+            Users = users;
         }
 
         #endregion
@@ -87,11 +101,12 @@ namespace Training.ViewModels
         private void Delete()
         {
             try {
-                Model.Delete();
+                User.Delete();
             } catch(Exception e) {
-                Dialogs.Toast(e.Message);
+                _dialogs.Toast(e.Message);
+                return;
             }
-            StatusUpdated?.Invoke(this, State.DELETED);
+            Users.Remove(DocumentID);
         }
 
         #endregion

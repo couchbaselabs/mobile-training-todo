@@ -26,31 +26,47 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Acr.UserDialogs;
+using Prototype.Mvvm;
 using Prototype.Mvvm.Input;
 using Prototype.Mvvm.Services;
 using Training.Core;
 using Training.Models;
+using Training.ViewModels;
+using XLabs.Platform.Services.Media;
+
+using Plugin.Media;
 
 namespace Training.ViewModels
 {
     /// <summary>
     /// The model for a cell in the list on the Tasks page
     /// </summary>
-    public sealed class TaskCellModel : BaseNavigationViewModel<TaskModel>
+    public sealed class TaskCellModel : BaseNotify
     {
 
         #region Variables
 
         private readonly IUserDialogs _dialogs;
+        private readonly ImageChooser _imageChooser;
         private readonly IImageService _imageService;
-        private string _imageDigest;
-
-        public delegate void StatusUpdatedEventHandler(object sender, State state);
-        public event StatusUpdatedEventHandler StatusUpdated;
 
         #endregion
 
         #region Properties
+
+        ObservableConcurrentDictionary<string, TaskCellModel> _tasks;
+        public ObservableConcurrentDictionary<string, TaskCellModel> Tasks
+        {
+            get => _tasks;
+            set => SetPropertyChanged(ref _tasks, value);
+        }
+
+        TaskModel _task;
+        public TaskModel Task
+        {
+            get => _task;
+            set => SetPropertyChanged(ref _task, value);
+        }
 
         /// <summary>
         /// Gets the command that handles a delete request
@@ -78,38 +94,51 @@ namespace Training.ViewModels
         }
         string _name = "";
 
+        internal bool HasImage
+        {
+            get { return Task.HasImage(); }
+        }
+
+        internal string ImageDigest
+        {
+            get { return Task.GetImageDigest(); }
+        }
+
+//        public Stream Image
+//        {
+//            get {
+//                var img = Task.GetImage();
+//Thumbnail = _imageService.Square(img, ImageDigest).Result;
+//                return img;
+//            }
+
+//        }
+
         /// <summary>
         /// Gets the thumbnail of the image stored with the task, if it exists
         /// </summary>
         public byte[] Thumbnail
         {
             get => _thumbnail;
-            private set => SetPropertyChanged(ref _thumbnail, value);
+            set => SetPropertyChanged(ref _thumbnail, value);
         }
         private byte[] _thumbnail;
 
         /// <summary>
         /// Gets or sets whether or not the task is checked
         /// </summary>
-        public bool IsChecked 
+        public bool IsChecked
         {
             get {
-                return _checked;
+                return _isChecked;
             }
             set {
-                if (SetPropertyChanged(ref _checked, value))  {
-                    try {
-                        Model.IsChecked = value;
-                    } catch (Exception e) {
-                        _dialogs.Toast(e.Message);
-                        return;
-                    }
-
-                    SetPropertyChanged(nameof(CheckedImage));
-                }
+                _isChecked = value;
+                SetPropertyChanged(nameof(CheckedImage));
+                SetPropertyChanged(ref _isChecked, value);
             }
         }
-        private bool _checked;
+        bool _isChecked;
 
         /// <summary>
         /// Gets the image to use for the checked portion of a table view row
@@ -119,12 +148,7 @@ namespace Training.ViewModels
         /// <summary>
         /// Gets or sets the command to process an add image request
         /// </summary>
-        public ICommand AddImageCommand
-        {
-            get => _addImageCommand;
-            set => SetPropertyChanged(ref _addImageCommand, value);
-        }
-        private ICommand _addImageCommand;
+        public ICommand AddImageCommand => new Command(async() => await SelectImage());
 
         #endregion
 
@@ -134,60 +158,77 @@ namespace Training.ViewModels
         /// Constructor
         /// </summary>
         /// <param name="documentID">The ID of the document to use</param>
-        public TaskCellModel(INavigationService navigation,
-                             IUserDialogs dialogs, IImageService imageService,
-                             string documentID) : base(navigation, dialogs, new TaskModel(documentID))
+        public TaskCellModel(IUserDialogs dialogs, IImageService imageService,
+                             IMediaPicker mediaPicker, string documentID, ObservableConcurrentDictionary<string, TaskCellModel> tasks)
         {
             DocumentID = documentID;
-            Name = Model.Name;
-            _imageDigest = Model.GetImageDigest();
-            _checked = Model.IsChecked;
+            Task = new TaskModel(documentID);
+            Tasks = tasks;
+            _isChecked = Task.IsChecked;
             _dialogs = dialogs;
             _imageService = imageService;
-
-            GenerateThumbnail();
+            _imageChooser = new ImageChooser(new ImageChooserConfig
+            {
+                Dialogs = dialogs,
+                MediaPicker = mediaPicker
+            });
+            Thumbnail = _imageService.Square(Task.GetImage(), ImageDigest).Result;
         }
 
         #endregion
 
+        public void SetCheck()
+        {
+            try {
+                Task.IsChecked = !Task.IsChecked;
+            } catch (Exception e) {
+                _dialogs.Toast(e.Message);
+                return;
+            }
+            IsChecked = !IsChecked;
+        }
+
         #region Internal API
 
-        internal bool HasImage()
+        private async Task SelectImage()
         {
-            return Model.HasImage();
+            await ChooseImage();
+            Thumbnail = await _imageService.Square(Task.GetImage(), ImageDigest);
         }
 
-        internal Stream GetImage()
+        private async Task ChooseImage()
         {
-            return Model.GetImage();
-        }
 
-        internal void SetImage(Stream image)
-        {
-            Model.SetImage(image);
+            var result = await _imageChooser.GetPhotoAsync();
+            if (result == null) {
+                return;
+            }
+
+            if (result == Stream.Null) {
+                result = null;
+            }
+
+            try {
+                Task.SetImage(result);
+            } catch (Exception e) {
+                _dialogs.Toast(e.Message);
+                return;
+            }
         }
 
         #endregion
 
         #region Private API
 
-        private async Task GenerateThumbnail()
-        {
-            using (var fullImage = GetImage()) {
-                if (fullImage != null) {
-                    Thumbnail = await _imageService.Square(fullImage, _imageDigest);
-                }
-            }
-        }
-
         private void Delete()
         {
             try {
-                Model.Delete();
+                Task.Delete();
             } catch (Exception e) {
                 _dialogs.Toast(e.Message);
+                return;
             }
-            StatusUpdated?.Invoke(this, State.DELETED);
+            Tasks.Remove(DocumentID);
         }
 
         private async Task Edit()
@@ -200,38 +241,51 @@ namespace Training.ViewModels
 
             if(result.Ok) {
                 try {
-                    Model.Edit(result.Text);
+                    Task.Edit(result.Text);
                 } catch (Exception e) {
                     _dialogs.Toast(e.Message);
+                    return;
                 }
-                StatusUpdated?.Invoke(this, State.EDITED);
             }
+            Name = result.Text;
         }
 
         #endregion
 
         #region Overrides
 
-        public override bool Equals(object obj)
-        {
-            var other = obj as TaskCellModel;
-            if(other == null) {
-                return false;
-            }
+        //public override bool Equals(object obj)
+        //{
+        //    var other = obj as TaskCellModel;
+        //    if(other == null) {
+        //        return false;
+        //    }
 
-            return DocumentID.Equals(other.DocumentID) && Name.Equals(other.Name) && IsChecked == other.IsChecked
-                             && String.Equals(_imageDigest, other._imageDigest);
-        }
+        //    return DocumentID.Equals(other.DocumentID) && Name.Equals(other.Name) && IsChecked == other.IsChecked
+        //                     && String.Equals(ImageDigest, other.ImageDigest);
+        //}
 
-        public override int GetHashCode()
-        {
-            var digest = _imageDigest;
-            var b = DocumentID.GetHashCode() ^ Name.GetHashCode() ^ IsChecked.GetHashCode();
-            return digest == null ? b : (b ^ digest.GetHashCode());
-        }
+        //public override int GetHashCode()
+        //{
+        //    var digest = ImageDigest;
+        //    var b = DocumentID.GetHashCode() ^ Name.GetHashCode() ^ IsChecked.GetHashCode();
+        //    return digest == null ? b : (b ^ digest.GetHashCode());
+        //}
 
         #endregion
 
+    }
+
+    public static class StreamExtensions
+    {
+        public static byte[] ToByteArray(this Stream stream)
+        {
+            stream.Position = 0;
+            byte[] buffer = new byte[stream.Length];
+            for (int totalBytesCopied = 0; totalBytesCopied < stream.Length;)
+                totalBytesCopied += stream.Read(buffer, totalBytesCopied, Convert.ToInt32(stream.Length) - totalBytesCopied);
+            return buffer;
+        }
     }
 }
 

@@ -1,4 +1,5 @@
 ﻿using Couchbase.Lite;
+using Prototype.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -6,7 +7,7 @@ using Training.Core;
 
 namespace Training.Models
 {
-    public sealed class ListDetailModel : BaseModel, IDisposable
+    public sealed class ListDetailModel : BaseNotify, IDisposable
     {
         #region Variables
 

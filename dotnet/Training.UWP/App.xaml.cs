@@ -22,6 +22,7 @@ using Prototype.Mvvm;
 using System;
 using Training.Core;
 using Training.UWP.Services;
+using Training.ViewModels;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;

@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Acr.UserDialogs;
+using Prototype.Mvvm;
 using Prototype.Mvvm.Services;
 using Prototype.Mvvm.ViewModels;
 using Training.Models;
@@ -29,7 +30,7 @@ namespace Training.ViewModels
     /// <summary>
     /// Another base view model that contains a property for its corresponding model
     /// </summary>
-    public abstract class BaseNavigationViewModel<T> : BaseNavigationViewModel where T : BaseModel
+    public abstract class BaseNavigationViewModel<T> : BaseNavigationViewModel where T : BaseNotify
     {
         #region Properties
 
@@ -72,7 +73,7 @@ namespace Training.ViewModels
         #endregion
     }
 
-    public abstract class BaseCollectionViewModel<T> : BaseCollectionViewModel where T : BaseModel
+    public abstract class BaseCollectionViewModel<T> : BaseCollectionViewModel where T : BaseNotify
     {
         #region Properties
 
