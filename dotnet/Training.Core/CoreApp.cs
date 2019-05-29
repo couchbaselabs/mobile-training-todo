@@ -219,7 +219,7 @@ namespace Training.Core
         public static CoreAppStartHint CreateHint()
         {
             var retVal = new CoreAppStartHint {
-                LoginEnabled = true,
+                LoginEnabled = false,
                 EncryptionEnabled = false,
                 SyncEnabled = true,
                 UsePrebuiltDB = false,
@@ -236,14 +236,9 @@ namespace Training.Core
         public void Start(object hint = null)
         {
             CoreApp.Hint = (CoreAppStartHint)hint;
-            //    if(CoreApp.Hint.LoginEnabled) {
-            //        Navigation.ReplaceRoot(ServiceContainer.GetInstance<TaskListsViewModel>());
-            //        //ShowViewModel<LoginViewModel>();
-            //    } else {
-            //        CoreApp.StartSession(CoreApp.Hint.Username, null, null);
-            //        Navigation.ReplaceRoot(ServiceContainer.GetInstance<TaskListsViewModel>());
-            //        //ShowViewModel<TaskListsViewModel>(new { loginEnabled = false });
-            //    }
+            if (!CoreApp.Hint.LoginEnabled) {
+                CoreApp.StartSession(CoreApp.Hint.Username, null, null);
+            }
         }
 
         #endregion

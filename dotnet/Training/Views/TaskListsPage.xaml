@@ -41,13 +41,7 @@
                             <Label Text="{Binding Value.IncompleteCount}" VerticalTextAlignment="Center" HorizontalOptions="StartAndExpand" FontSize="Small" />
                         </StackLayout>
                     </ViewCell>
-                    <!--<localForms:TaskListCell Name="{Binding Value.Name}" IncompleteTasks="{Binding Value.IncompleteCount, Converter={StaticResource IncompleteToString}}">
-                        <localForms:TaskListCell.ContextActions>
-                            <MenuItem Command="{Binding Value.EditCommand}" CommandParameter="{Binding Value.DocumentID}" Text="Edit" />
-                            <MenuItem Command="{Binding Value.DeleteCommand}" CommandParameter="{Binding Value.DocumentID}" Text="Delete" IsDestructive="True" />
-                         </localForms:TaskListCell.ContextActions>
-					</localForms:TaskListCell>-->
-				</DataTemplate>
+                </DataTemplate>
 			</controls:ListView.ItemTemplate>
 		</controls:ListView>
 	</ContentPage.Content>

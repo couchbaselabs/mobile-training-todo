@@ -140,15 +140,6 @@ namespace Training.ViewModels
             Filter(null);
         }
 
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="parent">The parent view model (this is a nested view model).</param>
-        //public UsersViewModel(ListDetailViewModel parent) : base(new UsersModel(parent.CurrentListID))
-        //{
-        //    _dialogs = Mvx.Resolve<IUserDialogs>();
-        //}
-
         #endregion
 
         #region Private API
@@ -225,11 +216,6 @@ namespace Training.ViewModels
             }
 
             QueryRun(query);
-            //UserList.Replace(results.Select(x =>
-            //{
-            //    var docId = $"{_userList.Id}.{x.GetString(0)}";
-            //    return new UserCellModel(docId);
-            //}));
         }
 
         #endregion
@@ -263,14 +249,7 @@ namespace Training.ViewModels
             _usersLiveQuery.AddChangeListener((sender, args) =>
             {
                 QueryRun(_usersLiveQuery);
-                //UserList.Replace(results.Select(x =>
-                //{
-                //    var docId = $"{_userList.Id}.{x.GetString(0)}";
-                //    return new UserCellModel(docId);
-                //}));
             });
-
-            
         }
 
         void QueryRun(IQuery query)

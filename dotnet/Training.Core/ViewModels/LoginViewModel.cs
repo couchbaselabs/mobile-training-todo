@@ -96,33 +96,14 @@ namespace Training.ViewModels
 
             try {
                 CoreApp.StartSession(Username, Password, null);
-            //} catch(CouchbaseLiteException e) {
-            //    if(e.Status == StatusCode.Unauthorized) {
-            //        var result = await _dialogs.PromptAsync(new PromptConfig {
-            //            Title = "Password Changed",
-            //            OkText = "Migrate",
-            //            CancelText = "Delete",
-            //            IsCancellable = true,
-            //            InputType = Acr.UserDialogs.InputType.Password
-            //        });
-
-            //        if(result.Ok) {
-            //            CoreApp.StartSession(Username, result.Text, password);
-            //        } else {
-            //            Model.DeleteDatabase(Username);
-            //            Login(password);
-            //            return;
-            //        }
-            //    } else {
-            //        _dialogs.Toast($"Login has an error occurred, code = {e.Code}");
-            //        return;
-            //    }
             } catch(Exception e) {
                 _dialogs.Toast($"Login has an error occurred, code = {e}");
                 return;
             }
 
-            await Navigation.SetDetailAsync(GetViewModel<TaskListsViewModel>());
+            var vm = GetViewModel<TaskListsViewModel>();
+            vm.Init(true);
+            await Navigation.SetDetailAsync(vm);
         }
 
         /// <summary>

@@ -27,7 +27,7 @@ using Acr.UserDialogs;
 
 using Couchbase.Lite;
 using Couchbase.Lite.Query;
-
+using Prototype.Mvvm;
 using Prototype.Mvvm.Input;
 using Prototype.Mvvm.Services;
 using Prototype.Mvvm.ViewModels;
@@ -194,7 +194,7 @@ namespace Training.ViewModels
         private void Logout()
         {
             CoreApp.EndSession();
-            //Close(this);
+            Navigation.SetRoot(ServiceContainer.GetInstance<LoginViewModel>(), false);
         }
 
         private void CreateNewItem(PromptResult result)

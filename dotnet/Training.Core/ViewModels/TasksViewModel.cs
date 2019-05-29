@@ -158,23 +158,7 @@ namespace Training.ViewModels
         {
             _taskList = _db.GetDocument(docID);
             SetupQuery();
-            Filter(null);
         }
-
-        #endregion
-
-        #region Internal API
-
-        //internal async Task ShowOrChooseImage(TaskCellModel taskDocument)
-        //{
-        //    //if(!taskDocument.HasImage()) {
-        //        await ChooseImage(taskDocument);
-        //    //} else {
-        //    //    var taskImageVM = new TaskImageViewModel(Navigation, Dialogs, _mediaPicker);
-        //    //    taskImageVM.Init(taskDocument.DocumentID);
-        //    //    await Navigation.PushAsync(taskImageVM);
-        //    //}
-        //}
 
         #endregion
 
@@ -237,7 +221,6 @@ namespace Training.ViewModels
             {
                 var doc = new MutableDocument(properties);
                 _db.Save(doc);
-                Filter(null);
                 return doc;
             }
             catch (Exception e)
@@ -258,36 +241,9 @@ namespace Training.ViewModels
                 query = _tasksFilteredQuery;
                 query.Parameters.SetString("searchString", $"%{searchString}%");
             }
-            else
-            {
-                query = _tasksFullQuery;
-            }
 
             var results = query.Execute();
-
-            var allResult = results.AllResults();
-            if (allResult.Count < ListData.Count) {
-                ListData = new ObservableConcurrentDictionary<string, TaskCellModel>();
-            }
-            Parallel.For(0, allResult.Count, i =>
-            {
-                var result = allResult[i];
-                var idKey = result.GetString("id");
-                var document = _db.GetDocument(idKey);
-                var name = document.GetString("task");
-                if (name == null) {
-                    _db.Delete(document);
-                } else {
-                    if (_items.ContainsKey(idKey)) {
-                        _items[idKey].Name = name;
-                    } else {
-                        var task = new TaskCellModel(Dialogs, _imageService, _mediaPicker, idKey, _items);
-                        task.Name = name;
-                        //task.AddImageCommand = new Command<KeyValuePair<string, TaskCellModel>>(async (t) => await ShowOrChooseImage(t.Value));
-                        ListData.Add(idKey, task);
-                    }
-                }
-            });
+            RunQuery(results.AllResults());
         }
 
         private void Task_StatusUpdated(object sender, State state)
@@ -309,8 +265,40 @@ namespace Training.ViewModels
             _tasksFullQuery = QueryBuilder.Select(SelectResult.Expression(Meta.ID))
                 .From(DataSource.Database(_db))
                 .Where(Expression.Property("type").EqualTo(Expression.String(TaskType))//"task"
-                    .And(Expression.Property("taskList.id").EqualTo(Expression.String(_taskList.Id))))
-                .OrderBy(Ordering.Property("createdAt"));
+                    .And(Expression.Property("taskList.id").EqualTo(Expression.String(_taskList.Id))));
+
+            _tasksFullQuery.AddChangeListener((sender, args) =>
+            {
+                //run live query
+                RunQuery(args.Results.AllResults());
+            });
+        }
+
+        private void RunQuery(List<Result> allResult)
+        {
+            if (allResult.Count < ListData.Count) {
+                ListData = new ObservableConcurrentDictionary<string, TaskCellModel>();
+            }
+            Parallel.For(0, allResult.Count, i =>
+            {
+                var result = allResult[i];
+                var idKey = result.GetString("id");
+                var document = _db.GetDocument(idKey);
+                if (!idKey.Equals(document.Id))
+                    return;
+                var name = document.GetString("task");
+                if (name == null) {
+                    _db.Delete(document);
+                } else {
+                    if (_items.ContainsKey(idKey)) {
+                        _items[idKey].Name = name;
+                    } else {
+                        var task = new TaskCellModel(Dialogs, _imageService, _mediaPicker, idKey, _items);
+                        task.Name = name;
+                        ListData.Add(idKey, task);
+                    }
+                }
+            });
         }
 
         #endregion
