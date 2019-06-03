@@ -114,15 +114,21 @@ namespace Training.Core
         public static void OpenDatabase(string dbName, string key, string newKey)
         {
             // TRAINING: Create a database
-            //var encryptionKey = default(SymmetricKey);
-            //if(key != null) {
-            //    encryptionKey = new SymmetricKey(key);
-            //}
 
             Database =new Database(dbName);
-            //if(newKey != null) {
-            //    Database.ChangeEncryptionKey(new SymmetricKey(newKey));
-            //}
+            if (newKey != null) {
+                var config = new DatabaseConfiguration
+                {
+                    EncryptionKey = new EncryptionKey(key)
+                };
+                Database = new Database(dbName, config);
+            } else {
+                Database = new Database(dbName);
+            }
+
+            if (newKey != null) {
+                Database.ChangeEncryptionKey(new EncryptionKey(newKey));
+            }
 
             Database.AddChangeListener((sender, args) =>
             {
