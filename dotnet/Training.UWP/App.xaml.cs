@@ -28,7 +28,6 @@ using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
-using XLabs.Platform.Services.Media;
 
 namespace Training.UWP
 {
@@ -51,7 +50,6 @@ namespace Training.UWP
             Couchbase.Lite.Support.UWP.Activate();
 
             ServiceContainer.Register<IImageService>(new ImageService());
-            ServiceContainer.Register<IMediaPicker>(new MediaPicker());
         }
 
         #endregion

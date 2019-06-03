@@ -19,15 +19,15 @@
 // limitations under the License.
 //
 
+using Acr.UserDialogs;
 using Foundation;
+using Prototype.Mvvm;
+using Training;
 using Training.Core;
-using Training.Forms;
 
 using UIKit;
 
 using Xamarin.Forms.Platform.iOS;
-
-using XLabs.Platform.Device;
 
 namespace Training.iOS
 {
@@ -52,35 +52,29 @@ namespace Training.iOS
 
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
-            Couchbase.Lite.Support.iOS.Activate();
-
             // Setup the application
             Xamarin.Forms.Forms.Init();
-            Window = new UIWindow(UIScreen.MainScreen.Bounds);
-            var setup = new Setup(this, Window);
-            setup.Initialize();
 
-            // Register platform specific implementations
-            Mvx.RegisterSingleton<IDevice>(() => AppleDevice.CurrentDevice);
-            Mvx.RegisterSingleton<IImageService>(() => new ImageService());
+            // tag::activate[]
+            Couchbase.Lite.Support.iOS.Activate();
+            // end::activate[]
 
-            //Start the application
-            var a = new App();
-                a.MainPage.W
-            var startup = new CoreAppStart();
-            var hint = CoreAppStart.CreateHint();
-            startup.Start(hint);
-
-            LoadApplication(setup.FormsApplication);
-
+            RegisterServices();
             
+            //Start the application
+            LoadApplication(new App());
 
             Window.MakeKeyAndVisible();
 
-            return true;
+            return base.FinishedLaunching(app, options);
         }
 
         #endregion
+
+        void RegisterServices()
+        {
+            ServiceContainer.Register<IImageService>(() => new ImageService());
+        }
 
     }
 }

@@ -138,7 +138,7 @@ namespace Training.Models
         /// Sets the image associated with this task
         /// </summary>
         /// <param name="image">The image to associate with the task.</param>
-        public void SetImage(Stream image)
+        public void SetImage(byte[] image)
         {
             try {
                 using (var mutableDoc = _document.ToMutable()) {

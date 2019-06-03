@@ -28,15 +28,16 @@ namespace Training
             start.Start(hint);
 
             if (hint.LoginEnabled) {
-                NavigationService.SetDetailAsync(ServiceContainer.GetInstance<LoginViewModel>(), false);
+                NavigationService.SetRoot(ServiceContainer.GetInstance<LoginViewModel>(), false);
             } else {
-                NavigationService.SetDetailAsync(ServiceContainer.GetInstance<TaskListsViewModel>(), false);
+                NavigationService.SetRoot(ServiceContainer.GetInstance<TaskListsViewModel>(), false);
         }
     }
 
         void RegisterServices()
         {
             ServiceContainer.Register(UserDialogs.Instance);
+            ServiceContainer.Register<IMediaService>(new MediaService());
 
             NavigationService = new NavigationService();
             NavigationService.AutoRegister(typeof(App).Assembly);

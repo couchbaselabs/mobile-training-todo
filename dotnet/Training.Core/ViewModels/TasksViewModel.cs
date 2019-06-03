@@ -34,7 +34,6 @@ using Prototype.Mvvm.Input;
 using Prototype.Mvvm.Services;
 
 using Training.Core;
-using XLabs.Platform.Services.Media;
 
 namespace Training.ViewModels
 {
@@ -54,7 +53,7 @@ namespace Training.ViewModels
 
         
         protected IImageService _imageService;
-        protected IMediaPicker _mediaPicker;
+        protected IMediaService _mediaPicker;
 
         private IQuery _tasksFilteredQuery;
         private IQuery _tasksFullQuery;
@@ -144,7 +143,7 @@ namespace Training.ViewModels
         #region Constructors
 
         public TasksViewModel(INavigationService navigation
-            , IUserDialogs dialogs, IImageService imageService, IMediaPicker mediaPicker) 
+            , IUserDialogs dialogs, IImageService imageService, IMediaService mediaPicker) 
             : base(navigation, dialogs)
         {
             Navigation = navigation;

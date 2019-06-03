@@ -108,9 +108,7 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\Device.cs" />
     <Compile Include="Services\ImageService.cs" />
-    <Compile Include="Services\MediaPicker.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -148,9 +146,6 @@
     </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>6.0.8</Version>
-    </PackageReference>
-    <PackageReference Include="XLabs.Platform">
-      <Version>2.3.0-pre05</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

@@ -21,7 +21,7 @@
 using System.Collections.Generic;
 
 using Training;
-using Training.Forms;
+using Training.Views;
 using UIKit;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.iOS;

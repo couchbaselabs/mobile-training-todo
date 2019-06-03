@@ -32,7 +32,6 @@ using Prototype.Mvvm.Services;
 using Training.Core;
 using Training.Models;
 using Training.ViewModels;
-using XLabs.Platform.Services.Media;
 
 using Plugin.Media;
 
@@ -159,7 +158,7 @@ namespace Training.ViewModels
         /// </summary>
         /// <param name="documentID">The ID of the document to use</param>
         public TaskCellModel(IUserDialogs dialogs, IImageService imageService,
-                             IMediaPicker mediaPicker, string documentID, ObservableConcurrentDictionary<string, TaskCellModel> tasks)
+                             IMediaService mediaPicker, string documentID, ObservableConcurrentDictionary<string, TaskCellModel> tasks)
         {
             DocumentID = documentID;
             Task = new TaskModel(documentID);
@@ -202,10 +201,6 @@ namespace Training.ViewModels
             var result = await _imageChooser.GetPhotoAsync();
             if (result == null) {
                 return;
-            }
-
-            if (result == Stream.Null) {
-                result = null;
             }
 
             try {

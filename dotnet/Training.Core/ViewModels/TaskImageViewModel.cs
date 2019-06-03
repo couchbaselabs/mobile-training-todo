@@ -28,7 +28,6 @@ using System.Windows.Input;
 
 using Training.Core;
 using Training.Models;
-using XLabs.Platform.Services.Media;
 
 namespace Training.ViewModels
 {
@@ -56,9 +55,9 @@ namespace Training.ViewModels
         /// The image stored on the task
         /// </summary>
         /// <value>The image.</value>
-        public Stream Image
+        public byte[] Image
         {
-            get => _taskDocument.GetBlob("image")?.ContentStream;
+            get => _taskDocument.GetBlob("image")?.Content;
             set {
                 using (var mutableTask = _taskDocument.ToMutable()) {
                     if (value == null) {
@@ -82,7 +81,7 @@ namespace Training.ViewModels
         /// </summary>
         /// <param name="dialogs">The interface responsible for showing dialogs.</param>
         /// <param name="mediaPicker">The interface responsible for getting photos.</param>
-        public TaskImageViewModel(INavigationService navigation, IUserDialogs dialogs, IMediaPicker mediaPicker)
+        public TaskImageViewModel(INavigationService navigation, IUserDialogs dialogs, IMediaService mediaPicker)
             :base(navigation, dialogs)
         {
             _imageChooser = new ImageChooser(new ImageChooserConfig
@@ -115,10 +114,6 @@ namespace Training.ViewModels
             var result = await _imageChooser.GetPhotoAsync();
             if(result == null) {
                 return;
-            }
-
-            if(result == Stream.Null) {
-                result = null;
             }
 
             Image = result;

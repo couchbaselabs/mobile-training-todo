@@ -31,8 +31,8 @@ using System.Threading.Tasks;
 using Acr.UserDialogs;
 using Newtonsoft.Json.Linq;
 using Plugin.Media;
+using Plugin.Media.Abstractions;
 using Training.Models;
-using XLabs.Platform.Services.Media;
 
 namespace Training.Core
 {
@@ -291,28 +291,6 @@ namespace Training.Core
 
     }
 
-    public interface IMediaService
-    {
-        Task<byte[]> PickPhotoAsync();
-    }
-
-    public class MediaService : IMediaService
-    {
-        public async Task<byte[]> PickPhotoAsync()
-        {
-            var result = await CrossMedia.Current.PickPhotoAsync();
-            return result != null ? GetBytesFromStream(result.GetStream()) : null;
-        }
-
-        byte[] GetBytesFromStream(Stream stream)
-        {
-            using (var ms = new MemoryStream()) {
-                stream.CopyTo(ms);
-                return ms.ToArray();
-            }
-        }
-    }
-
     /// <summary>
     /// A utility for choosing or taking an image
     /// </summary>
@@ -342,10 +320,10 @@ namespace Training.Core
         /// </summary>
         /// <returns>An awaitable task that contains the resulting stream to the image
         /// binary data</returns>
-        public async Task<Stream> GetPhotoAsync()
+        public async Task<byte[]> GetPhotoAsync()
         {
             var result = default(string);
-            if(_config.MediaPicker.IsCameraAvailable) {
+            if(await _config.MediaPicker.IsCameraAvailable()) {
                 result = await _config.Dialogs.ActionSheetAsync(_config.Title, _config.CancelText, _config.DeleteText, CancellationToken.None, "Choose Existing", "Take Photo");
             } else {
                 result = await _config.Dialogs.ActionSheetAsync(_config.Title, _config.CancelText, _config.DeleteText, CancellationToken.None, "Choose Existing");
@@ -355,23 +333,22 @@ namespace Training.Core
                 return null;
             }
 
-            var photoResult = default(MediaFile);
             if(result == "Choose Existing") {
                 try {
-                    photoResult = await _config.MediaPicker.SelectPhotoAsync(new CameraMediaStorageOptions());
+                    return await _config.MediaPicker.PickPhotoAsync();
                 } catch(OperationCanceledException) {
                     return null;
                 }
             } else if(result == "Take Photo") {
                 try {
-                    photoResult = await _config.MediaPicker.TakePhotoAsync(new CameraMediaStorageOptions { DefaultCamera = CameraDevice.Rear, SaveMediaOnCapture = false });
+                    return await _config.MediaPicker.TakePhotoAsync();
                 } catch(OperationCanceledException) {
                     return null;
                 }
             } else if(result == _config.DeleteText) {
-                return Stream.Null;
+                return null;
             }
-            return photoResult?.Source;
+            return null;
         }
 
         #endregion
@@ -382,7 +359,6 @@ namespace Training.Core
     /// </summary>
     public sealed class ImageChooserConfig
     {
-
         #region Properties
 
         /// <summary>
@@ -408,7 +384,7 @@ namespace Training.Core
         /// <summary>
         /// Gets or sets the interface that controls choosing media
         /// </summary>
-        public IMediaPicker MediaPicker { get; set; }
+        public IMediaService MediaPicker { get; set; }
 
         #endregion
 

@@ -88,12 +88,10 @@
       <HintPath>..\packages\BTProgressHUD.1.2.0.6\lib\Xamarin.iOS10\BTProgressHUD.dll</HintPath>
     </Reference>
     <Reference Include="Couchbase.Lite, Version=2.5.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Couchbase.Lite.Enterprise.2.5.0-b0175\lib\netstandard2.0\Couchbase.Lite.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\Couchbase.Lite.Enterprise.2.5.0\lib\netstandard2.0\Couchbase.Lite.dll</HintPath>
     </Reference>
     <Reference Include="Couchbase.Lite.Support.iOS, Version=2.5.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Couchbase.Lite.Enterprise.Support.iOS.2.5.0-b0175\lib\xamarinios\Couchbase.Lite.Support.iOS.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\Couchbase.Lite.Enterprise.Support.iOS.2.5.0\lib\xamarinios\Couchbase.Lite.Support.iOS.dll</HintPath>
     </Reference>
     <Reference Include="ExifLib, Version=1.0.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ExifLib.PCL.1.0.2-pre01\lib\netstandard1.0\ExifLib.dll</HintPath>
@@ -121,12 +119,6 @@
     </Reference>
     <Reference Include="XLabs.IOC, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\XLabs.IoC.2.3.0-pre05\lib\netstandard1.0\XLabs.IOC.dll</HintPath>
-    </Reference>
-    <Reference Include="XLabs.Platform, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\XLabs.Platform.2.3.0-pre05\lib\xamarinios10\XLabs.Platform.dll</HintPath>
-    </Reference>
-    <Reference Include="XLabs.Platform.iOS, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\XLabs.Platform.2.3.0-pre05\lib\xamarinios10\XLabs.Platform.iOS.dll</HintPath>
     </Reference>
     <Reference Include="XLabs.Serialization, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\XLabs.Serialization.2.3.0-pre05\lib\NETStandard1.0\XLabs.Serialization.dll</HintPath>
@@ -190,13 +182,31 @@
     <BundleResource Include="Resources\Checkmark%402x.png" />
     <BundleResource Include="Resources\Checkmark%403x.png" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Prototype.Mvvm\src\Prototype.Mvvm.Forms\Prototype.Mvvm.Forms.csproj">
+      <Project>{9567169f-10a1-4ad6-b8f2-daaf800d4c02}</Project>
+      <Name>Prototype.Mvvm.Forms</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Prototype.Mvvm\src\Prototype.Mvvm\Prototype.Mvvm.csproj">
+      <Project>{65087088-e8d9-4083-8f15-ccee5f98a54d}</Project>
+      <Name>Prototype.Mvvm</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Training.Core\Training.Core.csproj">
+      <Project>{3fcc9469-a495-49bd-91e0-0d42dbdd0183}</Project>
+      <Name>Training.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Training\Training.csproj">
+      <Project>{dd47e1ce-cbb5-4fb8-867d-a9d37db89493}</Project>
+      <Name>Training</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <Import Project="..\packages\Xamarin.Forms.2.5.0.91635\build\netstandard1.0\Xamarin.Forms.targets" Condition="Exists('..\packages\Xamarin.Forms.2.5.0.91635\build\netstandard1.0\Xamarin.Forms.targets')" />
-  <Import Project="..\packages\Couchbase.Lite.Enterprise.Support.iOS.2.5.0-b0175\build\xamarinios\Couchbase.Lite.Enterprise.Support.iOS.targets" Condition="Exists('..\packages\Couchbase.Lite.Enterprise.Support.iOS.2.5.0-b0175\build\xamarinios\Couchbase.Lite.Enterprise.Support.iOS.targets')" />
+  <Import Project="..\packages\Couchbase.Lite.Enterprise.Support.iOS.2.5.0\build\xamarinios\Couchbase.Lite.Enterprise.Support.iOS.targets" Condition="Exists('..\packages\Couchbase.Lite.Enterprise.Support.iOS.2.5.0\build\xamarinios\Couchbase.Lite.Enterprise.Support.iOS.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Couchbase.Lite.Enterprise.Support.iOS.2.5.0-b0175\build\xamarinios\Couchbase.Lite.Enterprise.Support.iOS.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Couchbase.Lite.Enterprise.Support.iOS.2.5.0-b0175\build\xamarinios\Couchbase.Lite.Enterprise.Support.iOS.targets'))" />
+    <Error Condition="!Exists('..\packages\Couchbase.Lite.Enterprise.Support.iOS.2.5.0\build\xamarinios\Couchbase.Lite.Enterprise.Support.iOS.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Couchbase.Lite.Enterprise.Support.iOS.2.5.0\build\xamarinios\Couchbase.Lite.Enterprise.Support.iOS.targets'))" />
   </Target>
 </Project>

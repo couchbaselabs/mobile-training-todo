@@ -12,8 +12,6 @@ using Android.Views;
 using Android.Widget;
 using Prototype.Mvvm;
 using Training.Core;
-using XLabs.Platform.Device;
-using XLabs.Platform.Services.Media;
 
 namespace Training.Android
 {
@@ -42,10 +40,7 @@ namespace Training.Android
 
         void RegisterServices()
         {
-            ServiceContainer.Register<IDevice>(AndroidDevice.CurrentDevice);
             ServiceContainer.Register<IImageService>(new ImageService());
-            //ServiceContainer.Register<IMediaPicker>(new MediaPicker());
-            //ServiceContainer.Register<IDatabaseSeedService>(() => new DatabaseSeedService(ApplicationContext));
         }
     }
 }
