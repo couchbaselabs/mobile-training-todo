@@ -64,8 +64,6 @@ namespace Training.iOS
             //Start the application
             LoadApplication(new App());
 
-            Window.MakeKeyAndVisible();
-
             return base.FinishedLaunching(app, options);
         }
 
