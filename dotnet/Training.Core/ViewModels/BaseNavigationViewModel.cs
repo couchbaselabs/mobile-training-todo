@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Acr.UserDialogs;
-using Prototype.Mvvm;
-using Prototype.Mvvm.Services;
-using Prototype.Mvvm.ViewModels;
+using Robo.Mvvm;
+using Robo.Mvvm.Services;
+using Robo.Mvvm.ViewModels;
 using Training.Models;
 
 namespace Training.ViewModels

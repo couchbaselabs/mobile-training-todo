@@ -21,7 +21,7 @@
 
 using Acr.UserDialogs;
 using Foundation;
-using Prototype.Mvvm;
+using Robo.Mvvm;
 using Training;
 using Training.Core;
 

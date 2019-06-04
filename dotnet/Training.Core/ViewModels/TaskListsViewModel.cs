@@ -27,10 +27,10 @@ using Acr.UserDialogs;
 
 using Couchbase.Lite;
 using Couchbase.Lite.Query;
-using Prototype.Mvvm;
-using Prototype.Mvvm.Input;
-using Prototype.Mvvm.Services;
-using Prototype.Mvvm.ViewModels;
+using Robo.Mvvm;
+using Robo.Mvvm.Input;
+using Robo.Mvvm.Services;
+using Robo.Mvvm.ViewModels;
 using Training.Core;
 
 namespace Training.ViewModels

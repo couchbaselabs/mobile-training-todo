@@ -21,7 +21,7 @@
 using System;
 
 using Couchbase.Lite;
-using Prototype.Mvvm;
+using Robo.Mvvm;
 using Training.Core;
 
 namespace Training.Models

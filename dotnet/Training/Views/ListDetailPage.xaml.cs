@@ -18,7 +18,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-using Prototype.Mvvm.Forms.Pages;
+using Robo.Mvvm.Forms.Pages;
 using System.ComponentModel;
 using Training.ViewModels;
 

@@ -30,8 +30,8 @@ using Acr.UserDialogs;
 using Couchbase.Lite;
 using Couchbase.Lite.Query;
 
-using Prototype.Mvvm.Input;
-using Prototype.Mvvm.Services;
+using Robo.Mvvm.Input;
+using Robo.Mvvm.Services;
 
 using Training.Core;
 

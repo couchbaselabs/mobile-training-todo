@@ -147,16 +147,11 @@
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>6.0.8</Version>
     </PackageReference>
+    <PackageReference Include="Robo.Mvvm">
+      <Version>1.0.1</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Prototype.Mvvm\src\Prototype.Mvvm.Forms\Prototype.Mvvm.Forms.csproj">
-      <Project>{9567169f-10a1-4ad6-b8f2-daaf800d4c02}</Project>
-      <Name>Prototype.Mvvm.Forms</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Prototype.Mvvm\src\Prototype.Mvvm\Prototype.Mvvm.csproj">
-      <Project>{65087088-e8d9-4083-8f15-ccee5f98a54d}</Project>
-      <Name>Prototype.Mvvm</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Training.Core\Training.Core.csproj">
       <Project>{3fcc9469-a495-49bd-91e0-0d42dbdd0183}</Project>
       <Name>Training.Core</Name>

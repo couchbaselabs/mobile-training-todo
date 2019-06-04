@@ -19,8 +19,8 @@
 // limitations under the License.
 //
 using Acr.UserDialogs;
-using Prototype.Mvvm.Input;
-using Prototype.Mvvm.Services;
+using Robo.Mvvm.Input;
+using Robo.Mvvm.Services;
 
 using System;
 using System.ComponentModel;

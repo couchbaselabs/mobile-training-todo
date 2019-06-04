@@ -19,7 +19,7 @@
 // limitations under the License.
 //
 using Couchbase.Lite;
-using Prototype.Mvvm;
+using Robo.Mvvm;
 using System;
 using Training.Core;
 

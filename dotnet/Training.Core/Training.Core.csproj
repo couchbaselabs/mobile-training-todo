@@ -6,10 +6,8 @@
   <ItemGroup>
     <PackageReference Include="Acr.UserDialogs" Version="7.0.1" />
     <PackageReference Include="Couchbase.Lite.Enterprise" Version="2.5.0" />
+    <PackageReference Include="Robo.Mvvm" Version="1.0.1" />
     <PackageReference Include="Xam.Plugin.Media" Version="4.0.1.5" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\Prototype.Mvvm\src\Prototype.Mvvm\Prototype.Mvvm.csproj" />
   </ItemGroup>
 </Project>

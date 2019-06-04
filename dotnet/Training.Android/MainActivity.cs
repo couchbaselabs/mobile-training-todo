@@ -10,7 +10,7 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using Prototype.Mvvm;
+using Robo.Mvvm;
 using Training.Core;
 
 namespace Training.Android

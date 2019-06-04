@@ -19,7 +19,7 @@
 // limitations under the License.
 //
 
-using Prototype.Mvvm.Forms.Pages;
+using Robo.Mvvm.Forms.Pages;
 using Training.ViewModels;
 
 namespace Training.Views

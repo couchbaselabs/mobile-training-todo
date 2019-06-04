@@ -22,9 +22,9 @@ using System;
 using System.Windows.Input;
 
 using Acr.UserDialogs;
-using Prototype.Mvvm;
-using Prototype.Mvvm.Input;
-using Prototype.Mvvm.Services;
+using Robo.Mvvm;
+using Robo.Mvvm.Input;
+using Robo.Mvvm.Services;
 using Training.Core;
 using Training.Models;
 

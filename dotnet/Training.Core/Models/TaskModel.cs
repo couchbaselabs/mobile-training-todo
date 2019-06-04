@@ -24,7 +24,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Couchbase.Lite;
 using Plugin.Media;
-using Prototype.Mvvm;
+using Robo.Mvvm;
 using Training.Core;
 
 namespace Training.Models
