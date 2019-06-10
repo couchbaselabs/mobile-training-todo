@@ -52,8 +52,6 @@ namespace Training.ViewModels
         private IQuery _filteredQuery;
         private IQuery _fullQuery;
         private IQuery _incompleteQuery;
-        private string _searchText;
-        private readonly IDictionary<string, int> _incompleteCount = new Dictionary<string, int>();
 
         #endregion
 
@@ -157,7 +155,6 @@ namespace Training.ViewModels
             Navigation = navigation;
             Dialogs = dialogs;
             SetupQuery();
-            Filter(null);
         }
 
         #endregion
@@ -225,7 +222,6 @@ namespace Training.ViewModels
                 doc["name"].Value = taskListName;
                 doc["owner"].Value = Username;
                 _db.Save(doc);
-                Filter(null);
                 return doc;
             } catch (Exception e) {
                 var newException = new Exception("Couldn't save task list", e);
@@ -235,51 +231,16 @@ namespace Training.ViewModels
 
         public void Filter(string searchText)
         {
-            _searchText = searchText;
             var query = default(IQuery);
             if (!String.IsNullOrEmpty(searchText)) {
                 query = _filteredQuery;
                 query.Parameters.SetString("searchText", $"%{searchText}%");
-            } else {
-                query = _fullQuery;
+
+                var results = query.Execute();
+                RunQuery(results.AllResults());
             }
-
-            var results = query.Execute();
-            var allResult = results.AllResults();
-            if (allResult.Count < Items.Count) {
-                Items = new ObservableConcurrentDictionary<string, TaskListCellModel>();
-            }
-            Parallel.For(0, allResult.Count, i =>
-            {
-                var result = allResult[i];
-                var idKey = result.GetString("id");
-                var document = _db.GetDocument(idKey);
-                var name = result.GetString("name");
-                if (name == null) {
-                    _db.Delete(document);
-                } else {
-                    if (_items.ContainsKey(idKey))
-                    {
-                        _items[idKey].Name = name;
-                    }
-                    else
-                    {
-                        var task = new TaskListCellModel(Navigation, Dialogs, idKey, name);
-                        task.StatusUpdated += Task_StatusUpdated;
-                        Items.Add(idKey, task);
-                    }
-                }
-                _items[idKey].IncompleteCount = _incompleteCount.ContainsKey(idKey) ? _incompleteCount[idKey] : 0;
-            });
         }
-
-        private void Task_StatusUpdated(object sender, State state)
-        {
-            TaskListCellModel listCell = (TaskListCellModel)sender;
-            if (state == State.DELETED)
-                Items.Remove(listCell.DocumentID);
-        }
-
+        
         #region Private Methods
 
         private void SetupQuery()
@@ -302,25 +263,57 @@ namespace Training.ViewModels
                     .And(Expression.Property("type").EqualTo(Expression.String("task-list"))))
                 .OrderBy(Ordering.Property("name"));
 
+            _fullQuery.AddChangeListener((sender, args) =>
+            {
+                //run live query
+                RunQuery(args.Results.AllResults());
+            });
+
             _incompleteQuery = QueryBuilder.Select(SelectResult.Expression(Expression.Property("taskList.id")),
                     SelectResult.Expression(Function.Count(Expression.All())))
                 .From(DataSource.Database(_db))
                 .Where(Expression.Property("type").EqualTo(Expression.String(TasksViewModel.TaskType))
                        .And(Expression.Property("complete").EqualTo(Expression.Boolean(false))))
                 .GroupBy(Expression.Property("taskList.id"));
-
             _incompleteQuery.AddChangeListener((sender, args) =>
             {
-                _incompleteCount.Clear();
-                foreach (var result in args.Results) {
-                    _incompleteCount[result.GetString(0)] = result.GetInt(1);
-                }
+                Parallel.ForEach(args.Results, result =>
+                {
+                    var key = result.GetString(0);
+                    var value = result.GetInt(1);
+                    var document = _db.GetDocument(key);
+                    var name = document.GetString("name");
 
-                foreach (var row in Items) {
-                    var item = ((KeyValuePair<string, TaskListCellModel>)row).Value;
-                    item.IncompleteCount = _incompleteCount.ContainsKey(item.DocumentID)
-                        ? _incompleteCount[item.DocumentID]
-                        : 0;
+                    if (!_items.ContainsKey(key)) {
+                        var task = new TaskListCellModel(Navigation, Dialogs, key, name, Items);
+                        task.IncompleteCount = value;
+                        Items.Add(key, task);
+                    } else {
+                        _items[key].IncompleteCount = value;
+                    }
+                });
+            });
+        }
+
+        private void RunQuery(List<Result> allResult)
+        {
+            if (allResult.Count < Items.Count) {
+                _items = new ObservableConcurrentDictionary<string, TaskListCellModel>();
+            }
+            Parallel.ForEach(allResult, result =>
+            {
+                var idKey = result.GetString("id");
+                var document = _db.GetDocument(idKey);
+                var name = result.GetString("name");
+                if (name == null) {
+                    _db.Delete(document);
+                } else {
+                    if (_items.ContainsKey(idKey)) {
+                        _items[idKey].Name = name;
+                    } else {
+                        var task = new TaskListCellModel(Navigation, Dialogs, idKey, name, Items);
+                        Items.Add(idKey, task);
+                    }
                 }
             });
         }

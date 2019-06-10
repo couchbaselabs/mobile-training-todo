@@ -235,22 +235,15 @@ namespace Training.ViewModels
         public void Filter(string searchString)
         {
             var query = default(IQuery);
-            if (!String.IsNullOrEmpty(searchString))
-            {
+            if (!String.IsNullOrEmpty(searchString)) {
                 query = _tasksFilteredQuery;
                 query.Parameters.SetString("searchString", $"%{searchString}%");
+
+                var results = query.Execute();
+                RunQuery(results.AllResults());
             }
-
-            var results = query.Execute();
-            RunQuery(results.AllResults());
         }
 
-        private void Task_StatusUpdated(object sender, State state)
-        {
-            TaskCellModel listCell = (TaskCellModel)sender;
-            if (state == State.DELETED)
-                ListData.Remove(listCell.DocumentID);
-        }
 
         private void SetupQuery()
         {

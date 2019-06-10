@@ -44,48 +44,6 @@ namespace Training.Views
 
         #region Overrides
 
-        protected override void OnDisappearing()
-        {
-            base.OnDisappearing();
-
-            // To detect from the renderer that this page doesn't need
-            // to process shakes
-            IsVisible = false;
-        }
-
-        protected override void OnAppearing()
-        {
-            base.OnAppearing();
-
-            // To detect from the renderer that this page needs to
-            // to process shakes
-            IsVisible = true;
-        }
-
-        protected override void OnBindingContextChanged()
-        {
-            base.OnBindingContextChanged();
-
-            if (_logoutButton == null) {
-                return;
-            }
-
-            var newContext = BindingContext as TaskListsViewModel;
-            if (newContext == null) {
-                return;
-            }
-
-            if (!newContext.LoginEnabled) {
-                ToolbarItems.Remove(_logoutButton);
-                _logoutButton = null;
-            }
-        }
-
-        protected void UpdateView()
-        {
-            var viewModel = BindingContext as TaskListsViewModel;
-            viewModel.Filter(null);
-        }
 
         #endregion
 
