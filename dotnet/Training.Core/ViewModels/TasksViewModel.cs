@@ -271,25 +271,27 @@ namespace Training.ViewModels
             if (allResult.Count < ListData.Count) {
                 ListData = new ObservableConcurrentDictionary<string, TaskCellModel>();
             }
-            Parallel.For(0, allResult.Count, i =>
+            Task.Run(() =>
             {
-                var result = allResult[i];
-                var idKey = result.GetString("id");
-                var document = _db.GetDocument(idKey);
-                if (!idKey.Equals(document.Id))
-                    return;
-                var name = document.GetString("task");
-                if (name == null) {
-                    _db.Delete(document);
-                } else {
-                    if (_items.ContainsKey(idKey)) {
-                        _items[idKey].Name = name;
+                Parallel.ForEach(allResult, result =>
+                {
+                    var idKey = result.GetString("id");
+                    var document = _db.GetDocument(idKey);
+                    if (!idKey.Equals(document.Id))
+                        return;
+                    var name = document.GetString("task");
+                    if (name == null) {
+                        _db.Delete(document);
                     } else {
-                        var task = new TaskCellModel(Dialogs, _imageService, _mediaPicker, idKey, _items);
-                        task.Name = name;
-                        ListData.Add(idKey, task);
+                        if (_items.ContainsKey(idKey)) {
+                            _items[idKey].Name = name;
+                        } else {
+                            var task = new TaskCellModel(Dialogs, _imageService, _mediaPicker, idKey, _items);
+                            task.Name = name;
+                            ListData.Add(idKey, task);
+                        }
                     }
-                }
+                });
             });
         }
 

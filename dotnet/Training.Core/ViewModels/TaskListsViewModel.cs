@@ -52,6 +52,7 @@ namespace Training.ViewModels
         private IQuery _filteredQuery;
         private IQuery _fullQuery;
         private IQuery _incompleteQuery;
+        private IDictionary<string, int> _incompleteCount = new Dictionary<string, int>();
 
         #endregion
 
@@ -277,20 +278,34 @@ namespace Training.ViewModels
                 .GroupBy(Expression.Property("taskList.id"));
             _incompleteQuery.AddChangeListener((sender, args) =>
             {
-                Parallel.ForEach(args.Results, result =>
+                Task.Run(() =>
                 {
-                    var key = result.GetString(0);
-                    var value = result.GetInt(1);
-                    var document = _db.GetDocument(key);
-                    var name = document.GetString("name");
+                    _incompleteCount = new Dictionary<string, int>();
+                    Parallel.ForEach(args.Results, result =>
+                    {
+                        var key = result.GetString(0);
+                        var value = result.GetInt(1);
+                        var document = _db.GetDocument(key);
+                        var name = document.GetString("name");
 
-                    if (!_items.ContainsKey(key)) {
-                        var task = new TaskListCellModel(Navigation, Dialogs, key, name, Items);
-                        task.IncompleteCount = value;
-                        Items.Add(key, task);
-                    } else {
-                        _items[key].IncompleteCount = value;
-                    }
+                        _incompleteCount.Add(key, value);
+
+                        if (!_items.ContainsKey(key)) {
+                            var task = new TaskListCellModel(Navigation, Dialogs, key, name, Items);
+                            task.IncompleteCount = value;
+                            Items.Add(key, task);
+                        }
+                    });
+
+                    Parallel.ForEach(Items.Keys, key =>
+                    {
+                        var value = Items[key];
+                        if (_incompleteCount.ContainsKey(key)) {
+                            value.IncompleteCount = _incompleteCount[key];
+                        } else {
+                            value.IncompleteCount = 0;
+                        }
+                    });
                 });
             });
         }
@@ -300,21 +315,24 @@ namespace Training.ViewModels
             if (allResult.Count < Items.Count) {
                 _items = new ObservableConcurrentDictionary<string, TaskListCellModel>();
             }
-            Parallel.ForEach(allResult, result =>
+            Task.Run(() =>
             {
-                var idKey = result.GetString("id");
-                var document = _db.GetDocument(idKey);
-                var name = result.GetString("name");
-                if (name == null) {
-                    _db.Delete(document);
-                } else {
-                    if (_items.ContainsKey(idKey)) {
-                        _items[idKey].Name = name;
+                Parallel.ForEach(allResult, result =>
+                {
+                    var idKey = result.GetString("id");
+                    var document = _db.GetDocument(idKey);
+                    var name = result.GetString("name");
+                    if (name == null) {
+                        _db.Delete(document);
                     } else {
-                        var task = new TaskListCellModel(Navigation, Dialogs, idKey, name, Items);
-                        Items.Add(idKey, task);
+                        if (_items.ContainsKey(idKey)) {
+                            _items[idKey].Name = name;
+                        } else {
+                            var task = new TaskListCellModel(Navigation, Dialogs, idKey, name, Items);
+                            Items.Add(idKey, task);
+                        }
                     }
-                }
+                });
             });
         }
 

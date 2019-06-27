@@ -259,23 +259,22 @@ namespace Training.ViewModels
             if (allResult.Count < ListData.Count) {
                 ListData = new ObservableConcurrentDictionary<string, UserCellModel>();
             }
-            Parallel.For(0, allResult.Count, i =>
+            Task.Run(() =>
             {
-                var result = allResult[i];
-                var name = result.GetString("username");
-                var idKey = $"{_userList.Id}.{name}";
-
-                if (_items.ContainsKey(idKey))
+                Parallel.ForEach(allResult, result =>
                 {
-                    _items[idKey].Name = name;
-                }
-                else
-                {
-                    var user = new UserCellModel(_dialogs, idKey, ListData);
-                    user.Name = name;
-                    ListData.Add(idKey, user);
-                }
+                    var name = result.GetString("username");
+                    var idKey = $"{_userList.Id}.{name}";
 
+                    if (_items.ContainsKey(idKey)) {
+                        _items[idKey].Name = name;
+                    } else {
+                        var user = new UserCellModel(_dialogs, idKey, ListData);
+                        user.Name = name;
+                        ListData.Add(idKey, user);
+                    }
+
+                });
             });
         }
         
