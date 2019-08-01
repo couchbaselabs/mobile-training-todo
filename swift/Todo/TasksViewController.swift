@@ -96,6 +96,28 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
         }
     }
     
+    func createTaskWithDeltaSync(task: String) {
+        let doc = MutableDocument()
+        doc.setValue("task", forKey: "type")
+        
+        let taskListInfo = ["id": taskList.id, "owner": taskList.string(forKey: "owner")]
+        doc.setValue(taskListInfo, forKey: "taskList")
+        doc.setValue(Date(), forKey: "createdAt")
+        doc.setValue(task, forKey: "task")
+        doc.setValue(false, forKey: "complete")
+        
+        var value = "12345678901234567890123456789012345678901234567890" // 50B
+        for _ in 0..<10000 {
+            value.append("12345678901234567890123456789012345678901234567890")
+        }
+        doc.setValue(value, forKey: "delta-sync-payload")
+        do {
+            try database.saveDocument(doc)
+        } catch let error as NSError {
+            Ui.showError(on: self, message: "Couldn't save task", error: error)
+        }
+    }
+    
     func updateTask(taskID: String, withTitle title: String) {
         do {
             let task = database.document(withID: taskID)!.toMutable()
@@ -203,11 +225,24 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
         })
     }
     
+    func showCreateTaskInput2() {
+        Ui.showTextInput(on: self, title: "New Task(DeltaSync)", message: nil, textFieldConfig: { text in
+            text.placeholder = "Task"
+            text.autocapitalizationType = .sentences
+        }, onOk: { task in
+            self.createTaskWithDeltaSync(task: task)
+        })
+    }
+    
     func showQEActions() {
         let actions = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         
         actions.addAction(UIAlertAction(title: "New Task", style: .default) { _ in
             self.showCreateTaskInput()
+        })
+        
+        actions.addAction(UIAlertAction(title: "New Task(DeltaSync)", style: .default) { _ in
+            self.showCreateTaskInput2()
         })
         
         actions.addAction(UIAlertAction(title: "Generate Tasks", style: .default) { _ in
