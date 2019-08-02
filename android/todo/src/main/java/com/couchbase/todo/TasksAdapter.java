@@ -22,8 +22,6 @@ import com.couchbase.lite.MutableDocument;
 import com.couchbase.lite.Ordering;
 import com.couchbase.lite.Query;
 import com.couchbase.lite.QueryBuilder;
-import com.couchbase.lite.QueryChange;
-import com.couchbase.lite.QueryChangeListener;
 import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
@@ -42,22 +40,22 @@ public class TasksAdapter extends ArrayAdapter<String> {
         this.db = db;
         this.listID = listID;
 
-        query().addChangeListener(new QueryChangeListener() {
-            @Override
-            public void changed(QueryChange change) {
-                clear();
-                ResultSet rs = change.getResults();
-                Result result;
-                while ((result = rs.next()) != null) { add(result.getString(0)); }
-                notifyDataSetChanged();
-            }
+        query().addChangeListener(change -> {
+            clear();
+            ResultSet rs = change.getResults();
+            Result result;
+            while ((result = rs.next()) != null) { add(result.getString(0)); }
+            notifyDataSetChanged();
         });
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.view_task, parent, false);
+            convertView = LayoutInflater.from(getContext()).inflate(
+                R.layout.view_task,
+                parent,
+                false);
         }
 
         String docID = getItem(position);
@@ -69,12 +67,7 @@ public class TasksAdapter extends ArrayAdapter<String> {
         Blob thumbnail = task.getBlob("image");
         if (thumbnail != null) { Glide.with(getContext()).load(thumbnail.getContent()).into(imageView); }
         else { imageView.setImageResource(R.drawable.ic_camera_light); }
-        imageView.setOnClickListener(new android.view.View.OnClickListener() {
-            @Override
-            public void onClick(android.view.View v) {
-                fragment.dispatchTakePhotoIntent(task);
-            }
-        });
+        imageView.setOnClickListener(v -> fragment.dispatchTakePhotoIntent(task));
 
 
         // text
@@ -86,12 +79,7 @@ public class TasksAdapter extends ArrayAdapter<String> {
         Boolean checkedProperty = task.getBoolean("complete");
         boolean checked = checkedProperty != null && checkedProperty.booleanValue();
         checkBox.setChecked(checked);
-        checkBox.setOnClickListener(new android.view.View.OnClickListener() {
-            @Override
-            public void onClick(android.view.View view) {
-                updateCheckedStatus(task.toMutable(), checkBox.isChecked());
-            }
-        });
+        checkBox.setOnClickListener(view -> updateCheckedStatus(task.toMutable(), checkBox.isChecked()));
 
         return convertView;
     }

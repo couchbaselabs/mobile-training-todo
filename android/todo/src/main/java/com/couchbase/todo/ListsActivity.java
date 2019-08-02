@@ -1,23 +1,23 @@
 package com.couchbase.todo;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
 import java.util.UUID;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
@@ -52,40 +52,26 @@ public class ListsActivity extends AppCompatActivity {
         if (db == null) { throw new IllegalArgumentException(); }
 
         FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                displayCreateListDialog();
-            }
-        });
+        fab.setOnClickListener(view -> displayCreateListDialog());
 
         adapter = new ListsAdapter(this, db);
         listView = findViewById(R.id.list);
         listView.setAdapter(adapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                String id = adapter.getItem(i);
-                Document list = db.getDocument(id);
-                showTaskListView(list);
-            }
+        listView.setOnItemClickListener((adapterView, view, i, l) -> {
+            String id = adapter.getItem(i);
+            Document list = db.getDocument(id);
+            showTaskListView(list);
         });
-        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, final int pos, long id) {
-                PopupMenu popup = new PopupMenu(ListsActivity.this, view);
-                popup.inflate(R.menu.list_item);
-                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item) {
-                        String id = adapter.getItem(pos);
-                        Document list = db.getDocument(id);
-                        return handleListPopupAction(item, list);
-                    }
-                });
-                popup.show();
-                return true;
-            }
+        listView.setOnItemLongClickListener((parent, view, pos, id) -> {
+            PopupMenu popup = new PopupMenu(ListsActivity.this, view);
+            popup.inflate(R.menu.list_item);
+            popup.setOnMenuItemClickListener(item -> {
+                String id1 = adapter.getItem(pos);
+                Document list = db.getDocument(id1);
+                return handleListPopupAction(item, list);
+            });
+            popup.show();
+            return true;
         });
     }
 
@@ -100,16 +86,13 @@ public class ListsActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.logout:
-                Application application = (Application) getApplication();
-                application.logout();
-                return true;
-            default:
-                // If we got here, the user's action was not recognized.
-                // Invoke the superclass to handle it.
-                return super.onOptionsItemSelected(item);
-        }
+        if (item.getItemId() == R.id.logout) {
+            Application application = (Application) getApplication();
+            application.logout();
+            return true;
+        }// If we got here, the user's action was not recognized.
+        // Invoke the superclass to handle it.
+        return super.onOptionsItemSelected(item);
     }
 
     private boolean handleListPopupAction(MenuItem item, Document list) {
@@ -138,18 +121,12 @@ public class ListsActivity extends AppCompatActivity {
         final View view = LayoutInflater.from(ListsActivity.this).inflate(R.layout.view_dialog_input, null);
         final EditText input = view.findViewById(R.id.text);
         alert.setView(view);
-        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                String title = input.getText().toString();
-                if (title.length() == 0) { return; }
-                createList(title);
-
-            }
+        alert.setPositiveButton("Ok", (dialog, whichButton) -> {
+            String title = input.getText().toString();
+            if (title.length() == 0) { return; }
+            createList(title);
         });
-        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-            }
-        });
+        alert.setNegativeButton("Cancel", (dialog, whichButton) -> { });
         alert.show();
     }
 
@@ -162,13 +139,10 @@ public class ListsActivity extends AppCompatActivity {
         input.setSingleLine(true);
         input.setText(list.getString("name"));
         alert.setView(input);
-        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                String title = input.getText().toString();
-                if (title.length() == 0) { return; }
-                updateList(list.toMutable(), title);
-            }
+        alert.setPositiveButton("Ok", (dialogInterface, i) -> {
+            String title = input.getText().toString();
+            if (title.length() == 0) { return; }
+            updateList(list.toMutable(), title);
         });
         alert.show();
     }

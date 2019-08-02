@@ -1,8 +1,6 @@
 package com.couchbase.todo;
 
 import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -12,18 +10,17 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.PopupMenu;
+
+import androidx.core.content.FileProvider;
+import androidx.fragment.app.Fragment;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -32,7 +29,10 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import com.couchbase.lite.Blob;
 import com.couchbase.lite.CouchbaseLiteException;
@@ -68,12 +68,7 @@ public class TasksFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_tasks, null);
 
         FloatingActionButton fab = view.findViewById(R.id.fab);
-        fab.setOnClickListener(new android.view.View.OnClickListener() {
-            @Override
-            public void onClick(android.view.View view) {
-                displayCreateDialog(inflater);
-            }
-        });
+        fab.setOnClickListener(view12 -> displayCreateDialog(inflater));
 
         db = ((Application) getActivity().getApplication()).getDatabase();
         taskList = db.getDocument(getActivity().getIntent().getStringExtra(ListsActivity.INTENT_LIST_ID));
@@ -81,21 +76,15 @@ public class TasksFragment extends Fragment {
         adapter = new TasksAdapter(this, db, taskList.getId());
         listView = view.findViewById(R.id.list);
         listView.setAdapter(adapter);
-        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, final int pos, long id) {
-                PopupMenu popup = new PopupMenu(getContext(), view);
-                popup.inflate(R.menu.list_item);
-                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item) {
-                        handlePopupAction(item, db.getDocument(adapter.getItem(pos)));
-                        return true;
-                    }
-                });
-                popup.show();
+        listView.setOnItemLongClickListener((parent, view1, pos, id) -> {
+            PopupMenu popup = new PopupMenu(getContext(), view1);
+            popup.inflate(R.menu.list_item);
+            popup.setOnMenuItemClickListener(item -> {
+                handlePopupAction(item, db.getDocument(adapter.getItem(pos)));
                 return true;
-            }
+            });
+            popup.show();
+            return true;
         });
 
         return view;
@@ -105,9 +94,10 @@ public class TasksFragment extends Fragment {
         switch (item.getItemId()) {
             case R.id.update:
                 displayUpdateTaskDialog(task);
-                return;
+                break;
             case R.id.delete:
                 deleteTask(task);
+                break;
         }
     }
 
@@ -118,12 +108,10 @@ public class TasksFragment extends Fragment {
         final android.view.View view = inflater.inflate(R.layout.view_dialog_input, null);
         final EditText input = view.findViewById(R.id.text);
         alert.setView(view);
-        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                String title = input.getText().toString();
-                if (title.length() == 0) { return; }
-                createTask(title);
-            }
+        alert.setPositiveButton("Ok", (dialog, whichButton) -> {
+            String title = input.getText().toString();
+            if (title.length() == 0) { return; }
+            createTask(title);
         });
         alert.show();
     }
@@ -138,12 +126,7 @@ public class TasksFragment extends Fragment {
         String text = task.getString("task");
         input.setText(text);
         alert.setView(input);
-        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                updateTask(task.toMutable(), input.getText().toString());
-            }
-        });
+        alert.setPositiveButton("Ok", (dialogInterface, i) -> updateTask(task.toMutable(), input.getText().toString()));
         alert.show();
     }
 
@@ -165,9 +148,11 @@ public class TasksFragment extends Fragment {
 
             if (photoFile != null) {
                 // NOTE: API 24 or higher.....
-                Context ctxt = getContext().getApplicationContext();
                 if (Build.VERSION.SDK_INT > M) {
-                    Uri photoURI = FileProvider.getUriForFile(ctxt, ctxt.getPackageName() + ".provider", photoFile);
+                    Uri photoURI = FileProvider.getUriForFile(
+                        getContext(),
+                        getContext().getApplicationContext().getPackageName() + ".provider",
+                        photoFile);
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 }
                 else {
@@ -179,7 +164,7 @@ public class TasksFragment extends Fragment {
     }
 
     private File createImageFile() throws IOException {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
         String fileName = "TODO_LITE-" + timeStamp + "_";
         File storageDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(fileName, ".jpg", storageDir);

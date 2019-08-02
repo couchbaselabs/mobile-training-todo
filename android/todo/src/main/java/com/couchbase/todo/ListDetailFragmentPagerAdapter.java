@@ -1,18 +1,13 @@
 package com.couchbase.todo;
 
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
 
 
 public class ListDetailFragmentPagerAdapter extends FragmentPagerAdapter {
     private final String[] tabTitles = new String[] {"Tasks", "Users"};
     private final int pageCount;
-
-    public ListDetailFragmentPagerAdapter(FragmentManager fm) {
-        super(fm);
-        this.pageCount = tabTitles.length;
-    }
 
     public ListDetailFragmentPagerAdapter(FragmentManager fm, int pageCount) {
         super(fm);
