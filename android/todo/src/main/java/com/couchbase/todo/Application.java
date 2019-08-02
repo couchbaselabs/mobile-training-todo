@@ -5,7 +5,11 @@ import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import com.couchbase.lite.BasicAuthenticator;
+import com.couchbase.lite.CouchbaseLite;
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.DatabaseConfiguration;
@@ -17,10 +21,8 @@ import com.couchbase.lite.ReplicatorChangeListener;
 import com.couchbase.lite.ReplicatorConfiguration;
 import com.couchbase.lite.URLEndpoint;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+
 
 /*
 public interface ReplicatorChangeListener {
@@ -42,19 +44,15 @@ public class Application extends android.app.Application implements ReplicatorCh
     private Replicator replicator;
     private String username = DATABASE_NAME;
 
-    private Database backup = null;
-    private Replicator backupReplicator = null;
-
     @Override
     public void onCreate() {
         super.onCreate();
-        if (LOGIN_FLOW_ENABLED)
-            showLoginUI();
-        else
-            startSession(DATABASE_NAME, null);
+        CouchbaseLite.init(this);
 
-        if (LOGGING_ENABLED)
-            Database.log.getConsole().setLevel(LogLevel.VERBOSE);
+        if (LOGIN_FLOW_ENABLED) { showLoginUI(); }
+        else { startSession(DATABASE_NAME, null); }
+
+        if (LOGGING_ENABLED) { Database.log.getConsole().setLevel(LogLevel.VERBOSE); }
     }
 
     @Override
@@ -97,15 +95,12 @@ public class Application extends android.app.Application implements ReplicatorCh
     }
 
     public void logout() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                stopReplication();
-                closeLocalBackup();
-                closeDatabase();
-                Application.this.username = null;
-                showLoginUI();
-            }
+        runOnUiThread(() -> {
+            stopReplication();
+            closeLocalBackup();
+            closeDatabase();
+            Application.this.username = null;
+            showLoginUI();
         });
     }
 
@@ -120,10 +115,11 @@ public class Application extends android.app.Application implements ReplicatorCh
     // -------------------------
 
     private void openDatabase(String dbname) {
-        DatabaseConfiguration config = new DatabaseConfiguration(getApplicationContext());
+        DatabaseConfiguration config = new DatabaseConfiguration();
         try {
             database = new Database(dbname, config);
-        } catch (CouchbaseLiteException e) {
+        }
+        catch (CouchbaseLiteException e) {
             Log.e(TAG, "Failed to create Database instance", e);
         }
     }
@@ -132,38 +128,39 @@ public class Application extends android.app.Application implements ReplicatorCh
         if (database != null) {
             try {
                 database.close();
-            } catch (CouchbaseLiteException e) {
+            }
+            catch (CouchbaseLiteException e) {
                 Log.e(TAG, "Failed to close Database", e);
             }
         }
-    }
-
-    private void createDatabaseIndex() {
-
     }
 
     // -------------------------
     // Replicator operation
     // -------------------------
     private void startReplication(String username, String password) {
-        if (!SYNC_ENABLED) return;
+        if (!SYNC_ENABLED) { return; }
 
         URI uri;
         try {
             uri = new URI(SYNCGATEWAY_URL);
-        } catch (URISyntaxException e) {
+        }
+        catch (URISyntaxException e) {
             Log.e(TAG, "Failed parse URI: " + SYNCGATEWAY_URL, e);
             return;
         }
 
         Endpoint endpoint = new URLEndpoint(uri);
         ReplicatorConfiguration config = new ReplicatorConfiguration(database, endpoint)
-                .setReplicatorType(ReplicatorConfiguration.ReplicatorType.PUSH_AND_PULL)
-                .setContinuous(true);
+            .setReplicatorType(ReplicatorConfiguration.ReplicatorType.PUSH_AND_PULL)
+            .setContinuous(true);
 
         // authentication
-        if (username != null && password != null)
-            config.setAuthenticator(new BasicAuthenticator(username, password));
+        if (username != null && password != null) {
+            config.setAuthenticator(new BasicAuthenticator(
+                username,
+                password));
+        }
 
         replicator = new Replicator(config);
         replicator.addChangeListener(this);
@@ -171,7 +168,7 @@ public class Application extends android.app.Application implements ReplicatorCh
     }
 
     private void stopReplication() {
-        if (!SYNC_ENABLED) return;
+        if (!SYNC_ENABLED) { return; }
 
         replicator.stop();
     }
@@ -229,7 +226,10 @@ public class Application extends android.app.Application implements ReplicatorCh
     public void changed(ReplicatorChange change) {
         Log.i(TAG, "[Todo] Replicator status : " + change.getStatus());
         if (change.getStatus().getError() != null && change.getStatus().getError().getCode() == 401) {
-            Toast.makeText(getApplicationContext(), "Authentication Error: Your username or password is not correct.", Toast.LENGTH_LONG).show();
+            Toast.makeText(
+                getApplicationContext(),
+                "Authentication Error: Your username or password is not correct.",
+                Toast.LENGTH_LONG).show();
             logout();
         }
     }

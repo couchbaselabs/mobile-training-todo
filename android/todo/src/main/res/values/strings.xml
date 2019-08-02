@@ -12,9 +12,7 @@
     <string name="error_invalid_password">This password is too short</string>
     <string name="error_incorrect_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
-    <string name="permission_rationale">"Contacts permissions are needed for providing email
-        completions."
-    </string>
+    <string name="permission_rationale">Contacts permissions are needed for providing email completions.</string>
     <string name="title_dialog_new_list">Create new list</string>
     <string name="title_dialog_new_task">Create new task</string>
     <string name="title_dialog_new_user">Create new user</string>
@@ -24,4 +22,9 @@
     <string name="action_delete">Delete</string>
     <string name="action_update">Update</string>
     <string name="title_dialog_update">Update task</string>
+    <string name="sign_in">Sign In</string>
+    <string name="name">Name</string>
+    <string name="password">Password</string>
+    <string name="one">1</string>
+    <string name="logout">Logout</string>
 </resources>
