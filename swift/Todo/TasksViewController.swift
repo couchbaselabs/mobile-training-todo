@@ -225,7 +225,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
         })
     }
     
-    func showCreateTaskInput2() {
+    func showCreateTaskInputForDeltaSync() {
         Ui.showTextInput(on: self, title: "New Task(DeltaSync)", message: nil, textFieldConfig: { text in
             text.placeholder = "Task"
             text.autocapitalizationType = .sentences
@@ -242,7 +242,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
         })
         
         actions.addAction(UIAlertAction(title: "New Task(DeltaSync)", style: .default) { _ in
-            self.showCreateTaskInput2()
+            self.showCreateTaskInputForDeltaSync()
         })
         
         actions.addAction(UIAlertAction(title: "Generate Tasks", style: .default) { _ in
