@@ -27,6 +27,11 @@ using Couchbase.Lite.Sync;
 
 namespace Training.Core
 {
+    enum CCR_TYPE
+    {
+        LOCAL, REMOTE, DELETE, NONE
+    }
+
     /// <summary>
     /// This is the first location to be reached in the actual shared application
     /// </summary>
@@ -77,7 +82,19 @@ namespace Training.Core
             OpenDatabase(username, p, np);
 
             if(Hint.SyncEnabled) {
-                StartReplication(username, newPassword ?? password);
+                IConflictResolver resolver = null;
+                if (Hint.CCREnabled == true) {
+                    resolver = new TestConflictResolver((conflict) =>
+                    {
+                        if (Hint.CCRType == CCR_TYPE.REMOTE)
+                            return conflict.RemoteDocument;
+                        else if (Hint.CCRType == CCR_TYPE.LOCAL)
+                            return conflict.LocalDocument;
+                        else
+                            return null;
+                    });
+                }
+                StartReplication(username, newPassword ?? password, resolver);
             }
         }
 
@@ -155,7 +172,7 @@ namespace Training.Core
         /// </summary>
         /// <param name="username">The username to use for the replication</param>
         /// <param name="password">The password to use for replication auth (optional)</param>
-        public static void StartReplication(string username, string password = null)
+        public static void StartReplication(string username, string password, IConflictResolver resolver = null)
         {
             var config = new ReplicatorConfiguration(Database, new URLEndpoint(SyncGatewayUrl)) {
                 ReplicatorType = ReplicatorType.PushAndPull,
@@ -164,6 +181,10 @@ namespace Training.Core
 
             if (username != null && password != null) {
                 config.Authenticator = new BasicAuthenticator(username, password);
+            }
+
+            if(resolver != null) {
+                config.ConflictResolver = resolver;
             }
 
             _replication = new Replicator(config);
@@ -228,6 +249,8 @@ namespace Training.Core
                 LoginEnabled = true,
                 EncryptionEnabled = false,
                 SyncEnabled = true,
+                CCREnabled = false,
+                CCRType = CCR_TYPE.NONE,
                 UsePrebuiltDB = false,
                 Username = "todo"
             };
@@ -272,6 +295,16 @@ namespace Training.Core
         public bool SyncEnabled { get; set; }
 
         /// <summary>
+        /// Gets or sets whether or not to use ccr
+        /// </summary>
+        public bool CCREnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets ccr type
+        /// </summary>
+        public CCR_TYPE CCRType { get; set; }
+
+        /// <summary>
         /// Gets or sets whether or not to seed the app with a prepopulated database
         /// </summary>
         public bool UsePrebuiltDB { get; set; }
@@ -280,6 +313,21 @@ namespace Training.Core
         /// Gets or sets the username to use for the session
         /// </summary>
         public string Username { get; set; }
+    }
+
+    public class TestConflictResolver : IConflictResolver
+    {
+        Func<Conflict, Document> ResolveFunc { get; set; }
+
+        public TestConflictResolver(Func<Conflict, Document> resolveFunc)
+        {
+            ResolveFunc = resolveFunc;
+        }
+
+        public Document Resolve(Conflict conflict)
+        {
+            return ResolveFunc(conflict);
+        }
     }
 }
 
