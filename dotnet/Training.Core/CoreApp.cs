@@ -40,7 +40,7 @@ namespace Training.Core
         #region Constants
 
         //private static readonly Uri SyncGatewayUrl = new Uri("ws://ec2-3-85-244-123.compute-1.amazonaws.com:4984/todo");
-        private static readonly Uri SyncGatewayUrl = new Uri("ws://192.168.0.14:4987/test1");
+        private static readonly Uri SyncGatewayUrl = new Uri("ws://ec2-54-197-194-172.compute-1.amazonaws.com:4984/todo");
 
         #endregion
 
@@ -73,6 +73,7 @@ namespace Training.Core
         /// <param name="newPassword">The new password for the database (optional)</param>
         public static void StartSession(string username, string password, string newPassword)
         {
+            Couchbase.Lite.Database.Log.Console.Level = Couchbase.Lite.Logging.LogLevel.Debug;
             //if(Hint.UsePrebuiltDB) {
             //    InstallPrebuiltDB();
             //}
