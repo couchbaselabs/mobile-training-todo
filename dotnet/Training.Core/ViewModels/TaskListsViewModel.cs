@@ -286,6 +286,8 @@ namespace Training.ViewModels
                         var key = result.GetString(0);
                         var value = result.GetInt(1);
                         var document = _db.GetDocument(key);
+                        if (document == null)
+                            return;
                         var name = document.GetString("name");
 
                         _incompleteCount.Add(key, value);

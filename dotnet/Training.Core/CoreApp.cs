@@ -27,7 +27,7 @@ using Couchbase.Lite.Sync;
 
 namespace Training.Core
 {
-    enum CCR_TYPE
+    public enum CCR_TYPE
     {
         LOCAL, REMOTE, DELETE, NONE
     }
