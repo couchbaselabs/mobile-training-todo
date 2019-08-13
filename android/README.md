@@ -2,16 +2,16 @@
 
 ### Configuration
 
-You can enable functionalities individually. By default, they are all disabled and can be modified in **Application.java**.
+You can enable functions individually.
+Modified them by changing the values in the top level build script (build.gradle).
+The default values are shown below.
 
-```swift
-private Boolean mLoginFlowEnabled = true;
-private Boolean mEncryptionEnabled = false;
-private Boolean mSyncEnabled = true;
-private String mSyncGatewayUrl = "http://10.0.2.2:4984/todo/";
-private Boolean mLoggingEnabled = false;
-private Boolean mUsePrebuiltDb = false;
-private Boolean mConflictResolution = false;
+```
+    LOGIN_FLOW_ENABLED = false
+    SYNC_ENABLED = false
+    LOGGING_ENABLED = true
+    DATABASE_NAME = "todo"
+    SYNCGATEWAY_URL = "ws://10.0.2.2:4984/todo/"
 ```
 
 ### Building
