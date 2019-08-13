@@ -13,7 +13,7 @@
         android:id="@+id/app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay"
+        android:theme="@style/TodoTheme.AppBarOverlay"
         android:orientation="vertical"
         >
 
@@ -21,7 +21,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:popupTheme="@style/AppTheme.PopupOverlay"
+            app:popupTheme="@style/TodoTheme.PopupOverlay"
             />
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -37,7 +37,6 @@
             android:id="@+id/list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#ffffff"
             />
     </FrameLayout>
 

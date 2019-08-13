@@ -1,54 +1,67 @@
-package com.couchbase.todo;
+//
+// Copyright (c) 2019 Couchbase, Inc All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+package com.couchbase.todo.ui;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import com.couchbase.lite.DataSource;
-import com.couchbase.lite.Database;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.Expression;
 import com.couchbase.lite.Meta;
 import com.couchbase.lite.Query;
-import com.couchbase.lite.QueryBuilder;
 import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
+import com.couchbase.todo.R;
+import com.couchbase.todo.db.DAO;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 
 /**
  * Created by hideki on 6/26/17.
  */
-
 public class UsersAdapter extends ArrayAdapter<String> {
     private static final String TAG = UsersAdapter.class.getSimpleName();
-    private final UsersFragment fragment;
-    private final Database db;
-    private final String listID;
 
-    public UsersAdapter(UsersFragment fragment, Database db, String listID) {
-        super(fragment.getContext(), 0);
-        this.fragment = fragment;
-        this.db = db;
+    private final String listID;
+    private final Query query;
+
+    public UsersAdapter(Context ctxt, String listID) {
+        super(ctxt, 0);
         this.listID = listID;
 
-        query().addChangeListener(change -> {
-            clear();
-            ResultSet rs = change.getResults();
-            Result result;
-            while ((result = rs.next()) != null) {
-                String id = result.getString(0);
-                add(result.getString(0));
-            }
-            notifyDataSetChanged();
-        });
+        query = query();
+        DAO.get().addChangeListener(
+            query,
+            change -> {
+                clear();
+                ResultSet rs = change.getResults();
+                Result result;
+                while ((result = rs.next()) != null) { add(result.getString(0)); }
+                notifyDataSetChanged();
+            });
     }
 
+    @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         if (convertView == null) {
@@ -59,7 +72,7 @@ public class UsersAdapter extends ArrayAdapter<String> {
         }
 
         String id = getItem(position);
-        final Document user = db.getDocument(id);
+        final Document user = DAO.get().fetchDocument(id);
         if (user == null) { return convertView; }
 
         // text
@@ -70,8 +83,7 @@ public class UsersAdapter extends ArrayAdapter<String> {
     }
 
     private Query query() {
-        return QueryBuilder.select(SelectResult.expression(Meta.id))
-            .from(DataSource.database(db))
+        return DAO.get().createQuery(SelectResult.expression(Meta.id))
             .where(Expression.property("type").equalTo(Expression.string("task-list.user"))
                 .and(Expression.property("taskList.id").equalTo(Expression.string(listID))));
     }
