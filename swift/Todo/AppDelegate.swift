@@ -20,6 +20,13 @@ let kSyncEnabled = true
 let kSyncEndpoint = "ws://localhost:4984/todo"
 let kSyncWithPushNotification = false
 
+// Custom conflict resolution
+enum CCRType {
+    case local, remote, delete;
+}
+let kCCREnabled = false
+let kCCRType: CCRType = .remote
+
 // Database Encryption:
 // Note: changing this value requires to delete the app before rerun:
 let kDatabaseEncryptionKey: String? = nil
@@ -69,7 +76,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         try openDatabase(username: username)
         Session.username = username
         Session.password = password
-        startReplication(withUsername: username, andPassword: password)
+        
+        var resolver: ConflictResolverProtocol?
+        if kCCREnabled {
+            resolver = TestConflictResolver() { (conflict) -> Document? in
+                switch kCCRType {
+                case .local:
+                    return conflict.localDocument
+                case .remote:
+                    return conflict.remoteDocument
+                case .delete:
+                    return nil;
+                }
+            }
+        }
+        
+        startReplication(withUsername: username, password: password, resolver: resolver)
         showApp()
         registerRemoteNotification()
     }
@@ -165,7 +187,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     
     // MARK: - Replication
     
-    func startReplication(withUsername username:String, andPassword password:String? = "") {
+    func startReplication(withUsername username:String, password:String? = "", resolver: ConflictResolverProtocol?) {
         guard kSyncEnabled else {
             return
         }
@@ -175,6 +197,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         let config = ReplicatorConfiguration(database: database, target: target)
         config.continuous = true
         config.authenticator = auth
+        config.conflictResolver = resolver
         
         replicator = Replicator(config: config)
         changeListener = replicator.addChangeListener({ (change) in
@@ -304,5 +327,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 Crashlytics.sharedInstance().setObjectValue(build, forKey: "Build")
             }
         }
+    }
+}
+
+class TestConflictResolver: ConflictResolverProtocol {
+    let _resolver: (Conflict) -> Document?
+    
+    init(_ resolver: @escaping (Conflict) -> Document?) {
+        _resolver = resolver
+    }
+    
+    func resolve(conflict: Conflict) -> Document? {
+        return _resolver(conflict)
     }
 }
