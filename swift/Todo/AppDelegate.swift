@@ -198,6 +198,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         config.continuous = true
         config.authenticator = auth
         config.conflictResolver = resolver
+        NSLog(">> Custom Conflict Resolver: Enabled = \(kCCREnabled); Type = \(kCCRType)")
         
         replicator = Replicator(config: config)
         changeListener = replicator.addChangeListener({ (change) in
