@@ -20,7 +20,7 @@ let kSyncEnabled = true
 let kSyncEndpoint = "ws://localhost:4984/todo"
 let kSyncWithPushNotification = false
 
-// Custom conflict resolution
+// Custom conflict resolver
 enum CCRType {
     case local, remote, delete;
 }

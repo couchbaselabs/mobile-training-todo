@@ -17,8 +17,7 @@
 #define kSyncEndpoint @"ws://localhost:4984/todo"
 #define kSyncWithPushNotification NO
 
-# pragma mark - Custom conflict resolution
-// Custom conflict resolver
+# pragma mark - Custom conflict resolver
 typedef enum: NSUInteger {
     LOCAL = 0,
     REMOTE = 1,
@@ -192,6 +191,7 @@ typedef enum: NSUInteger {
     config.continuous = YES;
     config.authenticator = [[CBLBasicAuthenticator alloc] initWithUsername:username password:password];
     config.conflictResolver = resolver;
+    NSLog(@">> Custom Conflict Resolver: Enabled = %d; Type = %d", kCCREnabled, kCCRType);
     
     _replicator = [[CBLReplicator alloc] initWithConfig:config];
     __weak typeof(self) wSelf = self;
