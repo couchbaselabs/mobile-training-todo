@@ -18,6 +18,13 @@ let kLoginFlowEnabled = true
 let kSyncEnabled = true
 let kSyncEndpoint = "ws://localhost:4984/todo"
 
+// Custom conflict resolver
+enum CCRType {
+    case local, remote, delete;
+}
+let kCCREnabled = false
+let kCCRType: CCRType = .remote
+
 // Crashlytics:
 let kCrashlyticsEnabled = true
 
@@ -59,7 +66,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
     func startSession(username:String, withPassword password:String? = nil) throws {
         try openDatabase(username: username)
         Session.username = username
-        startReplication(withUsername: username, andPassword: password)
+        
+        var resolver: ConflictResolverProtocol?
+        if kCCREnabled {
+            resolver = TestConflictResolver() { (conflict) -> Document? in
+                switch kCCRType {
+                case .local:
+                    return conflict.localDocument
+                case .remote:
+                    return conflict.remoteDocument
+                case .delete:
+                    return nil;
+                }
+            }
+        }
+        
+        startReplication(withUsername: username, password: password, resolver: resolver)
         showApp()
     }
     
@@ -149,7 +171,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
     
     // MARK: - Replication
     
-    func startReplication(withUsername username:String, andPassword password:String? = "") {
+    func startReplication(withUsername username:String, password:String? = "", resolver: ConflictResolverProtocol?) {
         guard kSyncEnabled else {
             return
         }
@@ -159,6 +181,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
         let config = ReplicatorConfiguration(database: database, target: target)
         config.continuous = true
         config.authenticator = auth
+        config.conflictResolver = resolver
+        NSLog(">> Custom Conflict Resolver: Enabled = \(kCCREnabled); Type = \(kCCRType)")
         
         replicator = Replicator(config: config)
         changeListener = replicator.addChangeListener({ (change) in
@@ -211,5 +235,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
                 Crashlytics.sharedInstance().setObjectValue(build, forKey: "Build")
             }
         }
+    }
+}
+
+class TestConflictResolver: ConflictResolverProtocol {
+    let _resolver: (Conflict) -> Document?
+    
+    init(_ resolver: @escaping (Conflict) -> Document?) {
+        _resolver = resolver
+    }
+    
+    func resolve(conflict: Conflict) -> Document? {
+        return _resolver(conflict)
     }
 }
