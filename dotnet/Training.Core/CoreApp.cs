@@ -97,6 +97,8 @@ namespace Training.Core
                 }
                 StartReplication(username, newPassword ?? password, resolver);
             }
+
+            Debug.WriteLine($"Custom Conflict Resolver: Enabled = {Hint.CCREnabled}; Type = {Hint.CCRType}");
         }
 
         public static void EndSession()
