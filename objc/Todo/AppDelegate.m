@@ -17,6 +17,23 @@
 #define kSyncEndpoint @"ws://localhost:4984/todo"
 #define kSyncWithPushNotification NO
 
+# pragma mark - Custom conflict resolver
+typedef enum: NSUInteger {
+    LOCAL = 0,
+    REMOTE = 1,
+    DELETE = 2
+} CCRType;
+
+#define kCCREnabled NO
+#define kCCRType 1
+
+@interface TestConflictResolver: NSObject<CBLConflictResolver>
+- (instancetype) init NS_UNAVAILABLE;
+- (instancetype) initWithResolver: (CBLDocument* (^)(CBLConflict*))resolver;
+@end
+
+#pragma mark - AppDelegate
+
 @interface AppDelegate () <CBLLoginViewControllerDelegate, UNUserNotificationCenterDelegate> {
     CBLReplicator *_replicator;
 }
@@ -46,7 +63,23 @@
     if ([self openDatabase:username error: error]) {
         CBLSession.sharedInstance.username = username;
         CBLSession.sharedInstance.password = password;
-        [self startReplicator:username password:password];
+        
+        id<CBLConflictResolver> resolver = nil;
+        if (kCCREnabled) {
+            resolver = [[TestConflictResolver alloc] initWithResolver: ^CBLDocument* (CBLConflict* con) {
+                switch (kCCRType) {
+                    case LOCAL:
+                        return con.localDocument;
+                    case REMOTE:
+                        return con.remoteDocument;
+                    case DELETE:
+                        return nil;
+                }
+                return con.remoteDocument;
+            }];
+        }
+        
+        [self startReplicator:username password:password resolver: resolver];
         [self showApp];
         [self registerRemoteNotification];
         return YES;
@@ -147,7 +180,9 @@
 
 #pragma mark - Replication
 
-- (void)startReplicator:(NSString *)username password:(NSString *)password {
+- (void)startReplicator:(NSString *)username
+               password:(NSString *)password
+               resolver:(id<CBLConflictResolver>)resolver {
     if (!kSyncEnabled)
         return;
     
@@ -155,6 +190,8 @@
     CBLReplicatorConfiguration *config = [[CBLReplicatorConfiguration alloc] initWithDatabase:_database target:target];
     config.continuous = YES;
     config.authenticator = [[CBLBasicAuthenticator alloc] initWithUsername:username password:password];
+    config.conflictResolver = resolver;
+    NSLog(@">> Custom Conflict Resolver: Enabled = %d; Type = %d", kCCREnabled, kCCRType);
     
     _replicator = [[CBLReplicator alloc] initWithConfig:config];
     __weak typeof(self) wSelf = self;
@@ -271,6 +308,26 @@
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
     [self startPushNotificationSync];
     completionHandler(UIBackgroundFetchResultNewData);
+}
+
+@end
+
+#pragma mark - CCR Helper class
+
+@implementation TestConflictResolver {
+    CBLDocument* (^_resolver)(CBLConflict*);
+}
+
+- (instancetype) initWithResolver: (CBLDocument* (^)(CBLConflict*))resolver {
+    self = [super init];
+    if (self) {
+        _resolver = resolver;
+    }
+    return self;
+}
+
+- (CBLDocument *) resolve:(CBLConflict *)conflict {
+    return _resolver(conflict);
 }
 
 @end
