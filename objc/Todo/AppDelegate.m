@@ -26,7 +26,7 @@ typedef enum: NSUInteger {
 } CCRType;
 
 #define kCCREnabled NO
-#define kCCRType 2
+#define kCCRType 1
 
 @interface TestConflictResolver: NSObject<CBLConflictResolver>
 - (instancetype) init NS_UNAVAILABLE;
