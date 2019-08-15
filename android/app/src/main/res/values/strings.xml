@@ -1,0 +1,28 @@
+<resources>
+    <!-- App -->
+    <string name="app_name">Todo</string>
+    <string name="logout">Logout</string>
+    <string name="config">Config</string>
+
+    <!-- Login -->
+    <string name="name">Name</string>
+    <string name="password">Password</string>
+    <string name="sign_in">Sign In</string>
+
+    <!-- Config -->
+    <string name="text">New Text</string>
+    <string name="logging_enabled">Logging</string>
+    <string name="ccr_enabled">Custom Conflict Resolution</string>
+    <string name="sg_url">SG Url</string>
+    <string name="db_name">DB Name</string>
+    <string name="cancel">Cancel</string>
+    <string name="update">Update</string>
+
+    <!-- ??? -->
+    <string name="one">1</string>
+    <string name="delete">Delete</string>
+    <string name="title_dialog_new_list">Create new list</string>
+    <string name="title_dialog_new_task">Create new task</string>
+    <string name="title_dialog_new_user">Create new user</string>
+    <string name="title_dialog_update">Update task</string>
+</resources>

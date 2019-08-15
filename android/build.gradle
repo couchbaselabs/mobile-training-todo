@@ -7,9 +7,8 @@ buildscript {
 
         // application parameters
         LOGGING_ENABLED = true
-        LOGIN_ENABLED = true
         CCR_ENABLED = false
-        DB_NAME = "todo"
+        DB_NAME = null
         SG_URL = null
 
         // support library version
