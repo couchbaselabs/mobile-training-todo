@@ -1,2 +1,1 @@
-include ':todo'
-// include ':todo', ':libs:couchbase-lite-android:android:CouchbaseLite' // NOTE: For submodule
+include ':app'
