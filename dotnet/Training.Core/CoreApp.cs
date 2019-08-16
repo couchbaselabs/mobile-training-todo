@@ -27,6 +27,10 @@ using Couchbase.Lite.Sync;
 
 namespace Training.Core
 {
+    /// <summary>
+    /// LOCAL as CCR returning local doc, REMOTE CCR returning remote doc, 
+    /// DELELTE CCR returning null, and NONE as no custom conflict resolver.
+    /// </summary>
     public enum CCR_TYPE
     {
         LOCAL, REMOTE, DELETE, NONE
@@ -84,7 +88,7 @@ namespace Training.Core
 
             if(Hint.SyncEnabled) {
                 IConflictResolver resolver = null;
-                if (Hint.CCREnabled == true) {
+                if (Hint.CCRType != CCR_TYPE.NONE) {
                     resolver = new TestConflictResolver((conflict) =>
                     {
                         if (Hint.CCRType == CCR_TYPE.REMOTE)
@@ -98,7 +102,7 @@ namespace Training.Core
                 StartReplication(username, newPassword ?? password, resolver);
             }
 
-            Debug.WriteLine($"Custom Conflict Resolver: Enabled = {Hint.CCREnabled}; Type = {Hint.CCRType}");
+            Debug.WriteLine($"Custom Conflict Resolver Type = {Hint.CCRType}");
         }
 
         public static void EndSession()
@@ -252,7 +256,6 @@ namespace Training.Core
                 LoginEnabled = true,
                 EncryptionEnabled = false,
                 SyncEnabled = true,
-                CCREnabled = false,
                 CCRType = CCR_TYPE.NONE,
                 UsePrebuiltDB = false,
                 Username = "todo"
@@ -296,11 +299,6 @@ namespace Training.Core
         /// Gets or sets whether or not to use sync
         /// </summary>
         public bool SyncEnabled { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether or not to use ccr
-        /// </summary>
-        public bool CCREnabled { get; set; }
 
         /// <summary>
         /// Gets or sets ccr type
