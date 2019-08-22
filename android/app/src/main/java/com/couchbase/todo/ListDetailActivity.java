@@ -40,7 +40,7 @@ public class ListDetailActivity extends ToDoActivity {
 
     public static void start(Activity ctxt, String docId) {
         if (TextUtils.isEmpty(docId)) { throw new IllegalArgumentException("Doc id cannot be empty"); }
-        Intent intent = new Intent(ctxt, ListDetailActivity.class);
+        final Intent intent = new Intent(ctxt, ListDetailActivity.class);
         intent.putExtra(INTENT_LIST_ID, docId);
         ctxt.startActivity(intent);
     }

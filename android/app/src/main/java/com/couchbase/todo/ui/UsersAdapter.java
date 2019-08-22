@@ -50,7 +50,7 @@ public class UsersAdapter extends ArrayAdapter<String> {
         super(ctxt, 0);
         this.listID = listID;
 
-        query = query();
+        query = getUsersQuery();
         DAO.get().addChangeListener(query, this::updateUsers);
     }
 
@@ -67,7 +67,7 @@ public class UsersAdapter extends ArrayAdapter<String> {
     }
 
     void populateView(View view, Document doc, int pos) {
-        TextView textView = view.findViewById(R.id.user_name);
+        final TextView textView = view.findViewById(R.id.user_name);
         textView.setText(doc.getString("username"));
     }
 
@@ -77,7 +77,7 @@ public class UsersAdapter extends ArrayAdapter<String> {
         notifyDataSetChanged();
     }
 
-    private Query query() {
+    private Query getUsersQuery() {
         return DAO.get().createQuery(SelectResult.expression(Meta.id))
             .where(Expression.property("type").equalTo(Expression.string("task-list.user"))
                 .and(Expression.property("taskList.id").equalTo(Expression.string(listID))));

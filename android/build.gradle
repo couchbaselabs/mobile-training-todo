@@ -10,7 +10,7 @@ buildscript {
         LOGIN_REQUIRED = true
         CCR_ENABLED = false
         DB_NAME = "todo"
-        SG_URI = "ws://ec2-54-197-194-172.compute-1.amazonaws.com:4984/todo"
+        SG_URI = null  // "ws://ec2-54-197-194-172.compute-1.amazonaws.com:4984/todo"
 
         // support library version
         SUPPORT_LIBRARY_VERSION = "1.0.0"

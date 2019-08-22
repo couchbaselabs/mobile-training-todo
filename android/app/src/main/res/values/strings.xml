@@ -30,5 +30,6 @@ Turn replication on by specifying a complete SG URL. Leave the field empty to tu
     <string name="title_dialog_new_task">Create new task</string>
     <string name="title_dialog_new_user">Create new user</string>
     <string name="title_dialog_update">Update task</string>
-    <string name="ok">Ok</string>
+    <string name="ok">OK</string>
+    <string name="desc_avatar">Avatar</string>
 </resources>

@@ -15,17 +15,16 @@
 //
 package com.couchbase.todo;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -40,8 +39,6 @@ import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -53,17 +50,14 @@ import java.util.Map;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import com.couchbase.lite.Blob;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.todo.db.DAO;
 import com.couchbase.todo.db.DeleteByIdTask;
-import com.couchbase.todo.db.DeleteTask;
 import com.couchbase.todo.db.FetchTask;
 import com.couchbase.todo.db.SaveTask;
+import com.couchbase.todo.pix.AttachImageTask;
 import com.couchbase.todo.ui.TasksAdapter;
-
-import static android.app.Activity.RESULT_OK;
 
 
 public class TasksFragment extends Fragment {
@@ -71,25 +65,23 @@ public class TasksFragment extends Fragment {
 
     private static final int REQUEST_TAKE_PHOTO = 1;
     private static final int REQUEST_CHOOSE_PHOTO = 2;
-    private static final int THUMBNAIL_SIZE = 150;
-
 
     private static class CreateTaskTask extends AsyncTask<String, Void, Void> {
         private final String parentId;
 
-        public CreateTaskTask(String parentId) { this.parentId = parentId; }
+        CreateTaskTask(String parentId) { this.parentId = parentId; }
 
         @Override
         protected Void doInBackground(String... args) {
             final String title = args[0];
 
-            Document taskList = DAO.get().fetch(parentId);
+            final Document taskList = DAO.get().fetch(parentId);
 
-            Map<String, Object> taskListInfo = new HashMap<>();
+            final Map<String, Object> taskListInfo = new HashMap<>();
             taskListInfo.put("id", parentId);
             taskListInfo.put("owner", taskList.getString("owner"));
 
-            MutableDocument mDoc = new MutableDocument();
+            final MutableDocument mDoc = new MutableDocument();
             mDoc.setString("type", "task");
             mDoc.setValue("taskList", taskListInfo);
             mDoc.setDate("createdAt", new Date());
@@ -97,45 +89,6 @@ public class TasksFragment extends Fragment {
             mDoc.setBoolean("complete", false);
 
             DAO.get().save(mDoc);
-
-            return null;
-        }
-    }
-
-    private static class AttachImageTask extends AsyncTask<String, Void, Void> {
-        @Override
-        protected Void doInBackground(String... args) {
-            final String taskId = args[0];
-            final String imagePath = args[1];
-
-            final File imageFile = new File(imagePath);
-            if (!imageFile.exists()) { return null; }
-
-            Document task = DAO.get().fetch(taskId);
-            if (task == null) { return null; }
-
-            BitmapFactory.Options options = new BitmapFactory.Options();
-
-            options.inJustDecodeBounds = true;
-            BitmapFactory.decodeFile(imagePath, options);
-
-            options.inJustDecodeBounds = false;
-            Bitmap image = BitmapFactory.decodeFile(imagePath, options);
-
-            Bitmap thumbnail = ThumbnailUtils.extractThumbnail(image, THUMBNAIL_SIZE, THUMBNAIL_SIZE);
-
-            imageFile.delete();
-
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            image.compress(Bitmap.CompressFormat.JPEG, 50, out);
-            ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-
-            final Blob blob = new Blob("image/jpg", in);
-
-            final MutableDocument mutableTask = task.toMutable();
-            mutableTask.setBlob("image", blob);
-
-            DAO.get().save(mutableTask);
 
             return null;
         }
@@ -156,37 +109,8 @@ public class TasksFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_tasks, container, false);
-
-        listId = getDetailActivity().getListId();
-
-        FloatingActionButton fab = view.findViewById(R.id.fab);
-        fab.setOnClickListener(v -> displayCreateDialog(inflater, listId));
-
-        ListView listView = view.findViewById(R.id.list);
-        listView.setOnItemLongClickListener(this::handleLongClick);
-
-        adapter = new TasksAdapter(this, listId);
-        listView.setAdapter(adapter);
-
-        return view;
-    }
-
-    boolean handleLongClick(AdapterView unused, View view, int pos, long id) {
-        PopupMenu popup = new PopupMenu(getContext(), view);
-        popup.inflate(R.menu.menu_task);
-        popup.setOnMenuItemClickListener(item -> {
-            handlePopupAction(item, adapter.getItem(pos));
-            return true;
-        });
-        popup.show();
-        return true;
-    }
-
-    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if ((resultCode != RESULT_OK) || (requestCode != REQUEST_TAKE_PHOTO)) { return; }
+        if ((resultCode != Activity.RESULT_OK) || (requestCode != REQUEST_TAKE_PHOTO)) { return; }
         new AttachImageTask().execute(selectedTask, imageToBeAttachedPath);
     }
 
@@ -196,22 +120,58 @@ public class TasksFragment extends Fragment {
     public void dispatchTakePhotoIntent(String taskId) {
         this.selectedTask = taskId;
 
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePictureIntent.resolveActivity(getContext().getPackageManager()) != null) {
-            File photoFile;
-            try { photoFile = createImageFile(); }
-            catch (IOException e) {
-                Log.w(TAG, "Failed creating photo file", e);
-                return;
-            }
+        final Context ctxt = getContext();
 
-            Uri photoURI = FileProvider.getUriForFile(
-                getContext(),
-                getContext().getApplicationContext().getPackageName() + ".provider",
-                photoFile);
-            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-            startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+        final Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(ctxt.getPackageManager()) == null) { return; }
+
+        final File photoFile;
+        try {
+            photoFile = createImageFile();
+            imageToBeAttachedPath = photoFile.getAbsolutePath();
         }
+        catch (IOException e) {
+            Log.w(TAG, "Failed creating photo file", e);
+            return;
+        }
+
+        final Uri photoUri = FileProvider.getUriForFile(
+            ctxt,
+            ctxt.getApplicationContext().getPackageName() + ".provider",
+            photoFile);
+
+        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+
+        startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+    }
+
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle state) {
+        final View view = inflater.inflate(R.layout.fragment_tasks, container, false);
+
+        listId = getDetailActivity().getListId();
+
+        final FloatingActionButton fab = view.findViewById(R.id.add_task);
+        fab.setOnClickListener(v -> displayCreateDialog(inflater, listId));
+
+        final ListView listView = view.findViewById(R.id.task_list);
+        listView.setOnItemLongClickListener(this::handleLongClick);
+
+        adapter = new TasksAdapter(this, listId);
+        listView.setAdapter(adapter);
+
+        return view;
+    }
+
+    boolean handleLongClick(AdapterView unused, View view, int pos, long id) {
+        final PopupMenu popup = new PopupMenu(getContext(), view);
+        popup.inflate(R.menu.menu_task);
+        popup.setOnMenuItemClickListener(item -> {
+            handlePopupAction(item, adapter.getItem(pos));
+            return true;
+        });
+        popup.show();
+        return true;
     }
 
     void handlePopupAction(MenuItem item, String taskId) {
@@ -225,52 +185,48 @@ public class TasksFragment extends Fragment {
 
     // display create task dialog
     void displayCreateDialog(LayoutInflater inflater, String parentId) {
-        AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
-        alert.setTitle(getResources().getString(R.string.title_dialog_new_task));
-        final android.view.View view = inflater.inflate(R.layout.view_dialog_input, null);
+        final View view = inflater.inflate(R.layout.view_dialog_input, null);
+
         final EditText input = view.findViewById(R.id.text);
+
+        final AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+        alert.setTitle(getResources().getString(R.string.title_dialog_new_task));
         alert.setView(view);
-        alert.setPositiveButton("Ok", (dialog, whichButton) -> {
-            String title = input.getText().toString();
-            if (title.length() == 0) { return; }
-            new CreateTaskTask(parentId).execute(title);
-        });
+        alert.setPositiveButton(
+            R.string.ok,
+            (dialog, whichButton) -> {
+                final String title = input.getText().toString();
+                if (TextUtils.isEmpty(title)) { return; }
+                new CreateTaskTask(parentId).execute(title);
+            });
         alert.show();
     }
 
-    private void displayUpdateTaskDialog(Document task) {
-        AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
+    void displayUpdateTaskDialog(Document task) {
+        final AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
         alert.setTitle(getResources().getString(R.string.title_dialog_update));
 
         final EditText input = new EditText(getContext());
         input.setMaxLines(1);
         input.setSingleLine(true);
-        String text = task.getString("task");
-        input.setText(text);
+        input.setText(task.getString("task"));
+
         alert.setView(input);
         alert.setPositiveButton(
             "Ok",
-            (dialogInterface, i) ->
-                updateTask(task.toMutable(), input.getText().toString()));
+            (dialogInterface, i) -> {
+                final MutableDocument mDoc = task.toMutable();
+                mDoc.setString("task", input.getText().toString());
+                new SaveTask(null).execute(mDoc);
+            });
         alert.show();
     }
 
     private File createImageFile() throws IOException {
-        String imgFileName = "TODO_LITE-" + dateFormatter.format(new Date());
-        File storageDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(imgFileName, ".jpg", storageDir);
-        imageToBeAttachedPath = image.getAbsolutePath();
+        final String imgFileName = "TODO_LITE-" + dateFormatter.format(new Date());
+        final File storageDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        final File image = File.createTempFile(imgFileName, ".jpg", storageDir);
         return image;
-    }
-
-    // -------------------------
-    // DAO - CRUD
-    // -------------------------
-
-    // update task
-    private void updateTask(final MutableDocument task, String text) {
-        task.setString("task", text);
-        new SaveTask(null).execute(task);
     }
 
     private ListDetailActivity getDetailActivity() { return (ListDetailActivity) getActivity(); }

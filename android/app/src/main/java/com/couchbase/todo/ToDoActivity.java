@@ -15,6 +15,7 @@
 //
 package com.couchbase.todo;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -25,6 +26,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.couchbase.lite.AbstractReplicator;
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.todo.db.DAO;
@@ -32,6 +36,20 @@ import com.couchbase.todo.db.DAO;
 
 public abstract class ToDoActivity extends AppCompatActivity {
     private static final String TAG = "ACT_BASE";
+
+    private static Map<AbstractReplicator.ActivityLevel, Integer> colorMap;
+
+    private static void buildColorMap(Context ctxt) {
+        if (colorMap != null) { return; }
+
+        final Map<AbstractReplicator.ActivityLevel, Integer> cMap = new HashMap<>();
+        cMap.put(AbstractReplicator.ActivityLevel.CONNECTING, ctxt.getColor(R.color.connecting));
+        cMap.put(AbstractReplicator.ActivityLevel.IDLE, ctxt.getColor(R.color.idle));
+        cMap.put(AbstractReplicator.ActivityLevel.BUSY, ctxt.getColor(R.color.busy));
+        cMap.put(AbstractReplicator.ActivityLevel.STOPPED, ctxt.getColor(R.color.failed));
+        cMap.put(AbstractReplicator.ActivityLevel.OFFLINE, ctxt.getColor(R.color.failed));
+        colorMap = cMap;
+    }
 
     private DAO dao;
     private Window rootWindow;
@@ -65,6 +83,8 @@ public abstract class ToDoActivity extends AppCompatActivity {
     protected final void onCreate(@Nullable Bundle state) {
         super.onCreate(state);
 
+        buildColorMap(this);
+
         if (!verifyLoggedIn()) { return; }
 
         onCreateLoggedIn(state);
@@ -88,37 +108,23 @@ public abstract class ToDoActivity extends AppCompatActivity {
         DAO.get().registerListener(
             new DAO.DAOListener() {
                 @Override
-                public void onError(CouchbaseLiteException err) { onDbError(err); }
+                public void onError(CouchbaseLiteException e) { onDbError(e); }
 
                 @Override
-                public void onNewState(AbstractReplicator.ActivityLevel state) {
-                    updateState(state);
-                }
+                public void onNewState(AbstractReplicator.ActivityLevel s) { updateState(s); }
             }
         );
     }
 
-    private void updateState(AbstractReplicator.ActivityLevel state) {
-        int color;
-        switch (state) {
-            case CONNECTING:
-                color = getColor(R.color.connecting);
-                break;
-            case IDLE:
-                color = getColor(R.color.idle);
-                break;
-            case BUSY:
-                color = getColor(R.color.busy);
-                break;
-            default:
-                color = getColor(R.color.failed);
-                break;
-        }
-        rootWindow.setStatusBarColor(color);
-    }
-
     final void onDbError(CouchbaseLiteException err) {
         Toast.makeText(this, "DB error: " + err.getMessage(), Toast.LENGTH_LONG).show();
+    }
+
+    private void updateState(AbstractReplicator.ActivityLevel state) {
+        final Integer color = colorMap.get(state);
+        rootWindow.setStatusBarColor((color != null)
+            ? color
+            : colorMap.get(AbstractReplicator.ActivityLevel.OFFLINE));
     }
 
     private boolean verifyLoggedIn() {

@@ -40,7 +40,7 @@ public class LoginActivity extends AppCompatActivity {
         @SuppressLint("StaticFieldLeak")
         private LoginActivity ctxt;
 
-        public LoginTask(@NonNull LoginActivity ctxt) { this.ctxt = ctxt; }
+        LoginTask(@NonNull LoginActivity ctxt) { this.ctxt = ctxt; }
 
         // args are username, password
         @Override
@@ -59,7 +59,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public static void start(@NonNull Activity act) {
-        Intent intent = new Intent(act, LoginActivity.class);
+        final Intent intent = new Intent(act, LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
         act.startActivity(intent);
         act.finish();

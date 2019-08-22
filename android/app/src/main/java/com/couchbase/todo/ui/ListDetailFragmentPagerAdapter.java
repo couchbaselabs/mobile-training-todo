@@ -34,8 +34,9 @@ public class ListDetailFragmentPagerAdapter extends FragmentPagerAdapter {
     private static final String TAG = "DETAILS";
 
     private static final List<String> TAB_NAMES;
+
     static {
-        List<String> l = new ArrayList<>(2);
+        final List<String> l = new ArrayList<>(2);
         l.add(0, "Tasks");
         l.add(1, "Users");
         TAB_NAMES = Collections.unmodifiableList(l);
@@ -54,7 +55,9 @@ public class ListDetailFragmentPagerAdapter extends FragmentPagerAdapter {
 
     @Override
     public CharSequence getPageTitle(int i) {
-        if ((i < 0) || (i >= pageCount)) { throw new IllegalArgumentException("Page index out of bounds: " + i); }
+        if ((i < 0) || (i >= pageCount)) {
+            throw new IllegalArgumentException("Page index out of bounds: " + i);
+        }
         return TAB_NAMES.get(i);
     }
 

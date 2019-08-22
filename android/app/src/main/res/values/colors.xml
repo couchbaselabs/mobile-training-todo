@@ -8,4 +8,6 @@
     <color name="idle">@color/colorAccent</color>
     <color name="busy">#dd9900</color>
     <color name="failed">#aa0033</color>
+
+    <color name="conflict">#bb00ee</color>
 </resources>

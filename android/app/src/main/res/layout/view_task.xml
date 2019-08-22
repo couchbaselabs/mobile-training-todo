@@ -11,10 +11,11 @@
     >
 
     <ImageView
-        android:id="@+id/photo"
+        android:id="@+id/task_photo"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:src="@drawable/ic_camera"
+        android:contentDescription="@string/desc_avatar"
         />
 
     <LinearLayout
@@ -26,7 +27,7 @@
         >
 
         <TextView
-            android:id="@+id/text"
+            android:id="@+id/task_name"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
@@ -36,7 +37,7 @@
             />
 
         <CheckBox
-            android:id="@+id/checked"
+            android:id="@+id/task_completed"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
