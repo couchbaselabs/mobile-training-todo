@@ -18,20 +18,23 @@ package com.couchbase.todo;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.couchbase.lite.AbstractReplicator;
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.todo.db.DAO;
 
 
 public abstract class ToDoActivity extends AppCompatActivity {
-    private static final String TAG = "ACT";
+    private static final String TAG = "ACT_BASE";
 
     private DAO dao;
+    private Window rootWindow;
 
     @Override
     public final boolean onCreateOptionsMenu(Menu menu) {
@@ -43,6 +46,8 @@ public abstract class ToDoActivity extends AppCompatActivity {
     public final boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.logout) {
             DAO.get().logout();
+            LoginActivity.start(this);
+            finish();
             return true;
         }
 
@@ -63,13 +68,15 @@ public abstract class ToDoActivity extends AppCompatActivity {
         if (!verifyLoggedIn()) { return; }
 
         onCreateLoggedIn(state);
+
+        rootWindow = getWindow();
     }
 
     @Override
     protected final void onPause() {
         super.onPause();
 
-        DAO.get().registerErrorListener(null);
+        DAO.get().registerListener(null);
     }
 
     @Override
@@ -78,7 +85,36 @@ public abstract class ToDoActivity extends AppCompatActivity {
 
         verifyLoggedIn();
 
-        DAO.get().registerErrorListener(this::onDbError);
+        DAO.get().registerListener(
+            new DAO.DAOListener() {
+                @Override
+                public void onError(CouchbaseLiteException err) { onDbError(err); }
+
+                @Override
+                public void onNewState(AbstractReplicator.ActivityLevel state) {
+                    updateState(state);
+                }
+            }
+        );
+    }
+
+    private void updateState(AbstractReplicator.ActivityLevel state) {
+        int color;
+        switch (state) {
+            case CONNECTING:
+                color = getColor(R.color.connecting);
+                break;
+            case IDLE:
+                color = getColor(R.color.idle);
+                break;
+            case BUSY:
+                color = getColor(R.color.busy);
+                break;
+            default:
+                color = getColor(R.color.failed);
+                break;
+        }
+        rootWindow.setStatusBarColor(color);
     }
 
     final void onDbError(CouchbaseLiteException err) {

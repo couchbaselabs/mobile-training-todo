@@ -3,4 +3,9 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#1E91D6</color>
+
+    <color name="connecting">#008822</color>
+    <color name="idle">@color/colorAccent</color>
+    <color name="busy">#dd9900</color>
+    <color name="failed">#aa0033</color>
 </resources>

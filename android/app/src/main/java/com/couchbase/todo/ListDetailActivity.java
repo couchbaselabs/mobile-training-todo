@@ -34,6 +34,8 @@ import com.couchbase.todo.ui.ListDetailFragmentPagerAdapter;
 
 
 public class ListDetailActivity extends ToDoActivity {
+    private static final String TAG = "ACT_DETAIL";
+
     private static final String INTENT_LIST_ID = "list_id";
 
     public static void start(Activity ctxt, String docId) {

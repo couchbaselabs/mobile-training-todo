@@ -18,6 +18,7 @@ package com.couchbase.todo.config;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.net.URI;
 import java.util.Objects;
 
 import com.couchbase.lite.Database;
@@ -36,37 +37,46 @@ public final class Config {
         return instance;
     }
 
-
     private boolean loggingEnabled;
+    private boolean loginRequired = BuildConfig.LOGIN_REQUIRED;
     private boolean ccrEnabled = BuildConfig.CCR_ENABLED;
+    @Nullable
     private String dbName = BuildConfig.DB_NAME;
     @Nullable
-    private String sgUrl = BuildConfig.SG_URL;
+    private String sgUri = BuildConfig.SG_URI;
 
     private Config() { setLoggingEnabled(BuildConfig.LOGGING_ENABLED); }
 
     public boolean isLoggingEnabled() { return loggingEnabled; }
 
-    public boolean isLoginEnabled() { return (dbName == null) || (sgUrl != null); }
+    public boolean isLoginRequired() { return loginRequired || (dbName == null) || (sgUri != null); }
 
     public boolean isCcrEnabled() { return ccrEnabled; }
 
-    public String getDbName() { return dbName; }
-
-    public boolean isSyncEnabled() { return sgUrl != null; }
+    @Nullable
+    public boolean isSyncEnabled() { return sgUri != null; }
 
     @Nullable
-    public String getSgUrl() { return sgUrl; }
+    public String getDbName() { return dbName; }
+
+    @Nullable
+    public String getSgUri() { return sgUri; }
 
     public boolean update(
         boolean loggingEnabled,
+        boolean loginRequired,
         boolean ccrEnabled,
         @Nullable String dbName,
-        @Nullable String sgUrl) {
+        @Nullable String sgUri) {
         boolean updated = false;
 
         if (this.loggingEnabled != loggingEnabled) {
             setLoggingEnabled(loggingEnabled);
+            updated = true;
+        }
+
+        if (this.loginRequired != loginRequired) {
+            this.loginRequired = loginRequired;
             updated = true;
         }
 
@@ -80,8 +90,8 @@ public final class Config {
             updated = true;
         }
 
-        if (!Objects.equals(this.sgUrl, sgUrl)) {
-            this.sgUrl = sgUrl;
+        if (!Objects.equals(this.sgUri, sgUri)) {
+            this.sgUri = sgUri;
             updated = true;
         }
 

@@ -8,15 +8,20 @@
     <string name="name">Name</string>
     <string name="password">Password</string>
     <string name="sign_in">Sign In</string>
+    <string name="err_no_username">You must supply a user name or a DB Name (Config)</string>
 
     <!-- Config -->
     <string name="text">New Text</string>
-    <string name="logging_enabled">Logging</string>
+    <string name="verbose_logging_enabled">Verbose Logging</string>
+    <string name="login_required">Login Required</string>
     <string name="ccr_enabled">Custom Conflict Resolution</string>
     <string name="sg_url">SG Url</string>
     <string name="db_name">DB Name</string>
     <string name="cancel">Cancel</string>
     <string name="update">Update</string>
+    <string name="instructions">
+Turn replication on by specifying a complete SG URL. Leave the field empty to turn replication off.
+\n\nChanging any value on this page will force a logout.</string>
 
     <!-- ??? -->
     <string name="one">1</string>
@@ -25,4 +30,5 @@
     <string name="title_dialog_new_task">Create new task</string>
     <string name="title_dialog_new_user">Create new user</string>
     <string name="title_dialog_update">Update task</string>
+    <string name="ok">Ok</string>
 </resources>

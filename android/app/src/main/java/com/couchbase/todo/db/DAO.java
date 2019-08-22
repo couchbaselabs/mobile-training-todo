@@ -18,7 +18,6 @@ package com.couchbase.todo.db;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
-import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -27,14 +26,12 @@ import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 
 import com.couchbase.lite.AbstractReplicator;
 import com.couchbase.lite.BasicAuthenticator;
@@ -62,6 +59,12 @@ import com.couchbase.todo.config.Config;
 public final class DAO {
     private static final String TAG = "DAO";
 
+    public interface DAOListener {
+        void onError(CouchbaseLiteException err);
+
+        void onNewState(AbstractReplicator.ActivityLevel state);
+    }
+
     private class LogoutTask extends AsyncTask<Void, Void, Void> {
         private final Database db;
 
@@ -86,7 +89,7 @@ public final class DAO {
     private final Map<Query, List<ListenerToken>> changeListeners = new HashMap<>();
 
     private List<CouchbaseLiteException> errors = new ArrayList<>();
-    private Consumer<CouchbaseLiteException> listener;
+    private DAOListener listener;
 
     private final Handler mainHandler;
 
@@ -96,12 +99,13 @@ public final class DAO {
     private volatile String username;
 
     private Replicator replicator;
+    private AbstractReplicator.ActivityLevel replicatorState;
 
     // Called from the UI thread only once, in ToDo.onCreate()
     private DAO() {
         mainHandler = new Handler(Looper.getMainLooper());
 
-        if (!Config.get().isLoginEnabled()) {
+        if (!Config.get().isLoginRequired()) {
             // open a default database
             open.set(true);
             username = Config.get().getDbName();
@@ -109,7 +113,7 @@ public final class DAO {
         }
     }
 
-    public void registerErrorListener(@Nullable Consumer<CouchbaseLiteException> listener) {
+    public void registerListener(@Nullable DAOListener listener) {
         final List<CouchbaseLiteException> errors;
         synchronized (this) {
             if (Objects.equals(this.listener, listener)) { return; }
@@ -121,14 +125,19 @@ public final class DAO {
             this.errors = new ArrayList<>();
         }
 
-        for (CouchbaseLiteException err : errors) { deliverError(listener, err); }
+        for (CouchbaseLiteException err : errors) {
+
+            deliverError(listener, err);
+        }
     }
 
     // Should, totally, verify that this query is against the DB that is open.
     // No api for that...
     @UiThread
     @NonNull
-    public ListenerToken addChangeListener(@NonNull Query query, @NonNull QueryChangeListener listener) {
+    public ListenerToken addChangeListener(
+        @NonNull Query query,
+        @NonNull QueryChangeListener listener) {
         verifyUIThread();
         getAndVerifyDb();
 
@@ -180,19 +189,20 @@ public final class DAO {
     }
 
     @WorkerThread
-    public boolean login(@NonNull String username, @Nullable String password) {
-        if (TextUtils.isEmpty(username)) { throw new IllegalArgumentException("empty username name"); }
+    public void login(@NonNull String username, @NonNull String password) {
         verifyNotUIThread();
 
-        if (!open.compareAndSet(false, true)) { return false; }
+        if (!open.compareAndSet(false, true)) { return; }
 
         this.username = username;
         database = openDatabase(username);
 
-        return startReplication(username, password);
+        if (Config.get().isSyncEnabled()) { startReplication(username, password); }
     }
 
-    public boolean isLoggedIn(DAO dao) { return ((dao == null) || this.equals(dao)) && (database != null); }
+    public boolean isLoggedIn(DAO dao) {
+        return ((dao == null) || this.equals(dao)) && (database != null);
+    }
 
     @UiThread
     public void logout() {
@@ -274,7 +284,9 @@ public final class DAO {
     @NonNull
     private Database getAndVerifyDb() {
         final Database db = database;
-        if (db == null) { throw new IllegalStateException("Attempt to use the DB before logging in."); }
+        if (db == null) {
+            throw new IllegalStateException("Attempt to use the DB before logging in.");
+        }
         return db;
     }
 
@@ -316,34 +328,23 @@ public final class DAO {
     // Replicator operations
     // -------------------------
     @WorkerThread
-    private boolean startReplication(String username, String password) {
-        if (!Config.get().isSyncEnabled()) { return true; }
-
-        String uriStr = Config.get().getSgUrl();
-        if (uriStr == null) {
-            badUri(uriStr);
-            return false;
-        }
-
-        URI uri;
-        try { uri = new URI(uriStr); }
-        catch (URISyntaxException e) {
-            badUri(uriStr);
-            return false;
-        }
-
+    private void startReplication(@NonNull String username, @NonNull String password) {
         final Database db = getAndVerifyDb();
 
-        Endpoint endpoint = new URLEndpoint(uri);
+        URI sgUri = getReplicationUri(username);
+        if (sgUri == null) { return; }
+
+        Endpoint endpoint = new URLEndpoint(sgUri);
+
         ReplicatorConfiguration config = new ReplicatorConfiguration(db, endpoint)
             .setReplicatorType(ReplicatorConfiguration.ReplicatorType.PUSH_AND_PULL)
             .setContinuous(true);
 
-        if (Config.get().isCcrEnabled()) { config.setConflictResolver(new SimpleConflictResolver()); }
-
         // authentication
-        if ((username != null) && (password != null)) {
-            config.setAuthenticator(new BasicAuthenticator(username, password));
+        config.setAuthenticator(new BasicAuthenticator(username, password));
+
+        if (Config.get().isCcrEnabled()) {
+            config.setConflictResolver(new SimpleConflictResolver());
         }
 
         final Replicator replicator = new Replicator(config);
@@ -353,8 +354,33 @@ public final class DAO {
         replicator.start();
 
         this.replicator = replicator;
+    }
 
-        return true;
+    void changed(ReplicatorChange change) {
+        AbstractReplicator.Status status = change.getStatus();
+        Log.i(TAG, "Replicator status : " + status);
+
+        updateState(status.getActivityLevel());
+
+        CouchbaseLiteException error = status.getError();
+        if (error == null) { return; }
+
+        if (error.getCode() == CBLError.Code.HTTP_AUTH_REQUIRED) { logout(); }
+
+        reportError(error);
+    }
+
+    @Nullable
+    private URI getReplicationUri(@NonNull String username) {
+        try { return URI.create(Config.get().getSgUri()).normalize(); }
+        catch (IllegalArgumentException ignore) { }
+
+        reportError(new CouchbaseLiteException(
+            "Invalid SG URI",
+            CBLError.Domain.CBLITE,
+            CBLError.Code.INVALID_URL));
+
+        return null;
     }
 
     private void stopReplicatation() {
@@ -363,27 +389,8 @@ public final class DAO {
         if (repl != null) { repl.stop(); }
     }
 
-    private void changed(ReplicatorChange change) {
-        AbstractReplicator.Status status = change.getStatus();
-        Log.i(TAG, "Replicator status : " + status);
-
-        CouchbaseLiteException error = status.getError();
-        if (error == null) { return; }
-
-        reportError(error);
-
-        if (error.getCode() == CBLError.Code.HTTP_AUTH_REQUIRED) { logout(); }
-    }
-
-    private void badUri(@Nullable String uri) {
-        reportError(new CouchbaseLiteException(
-            "Failed parse URI: " + uri,
-            CBLError.Domain.CBLITE,
-            CBLError.Code.INVALID_URL));
-    }
-
     private void reportError(@NonNull CouchbaseLiteException err) {
-        final Consumer<CouchbaseLiteException> listener;
+        final DAOListener listener;
         synchronized (this) {
             if (this.listener == null) {
                 errors.add(err);
@@ -397,18 +404,43 @@ public final class DAO {
         deliverError(listener, err);
     }
 
+    private void updateState(AbstractReplicator.ActivityLevel state) {
+        final DAOListener listener;
+        synchronized (this) {
+            if (replicatorState == state) { return; }
+            replicatorState = state;
+
+            listener = this.listener;
+        }
+
+        if (listener != null) { deliverNewState(listener, state); }
+    }
+
     // always deliver the error asynchronously, on the main thread
-    private void deliverError(@NonNull Consumer<CouchbaseLiteException> listener, @NonNull CouchbaseLiteException err) {
-        mainHandler.post(() -> listener.accept(err));
+    private void deliverError(@NonNull DAOListener listener, @NonNull CouchbaseLiteException err) {
+        mainHandler.post(() -> listener.onError(err));
+    }
+
+    // always deliver state asynchronously, on the main thread
+    private void deliverNewState(
+        @NonNull DAOListener listener,
+        @NonNull AbstractReplicator.ActivityLevel state) {
+        mainHandler.post(() -> listener.onNewState(state));
     }
 
     private void verifyNotUIThread() {
-        if (isUIThread()) { throw new IllegalStateException("DB operations must not be run on the UI thread"); }
+        if (isUIThread()) {
+            throw new IllegalStateException("DB operations must not be run on the UI thread");
+        }
     }
 
     private void verifyUIThread() {
-        if (!isUIThread()) { throw new IllegalStateException("DB operations must not be run on the UI thread"); }
+        if (!isUIThread()) {
+            throw new IllegalStateException("DB operations must not be run on the UI thread");
+        }
     }
 
-    private boolean isUIThread() { return Thread.currentThread().equals(mainHandler.getLooper().getThread()); }
+    private boolean isUIThread() {
+        return Thread.currentThread().equals(mainHandler.getLooper().getThread());
+    }
 }

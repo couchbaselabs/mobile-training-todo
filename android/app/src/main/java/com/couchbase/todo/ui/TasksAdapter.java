@@ -48,7 +48,7 @@ import com.couchbase.todo.db.SimpleConflictResolver;
 
 
 public class TasksAdapter extends ArrayAdapter<String> {
-    private static final String TAG = TasksAdapter.class.getSimpleName();
+    private static final String TAG = "TASKS";
 
     private class UpdateCheckTask extends AsyncTask<Boolean, Void, Void> {
         private final String taskId;
