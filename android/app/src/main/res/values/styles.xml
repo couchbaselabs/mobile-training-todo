@@ -8,15 +8,6 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="TodoTheme.NoActionBar">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
-    </style>
-
-    <style name="TodoTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
-
-    <style name="TodoTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
-
     <style name="TodoTheme.Text">
         <item name="android:fontFamily">sans-serif</item>
         <item name="android:textColor">@color/colorAccent</item>

@@ -50,20 +50,20 @@ import com.couchbase.todo.db.SimpleConflictResolver;
 public class TasksAdapter extends ArrayAdapter<String> {
     private static final String TAG = "TASKS";
 
-    private class UpdateCheckTask extends AsyncTask<Boolean, Void, Void> {
+    private static class UpdateCheckTask extends AsyncTask<Boolean, Void, Void> {
         private final String taskId;
 
-        public UpdateCheckTask(String taskId) { this.taskId = taskId; }
+        UpdateCheckTask(String taskId) { this.taskId = taskId; }
 
         @Override
         protected Void doInBackground(Boolean... args) {
-            Document doc = DAO.get().fetch(taskId);
+            final Document doc = DAO.get().fetch(taskId);
             if (doc == null) {
                 Log.w(TAG, "attempt to update non-existent document: " + taskId);
                 return null;
             }
 
-            MutableDocument task = doc.toMutable();
+            final MutableDocument task = doc.toMutable();
             task.setBoolean("complete", args[0]);
             DAO.get().save(task);
 
@@ -78,10 +78,11 @@ public class TasksAdapter extends ArrayAdapter<String> {
 
     public TasksAdapter(@NonNull TasksFragment fragment, @NonNull String listID) {
         super(fragment.getContext(), 0);
+
         this.fragment = fragment;
         this.listID = listID;
 
-        this.query = query();
+        this.query = getTasksQuery();
         DAO.get().addChangeListener(query, this::updateContent);
     }
 
@@ -95,35 +96,29 @@ public class TasksAdapter extends ArrayAdapter<String> {
         final String docID = getItem(position);
         new FetchTask(docs -> populateView(rootView, docs.get(0))).execute(docID);
 
-        ImageView imageView = rootView.findViewById(R.id.photo);
+        final ImageView imageView = rootView.findViewById(R.id.task_photo);
         imageView.setOnClickListener(v -> fragment.dispatchTakePhotoIntent(docID));
 
-        CheckBox checkBox = rootView.findViewById(R.id.checked);
-        checkBox.setOnClickListener(view -> new UpdateCheckTask(docID).execute(checkBox.isChecked()));
+        final CheckBox checkBox = rootView.findViewById(R.id.task_completed);
+        checkBox.setOnClickListener(view ->
+            new UpdateCheckTask(docID).execute(checkBox.isChecked()));
 
         return rootView;
     }
 
     void populateView(View view, Document task) {
-        // !!! Conflict easter egg
-        final ImageView imageView = view.findViewById(R.id.photo);
-        if (task.getString(SimpleConflictResolver.KEY_CONFLICT) != null) {
-            imageView.setImageResource(R.drawable.kitty);
-        }
-        else {
-            Blob thumbnail = task.getBlob("image");
-            if (thumbnail == null) {
-                imageView.setImageResource(R.drawable.ic_camera_light);
-            }
-            else {
-                Glide.with(getContext()).load(thumbnail.getContent()).into(imageView);
-            }
-        }
+        final Blob thumbnail = task.getBlob("image");
+        final ImageView imageView = view.findViewById(R.id.task_photo);
+        if (thumbnail == null) { imageView.setImageResource(R.drawable.ic_camera_light); }
+        else { Glide.with(getContext()).load(thumbnail.getContent()).into(imageView); }
 
-        final TextView textView = view.findViewById(R.id.text);
+        final TextView textView = view.findViewById(R.id.task_name);
         textView.setText(task.getString("task"));
+        if (task.getString(SimpleConflictResolver.KEY_CONFLICT) != null) {
+            textView.setTextColor(getContext().getColor(R.color.conflict));
+        }
 
-        final CheckBox checkBox = view.findViewById(R.id.checked);
+        final CheckBox checkBox = view.findViewById(R.id.task_completed);
         checkBox.setChecked(task.getBoolean("complete"));
     }
 
@@ -133,7 +128,7 @@ public class TasksAdapter extends ArrayAdapter<String> {
         notifyDataSetChanged();
     }
 
-    private Query query() {
+    private Query getTasksQuery() {
         return DAO.get().createQuery(
             SelectResult.expression(Meta.id),
             SelectResult.property("task"),

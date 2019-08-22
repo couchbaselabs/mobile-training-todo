@@ -18,7 +18,6 @@ package com.couchbase.todo.config;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import java.net.URI;
 import java.util.Objects;
 
 import com.couchbase.lite.Database;
@@ -53,7 +52,6 @@ public final class Config {
 
     public boolean isCcrEnabled() { return ccrEnabled; }
 
-    @Nullable
     public boolean isSyncEnabled() { return sgUri != null; }
 
     @Nullable

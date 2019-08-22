@@ -10,14 +10,14 @@ import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 
 
-public class SaveTask extends AsyncTask<MutableDocument, Void, List<Document>> {
+public final class SaveTask extends AsyncTask<MutableDocument, Void, List<Document>> {
     private volatile Consumer<List<Document>> listener;
 
     public SaveTask(Consumer<List<Document>> listener) { this.listener = listener; }
 
     @Override
     protected List<Document> doInBackground(MutableDocument... docs) {
-        List<Document> savedDocs = new ArrayList<>();
+        final List<Document> savedDocs = new ArrayList<>();
         for (MutableDocument doc : docs) { savedDocs.add(DAO.get().save(doc)); }
         return savedDocs;
     }
@@ -30,6 +30,6 @@ public class SaveTask extends AsyncTask<MutableDocument, Void, List<Document>> {
 
     @Override
     protected void onPostExecute(List<Document> documents) {
-        if (listener!= null) { listener.accept(documents); }
+        if (listener != null) { listener.accept(documents); }
     }
 }

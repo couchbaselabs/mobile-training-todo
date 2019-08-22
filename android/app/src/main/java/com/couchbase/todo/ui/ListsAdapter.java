@@ -22,8 +22,10 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.couchbase.lite.Document;
@@ -39,11 +41,6 @@ import com.couchbase.todo.R;
 import com.couchbase.todo.db.DAO;
 import com.couchbase.todo.db.FetchTask;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import org.w3c.dom.Text;
-
 
 public class ListsAdapter extends ArrayAdapter<String> {
     private static final String TAG = "LISTS";
@@ -57,11 +54,11 @@ public class ListsAdapter extends ArrayAdapter<String> {
     public ListsAdapter(@NonNull Context context) {
         super(context, 0);
 
-        listsQuery = listsQuery();
+        listsQuery = getListsQuery();
         DAO.get().addChangeListener(listsQuery, this::onListsChanged);
 
-        incompleteTasksCountQuery = incompTasksCountQuery();
-        DAO.get().addChangeListener(incompleteTasksCountQuery, this::onIncompTasksChanged);
+        incompleteTasksCountQuery = getIncompleteTasksCountQuery();
+        DAO.get().addChangeListener(incompleteTasksCountQuery, this::onIncompleteTasksChanged);
     }
 
     @NonNull
@@ -77,34 +74,36 @@ public class ListsAdapter extends ArrayAdapter<String> {
     }
 
     void populateView(View view, Document list) {
-        TextView textView = view.findViewById(R.id.text);
+        final TextView textView = view.findViewById(R.id.list_name);
         textView.setText(list.getString("name"));
 
-        Integer listId = incompleteTaskCounts.get(list.getId());
-        TextView countText = view.findViewById(R.id.task_count);
+        final Integer listId = incompleteTaskCounts.get(list.getId());
+        final TextView countText = view.findViewById(R.id.task_count);
         countText.setText((listId == null) ? "" : String.valueOf(listId));
     }
 
     void onListsChanged(@NonNull QueryChange change) {
         clear();
-        for (Result r: change.getResults()) { add(r.getString(0)); }
+        for (Result r : change.getResults()) { add(r.getString(0)); }
         notifyDataSetChanged();
     }
 
-    void onIncompTasksChanged(@NonNull QueryChange change) {
+    void onIncompleteTasksChanged(@NonNull QueryChange change) {
         incompleteTaskCounts.clear();
-        for (Result r: change.getResults()) { incompleteTaskCounts.put(r.getString(0), r.getInt(1)); }
+        for (Result r : change.getResults()) {
+            incompleteTaskCounts.put(r.getString(0), r.getInt(1));
+        }
         notifyDataSetChanged();
     }
 
-    private Query listsQuery() {
+    private Query getListsQuery() {
         return DAO.get().createQuery(SelectResult.expression(Meta.id))
             .where(Expression.property("type").equalTo(Expression.string("task-list")))
             .orderBy(Ordering.property("name").ascending());
     }
 
-    private Query incompTasksCountQuery() {
-        Expression exprTaskListId = Expression.property("taskList.id");
+    private Query getIncompleteTasksCountQuery() {
+        final Expression exprTaskListId = Expression.property("taskList.id");
         return DAO.get().createQuery(
             SelectResult.expression(exprTaskListId),
             SelectResult.expression(Function.count(Expression.all())))

@@ -13,6 +13,7 @@
         android:layout_marginEnd="@dimen/text_margin"
         android:layout_marginStart="@dimen/text_margin"
         android:maxLines="1"
+        android:inputType="textShortMessage"
         android:hint="@string/text"
         android:importantForAutofill="no"
         />

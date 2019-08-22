@@ -19,7 +19,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -48,7 +47,6 @@ import com.couchbase.todo.ui.UsersAdapter;
 public class UsersFragment extends Fragment {
     private static final String TAG = "FRAG_USERS";
 
-
     private String listId;
     private UsersAdapter adapter;
 
@@ -59,17 +57,13 @@ public class UsersFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(
-        @NonNull LayoutInflater inflater,
-        ViewGroup container,
-        Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.fragment_tasks, container, false);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle state) {
+        final View view = inflater.inflate(R.layout.fragment_users, container, false);
 
-        FloatingActionButton fab = view.findViewById(R.id.fab);
+        final FloatingActionButton fab = view.findViewById(R.id.add_user);
         fab.setOnClickListener(v -> displayCreateDialog(inflater, listId));
 
-        ListView listView = view.findViewById(R.id.list);
-        listView.setAdapter(adapter);
+        final ListView listView = view.findViewById(R.id.users_list);
         listView.setOnItemLongClickListener(this::handleLongClick);
 
         adapter = new UsersAdapter(getContext(), listId);
@@ -79,7 +73,7 @@ public class UsersFragment extends Fragment {
     }
 
     boolean handleLongClick(AdapterView unused, View view, int pos, long id) {
-        PopupMenu popup = new PopupMenu(getContext(), view);
+        final PopupMenu popup = new PopupMenu(getContext(), view);
         popup.inflate(R.menu.menu_user);
         popup.setOnMenuItemClickListener(item -> {
             handlePopupAction(item, adapter.getItem(pos));
@@ -89,24 +83,24 @@ public class UsersFragment extends Fragment {
         return true;
     }
 
-    private void handlePopupAction(MenuItem item, String docId) {
+    void handlePopupAction(MenuItem item, String docId) {
         if (item.getItemId() == R.id.action_user_delete) {
             new DeleteByIdTask().execute(docId);
         }
     }
 
-    private void displayCreateDialog(LayoutInflater inflater, String listId) {
+    void displayCreateDialog(LayoutInflater inflater, String listId) {
         final View view = inflater.inflate(R.layout.view_dialog_input, null);
 
         final EditText input = view.findViewById(R.id.text);
 
-        AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+        final AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
         alert.setTitle(getResources().getString(R.string.title_dialog_new_user));
         alert.setView(view);
         alert.setPositiveButton(
             R.string.ok,
             (dialog, whichButton) -> {
-                String title = input.getText().toString();
+                final String title = input.getText().toString();
                 if (TextUtils.isEmpty(title)) { return; }
                 new FetchTask(docs -> createUser(title, docs.get(0))).execute(listId);
             });
@@ -115,11 +109,11 @@ public class UsersFragment extends Fragment {
 
     // create task
     private void createUser(String username, Document taskList) {
-        Map<String, Object> taskListInfo = new HashMap<>();
+        final Map<String, Object> taskListInfo = new HashMap<>();
         taskListInfo.put("id", listId);
         taskListInfo.put("owner", taskList.getString("owner"));
 
-        MutableDocument mDoc = new MutableDocument(listId + "." + username);
+        final MutableDocument mDoc = new MutableDocument(listId + "." + username);
         mDoc.setString("type", "task-list.user");
         mDoc.setString("username", username);
         mDoc.setValue("taskList", taskListInfo);

@@ -65,23 +65,21 @@ public final class DAO {
         void onNewState(AbstractReplicator.ActivityLevel state);
     }
 
-    private class LogoutTask extends AsyncTask<Void, Void, Void> {
-        private final Database db;
-
-        public LogoutTask(Database db) { this.db = db; }
-
+    private static class LogoutTask extends AsyncTask<Database, Void, Void> {
         @Override
-        protected Void doInBackground(Void... unused) {
-            closeDatabase(db);
+        protected Void doInBackground(Database... dbs) {
+            for (Database db : dbs) { DAO.get().closeDatabase(db); }
             return null;
         }
     }
 
     private static volatile DAO instance;
 
+    private static synchronized void newInstance() { instance = new DAO(); }
+
     @NonNull
     public static synchronized DAO get() {
-        if (instance == null) { instance = new DAO(); }
+        if (instance == null) { newInstance(); }
         return instance;
     }
 
@@ -125,10 +123,8 @@ public final class DAO {
             this.errors = new ArrayList<>();
         }
 
-        for (CouchbaseLiteException err : errors) {
-
-            deliverError(listener, err);
-        }
+        for (CouchbaseLiteException err : errors) { deliverError(listener, err); }
+        deliverNewState(listener, replicatorState);
     }
 
     // Should, totally, verify that this query is against the DB that is open.
@@ -147,7 +143,7 @@ public final class DAO {
             changeListeners.put(query, listeners);
         }
 
-        ListenerToken token = query.addChangeListener(listener);
+        final ListenerToken token = query.addChangeListener(listener);
         listeners.add(token);
 
         return token;
@@ -160,7 +156,7 @@ public final class DAO {
         verifyUIThread();
         getAndVerifyDb();
 
-        List<ListenerToken> listeners = changeListeners.get(query);
+        final List<ListenerToken> listeners = changeListeners.get(query);
         if (listeners == null) { return; }
 
         listeners.remove(token);
@@ -174,7 +170,7 @@ public final class DAO {
     public void removeChangeListeners(@NonNull Query query) {
         verifyUIThread();
 
-        List<ListenerToken> listeners = changeListeners.get(query);
+        final List<ListenerToken> listeners = changeListeners.get(query);
         if (listeners == null) { return; }
 
         for (ListenerToken token : listeners) { query.removeChangeListener(token); }
@@ -207,8 +203,8 @@ public final class DAO {
     @UiThread
     public void logout() {
         final Database db = shutdownDatabase();
-        instance = new DAO();
-        if (db != null) { new LogoutTask(db).execute(); }
+        newInstance();
+        if (db != null) { new LogoutTask().execute(db); }
     }
 
     // Called from the UI thread only once, in ToDo.onTerminate()
@@ -298,7 +294,7 @@ public final class DAO {
         final Database db = database;
         if (db == null) { return null; }
 
-        stopReplicatation();
+        stopReplication();
         removeAllChangeListeners();
 
         return db;
@@ -331,12 +327,13 @@ public final class DAO {
     private void startReplication(@NonNull String username, @NonNull String password) {
         final Database db = getAndVerifyDb();
 
-        URI sgUri = getReplicationUri(username);
+        final URI sgUri = getReplicationUri(username);
         if (sgUri == null) { return; }
 
-        Endpoint endpoint = new URLEndpoint(sgUri);
+        Log.i(TAG, "Starting replication to: " + sgUri);
+        final Endpoint endpoint = new URLEndpoint(sgUri);
 
-        ReplicatorConfiguration config = new ReplicatorConfiguration(db, endpoint)
+        final ReplicatorConfiguration config = new ReplicatorConfiguration(db, endpoint)
             .setReplicatorType(ReplicatorConfiguration.ReplicatorType.PUSH_AND_PULL)
             .setContinuous(true);
 
@@ -357,12 +354,12 @@ public final class DAO {
     }
 
     void changed(ReplicatorChange change) {
-        AbstractReplicator.Status status = change.getStatus();
+        final AbstractReplicator.Status status = change.getStatus();
         Log.i(TAG, "Replicator status : " + status);
 
         updateState(status.getActivityLevel());
 
-        CouchbaseLiteException error = status.getError();
+        final CouchbaseLiteException error = status.getError();
         if (error == null) { return; }
 
         if (error.getCode() == CBLError.Code.HTTP_AUTH_REQUIRED) { logout(); }
@@ -383,7 +380,7 @@ public final class DAO {
         return null;
     }
 
-    private void stopReplicatation() {
+    private void stopReplication() {
         if (!Config.get().isSyncEnabled()) { return; }
         final Replicator repl = replicator;
         if (repl != null) { repl.stop(); }
@@ -425,6 +422,7 @@ public final class DAO {
     private void deliverNewState(
         @NonNull DAOListener listener,
         @NonNull AbstractReplicator.ActivityLevel state) {
+        if (Config.get().isSyncEnabled()) { return; }
         mainHandler.post(() -> listener.onNewState(state));
     }
 

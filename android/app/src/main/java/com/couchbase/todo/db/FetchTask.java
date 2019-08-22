@@ -9,14 +9,14 @@ import java.util.function.Consumer;
 import com.couchbase.lite.Document;
 
 
-public class FetchTask extends AsyncTask<String, Void, List<Document>> {
+public final class FetchTask extends AsyncTask<String, Void, List<Document>> {
     private volatile Consumer<List<Document>> listener;
 
     public FetchTask(Consumer<List<Document>> listener) { this.listener = listener; }
 
     @Override
     protected List<Document> doInBackground(String... ids) {
-        List<Document> savedDocs = new ArrayList<>();
+        final List<Document> savedDocs = new ArrayList<>();
         for (String id : ids) { savedDocs.add(DAO.get().fetch(id)); }
         return savedDocs;
     }

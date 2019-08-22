@@ -19,6 +19,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,7 +29,6 @@ import android.widget.ListView;
 import android.widget.PopupMenu;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.widget.Toolbar;
 
 import java.util.List;
 import java.util.UUID;
@@ -48,7 +48,7 @@ public class ListsActivity extends ToDoActivity {
     private static final String TAG = "ACT_LIST";
 
     public static void start(@NonNull Activity act) {
-        Intent intent = new Intent(act, ListsActivity.class);
+        final Intent intent = new Intent(act, ListsActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         act.startActivity(intent);
     }
@@ -61,14 +61,13 @@ public class ListsActivity extends ToDoActivity {
     protected void onCreateLoggedIn(Bundle state) {
         setContentView(R.layout.activity_lists);
 
-        FloatingActionButton fab = findViewById(R.id.fab);
+        final FloatingActionButton fab = findViewById(R.id.add_list);
         fab.setOnClickListener(view -> displayCreateListDialog());
 
         adapter = new ListsAdapter(this);
-        listView = findViewById(R.id.list);
+        listView = findViewById(R.id.lists_list);
         listView.setAdapter(adapter);
-        listView.setOnItemClickListener((adptView, view, i, l) -> {
-                new FetchTask(this::showTaskListView).execute(adapter.getItem(i)); });
+        listView.setOnItemClickListener((adapterView, view, i, l) -> new FetchTask(this::showTaskListView).execute(adapter.getItem(i)));
         listView.setOnItemLongClickListener(this::showPopup);
     }
 
@@ -77,7 +76,7 @@ public class ListsActivity extends ToDoActivity {
     }
 
     private boolean showPopup(AdapterView<?> parent, View view, int pos, long id) {
-        PopupMenu popup = new PopupMenu(ListsActivity.this, view);
+        final PopupMenu popup = new PopupMenu(ListsActivity.this, view);
         popup.inflate(R.menu.menu_list);
         popup.setOnMenuItemClickListener(item -> handleListPopupAction(item, adapter.getItem(pos)));
         popup.show();
@@ -99,14 +98,15 @@ public class ListsActivity extends ToDoActivity {
 
     // display create list dialog
     private void displayCreateListDialog() {
-        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        final AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setTitle(getResources().getString(R.string.title_dialog_new_list));
-        final View view = LayoutInflater.from(ListsActivity.this).inflate(R.layout.view_dialog_input, null);
+        final View view = LayoutInflater.from(ListsActivity.this)
+            .inflate(R.layout.view_dialog_input, null);
         final EditText input = view.findViewById(R.id.text);
         alert.setView(view);
         alert.setPositiveButton("Ok", (dialog, whichButton) -> {
-            String title = input.getText().toString();
-            if (title.length() == 0) { return; }
+            final String title = input.getText().toString();
+            if (TextUtils.isEmpty(title)) { return; }
             createList(title);
         });
         alert.setNegativeButton("Cancel", (dialog, whichButton) -> { });
@@ -126,8 +126,8 @@ public class ListsActivity extends ToDoActivity {
         alert.setTitle(getResources().getString(R.string.title_dialog_update));
         alert.setView(input);
         alert.setPositiveButton("Ok", (dialogInterface, i) -> {
-            String title = input.getText().toString();
-            if (title.length() == 0) { return; }
+            final String title = input.getText().toString();
+            if (TextUtils.isEmpty(title)) { return; }
             updateList(list.toMutable(), title);
         });
         alert.show();
@@ -139,9 +139,9 @@ public class ListsActivity extends ToDoActivity {
 
     // create list
     private void createList(String title) {
-        String username = DAO.get().getUsername();
-        String docId = username + "." + UUID.randomUUID();
-        MutableDocument mDoc = new MutableDocument(docId);
+        final String username = DAO.get().getUsername();
+        final String docId = username + "." + UUID.randomUUID();
+        final MutableDocument mDoc = new MutableDocument(docId);
         mDoc.setString("type", "task-list");
         mDoc.setString("name", title);
         mDoc.setString("owner", username);

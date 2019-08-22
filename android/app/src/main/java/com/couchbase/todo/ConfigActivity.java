@@ -36,8 +36,7 @@ public class ConfigActivity extends AppCompatActivity {
     private static final String TAG = "ACT_CONFIG";
 
     public static void start(@NonNull Activity act) {
-        Intent intent = new Intent(act, ConfigActivity.class);
-        act.startActivity(intent);
+        act.startActivity(new Intent(act, ConfigActivity.class));
     }
 
 
@@ -71,7 +70,7 @@ public class ConfigActivity extends AppCompatActivity {
     }
 
     private void populateView() {
-        Config config = Config.get();
+        final Config config = Config.get();
 
         loggingCheckBox.setChecked(config.isLoggingEnabled());
         loginCheckBox.setChecked(config.isLoginRequired());
