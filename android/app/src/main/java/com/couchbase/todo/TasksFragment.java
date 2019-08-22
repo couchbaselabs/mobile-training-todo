@@ -16,6 +16,7 @@
 package com.couchbase.todo;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -30,6 +31,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.PopupMenu;
@@ -55,6 +57,7 @@ import com.couchbase.lite.Blob;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.todo.db.DAO;
+import com.couchbase.todo.db.DeleteByIdTask;
 import com.couchbase.todo.db.DeleteTask;
 import com.couchbase.todo.db.FetchTask;
 import com.couchbase.todo.db.SaveTask;
@@ -64,7 +67,7 @@ import static android.app.Activity.RESULT_OK;
 
 
 public class TasksFragment extends Fragment {
-    private static final String TAG = TasksFragment.class.getSimpleName();
+    private static final String TAG = "FRAG_TASKS";
 
     private static final int REQUEST_TAKE_PHOTO = 1;
     private static final int REQUEST_CHOOSE_PHOTO = 2;
@@ -140,26 +143,29 @@ public class TasksFragment extends Fragment {
 
     private final DateFormat dateFormatter = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US);
 
-    private ListView listView;
+    private String listId;
     private TasksAdapter adapter;
 
     private String imageToBeAttachedPath;
     private String selectedTask;
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        listId = getDetailActivity().getListId();
+    }
+
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_tasks, container, false);
 
-        final String listId = getDetailActivity().getListId();
+        listId = getDetailActivity().getListId();
 
         FloatingActionButton fab = view.findViewById(R.id.fab);
         fab.setOnClickListener(v -> displayCreateDialog(inflater, listId));
 
-        listView = view.findViewById(R.id.list);
-        listView.setOnItemLongClickListener((parent, view1, pos, id) -> {
-            showPopup(view1, pos);
-            return true;
-        });
+        ListView listView = view.findViewById(R.id.list);
+        listView.setOnItemLongClickListener(this::handleLongClick);
 
         adapter = new TasksAdapter(this, listId);
         listView.setAdapter(adapter);
@@ -167,10 +173,20 @@ public class TasksFragment extends Fragment {
         return view;
     }
 
+    boolean handleLongClick(AdapterView unused, View view, int pos, long id) {
+        PopupMenu popup = new PopupMenu(getContext(), view);
+        popup.inflate(R.menu.menu_task);
+        popup.setOnMenuItemClickListener(item -> {
+            handlePopupAction(item, adapter.getItem(pos));
+            return true;
+        });
+        popup.show();
+        return true;
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if ((resultCode != RESULT_OK) || (requestCode != REQUEST_TAKE_PHOTO)) { return; }
-
         new AttachImageTask().execute(selectedTask, imageToBeAttachedPath);
     }
 
@@ -185,7 +201,7 @@ public class TasksFragment extends Fragment {
             File photoFile;
             try { photoFile = createImageFile(); }
             catch (IOException e) {
-                Log.e(TAG, "Failed creating photo file", e);
+                Log.w(TAG, "Failed creating photo file", e);
                 return;
             }
 
@@ -198,24 +214,12 @@ public class TasksFragment extends Fragment {
         }
     }
 
-    void showPopup(View view1, int pos) {
-        PopupMenu popup = new PopupMenu(getContext(), view1);
-        popup.inflate(R.menu.menu_list);
-        popup.setOnMenuItemClickListener(item -> {
-            new FetchTask(docs -> handlePopupAction(item, docs.get(0)));
-            return true;
-        });
-        popup.show();
-    }
-
-    void handlePopupAction(MenuItem item, Document task) {
-        switch (item.getItemId()) {
-            case R.id.action_update:
-                displayUpdateTaskDialog(task);
-                break;
-            case R.id.action_delete:
-                new DeleteTask().execute(task);
-                break;
+    void handlePopupAction(MenuItem item, String taskId) {
+        if (item.getItemId() == R.id.action_task_update) {
+            new FetchTask(docs -> displayUpdateTaskDialog(docs.get(0))).execute(taskId);
+        }
+        if (item.getItemId() == R.id.action_task_delete) {
+            new DeleteByIdTask().execute(taskId);
         }
     }
 
@@ -234,7 +238,7 @@ public class TasksFragment extends Fragment {
         alert.show();
     }
 
-    private void displayUpdateTaskDialog(final Document task) {
+    private void displayUpdateTaskDialog(Document task) {
         AlertDialog.Builder alert = new AlertDialog.Builder(getContext());
         alert.setTitle(getResources().getString(R.string.title_dialog_update));
 
@@ -244,7 +248,10 @@ public class TasksFragment extends Fragment {
         String text = task.getString("task");
         input.setText(text);
         alert.setView(input);
-        alert.setPositiveButton("Ok", (dialogInterface, i) -> updateTask(task.toMutable(), input.getText().toString()));
+        alert.setPositiveButton(
+            "Ok",
+            (dialogInterface, i) ->
+                updateTask(task.toMutable(), input.getText().toString()));
         alert.show();
     }
 

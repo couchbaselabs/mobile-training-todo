@@ -2,7 +2,7 @@
 <menu
     xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/action_delete"
+        android:id="@+id/action_user_delete"
         android:title="@string/delete"
         />
 </menu>

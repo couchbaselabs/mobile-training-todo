@@ -20,6 +20,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -27,13 +28,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.couchbase.todo.config.Config;
 import com.couchbase.todo.db.DAO;
 
 
 public class LoginActivity extends AppCompatActivity {
-    private static final String TAG = "LOGIN";
+    private static final String TAG = "ACT_LOGIN";
 
-    private static class LoginTask extends AsyncTask<String, Void, Boolean> {
+    private static class LoginTask extends AsyncTask<String, Void, Void> {
         @Nullable
         @SuppressLint("StaticFieldLeak")
         private LoginActivity ctxt;
@@ -42,16 +44,17 @@ public class LoginActivity extends AppCompatActivity {
 
         // args are username, password
         @Override
-        protected Boolean doInBackground(String... creds) {
-            return DAO.get().login(creds[0], creds[1]);
+        protected Void doInBackground(String... creds) {
+            DAO.get().login(creds[0], creds[1]);
+            return null;
         }
 
         @Override
         protected void onCancelled() { ctxt = null; }
 
         @Override
-        protected void onPostExecute(Boolean success) {
-            if (ctxt != null) { ctxt.onLogin(success); }
+        protected void onPostExecute(Void ignore) {
+            if (ctxt != null) { ctxt.onLogin(); }
         }
     }
 
@@ -75,8 +78,9 @@ public class LoginActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_login);
 
-        nameView = findViewById(R.id.nameInput);
         pwdView = findViewById(R.id.passwordInput);
+
+        nameView = findViewById(R.id.nameInput);
 
         findViewById(R.id.btnLogin).setOnClickListener(view -> login());
     }
@@ -98,18 +102,21 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     void login() {
-        loginTask = new LoginTask(this);
-        loginTask.execute(nameView.getText().toString(), pwdView.getText().toString());
-    }
-
-    void onLogin(Boolean success) {
-        loginTask = null;
-
-        if (!success) {
-            Toast.makeText(this, "Login failed!!", Toast.LENGTH_LONG).show();
+        String username = nameView.getText().toString();
+        if (TextUtils.isEmpty(username)) { username = Config.get().getDbName(); }
+        if (TextUtils.isEmpty(username)) {
+            Toast.makeText(this, R.string.err_no_username, Toast.LENGTH_SHORT).show();
             return;
         }
 
+        final String password = pwdView.getText().toString();
+
+        loginTask = new LoginTask(this);
+        loginTask.execute(username, password);
+    }
+
+    void onLogin() {
+        loginTask = null;
         nextPage();
     }
 

@@ -7,9 +7,10 @@ buildscript {
 
         // application parameters
         LOGGING_ENABLED = true
+        LOGIN_REQUIRED = true
         CCR_ENABLED = false
-        DB_NAME = null
-        SG_URL = null
+        DB_NAME = "todo"
+        SG_URI = "ws://ec2-54-197-194-172.compute-1.amazonaws.com:4984/todo"
 
         // support library version
         SUPPORT_LIBRARY_VERSION = "1.0.0"
@@ -20,7 +21,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.4.2'
+        classpath 'com.android.tools.build:gradle:3.5.0'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
     }
 }

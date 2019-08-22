@@ -14,9 +14,9 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/ccrEnabledLabel"
+        app:layout_constraintBottom_toTopOf="@+id/loginRequiredLabel"
         android:layout_marginTop="@dimen/spacing_medium"
-        android:text="@string/logging_enabled"
+        android:text="@string/verbose_logging_enabled"
         style="@style/TodoTheme.Text"
         />
 
@@ -29,10 +29,30 @@
         />
 
     <TextView
-        android:id="@+id/ccrEnabledLabel"
+        android:id="@+id/loginRequiredLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@+id/loggingEnabledLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/ccrEnabledLabel"
+        android:layout_marginTop="@dimen/spacing_medium"
+        android:text="@string/login_required"
+        style="@style/TodoTheme.Text"
+        />
+
+    <CheckBox
+        android:id="@+id/loginRequired"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBaseline_toBaselineOf="@+id/loginRequiredLabel"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+
+    <TextView
+        android:id="@+id/ccrEnabledLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/loginRequiredLabel"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/dbNameLayout"
         android:layout_marginTop="@dimen/spacing_medium"
@@ -64,6 +84,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/db_name"
+            android:inputType="text"
             style="@style/TodoTheme.Text"
             />
     </com.google.android.material.textfield.TextInputLayout>
@@ -79,19 +100,33 @@
         >
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/sgUrl"
+            android:id="@+id/sgUri"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/sg_url"
+            android:inputType="text"
             style="@style/TodoTheme.Text"
             />
     </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:id="@+id/instructions"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/sgUrlLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:singleLine="false"
+        android:text="@string/instructions"
+        style="@style/TodoTheme.Text"
+        />
 
     <Button
         android:id="@+id/btnCancel"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/cancel"
+        app:layout_constraintTop_toBottomOf="@+id/instructions"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/btnUpdate"
         android:layout_marginBottom="8dp"
@@ -105,6 +140,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/update"
+        app:layout_constraintTop_toBottomOf="@+id/instructions"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginBottom="8dp"

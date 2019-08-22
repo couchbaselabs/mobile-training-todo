@@ -46,7 +46,7 @@ import org.w3c.dom.Text;
 
 
 public class ListsAdapter extends ArrayAdapter<String> {
-    private static final String TAG = ListsAdapter.class.getSimpleName();
+    private static final String TAG = "LISTS";
 
 
     private final Map<String, Integer> incompleteTaskCounts = new HashMap<>();

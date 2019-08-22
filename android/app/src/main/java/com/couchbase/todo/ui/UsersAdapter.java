@@ -41,7 +41,7 @@ import com.couchbase.todo.db.FetchTask;
  * Created by hideki on 6/26/17.
  */
 public class UsersAdapter extends ArrayAdapter<String> {
-    private static final String TAG = UsersAdapter.class.getSimpleName();
+    private static final String TAG = "USERS";
 
     private final String listID;
     private final Query query;
@@ -57,16 +57,16 @@ public class UsersAdapter extends ArrayAdapter<String> {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        final View rootView = (convertView != null)
+        final View view = (convertView != null)
             ? convertView
             : LayoutInflater.from(getContext()).inflate(R.layout.view_user, parent, false);
 
-        new FetchTask(docs -> populateView(rootView, docs.get(0))).execute(getItem(position));
+        new FetchTask(docs -> populateView(view, docs.get(0), position)).execute(getItem(position));
 
-        return rootView;
+        return view;
     }
 
-    void populateView(View view, Document doc) {
+    void populateView(View view, Document doc, int pos) {
         TextView textView = view.findViewById(R.id.user_name);
         textView.setText(doc.getString("username"));
     }

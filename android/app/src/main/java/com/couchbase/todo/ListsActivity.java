@@ -45,7 +45,7 @@ import com.couchbase.todo.ui.ListsAdapter;
 
 
 public class ListsActivity extends ToDoActivity {
-    private static final String TAG = ListsActivity.class.getSimpleName();
+    private static final String TAG = "ACT_LIST";
 
     public static void start(@NonNull Activity act) {
         Intent intent = new Intent(act, ListsActivity.class);
@@ -61,18 +61,14 @@ public class ListsActivity extends ToDoActivity {
     protected void onCreateLoggedIn(Bundle state) {
         setContentView(R.layout.activity_lists);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        toolbar.setTitle(getTitle());
-
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(view -> displayCreateListDialog());
 
         adapter = new ListsAdapter(this);
         listView = findViewById(R.id.list);
         listView.setAdapter(adapter);
-        listView.setOnItemClickListener(
-            (adptView, view, i, l) -> { new FetchTask(this::showTaskListView).execute(adapter.getItem(i)); });
+        listView.setOnItemClickListener((adptView, view, i, l) -> {
+                new FetchTask(this::showTaskListView).execute(adapter.getItem(i)); });
         listView.setOnItemLongClickListener(this::showPopup);
     }
 
@@ -90,10 +86,10 @@ public class ListsActivity extends ToDoActivity {
 
     private boolean handleListPopupAction(MenuItem item, String docId) {
         switch (item.getItemId()) {
-            case R.id.action_update:
+            case R.id.action_list_update:
                 new FetchTask(this::displayUpdateListDialog).execute(docId);
                 return true;
-            case R.id.action_delete:
+            case R.id.action_list_delete:
                 new DeleteByIdTask().execute(docId);
                 return true;
             default:

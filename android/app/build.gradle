@@ -18,16 +18,18 @@ android {
         debug {
             minifyEnabled false
             buildConfigField "boolean", "LOGGING_ENABLED", "${LOGGING_ENABLED.toString()}"
+            buildConfigField "boolean", "LOGIN_REQUIRED", "${LOGIN_REQUIRED.toString()}"
             buildConfigField "boolean", "CCR_ENABLED", "${CCR_ENABLED.toString()}"
             buildConfigField "String", "DB_NAME", (DB_NAME == null) ? "null" : "\"${DB_NAME}\""
-            buildConfigField "String", "SG_URL", (SG_URL == null) ? "null" : "\"${SG_URL}\""
+            buildConfigField "String", "SG_URI", (SG_URI == null) ? "null" : "\"${SG_URI}\""
         }
         release {
             minifyEnabled false
             buildConfigField "boolean", "LOGGING_ENABLED", "${LOGGING_ENABLED.toString()}"
+            buildConfigField "boolean", "LOGIN_REQUIRED", "${LOGIN_REQUIRED.toString()}"
             buildConfigField "boolean", "CCR_ENABLED", "${CCR_ENABLED.toString()}"
             buildConfigField "String", "DB_NAME", (DB_NAME == null) ? "null" : "\"${DB_NAME}\""
-            buildConfigField "String", "SG_URL", (SG_URL == null) ? "null" : "\"${SG_URL}\""
+            buildConfigField "String", "SG_URI", (SG_URI == null) ? "null" : "\"${SG_URI}\""
         }
     }
 

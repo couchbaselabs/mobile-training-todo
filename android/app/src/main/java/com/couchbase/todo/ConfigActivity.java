@@ -33,7 +33,7 @@ import com.couchbase.todo.db.DAO;
 
 
 public class ConfigActivity extends AppCompatActivity {
-    private static final String TAG = "CONFIG";
+    private static final String TAG = "ACT_CONFIG";
 
     public static void start(@NonNull Activity act) {
         Intent intent = new Intent(act, ConfigActivity.class);
@@ -42,9 +42,10 @@ public class ConfigActivity extends AppCompatActivity {
 
 
     private CheckBox loggingCheckBox;
+    private CheckBox loginCheckBox;
     private CheckBox ccrEnabledCheckBox;
     private TextInputEditText dbNameView;
-    private TextInputEditText sgUrlView;
+    private TextInputEditText sgUriView;
 
     // Heresy!!  Ignore the back button.
     @Override
@@ -57,10 +58,11 @@ public class ConfigActivity extends AppCompatActivity {
         setContentView(R.layout.activity_config);
 
         loggingCheckBox = findViewById(R.id.loggingEnabled);
+        loginCheckBox = findViewById(R.id.loginRequired);
         ccrEnabledCheckBox = findViewById(R.id.ccrEnabled);
 
         dbNameView = findViewById(R.id.dbName);
-        sgUrlView = findViewById(R.id.sgUrl);
+        sgUriView = findViewById(R.id.sgUri);
 
         findViewById(R.id.btnUpdate).setOnClickListener(view -> update());
         findViewById(R.id.btnCancel).setOnClickListener(view -> finish());
@@ -72,21 +74,29 @@ public class ConfigActivity extends AppCompatActivity {
         Config config = Config.get();
 
         loggingCheckBox.setChecked(config.isLoggingEnabled());
+        loginCheckBox.setChecked(config.isLoginRequired());
         ccrEnabledCheckBox.setChecked(config.isCcrEnabled());
 
         dbNameView.setText(config.getDbName());
-        sgUrlView.setText(config.getSgUrl());
+        sgUriView.setText(config.getSgUri());
     }
 
     private void update() {
-        final Editable dbName = dbNameView.getText();
-        final Editable sgUrl = sgUrlView.getText();
+        final Editable eDbName = dbNameView.getText();
+        final String dbName = (TextUtils.isEmpty(eDbName)) ? null : eDbName.toString();
+
+        final Editable eSgUri = sgUriView.getText();
+        final String sgUri = (TextUtils.isEmpty(eSgUri)) ? null : eSgUri.toString();
+
         final boolean updated = Config.get().update(
             loggingCheckBox.isChecked(),
+            loginCheckBox.isChecked(),
             ccrEnabledCheckBox.isChecked(),
-            (TextUtils.isEmpty(dbName)) ? null : dbName.toString(),
-            (TextUtils.isEmpty(sgUrl)) ? null : sgUrl.toString());
+            dbName,
+            sgUri);
 
         if (updated) { DAO.get().logout(); }
+
+        finish();
     }
 }
