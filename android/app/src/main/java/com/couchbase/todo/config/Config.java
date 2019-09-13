@@ -20,7 +20,9 @@ import androidx.annotation.Nullable;
 
 import java.util.Objects;
 
+import com.couchbase.lite.ConsoleLogger;
 import com.couchbase.lite.Database;
+import com.couchbase.lite.LogDomain;
 import com.couchbase.lite.LogLevel;
 import com.couchbase.todo.BuildConfig;
 
@@ -97,7 +99,9 @@ public final class Config {
     }
 
     private void setLoggingEnabled(boolean enabled) {
-        Database.log.getConsole().setLevel((loggingEnabled) ? LogLevel.VERBOSE : LogLevel.ERROR);
+        final ConsoleLogger logger = Database.log.getConsole();
+        logger.setDomains(LogDomain.ALL_DOMAINS);
+        logger.setLevel((loggingEnabled) ? LogLevel.VERBOSE : LogLevel.ERROR);
         loggingEnabled = enabled;
     }
 }

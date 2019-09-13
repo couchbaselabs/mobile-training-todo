@@ -46,7 +46,7 @@ repositories {
 
 dependencies {
     // Android & Defaults
-    implementation "androidx.appcompat:appcompat:1.0.2"
+    implementation "androidx.appcompat:appcompat:1.1.0"
     implementation "androidx.legacy:legacy-support-v4:${SUPPORT_LIBRARY_VERSION}"
     implementation "androidx.recyclerview:recyclerview:${SUPPORT_LIBRARY_VERSION}"
     implementation "androidx.constraintlayout:constraintlayout:1.1.3"
