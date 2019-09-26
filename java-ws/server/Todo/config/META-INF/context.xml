@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Context>
+    <Environment name="databaseDirectory"
+                 value="/tmp/com.couchbase.lite.todo/database"
+                 type="java.lang.String"/>
+    <Environment name="syncGatewayUrl"
+                 value="ws://localhost:4984/todo"
+                 type="java.lang.String"/>
+</Context>
