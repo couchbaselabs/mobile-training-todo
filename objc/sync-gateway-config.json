@@ -15,9 +15,6 @@
         "moderator": {},
         "admin": {}
       },
-      "unsupported": {
-        "replicator_2":true
-      },
       "sync": `
 function(doc, oldDoc){
   /* Type validation */
