@@ -1,0 +1,63 @@
+apply plugin: 'java'
+apply plugin: 'war'
+apply plugin: 'com.bmuschko.tomcat'
+
+group 'com.couchbase.lite'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.bmuschko:gradle-tomcat-plugin:2.5'
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+
+    compile fileTree(dir: 'libs', include: '*.jar')
+
+    // OkHTTP:
+    compile 'com.squareup.okhttp3:okhttp:4.1.0'
+
+    // Jersey:
+    compile 'org.glassfish.jersey.containers:jersey-container-servlet:2.28'
+    compile 'org.glassfish.jersey.inject:jersey-hk2:2.28'
+    compile 'javax.servlet:javax.servlet-api:4.0.1'
+    compile 'javax.xml.bind:jaxb-api:2.3.1'
+    compile('javax.activation:activation:1.1.1')
+    compile('org.glassfish.jaxb:jaxb-runtime:2.3.1')
+    compile('org.glassfish.jersey.bundles:jaxrs-ri:2.29.1')
+
+    // Jersey-Media:
+    compile 'org.glassfish.jersey.media:jersey-media-multipart:2.29'
+    compile 'org.glassfish.jersey.media:jersey-media-json-jackson:2.29'
+
+    // Tomcat:
+    def tomcatVersion = '9.0.24'
+    tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
+            "org.apache.tomcat.embed:tomcat-embed-logging-juli:9.0.0.M6",
+            "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
+}
+
+tomcat {
+    httpPort = 8080
+    httpProtocol = 'org.apache.coyote.http11.Http11Nio2Protocol'
+    ajpProtocol  = 'org.apache.coyote.ajp.AjpNio2Protocol'
+    contextPath = '/'
+}
+
+[tomcatRun, tomcatRunWar].each { task ->
+    fileTree("libs").visit { FileVisitDetails details ->
+        task.additionalRuntimeResources << file(details.file.path)
+    }
+    task.configFile = file('config/META-INF/context.xml')
+}

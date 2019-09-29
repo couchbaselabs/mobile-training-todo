@@ -1,0 +1,42 @@
+
+# Java class files
+*.class
+
+# Generated files
+bin/
+gen/
+out/
+
+# Native build files
+build_native/
+
+# Gradle files
+.gradle/
+build/
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Log Files
+*.log
+
+# Android Studio Navigation editor temp files
+.navigation/
+
+# Android Studio captures folder
+captures/
+
+# Intellij
+*.iml
+.idea
+
+# Eclipse
+.project
+.classpath
+.settings
+
+# Keystore files
+*.jks
+
+# OSX
+.DS_Store
