@@ -5,7 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Acr.UserDialogs" Version="7.0.1" />
-    <PackageReference Include="Couchbase.Lite.Enterprise" Version="2.6.0" />
+    <PackageReference Include="Couchbase.Lite.Enterprise" Version="2.7.0-b0095" />
     <PackageReference Include="Robo.Mvvm" Version="1.0.1" />
     <PackageReference Include="Xam.Plugin.Media" Version="4.0.1.5" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
