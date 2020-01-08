@@ -340,7 +340,8 @@ public final class DAO {
         // authentication
         config.setAuthenticator(new BasicAuthenticator(username, password));
 
-        if (Config.get().isCcrEnabled()) {
+        final Config.CcrState ccrState = Config.get().getCcrState();
+        if (ccrState != Config.CcrState.OFF) {
             config.setConflictResolver(new SimpleConflictResolver());
         }
 

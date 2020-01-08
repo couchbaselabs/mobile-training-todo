@@ -30,6 +30,8 @@ import com.couchbase.todo.BuildConfig;
 public final class Config {
     private static final String TAG = "CONFIG";
 
+    public enum CcrState {OFF, LOCAL, REMOTE}
+
     private static Config instance;
 
     @NonNull
@@ -40,19 +42,23 @@ public final class Config {
 
     private boolean loggingEnabled;
     private boolean loginRequired = BuildConfig.LOGIN_REQUIRED;
-    private boolean ccrEnabled = BuildConfig.CCR_ENABLED;
+    private CcrState ccrState;
+
     @Nullable
     private String dbName = BuildConfig.DB_NAME;
     @Nullable
     private String sgUri = BuildConfig.SG_URI;
 
-    private Config() { setLoggingEnabled(BuildConfig.LOGGING_ENABLED); }
+    private Config() {
+        setLoggingEnabled(BuildConfig.LOGGING_ENABLED);
+        setCcrState(BuildConfig.CCR_LOCAL_WINS, BuildConfig.CCR_REMOTE_WINS);
+    }
 
     public boolean isLoggingEnabled() { return loggingEnabled; }
 
     public boolean isLoginRequired() { return loginRequired || (dbName == null) || (sgUri != null); }
 
-    public boolean isCcrEnabled() { return ccrEnabled; }
+    public CcrState getCcrState() { return ccrState; }
 
     public boolean isSyncEnabled() { return sgUri != null; }
 
@@ -65,7 +71,7 @@ public final class Config {
     public boolean update(
         boolean loggingEnabled,
         boolean loginRequired,
-        boolean ccrEnabled,
+        CcrState ccrState,
         @Nullable String dbName,
         @Nullable String sgUri) {
         boolean updated = false;
@@ -80,8 +86,8 @@ public final class Config {
             updated = true;
         }
 
-        if (this.ccrEnabled != ccrEnabled) {
-            this.ccrEnabled = ccrEnabled;
+        if (this.ccrState != ccrState) {
+            this.ccrState = ccrState;
             updated = true;
         }
 
@@ -98,6 +104,10 @@ public final class Config {
         return updated;
     }
 
+    private void setCcrState(boolean localWins, boolean remoteWins) {
+        ccrState = (remoteWins) ? CcrState.REMOTE : ((localWins) ? CcrState.LOCAL : CcrState.OFF);
+    }
+
     private void setLoggingEnabled(boolean enabled) {
         final ConsoleLogger logger = Database.log.getConsole();
         logger.setDomains(LogDomain.ALL_DOMAINS);
@@ -105,4 +115,3 @@ public final class Config {
         loggingEnabled = enabled;
     }
 }
-

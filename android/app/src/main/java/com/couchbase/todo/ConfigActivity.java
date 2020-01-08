@@ -21,7 +21,6 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.widget.CheckBox;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -35,16 +34,15 @@ import com.couchbase.todo.db.DAO;
 public class ConfigActivity extends AppCompatActivity {
     private static final String TAG = "ACT_CONFIG";
 
-    public static void start(@NonNull Activity act) {
-        act.startActivity(new Intent(act, ConfigActivity.class));
-    }
+    public static void start(@NonNull Activity act) { act.startActivity(new Intent(act, ConfigActivity.class)); }
 
 
     private CheckBox loggingCheckBox;
     private CheckBox loginCheckBox;
-    private CheckBox ccrEnabledCheckBox;
     private TextInputEditText dbNameView;
     private TextInputEditText sgUriView;
+    private CheckBox ccrLocalCheckBox;
+    private CheckBox ccrRemoteCheckBox;
 
     // Heresy!!  Ignore the back button.
     @Override
@@ -58,10 +56,14 @@ public class ConfigActivity extends AppCompatActivity {
 
         loggingCheckBox = findViewById(R.id.loggingEnabled);
         loginCheckBox = findViewById(R.id.loginRequired);
-        ccrEnabledCheckBox = findViewById(R.id.ccrEnabled);
 
         dbNameView = findViewById(R.id.dbName);
         sgUriView = findViewById(R.id.sgUri);
+
+        ccrLocalCheckBox = findViewById(R.id.ccrLocalWins);
+        ccrRemoteCheckBox = findViewById(R.id.ccrRemoteWins);
+        ccrLocalCheckBox.setOnClickListener(v -> ccrRemoteCheckBox.setChecked(false));
+        ccrRemoteCheckBox.setOnClickListener(v -> ccrLocalCheckBox.setChecked(false));
 
         findViewById(R.id.btnUpdate).setOnClickListener(view -> update());
         findViewById(R.id.btnCancel).setOnClickListener(view -> finish());
@@ -74,7 +76,8 @@ public class ConfigActivity extends AppCompatActivity {
 
         loggingCheckBox.setChecked(config.isLoggingEnabled());
         loginCheckBox.setChecked(config.isLoginRequired());
-        ccrEnabledCheckBox.setChecked(config.isCcrEnabled());
+
+        setCcrState(config.getCcrState());
 
         dbNameView.setText(config.getDbName());
         sgUriView.setText(config.getSgUri());
@@ -90,12 +93,25 @@ public class ConfigActivity extends AppCompatActivity {
         final boolean updated = Config.get().update(
             loggingCheckBox.isChecked(),
             loginCheckBox.isChecked(),
-            ccrEnabledCheckBox.isChecked(),
+            getCcrState(),
             dbName,
             sgUri);
 
         if (updated) { DAO.get().logout(); }
 
         finish();
+    }
+
+    private Config.CcrState getCcrState() {
+        return (ccrRemoteCheckBox.isChecked())
+            ? Config.CcrState.REMOTE
+            : ((ccrLocalCheckBox.isChecked())
+                ? Config.CcrState.LOCAL
+                : Config.CcrState.OFF);
+    }
+
+    private void setCcrState(Config.CcrState state) {
+        ccrLocalCheckBox.setChecked(state == Config.CcrState.LOCAL);
+        ccrRemoteCheckBox.setChecked(state == Config.CcrState.REMOTE);
     }
 }

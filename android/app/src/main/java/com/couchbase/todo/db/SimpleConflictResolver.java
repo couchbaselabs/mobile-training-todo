@@ -18,14 +18,23 @@ package com.couchbase.todo.db;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import com.couchbase.lite.Conflict;
 import com.couchbase.lite.ConflictResolver;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
+import com.couchbase.todo.config.Config;
+
 
 public class SimpleConflictResolver implements ConflictResolver {
     public static final String KEY_CONFLICT = "conflict";
-    private static final String VALUE_CONFLICT = "Custom conflict resolution";
+
+    private static final ThreadLocal<SimpleDateFormat> formatter = new ThreadLocal<SimpleDateFormat>() {
+        @Override protected SimpleDateFormat initialValue() { return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"); }
+    };
+
 
     @Nullable
     @Override
@@ -35,14 +44,26 @@ public class SimpleConflictResolver implements ConflictResolver {
         final Document remoteDoc = conflict.getRemoteDocument();
         if ((localDoc == null) || (remoteDoc == null)) { return null; }
 
-        // otherwise, choose one randomly, but deterministically.
-        final String localRevId = localDoc.getRevisionID();
-        final Document winner = ((localRevId != null) && (localRevId.compareTo(remoteDoc.getRevisionID()) > 0))
-            ? localDoc
-            : remoteDoc;
+        final Document winner;
+        switch (Config.get().getCcrState()) {
+            case LOCAL:
+                winner = localDoc;
+                break;
+            case REMOTE:
+                winner = remoteDoc;
+                break;
+            default:
+                // shouldn't happen: use default strategy
+                final String localRevId = localDoc.getRevisionID();
+                winner = ((localRevId != null) && (localRevId.compareTo(remoteDoc.getRevisionID()) > 0))
+                    ? localDoc
+                    : remoteDoc;
+        }
 
         final MutableDocument doc = winner.toMutable();
-        doc.setString(KEY_CONFLICT, VALUE_CONFLICT);
+        doc.setString(
+            KEY_CONFLICT,
+            "@ " + formatter.get().format(new Date()) + ((winner == remoteDoc) ? ": remote" : ": local"));
 
         return doc;
     }

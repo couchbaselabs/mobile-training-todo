@@ -14,14 +14,16 @@
     <string name="text">New Text</string>
     <string name="verbose_logging_enabled">Verbose Logging</string>
     <string name="login_required">Login Required</string>
-    <string name="ccr_enabled">Custom Conflict Resolution</string>
+    <string name="ccr_label">Custom Conflict Resolution</string>
+    <string name="ccr_local">local</string>
+    <string name="ccr_remote">remote</string>
     <string name="sg_url">SG Url</string>
     <string name="db_name">DB Name</string>
     <string name="cancel">Cancel</string>
     <string name="update">Update</string>
     <string name="instructions">
 Turn replication on by specifying a complete SG URL. Leave the field empty to turn replication off.
-\n\nChanging any value on this page will force a logout.</string>
+        \n\n<b>Changing any value on this page will force a logout.</b></string>
 
     <!-- ??? -->
     <string name="one">1</string>

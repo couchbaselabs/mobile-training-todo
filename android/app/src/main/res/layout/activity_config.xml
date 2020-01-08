@@ -49,22 +49,56 @@
         />
 
     <TextView
-        android:id="@+id/ccrEnabledLabel"
+        android:id="@+id/ccrLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@+id/loginRequiredLabel"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/ccrLocalLabel"
+        android:layout_marginTop="@dimen/spacing_medium"
+        android:text="@string/ccr_label"
+        style="@style/TodoTheme.Text"
+        />
+
+    <TextView
+        android:id="@+id/ccrLocalLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/ccrLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/ccrRemoteLabel"
+        android:layout_marginTop="@dimen/spacing_medium"
+        android:layout_marginStart="@dimen/spacing_large"
+        android:text="@string/ccr_local"
+        style="@style/TodoTheme.Text"
+        />
+
+    <TextView
+        android:id="@+id/ccrRemoteLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/ccrLocalLabel"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/dbNameLayout"
         android:layout_marginTop="@dimen/spacing_medium"
-        android:text="@string/ccr_enabled"
+        android:layout_marginStart="@dimen/spacing_large"
+        android:text="@string/ccr_remote"
         style="@style/TodoTheme.Text"
         />
 
     <CheckBox
-        android:id="@+id/ccrEnabled"
+        android:id="@+id/ccrLocalWins"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintBaseline_toBaselineOf="@+id/ccrEnabledLabel"
+        app:layout_constraintBaseline_toBaselineOf="@+id/ccrLocalLabel"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+
+    <CheckBox
+        android:id="@+id/ccrRemoteWins"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBaseline_toBaselineOf="@+id/ccrRemoteLabel"
         app:layout_constraintEnd_toEndOf="parent"
         />
 
@@ -72,7 +106,7 @@
         android:id="@+id/dbNameLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/ccrEnabledLabel"
+        app:layout_constraintTop_toBottomOf="@+id/ccrRemoteLabel"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/sgUrlLayout"

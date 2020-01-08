@@ -18,7 +18,8 @@ android {
             minifyEnabled false
             buildConfigField "boolean", "LOGGING_ENABLED", "${LOGGING_ENABLED.toString()}"
             buildConfigField "boolean", "LOGIN_REQUIRED", "${LOGIN_REQUIRED.toString()}"
-            buildConfigField "boolean", "CCR_ENABLED", "${CCR_ENABLED.toString()}"
+            buildConfigField "boolean", "CCR_REMOTE_WINS", "${CCR_REMOTE_WINS.toString()}"
+            buildConfigField "boolean", "CCR_LOCAL_WINS", "${CCR_LOCAL_WINS.toString()}"
             buildConfigField "String", "DB_NAME", (DB_NAME == null) ? "null" : "\"${DB_NAME}\""
             buildConfigField "String", "SG_URI", (SG_URI == null) ? "null" : "\"${SG_URI}\""
         }
@@ -26,7 +27,8 @@ android {
             minifyEnabled false
             buildConfigField "boolean", "LOGGING_ENABLED", "${LOGGING_ENABLED.toString()}"
             buildConfigField "boolean", "LOGIN_REQUIRED", "${LOGIN_REQUIRED.toString()}"
-            buildConfigField "boolean", "CCR_ENABLED", "${CCR_ENABLED.toString()}"
+            buildConfigField "boolean", "CCR_REMOTE_WINS", "${CCR_REMOTE_WINS.toString()}"
+            buildConfigField "boolean", "CCR_LOCAL_WINS", "${CCR_LOCAL_WINS.toString()}"
             buildConfigField "String", "DB_NAME", (DB_NAME == null) ? "null" : "\"${DB_NAME}\""
             buildConfigField "String", "SG_URI", (SG_URI == null) ? "null" : "\"${SG_URI}\""
         }
