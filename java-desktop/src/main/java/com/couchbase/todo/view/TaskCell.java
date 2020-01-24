@@ -69,7 +69,11 @@ public class TaskCell extends ListCell<Task> {
         nameLabel.setText(task.getName());
         completeCheckbox.setSelected(task.isComplete());
         Blob blob = task.getImage();
-        imageView.setImage(blob != null ? new Image(blob.getContentStream()) : null);
+        if (blob != null) {
+            imageView.setImage(new Image(blob.getContentStream()));
+        } else {
+            imageView.setImage(new Image(getClass().getResourceAsStream("/image/placeholder.png")));
+        }
         setGraphic(pane);
     }
 
