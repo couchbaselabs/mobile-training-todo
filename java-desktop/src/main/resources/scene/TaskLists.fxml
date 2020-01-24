@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="668.0" prefWidth="215.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.couchbase.todo.controller.TaskListsController">
+    <children>
+        <VBox fillWidth="true" layoutX="129.0" layoutY="8.0" prefHeight="200.0" prefWidth="215.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <children>
+                <Button fx:id="createListButton" maxWidth="Infinity" mnemonicParsing="false" prefHeight="44.0" text="CREATE NEW LIST" VBox.vgrow="ALWAYS">
+               <VBox.margin>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="10.0" />
+               </VBox.margin></Button>
+                <ListView id="listView" fx:id="listView" fixedCellSize="44.0" prefHeight="404.0" prefWidth="215.0" style="-fx-background-color: transparent;" VBox.vgrow="ALWAYS">
+                    <contextMenu>
+                        <ContextMenu>
+                            <items>
+                                <MenuItem fx:id="editMenuItem" mnemonicParsing="false" text="Edit" />
+                                <MenuItem fx:id="removeMenuItem" mnemonicParsing="false" text="Remove" />
+                            </items>
+                        </ContextMenu>
+                    </contextMenu>
+               <VBox.margin>
+                  <Insets bottom="5.0" left="5.0" right="5.0" />
+               </VBox.margin>
+                </ListView>
+            </children>
+        </VBox>
+    </children>
+</AnchorPane>
