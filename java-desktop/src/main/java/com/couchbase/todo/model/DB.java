@@ -251,6 +251,24 @@ public class DB {
             .setReplicatorType(ReplicatorConfiguration.ReplicatorType.PUSH_AND_PULL)
             .setContinuous(true);
 
+        TodoApp.CR_MODE crmode = TodoApp.SYNC_CR_MODE;
+        if (crmode == TodoApp.CR_MODE.DEFAULT) {
+            config.setConflictResolver(null);
+        } else {
+            config.setConflictResolver(conflict -> {
+                Document local = conflict.getLocalDocument();
+                Document remote = conflict.getRemoteDocument();
+                if (local == null || remote == null) { return null; }
+                if (crmode == TodoApp.CR_MODE.LOCAL) {
+                    return local;
+                } else if (crmode == TodoApp.CR_MODE.REMOTE) {
+                    return remote;
+                } else {
+                    return null;
+                }
+            });
+        }
+
         // authentication
         config.setAuthenticator(new BasicAuthenticator(username, password));
 

@@ -15,9 +15,12 @@ import com.couchbase.todo.model.DB;
 
 public class TodoApp extends Application {
 
+    public enum CR_MODE { DEFAULT, LOCAL, REMOTE }
+
     public static final String DB_DIR = "db";
     public static final boolean SYNC_ENABLED = true;
     public static final String SYNC_URL = "ws://127.0.0.1:4984/todo";
+    public static final CR_MODE SYNC_CR_MODE = CR_MODE.DEFAULT;
     public static final boolean LOG_ENABLED = true;
 
     @Override
