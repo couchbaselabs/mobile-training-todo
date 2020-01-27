@@ -12,7 +12,6 @@ import com.couchbase.todo.controller.LoginController;
 import com.couchbase.todo.controller.MainController;
 import com.couchbase.todo.model.DB;
 
-
 public class TodoApp extends Application {
 
     public enum CR_MODE { DEFAULT, LOCAL, REMOTE }

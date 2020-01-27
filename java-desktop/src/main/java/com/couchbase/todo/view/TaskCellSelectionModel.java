@@ -7,6 +7,7 @@ import javafx.scene.control.MultipleSelectionModel;
 import com.couchbase.todo.model.Task;
 
 public class TaskCellSelectionModel extends MultipleSelectionModel<Task> {
+
     @Override
     public ObservableList<Integer> getSelectedIndices() {
         return FXCollections.emptyObservableList();
@@ -55,4 +56,5 @@ public class TaskCellSelectionModel extends MultipleSelectionModel<Task> {
 
     @Override
     public void selectNext() { }
+
 }

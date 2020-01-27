@@ -14,7 +14,6 @@ import org.jetbrains.annotations.NotNull;
 import com.couchbase.todo.TodoApp;
 import com.couchbase.todo.model.DB;
 
-
 public class LoginController implements Initializable {
 
     @FXML private TextField userNameField;
@@ -41,8 +40,6 @@ public class LoginController implements Initializable {
             if (username.trim().length() > 0 && password.trim().length() > 0) {
                 DB.get().login(username, password);
                 TodoApp.gotoMainScreen(this.stage);
-            } else {
-                // TODO: Show Alert
             }
         });
     }

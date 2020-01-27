@@ -6,7 +6,6 @@ import org.jetbrains.annotations.NotNull;
 
 import com.couchbase.todo.model.DB;
 
-
 public class DeleteDocService extends Service<Void> {
 
     private @NotNull String docId;
@@ -26,4 +25,5 @@ public class DeleteDocService extends Service<Void> {
             }
         };
     }
+
 }

@@ -30,7 +30,6 @@ import com.couchbase.todo.model.service.SaveDocService;
 import com.couchbase.todo.model.TaskList;
 import com.couchbase.todo.view.TaskListCell;
 
-
 public final class TaskListsController implements Initializable, TaskListCell.TaskListCellListener {
 
     private static final String TYPE = "task-list";
@@ -105,7 +104,6 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
         Optional<String> result = dialog.showAndWait();
 
         result.ifPresent(name -> {
-            // TODO: Execute on non-ui thread
             String username = DB.get().getLoggedInUsername();
             String docId =  username + "." + UUID.randomUUID();
             MutableDocument doc = new MutableDocument(docId);
@@ -123,7 +121,6 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
         dialog.setContentText("List Name");
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(name -> {
-            // TODO: Execute on non-ui thread
             Document doc = DB.get().getDocument(taskList.getId());
             if (doc != null) {
                 MutableDocument mDoc = doc.toMutable();
