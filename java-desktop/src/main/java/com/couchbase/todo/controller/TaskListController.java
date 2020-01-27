@@ -22,6 +22,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MultipleSelectionModel;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.AnchorPane;
@@ -47,7 +49,8 @@ import com.couchbase.todo.model.service.DeleteDocService;
 import com.couchbase.todo.model.service.SaveDocService;
 import com.couchbase.todo.model.Task;
 import com.couchbase.todo.model.TaskList;
-import com.couchbase.todo.view.TaskCell;;
+import com.couchbase.todo.view.TaskCell;
+import com.couchbase.todo.view.TaskCellSelectionModel;;
 
 public class TaskListController implements Initializable, TaskCell.TaskCellListener {
 
@@ -90,6 +93,7 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
             cell.setListener(this);
             return cell;
         });
+        listView.setSelectionModel(new TaskCellSelectionModel());
         initialized.set(true);
 
         updateTaskList();
