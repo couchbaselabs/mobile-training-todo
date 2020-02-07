@@ -171,7 +171,11 @@ namespace Training.ViewModels
                 Dialogs = dialogs,
                 MediaPicker = mediaPicker
             });
-            Thumbnail = _imageService.Square(Task.GetImage(), ImageDigest).Result;
+
+            using (var s = Task.GetImage())
+            {
+                Thumbnail = _imageService.Square(s, ImageDigest).Result;
+            }
         }
 
         #endregion
@@ -192,7 +196,10 @@ namespace Training.ViewModels
         private async Task SelectImage()
         {
             await ChooseImage();
-            Thumbnail = await _imageService.Square(Task.GetImage(), ImageDigest);
+            using (var s = Task.GetImage())
+            {
+                Thumbnail = await _imageService.Square(s, ImageDigest);
+            }
         }
 
         private async Task ChooseImage()
