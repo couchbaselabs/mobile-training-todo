@@ -18,7 +18,7 @@ ToDo sample app.
 ## How to use the replication feature?
 
 1. Download the latest [Sync Gateway](https://www.couchbase.com/downloads).
-2. Start Sync Gateway with the the configuration from [here](https://github.com/couchbaselabs/mobile-training-todo/blob/master/objc/sync-gateway-config.json) as follows:
+2. Start Sync Gateway with the the configuration from [here](https://github.com/couchbaselabs/mobile-training-todo/blob/master/config/sync-gateway-config.json) as follows:
 
  ```
 ~/Downloads/couchbase-sync-gateway/bin/sync_gateway sync-gateway-config.json
