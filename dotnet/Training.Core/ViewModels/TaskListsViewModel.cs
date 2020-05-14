@@ -129,6 +129,8 @@ namespace Training.ViewModels
 
         public ICommand LogoutCommand => new Command(() => Logout());
 
+        public ICommand CloseDBCommand => new Command(() => CloseDB());
+
         ICommand _selectCommand;
         public ICommand SelectCommand
         {
@@ -193,6 +195,11 @@ namespace Training.ViewModels
         {
             CoreApp.EndSession();
             Navigation.SetRoot(ServiceContainer.GetInstance<LoginViewModel>(), false);
+        }
+
+        private void CloseDB()
+        {
+            CoreApp.CloseDatabase();
         }
 
         private void CreateNewItem(PromptResult result)

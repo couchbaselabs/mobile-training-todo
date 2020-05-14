@@ -17,6 +17,7 @@
 	</ContentPage.Resources>
     <ContentPage.ToolbarItems>
 		<ToolbarItem Text="+" Command="{Binding AddCommand}"/>
+        <ToolbarItem Text="Close DB" Command="{Binding CloseDBCommand}"/>
 		<ToolbarItem x:Name="_logoutButton" Text="Logout" Command="{Binding LogoutCommand}" Priority="1" />
 	</ContentPage.ToolbarItems>
 	<ContentPage.Content>
