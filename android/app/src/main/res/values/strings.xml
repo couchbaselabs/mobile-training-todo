@@ -3,6 +3,7 @@
     <string name="app_name">Todo</string>
     <string name="logout">Logout</string>
     <string name="config">Config</string>
+    <string name="delete_db">Logout/Delete</string>
 
     <!-- Login -->
     <string name="name">Name</string>

@@ -14,4 +14,9 @@
         android:title="@string/config"
         app:showAsAction="ifRoom"
         />
+    <item
+        android:id="@+id/delete"
+        android:title="@string/delete_db"
+        app:showAsAction="never"
+        />
 </menu>

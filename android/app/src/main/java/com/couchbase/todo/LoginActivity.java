@@ -23,10 +23,11 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.Arrays;
 
 import com.couchbase.todo.config.Config;
 import com.couchbase.todo.db.DAO;
@@ -35,17 +36,25 @@ import com.couchbase.todo.db.DAO;
 public class LoginActivity extends AppCompatActivity {
     private static final String TAG = "ACT_LOGIN";
 
-    private static class LoginTask extends AsyncTask<String, Void, Void> {
+    private static class LoginTask extends AsyncTask<Void, Void, Void> {
+        @NonNull
+        private final String username;
+        @NonNull
+        private final char[] password;
         @Nullable
         @SuppressLint("StaticFieldLeak")
         private LoginActivity ctxt;
 
-        LoginTask(@NonNull LoginActivity ctxt) { this.ctxt = ctxt; }
+        LoginTask(@NonNull LoginActivity ctxt, @NonNull String username, @NonNull char[] password) {
+            this.ctxt = ctxt;
+            this.username = username;
+            this.password = password;
+        }
 
         // args are username, password
         @Override
-        protected Void doInBackground(String... creds) {
-            DAO.get().login(creds[0], creds[1]);
+        protected Void doInBackground(Void... ignore) {
+            DAO.get().login(username, password);
             return null;
         }
 
@@ -54,6 +63,7 @@ public class LoginActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void ignore) {
+            Arrays.fill(password, ' ');
             if (ctxt != null) { ctxt.onLogin(); }
         }
     }
@@ -109,10 +119,11 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        final String password = pwdView.getText().toString();
+        final char[] password = new char[pwdView.length()];
+        pwdView.getText().getChars(0, password.length, password, 0);
 
-        loginTask = new LoginTask(this);
-        loginTask.execute(username, password);
+        loginTask = new LoginTask(this, username, password);
+        loginTask.execute();
     }
 
     void onLogin() {

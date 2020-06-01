@@ -74,6 +74,14 @@ public abstract class ToDoActivity extends AppCompatActivity {
             return true;
         }
 
+        if (item.getItemId() == R.id.delete) {
+            DAO.get().logout(true);
+            LoginActivity.start(this);
+            finish();
+            return true;
+        }
+
+
         return super.onOptionsItemSelected(item);
     }
 

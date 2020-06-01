@@ -34,7 +34,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@+id/loggingEnabledLabel"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/ccrEnabledLabel"
+        app:layout_constraintBottom_toTopOf="@+id/ccrLabel"
         android:layout_marginTop="@dimen/spacing_medium"
         android:text="@string/login_required"
         style="@style/TodoTheme.Text"
