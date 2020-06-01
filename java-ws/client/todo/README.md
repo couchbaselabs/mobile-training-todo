@@ -1,10 +1,9 @@
-# Todo Web Client
+# Todo Web Client using VueJS framework (https://vuejs.org).
 
 ## Project setup
 ```
 npm install
 ```
-
 ### Compiles and hot-reloads for development
 ```
 npm run serve
