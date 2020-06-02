@@ -5,7 +5,7 @@ plugins {
 }
 
 ext {
-    COUCHBASE_LITE_VERSION = "2.7.0-94"
+    COUCHBASE_LITE_VERSION = "2.8.0-176"
 }
 
 group 'com.couchbase'
@@ -21,7 +21,7 @@ repositories {
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 
-    implementation "com.couchbase.lite:couchbase-lite-java-ee:${COUCHBASE_LITE_VERSION}"
+    implementation "com.couchbase.lite:couchbase-lite-java-ee-macos:${COUCHBASE_LITE_VERSION}"
 
     implementation 'org.jetbrains:annotations:15.0'
 }
