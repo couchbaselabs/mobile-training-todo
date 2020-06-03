@@ -111,7 +111,7 @@ public final class Config {
     private void setLoggingEnabled(boolean enabled) {
         final ConsoleLogger logger = Database.log.getConsole();
         logger.setDomains(LogDomain.ALL_DOMAINS);
-        logger.setLevel((loggingEnabled) ? LogLevel.VERBOSE : LogLevel.ERROR);
+        logger.setLevel((enabled) ? LogLevel.DEBUG : LogLevel.ERROR);
         loggingEnabled = enabled;
     }
 }

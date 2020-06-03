@@ -81,7 +81,6 @@ public abstract class ToDoActivity extends AppCompatActivity {
             return true;
         }
 
-
         return super.onOptionsItemSelected(item);
     }
 

@@ -26,6 +26,7 @@ import androidx.annotation.WorkerThread;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -315,14 +316,20 @@ public final class DAO {
 
     // forceShutdown calls this from the UI thread.  Nobody else should.
     private void closeDatabase(Database db) {
-        try { db.close(); }
+        try {
+            db.close();
+            Log.e(TAG, "Database closed");
+        }
         catch (CouchbaseLiteException e) {
             Log.e(TAG, "Failed to close database: " + db.getName(), e);
         }
     }
 
     private void deleteDatabase(Database db) {
-        try { db.delete(); }
+        try {
+            db.delete();
+            Log.e(TAG, "Database deleted");
+        }
         catch (CouchbaseLiteException e) {
             Log.e(TAG, "Failed to delete database: " + db.getName(), e);
         }
@@ -346,7 +353,8 @@ public final class DAO {
             .setContinuous(true);
 
         // authentication
-        config.setAuthenticator(new BasicAuthenticator(username, password));
+        config.setAuthenticator(new BasicAuthenticator(username, new String(password)));
+        Arrays.fill(password, ' ');
 
         final Config.CcrState ccrState = Config.get().getCcrState();
         if (ccrState != Config.CcrState.OFF) {
@@ -379,8 +387,7 @@ public final class DAO {
     @Nullable
     private URI getReplicationUri(@NonNull String username) {
         try { return URI.create(Config.get().getSgUri()).normalize(); }
-        catch (IllegalArgumentException ignore) { }
-
+        catch (IllegalArgumentException e) { Log.d(TAG, "Login failed", e); }
         reportError(new CouchbaseLiteException(
             "Invalid SG URI",
             CBLError.Domain.CBLITE,
@@ -393,6 +400,7 @@ public final class DAO {
         if (!Config.get().isSyncEnabled()) { return; }
         final Replicator repl = replicator;
         if (repl != null) { repl.stop(); }
+        Log.i(TAG, "Replicator stopped");
     }
 
     private void reportError(@NonNull CouchbaseLiteException err) {
