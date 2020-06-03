@@ -40,6 +40,11 @@ let kCrashlyticsEnabled = true
 // Constants:
 let kActivities = ["Stopped", "Offline", "Connecting", "Idle", "Busy"]
 
+// Logout Method
+enum LogoutMethod {
+    case closeDatabase, deleteDatabase;
+}
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, LoginViewControllerDelegate {
     var window: UIWindow?
@@ -109,6 +114,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         try database.close()
     }
     
+    func deleteDatabase() throws {
+        try database.delete()
+    }
+    
     func createDatabaseIndex() {
         // For task list query:
         let type = ValueIndexItem.expression(Expression.property("type"))
@@ -144,13 +153,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         window!.rootViewController = navigation
     }
     
-    func logout() {
-        stopReplication()
-        do {
-            try closeDatabase()
-        } catch let error as NSError {
-            NSLog("Cannot close database: %@", error)
+    func logout(method: LogoutMethod) {
+        let startTime = Date().timeIntervalSinceReferenceDate
+        if method == .closeDatabase {
+            do {
+                try closeDatabase()
+            } catch let error as NSError {
+                NSLog("Cannot close database: %@", error)
+                return
+            }
+        } else if method == .deleteDatabase {
+            do {
+                try deleteDatabase()
+            } catch let error as NSError {
+                NSLog("Cannot delete database: %@", error)
+                return
+            }
         }
+        let endTime = Date().timeIntervalSinceReferenceDate
+        NSLog("Logout took in \(endTime - startTime) seconds")
+        
         let oldUsername = Session.username
         Session.username = nil
         Session.password = nil
@@ -215,7 +237,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                                    message: "Your username or password is not correct",
                                    error: nil,
                                    onClose: {
-                                    self.logout()
+                                    self.logout(method: .closeDatabase)
                     })
                 }
             }

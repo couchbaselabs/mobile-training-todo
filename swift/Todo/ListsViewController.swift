@@ -150,8 +150,22 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating, UISea
     }
     
     @IBAction func logOut(sender: Any) {
-        let app = UIApplication.shared.delegate as! AppDelegate
-        app.logout()
+        let alert = UIAlertController(title: nil, message: nil,
+                                      preferredStyle: .actionSheet)
+        
+        alert.addAction(UIAlertAction(title: "Close Database", style: .default) { _ in
+            let app = UIApplication.shared.delegate as! AppDelegate
+            app.logout(method: .closeDatabase)
+        })
+        
+        alert.addAction(UIAlertAction(title: "Delete Database", style: .default) { _ in
+            let app = UIApplication.shared.delegate as! AppDelegate
+            app.logout(method: .deleteDatabase)
+        })
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in })
+        
+        self.present(alert, animated: true, completion: nil)
     }
    
     // MARK: - UITableViewController
