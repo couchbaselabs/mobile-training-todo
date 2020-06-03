@@ -256,6 +256,8 @@
         };
     }
     
+    NSLog(@"[Task#%ld] %@ : %@", (long)indexPath.row, docID, [result stringAtIndex: 1]);
+    
     return cell;
 }
 
