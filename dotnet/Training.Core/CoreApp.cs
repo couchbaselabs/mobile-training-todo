@@ -43,7 +43,8 @@ namespace Training.Core
     {
         #region Constants
 
-        private static readonly Uri SyncGatewayUrl = new Uri("ws://ec2-54-197-194-172.compute-1.amazonaws.com:4984/todo");
+        //sync gateway address from Sri @ 06/02/20
+        private static readonly Uri SyncGatewayUrl = new Uri("ws://ec2-18-212-13-240.compute-1.amazonaws.com:4984/todo");
 
         #endregion
 
