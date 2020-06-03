@@ -53,7 +53,7 @@
     
     // Get database and username:
     // Get username:
-    AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;    
     _database = app.database;
     _username = [CBLSession sharedInstance].username;
     
@@ -160,6 +160,32 @@
      } onOk:^(NSString * _Nonnull name) {
          [self createTaskList:name];
      }];
+}
+
+- (IBAction)logoutAction:(id)sender {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil
+                                                                   message:nil
+                                                            preferredStyle:UIAlertControllerStyleActionSheet];
+    
+    [alert addAction:[UIAlertAction actionWithTitle:@"Close Database"
+                                              style:UIAlertActionStyleDefault
+                                            handler:^(UIAlertAction *action) {
+        AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
+        [app logout: CBLLogoutModeCloseDatabase];
+    }]];
+    
+    [alert addAction:[UIAlertAction actionWithTitle:@"Delete Database"
+                                              style:UIAlertActionStyleDefault
+                                            handler:^(UIAlertAction *action) {
+        AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
+        [app logout: CBLLogoutModeDeleteDatabase];
+    }]];
+    
+    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel"
+                                                  style:UIAlertActionStyleCancel
+                                                handler:^(UIAlertAction *action) { }]];
+    
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 #pragma mark - Table view data source

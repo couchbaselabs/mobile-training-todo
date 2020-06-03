@@ -129,7 +129,7 @@
     CBLMutableDocument *task = [[_database documentWithID: taskID] toMutable];
     [task setBoolean:complete forKey:@"complete"];
     NSError *error;
-    if ([_database saveDocument:task error:&error] == nil)
+    if (![_database saveDocument:task error:&error])
         [CBLUi showErrorOn:self message:@"Couldn't update complete status" error:error];
 }
 

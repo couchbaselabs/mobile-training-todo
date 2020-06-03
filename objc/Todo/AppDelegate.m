@@ -14,7 +14,7 @@
 #define kLoggingEnabled YES
 #define kLoginFlowEnabled YES
 #define kSyncEnabled YES
-#define kSyncEndpoint @"ws://localhost:4984/todo"
+#define kSyncEndpoint @"ws://ec2-18-212-13-240.compute-1.amazonaws.com:4984/todo"
 #define kSyncWithPushNotification NO
 
 # pragma mark - Custom conflict resolver
@@ -102,6 +102,10 @@ typedef enum: NSUInteger {
     return [_database close: error];
 }
 
+- (BOOL)deleteDatabase: (NSError**)error {
+    return [_database delete: error];
+}
+
 - (void)createDatabaseIndex {
     NSError *error;
     
@@ -137,12 +141,26 @@ typedef enum: NSUInteger {
     self.window.rootViewController = navigation;
 }
 
-- (void)logout {
-    [self stopReplicator];
+- (void)logout: (CBLLogoutMethod)method {
+    if (!kLoginFlowEnabled)
+        return;
     
-    NSError *error;
-    if (![self closeDatabase: &error])
-        NSLog(@"Cannot close database: %@", error);
+    NSTimeInterval startTime = [NSDate timeIntervalSinceReferenceDate];
+    if (method == CBLLogoutModeCloseDatabase) {
+        NSError *error;
+        if (![self closeDatabase: &error]) {
+            NSLog(@"Cannot close database: %@", error);
+            return;
+        }
+    } else if (method == CBLLogoutModeDeleteDatabase) {
+        NSError *error;
+        if (![self deleteDatabase: &error]) {
+            NSLog(@"Cannot delete database: %@", error);
+            return;
+        }
+    }
+    NSTimeInterval endTime = [NSDate timeIntervalSinceReferenceDate];
+    NSLog(@"Logout took %f seconds", (endTime - startTime));
     
     NSString *oldUsername = [CBLSession sharedInstance].username;
     CBLSession.sharedInstance.username = nil;
@@ -206,9 +224,8 @@ typedef enum: NSUInteger {
                            title:@"Authentication Error"
                          message:@"Your username or passpword is not correct."
                            error:nil
-                         onClose:^{
-                             [wSelf logout];
-                         }];
+                         onClose:^{ [wSelf logout: CBLLogoutModeCloseDatabase]; }
+             ];
         }
 
     }];
@@ -218,7 +235,7 @@ typedef enum: NSUInteger {
 - (void)stopReplicator {
     if (!kSyncEnabled)
         return;
-    
+
     [_replicator stop];
 }
 
