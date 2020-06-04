@@ -19,6 +19,7 @@
 		<ToolbarItem Text="+" Command="{Binding AddCommand}"/>
         <ToolbarItem Text="Close DB" Command="{Binding CloseDBCommand}"/>
 		<ToolbarItem x:Name="_logoutButton" Text="Logout" Command="{Binding LogoutCommand}" Priority="1" />
+        <ToolbarItem Text="DB Delete Logout" Command="{Binding DbDeleteLogoutCommand}" Priority="1" />
 	</ContentPage.ToolbarItems>
 	<ContentPage.Content>
         <controls:ListView ItemsSource="{Binding Items}" 
