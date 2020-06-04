@@ -275,7 +275,7 @@ public final class DAO {
 
         try {
             final Document doc = fetch(docId);
-            if (doc != null) { db.delete(); }
+            if (doc != null) { db.delete(doc); }
         }
         catch (CouchbaseLiteException e) { reportError(e); }
     }
@@ -436,11 +436,11 @@ public final class DAO {
     }
 
     // always deliver state asynchronously, on the main thread
-    private void deliverNewState(
-        @NonNull DAOListener listener,
-        @NonNull AbstractReplicator.ActivityLevel state) {
-        if (Config.get().isSyncEnabled()) { return; }
-        mainHandler.post(() -> listener.onNewState(state));
+    private void deliverNewState(@NonNull DAOListener listener, @NonNull AbstractReplicator.ActivityLevel state) {
+        mainHandler.post(
+            () -> listener.onNewState((Config.get().isSyncEnabled())
+                ? state
+                : AbstractReplicator.ActivityLevel.OFFLINE));
     }
 
     private void verifyNotUIThread() {
