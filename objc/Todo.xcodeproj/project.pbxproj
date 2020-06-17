@@ -24,6 +24,7 @@
 		93A843301E3B154200B4AF2D /* CBLTaskTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 93A8432F1E3B154200B4AF2D /* CBLTaskTableViewCell.m */; };
 		93A843371E3B307D00B4AF2D /* CBLImage.m in Sources */ = {isa = PBXBuildFile; fileRef = 93A843361E3B307D00B4AF2D /* CBLImage.m */; };
 		93A8433A1E3B420B00B4AF2D /* CBLTaskImageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 93A843391E3B420B00B4AF2D /* CBLTaskImageViewController.m */; };
+		93DED1952499C45500595294 /* CBLDocLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 93DED1942499C45400595294 /* CBLDocLogger.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -71,6 +72,8 @@
 		93A843381E3B420B00B4AF2D /* CBLTaskImageViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBLTaskImageViewController.h; sourceTree = "<group>"; };
 		93A843391E3B420B00B4AF2D /* CBLTaskImageViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CBLTaskImageViewController.m; sourceTree = "<group>"; };
 		93BF1ECF2162B2C900666736 /* Todo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Todo.entitlements; sourceTree = "<group>"; };
+		93DED1932499C45400595294 /* CBLDocLogger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CBLDocLogger.h; sourceTree = "<group>"; };
+		93DED1942499C45400595294 /* CBLDocLogger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CBLDocLogger.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -128,6 +131,8 @@
 				93A019D81EF305470097D427 /* CBLUsersViewController.m */,
 				933635101EDE2A7C00349E9A /* CBLSession.h */,
 				933635111EDE2A7C00349E9A /* CBLSession.m */,
+				93DED1932499C45400595294 /* CBLDocLogger.h */,
+				93DED1942499C45400595294 /* CBLDocLogger.m */,
 				933F1AB91F39431100338C6A /* CBLConstants.h */,
 				937EAC121E3AB72200133693 /* Main.storyboard */,
 				937EAC151E3AB72200133693 /* Assets.xcassets */,
@@ -212,6 +217,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);
@@ -251,6 +257,7 @@
 				937EAC461E3ADCBE00133693 /* CBLUi.m in Sources */,
 				937EAC0B1E3AB72200133693 /* main.m in Sources */,
 				937EAC3E1E3ABF4C00133693 /* CBLListsViewController.m in Sources */,
+				93DED1952499C45500595294 /* CBLDocLogger.m in Sources */,
 				937EAC491E3AE0ED00133693 /* CBLTextDialog.m in Sources */,
 				93A019D91EF305470097D427 /* CBLUsersViewController.m in Sources */,
 				9336350C1EDE1DA500349E9A /* CBLLoginViewController.m in Sources */,

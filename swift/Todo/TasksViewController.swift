@@ -360,7 +360,16 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
         }
         update.backgroundColor = UIColor(red: 0.0, green: 0.48, blue: 1.0, alpha: 1.0)
         
-        return [delete, update]
+        let log = UITableViewRowAction(style: .normal, title: "Log") {
+            (action, indexPath) -> Void in
+            // Dismiss row actions:
+            tableView.setEditing(false, animated: true)
+            // Get doc:
+            let doc = self.database.document(withID: docID)!
+            logTask(doc: doc)
+        }
+        
+        return [delete, update, log]
     }
     
     // MARK: - UISearchController

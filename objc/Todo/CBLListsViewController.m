@@ -14,6 +14,7 @@
 #import "CBLTasksViewController.h"
 #import "CBLUsersViewController.h"
 #import "CBLUi.h"
+#import "CBLDocLogger.h"
 
 @interface CBLListsViewController () <UISearchResultsUpdating, UISearchBarDelegate> {
     UISearchController *_searchController;
@@ -258,7 +259,17 @@
     }];
     update.backgroundColor = [UIColor colorWithRed:0.0 green:0.48 blue:1.0 alpha:1.0];
     
-    return @[delete, update];
+    // Log action:
+    UITableViewRowAction *log = [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleNormal
+                                                                   title:@"Log"
+                                                                 handler:
+     ^(UITableViewRowAction *action, NSIndexPath *indexPath) {
+        // Dismiss row actions:
+        [tableView setEditing:NO animated:YES];
+        CBLDocument *doc = [_database documentWithID:docID];
+        [CBLDocLogger logTaskList:doc inDatabase:_database];
+    }];
+    return @[delete, update, log];
 }
 
 #pragma mark - UISearchController

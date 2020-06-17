@@ -31,6 +31,7 @@
 		93D999FD1C7FE78300FEFF17 /* TextDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D999FC1C7FE78300FEFF17 /* TextDialog.swift */; };
 		93D9D9AC1EDF8427001355EE /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D9D9AB1EDF8427001355EE /* Session.swift */; };
 		93D9D9AE1EDF8495001355EE /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D9D9AD1EDF8495001355EE /* LoginViewController.swift */; };
+		93DED1972499CDE900595294 /* DogLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93DED1962499CDE900595294 /* DogLogger.swift */; };
 		93F4B2C31C6940D6005FF4D8 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93F4B2C21C6940D6005FF4D8 /* AppDelegate.swift */; };
 		93F4B2C51C6940D6005FF4D8 /* ListsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93F4B2C41C6940D6005FF4D8 /* ListsViewController.swift */; };
 		93F4B2C81C6940D6005FF4D8 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 93F4B2C61C6940D6005FF4D8 /* Main.storyboard */; };
@@ -78,6 +79,7 @@
 		93D999FC1C7FE78300FEFF17 /* TextDialog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextDialog.swift; sourceTree = "<group>"; };
 		93D9D9AB1EDF8427001355EE /* Session.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
 		93D9D9AD1EDF8495001355EE /* LoginViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
+		93DED1962499CDE900595294 /* DogLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DogLogger.swift; sourceTree = "<group>"; };
 		93F4B2BF1C6940D6005FF4D8 /* Todo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Todo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		93F4B2C21C6940D6005FF4D8 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		93F4B2C41C6940D6005FF4D8 /* ListsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListsViewController.swift; sourceTree = "<group>"; };
@@ -170,6 +172,7 @@
 				93D6508D1EF441DE00EA44F3 /* UsersViewController.swift */,
 				933F1AB71F393EEE00338C6A /* Constants.swift */,
 				93D9D9AB1EDF8427001355EE /* Session.swift */,
+				93DED1962499CDE900595294 /* DogLogger.swift */,
 				9382586A21632B46006A75AD /* QE.swift */,
 				93F4B2C61C6940D6005FF4D8 /* Main.storyboard */,
 				93F4B2C91C6940D6005FF4D8 /* Assets.xcassets */,
@@ -233,6 +236,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);
@@ -307,6 +311,7 @@
 			files = (
 				93F4B2C51C6940D6005FF4D8 /* ListsViewController.swift in Sources */,
 				934646BC1C69CF6B002F52C9 /* TasksViewController.swift in Sources */,
+				93DED1972499CDE900595294 /* DogLogger.swift in Sources */,
 				934646C31C6AC4CD002F52C9 /* TaskTableViewCell.swift in Sources */,
 				93D6508E1EF441DE00EA44F3 /* UsersViewController.swift in Sources */,
 				93F4B2C31C6940D6005FF4D8 /* AppDelegate.swift in Sources */,
