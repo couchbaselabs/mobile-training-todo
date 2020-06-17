@@ -27,9 +27,10 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
-using Training.Core;
 using Windows.UI.Xaml.Controls;
 using Microsoft.Extensions.Caching.Memory;
+using Training.Core;
+using Plugin.Media;
 
 namespace Training.UWP.Services
 {
@@ -47,7 +48,8 @@ namespace Training.UWP.Services
 
         #region Variables
 
-        private MemoryCache _cache = new MemoryCache(new MemoryCacheOptions {
+        private MemoryCache _cache = new MemoryCache(new MemoryCacheOptions
+        {
             CompactOnMemoryPressure = true
         });
 
@@ -55,29 +57,30 @@ namespace Training.UWP.Services
 
         #region Private API
 
-        private async Task<InMemoryRandomAccessStream> Shrink(IRandomAccessStream src, float size)
-        {
-            var srcDecode = await BitmapDecoder.CreateAsync(src);
-            var width = srcDecode.PixelWidth;
-            var height = srcDecode.PixelHeight;
-            var sqSize = Math.Min(width, height);
-            var ratio = size / sqSize;
-            var ms = new InMemoryRandomAccessStream();
-            var transcoder = await BitmapEncoder.CreateForTranscodingAsync(ms, srcDecode);
-            transcoder.BitmapTransform.ScaledWidth = (uint)Math.Round(width * ratio);
-            transcoder.BitmapTransform.ScaledHeight = (uint) Math.Round(height * ratio);
-            transcoder.BitmapTransform.InterpolationMode = BitmapInterpolationMode.Linear;
-            var x = (uint)(transcoder.BitmapTransform.ScaledWidth - sqSize * ratio) / 2;
-            var y = (uint)(transcoder.BitmapTransform.ScaledHeight - sqSize * ratio) / 2;
-            transcoder.BitmapTransform.Bounds = new BitmapBounds {
-                X = x,
-                Y = y,
-                Width = (uint) size,
-                Height = (uint) size
-            };
-            await transcoder.FlushAsync();
-            return ms;
-        }
+        //private async Task<InMemoryRandomAccessStream> Shrink(IRandomAccessStream src, float size)
+        //{
+        //    var srcDecode = await BitmapDecoder.CreateAsync(src);
+        //    var width = srcDecode.PixelWidth;
+        //    var height = srcDecode.PixelHeight;
+        //    var sqSize = Math.Min(width, height);
+        //    var ratio = size / sqSize;
+        //    var ms = new InMemoryRandomAccessStream();
+        //    var transcoder = await BitmapEncoder.CreateForTranscodingAsync(ms, srcDecode);
+        //    transcoder.BitmapTransform.ScaledWidth = (uint)Math.Round(width * ratio);
+        //    transcoder.BitmapTransform.ScaledHeight = (uint)Math.Round(height * ratio);
+        //    transcoder.BitmapTransform.InterpolationMode = BitmapInterpolationMode.Linear;
+        //    var x = (uint)(transcoder.BitmapTransform.ScaledWidth - sqSize * ratio) / 2;
+        //    var y = (uint)(transcoder.BitmapTransform.ScaledHeight - sqSize * ratio) / 2;
+        //    transcoder.BitmapTransform.Bounds = new BitmapBounds
+        //    {
+        //        X = x,
+        //        Y = y,
+        //        Width = (uint)size,
+        //        Height = (uint)size
+        //    };
+        //    await transcoder.FlushAsync();
+        //    return ms;
+        //}
 
         private byte[] GetExisting(string cacheName)
         {
@@ -91,59 +94,29 @@ namespace Training.UWP.Services
             return null;
         }
 
-        private async Task<byte[]> Put(string cacheName, SoftwareBitmap image)
-        {
-            byte[] data;
-            using (var ms = new InMemoryRandomAccessStream()) {
-                var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, ms);
-                encoder.SetSoftwareBitmap(image);
-                await encoder.FlushAsync();
-                data = new byte[ms.Size];
-                await ms.ReadAsync(data.AsBuffer(), (uint) ms.Size, InputStreamOptions.None);
-            }
+        //private async Task<byte[]> Put(string cacheName, SoftwareBitmap image)
+        //{
+        //    byte[] data;
+        //    using (var ms = new InMemoryRandomAccessStream()) {
+        //        var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, ms);
+        //        encoder.SetSoftwareBitmap(image);
+        //        await encoder.FlushAsync();
+        //        data = new byte[ms.Size];
+        //        await ms.ReadAsync(data.AsBuffer(), (uint)ms.Size, InputStreamOptions.None);
+        //    }
 
-            if (!String.IsNullOrEmpty(cacheName)) {
-                _cache.Set(cacheName, data);
-            }
+        //    if (!String.IsNullOrEmpty(cacheName)) {
+        //        _cache.Set(cacheName, data);
+        //    }
 
-            return data;
-        }
+        //    return data;
+        //}
 
         #endregion
 
         #region IImageService
 
-        public unsafe byte[] GenerateSolidColor(float size, Color color, string cacheName)
-        {
-            var existing = GetExisting(cacheName);
-            if (existing != null) {
-                return existing;
-            }
-
-            var bmp = new SoftwareBitmap(BitmapPixelFormat.Rgba8, (int) size, (int) size);
-            using (var buffer = bmp.LockBuffer(BitmapBufferAccessMode.Write)) {
-                using (var reference = buffer.CreateReference()) {
-                    byte* dataInBytes;
-                    uint capacity;
-                    ((IMemoryBufferByteAccess)reference).GetBuffer(out dataInBytes, out capacity);
-
-                    // Fill-in the BGRA plane
-                    BitmapPlaneDescription bufferLayout = buffer.GetPlaneDescription(0);
-                    for (int i = 0; i < bufferLayout.Height; i++) {
-                        for (int j = 0; j < bufferLayout.Width; j++) {
-                            dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 0] = color.R;
-                            dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 1] = color.G;
-                            dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 2] = color.B;
-                            dataInBytes[bufferLayout.StartIndex + bufferLayout.Stride * i + 4 * j + 3] = color.A;
-                        }
-                    }
-                }
-            }
-
-            return Put(cacheName, bmp).Result;
-        }
-
-        public async Task<byte[]> Square(Stream image, float size, string cacheName)
+        public async Task<byte[]> Square(Stream image, string cacheName)
         {
             if (image == null || image == Stream.Null) {
                 return null;
@@ -153,11 +126,16 @@ namespace Training.UWP.Services
             if (existing != null) {
                 return existing;
             }
-            
-            var square = await Shrink(image.AsRandomAccessStream(), size);
-            var finalDecoder = await BitmapDecoder.CreateAsync(square);
-            var bitmap = await finalDecoder.GetSoftwareBitmapAsync();
-            return await Put(cacheName, bitmap);
+
+            return GetBytesFromStream(image) ?? null;
+        }
+
+        byte[] GetBytesFromStream(Stream stream)
+        {
+            using (var ms = new MemoryStream()) {
+                stream.CopyTo(ms);
+                return ms.ToArray();
+            }
         }
 
         #endregion

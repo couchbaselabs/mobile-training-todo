@@ -19,13 +19,15 @@
 // limitations under the License.
 //
 
+using Acr.UserDialogs;
 using Foundation;
-using MvvmCross.Forms.iOS;
-using MvvmCross.iOS.Platform;
-using MvvmCross.Platform;
+using Robo.Mvvm;
+using Training;
 using Training.Core;
+
 using UIKit;
-using XLabs.Platform.Device;
+
+using Xamarin.Forms.Platform.iOS;
 
 namespace Training.iOS
 {
@@ -33,7 +35,7 @@ namespace Training.iOS
     /// The app delegate for the overall iOS app lifecycle
     /// </summary>
     [Register("AppDelegate")]
-    public partial class AppDelegate : MvxFormsApplicationDelegate
+    public partial class AppDelegate : FormsApplicationDelegate
     {
 
         #region Properties
@@ -50,31 +52,27 @@ namespace Training.iOS
 
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
-            Couchbase.Lite.Support.iOS.Activate();
-
             // Setup the application
             Xamarin.Forms.Forms.Init();
-            Window = new UIWindow(UIScreen.MainScreen.Bounds);
-            var setup = new Setup(this, Window);
-            setup.Initialize();
 
-            // Register platform specific implementations
-            Mvx.RegisterSingleton<IDevice>(() => AppleDevice.CurrentDevice);
-            Mvx.RegisterSingleton<IImageService>(() => new ImageService());
+            // tag::activate[]
+            Couchbase.Lite.Support.iOS.Activate();
+            // end::activate[]
 
+            RegisterServices();
+            
             //Start the application
-            var startup = new CoreAppStart();
-            var hint = CoreAppStart.CreateHint();
-            startup.Start(hint);
+            LoadApplication(new App());
 
-            LoadApplication(setup.FormsApplication);
-
-            Window.MakeKeyAndVisible();
-
-            return true;
+            return base.FinishedLaunching(app, options);
         }
 
         #endregion
+
+        void RegisterServices()
+        {
+            ServiceContainer.Register<IImageService>(() => new ImageService());
+        }
 
     }
 }

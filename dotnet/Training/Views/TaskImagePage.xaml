@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<d:BaseContentPage 
+    xmlns:d="clr-namespace:Robo.Mvvm.Forms.Pages;assembly=Robo.Mvvm.Forms"
+    xmlns:vm="clr-namespace:Training.ViewModels;assembly=Training.Core"
+    xmlns="http://xamarin.com/schemas/2014/forms" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+    xmlns:local="clr-namespace:Training"
+    x:TypeArguments="vm:TaskImageViewModel"
+    x:Class="Training.Views.TaskImagePage">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <local:StreamToImageSourceConverter x:Key="ImageSourceConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+	<ContentPage.ToolbarItems>
+        <ToolbarItem Text="Edit" Command="{Binding EditCommand}"/>
+    </ContentPage.ToolbarItems>
+	<ContentPage.Content>
+		<Image Source="{Binding Image, Converter={StaticResource ImageSourceConverter}}" />
+    </ContentPage.Content>
+</d:BaseContentPage>

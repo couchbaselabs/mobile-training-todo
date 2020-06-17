@@ -22,31 +22,33 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
-
-using Acr.UserDialogs;
 using Couchbase.Lite;
 using Couchbase.Lite.Sync;
-using MvvmCross.Core.ViewModels;
-using MvvmCross.Platform;
-using MvvmCross.Platform.IoC;
-using XLabs.Platform.Device;
-using XLabs.Platform.Services.Media;
 
 namespace Training.Core
 {
     /// <summary>
+    /// LOCAL as CCR returning local doc, REMOTE CCR returning remote doc, 
+    /// DELELTE CCR returning null, and NONE as no custom conflict resolver.
+    /// </summary>
+    public enum CCR_TYPE
+    {
+        LOCAL, REMOTE, DELETE, NONE
+    }
+
+    /// <summary>
     /// This is the first location to be reached in the actual shared application
     /// </summary>
-    public sealed class CoreApp : MvxApplication
+    public sealed class CoreApp
     {
         #region Constants
 
-        private static readonly Uri SyncGatewayUrl = new Uri("wss://ec2-54-164-174-27.compute-1.amazonaws.com");
+        private static readonly Uri SyncGatewayUrl = new Uri("ws://ec2-54-197-194-172.compute-1.amazonaws.com:4984/todo");
 
         #endregion
 
         #region Variables
-        
+
         private static Replicator _replication;
         private static Exception _syncError;
         private static HashSet<Document> _accessDocuments = new HashSet<Document>();
@@ -74,6 +76,7 @@ namespace Training.Core
         /// <param name="newPassword">The new password for the database (optional)</param>
         public static void StartSession(string username, string password, string newPassword)
         {
+            Couchbase.Lite.Database.Log.Console.Level = Couchbase.Lite.Logging.LogLevel.Debug;
             //if(Hint.UsePrebuiltDB) {
             //    InstallPrebuiltDB();
             //}
@@ -83,8 +86,22 @@ namespace Training.Core
             OpenDatabase(username, p, np);
 
             if(Hint.SyncEnabled) {
-                StartReplication(username, newPassword ?? password);
+                IConflictResolver resolver = null;
+                if (Hint.CCRType != CCR_TYPE.NONE) {
+                    resolver = new TestConflictResolver((conflict) =>
+                    {
+                        if (Hint.CCRType == CCR_TYPE.REMOTE)
+                            return conflict.RemoteDocument;
+                        else if (Hint.CCRType == CCR_TYPE.LOCAL)
+                            return conflict.LocalDocument;
+                        else
+                            return null;
+                    });
+                }
+                StartReplication(username, newPassword ?? password, resolver);
             }
+
+            Debug.WriteLine($"Custom Conflict Resolver Type = {Hint.CCRType}");
         }
 
         public static void EndSession()
@@ -120,7 +137,8 @@ namespace Training.Core
         public static void OpenDatabase(string dbName, string key, string newKey)
         {
             // TRAINING: Create a database
-            if (key != null) {
+            Database =new Database(dbName);
+            if (newKey != null) {
                 var config = new DatabaseConfiguration
                 {
                     EncryptionKey = new EncryptionKey(key)
@@ -160,15 +178,19 @@ namespace Training.Core
         /// </summary>
         /// <param name="username">The username to use for the replication</param>
         /// <param name="password">The password to use for replication auth (optional)</param>
-        public static void StartReplication(string username, string password = null)
+        public static void StartReplication(string username, string password, IConflictResolver resolver = null)
         {
             var config = new ReplicatorConfiguration(Database, new URLEndpoint(SyncGatewayUrl)) {
                 ReplicatorType = ReplicatorType.PushAndPull,
                 Continuous = true
             };
 
-            if(username != null && password != null) {
+            if (username != null && password != null) {
                 config.Authenticator = new BasicAuthenticator(username, password);
+            }
+
+            if(resolver != null) {
+                config.ConflictResolver = resolver;
             }
 
             _replication = new Replicator(config);
@@ -213,28 +235,12 @@ namespace Training.Core
 
         #endregion
 
-        #region Overrides
-
-        public override void Initialize()
-        {
-            CreatableTypes()
-            .EndingWith("ViewModel")
-            .AsTypes()
-            .RegisterAsDynamic();
-
-            Mvx.RegisterSingleton<IUserDialogs>(() => UserDialogs.Instance);
-            Mvx.RegisterType<IMediaPicker>(() => Mvx.Resolve<IDevice>().MediaPicker);
-            RegisterCustomAppStart<CoreAppStart>();
-        }
-
-        #endregion
-
     }
 
     /// <summary>
     /// A custom start logic class for MvvmCross
     /// </summary>
-    public sealed class CoreAppStart : MvxNavigatingObject, IMvxAppStart
+    public sealed class CoreAppStart
     {
 
         #region Public API
@@ -249,6 +255,7 @@ namespace Training.Core
                 LoginEnabled = true,
                 EncryptionEnabled = false,
                 SyncEnabled = true,
+                CCRType = CCR_TYPE.NONE,
                 UsePrebuiltDB = false,
                 Username = "todo"
             };
@@ -263,11 +270,8 @@ namespace Training.Core
         public void Start(object hint = null)
         {
             CoreApp.Hint = (CoreAppStartHint)hint;
-            if(CoreApp.Hint.LoginEnabled) {
-                ShowViewModel<LoginViewModel>();
-            } else {
+            if (!CoreApp.Hint.LoginEnabled) {
                 CoreApp.StartSession(CoreApp.Hint.Username, null, null);
-                ShowViewModel<TaskListsViewModel>(new { loginEnabled = false });
             }
         }
 
@@ -296,6 +300,11 @@ namespace Training.Core
         public bool SyncEnabled { get; set; }
 
         /// <summary>
+        /// Gets or sets ccr type
+        /// </summary>
+        public CCR_TYPE CCRType { get; set; }
+
+        /// <summary>
         /// Gets or sets whether or not to seed the app with a prepopulated database
         /// </summary>
         public bool UsePrebuiltDB { get; set; }
@@ -304,6 +313,21 @@ namespace Training.Core
         /// Gets or sets the username to use for the session
         /// </summary>
         public string Username { get; set; }
+    }
+
+    public class TestConflictResolver : IConflictResolver
+    {
+        Func<Conflict, Document> ResolveFunc { get; set; }
+
+        public TestConflictResolver(Func<Conflict, Document> resolveFunc)
+        {
+            ResolveFunc = resolveFunc;
+        }
+
+        public Document Resolve(Conflict conflict)
+        {
+            return ResolveFunc(conflict);
+        }
     }
 }
 

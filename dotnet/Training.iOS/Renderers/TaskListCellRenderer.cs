@@ -21,8 +21,9 @@
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.iOS;
 using UIKit;
-using Training.Forms;
+using Training;
 using Foundation;
+using Training.Views;
 
 [assembly: ExportRenderer(typeof(TaskListCell), typeof(Training.iOS.TaskListCellRenderer))]
 

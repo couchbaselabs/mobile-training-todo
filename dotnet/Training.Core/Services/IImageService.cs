@@ -37,16 +37,7 @@ namespace Training.Core
         /// <param name="cacheName">The ID for the cache to store the result in.</param>
         /// <returns>An awaitable task that will contain a stream of data containing the result
         /// of the operation upon completion</returns>
-        Task<byte[]> Square(Stream image, float size, string cacheName);
-
-        /// <summary>
-        /// Generates a solid square of the given color and size
-        /// </summary>
-        /// <returns>The PNG data of the generated image</returns>
-        /// <param name="size">The size of the square to generate</param>
-        /// <param name="color">The color of the square to generate.</param>
-        /// <param name="cacheName">The ID to cache the generated value as.</param>
-        byte[] GenerateSolidColor(float size, Color color, string cacheName);
+        Task<byte[]> Square(Stream image, string cacheName);
     }
 }
 

@@ -1,36 +1,14 @@
-﻿//
-// ListDetailModel.cs
-//
-// Author:
-// 	Jim Borden  <jim.borden@couchbase.com>
-//
-// Copyright (c) 2016 Couchbase, Inc All rights reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+﻿using Couchbase.Lite;
+using Robo.Mvvm;
 using System;
+using System.Collections.Generic;
+using System.Text;
+using Training.Core;
 
-using Couchbase.Lite;
-
-namespace Training.Core
+namespace Training.Models
 {
-    /// <summary>
-    /// The model for the list detail page (tabbed page containing tasks list
-    /// and users list as children)
-    /// </summary>
-    public sealed class ListDetailModel : BaseModel, IDisposable
+    public sealed class ListDetailModel : BaseNotify, IDisposable
     {
-
         #region Variables
 
         private Database _db;
@@ -84,65 +62,19 @@ namespace Training.Core
             return doc != null;
         }
 
-        /// <summary>
-        /// Triggers the class to monitor the database until a change occurs
-        /// that enabled moderator access for the given user
-        /// </summary>
-        /// <param name="username">The username to track.</param>
-        //public void TrackModeratorStatus(string username)
-        //{
-        //    if(_username == null && username == null) {
-        //        return;
-        //    }
-
-        //    if(_username == null) {
-        //        _db.Changed += MonitorModeratorStatus;
-        //    } else if(username == null) {
-        //        _db.Changed -= MonitorModeratorStatus;
-        //    }
-
-        //    _username = username;
-
-        //}
-
-        #endregion
-
-        #region Private API
-
-        //private void MonitorModeratorStatus(object sender, DatabaseChangedEventArgs e)
-        //{
-        //    if(_username == null) {
-        //        return;
-        //    }
-
-        //    foreach(var change in e.Changes) {
-        //        if(change.SourceUrl == null) {
-        //            continue;
-        //        }
-
-        //        var moderatorDocId = $"moderator.{_username}";
-        //        if(change.DocumentId == moderatorDocId) {
-        //            ModeratorStatusGained?.Invoke(this, null);
-        //            _username = null;
-        //            _db.Changed -= MonitorModeratorStatus;
-        //        }
-        //    }
-        //}
-
         #endregion
 
         #region IDisposable
 
         public void Dispose()
         {
-            if(_username == null) {
+            if (_username == null) {
                 return;
             }
 
-           // _db.Changed -= MonitorModeratorStatus;
+            // _db.Changed -= MonitorModeratorStatus;
         }
 
         #endregion
     }
 }
-

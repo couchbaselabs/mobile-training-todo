@@ -19,28 +19,22 @@
 // limitations under the License.
 //
 using Couchbase.Lite;
+using Robo.Mvvm;
 using System;
+using Training.Core;
 
-namespace Training.Core
+namespace Training.Models
 {
     /// <summary>
     /// The model for an entry in the UsersPage table view
     /// </summary>
-    public sealed class UserModel : BaseModel
+    public sealed class UserModel : BaseNotify
     {
 
         #region Variables
 
         private readonly Document _document;
-
-        #endregion
-
-        #region Properties
-
-        /// <summary>
-        /// Gets the name of the user
-        /// </summary>
-        public string Name => _document?.GetString("username");
+        private readonly Database _database = CoreApp.Database;
 
         #endregion
 
@@ -53,7 +47,7 @@ namespace Training.Core
         /// the user</param>
         public UserModel(string documentId)
         {
-            _document = CoreApp.Database.GetDocument(documentId);
+            _document = _database.GetDocument(documentId);
         }
 
         #endregion
@@ -66,7 +60,7 @@ namespace Training.Core
         public void Delete()
         {
             try {
-                CoreApp.Database.Delete(_document);
+                _database.Delete(_document);
             } catch (Exception e) {
                 throw new Exception("Failed to delete user", e);
             }

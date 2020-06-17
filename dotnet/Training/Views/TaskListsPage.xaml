@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pages:BaseContentPage
+    xmlns:pages="clr-namespace:Robo.Mvvm.Forms.Pages;assembly=Robo.Mvvm.Forms"
+    xmlns:vm="clr-namespace:Training.ViewModels;assembly=Training.Core"
+    xmlns:controls="clr-namespace:Training.Controls"
+    xmlns="http://xamarin.com/schemas/2014/forms" 
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+	xmlns:local="clr-namespace:Training"
+    xmlns:localForms="clr-namespace:Training.Views"
+    x:TypeArguments="vm:TaskListsViewModel"
+    x:Class="Training.Views.TaskListsPage"
+    Title="Task Lists">
+	<ContentPage.Resources>
+		<ResourceDictionary>
+            <local:IncompleteCountToStringConverter x:Key="IncompleteToString" />
+		</ResourceDictionary>
+	</ContentPage.Resources>
+    <ContentPage.ToolbarItems>
+		<ToolbarItem Text="+" Command="{Binding AddCommand}"/>
+		<ToolbarItem x:Name="_logoutButton" Text="Logout" Command="{Binding LogoutCommand}" Priority="1" />
+	</ContentPage.ToolbarItems>
+	<ContentPage.Content>
+        <controls:ListView ItemsSource="{Binding Items}" 
+                           ItemTappedCommand="{Binding SelectCommand}"
+                           SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+                           Header="{Binding .}" >
+            <controls:ListView.HeaderTemplate>
+                <DataTemplate>
+                    <SearchBar Text="{Binding SearchTerm, Mode=TwoWay}" />
+                </DataTemplate>
+            </controls:ListView.HeaderTemplate>
+            <controls:ListView.ItemTemplate>
+				<DataTemplate>
+                    <ViewCell>
+                        <ViewCell.ContextActions>
+                            <MenuItem Command="{Binding Value.EditCommand}" CommandParameter="{Binding Value.DocumentID}" Text="Edit" />
+                            <MenuItem Command="{Binding Value.DeleteCommand}" CommandParameter="{Binding Value.DocumentID}" Text="Delete" IsDestructive="True" />
+                        </ViewCell.ContextActions>
+                        <StackLayout Padding="5,0,0,0" Margin="0,5,0,5" VerticalOptions="StartAndExpand" Orientation="Vertical" BackgroundColor="AliceBlue">
+                            <Label Text="{Binding Value.Name}" VerticalTextAlignment="Center" HorizontalOptions="StartAndExpand" FontSize="Small" />
+                            <Label Text="{Binding Value.IncompleteCount}" VerticalTextAlignment="Center" HorizontalOptions="StartAndExpand" FontSize="Small" />
+                        </StackLayout>
+                    </ViewCell>
+                </DataTemplate>
+			</controls:ListView.ItemTemplate>
+		</controls:ListView>
+	</ContentPage.Content>
+</pages:BaseContentPage>

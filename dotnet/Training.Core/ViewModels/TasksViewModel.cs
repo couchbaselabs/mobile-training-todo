@@ -20,28 +20,45 @@
 //
 using System;
 using System.Collections;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Acr.UserDialogs;
-using MvvmCross.Core.ViewModels;
-using MvvmCross.Platform;
+
+using Couchbase.Lite;
+using Couchbase.Lite.Query;
+
+using Robo.Mvvm.Input;
+using Robo.Mvvm.Services;
+
 using Training.Core;
 
-namespace Training
+namespace Training.ViewModels
 {
     /// <summary>
     /// The view model for the list of tasks page
     /// </summary>
-    public class TasksViewModel : BaseViewModel<TasksModel>, IDisposable
+    public class TasksViewModel : BaseNavigationViewModel, IDisposable
     {
+
+        #region Constants
+
+        internal const string TaskType = "task";
+
+        #endregion
 
         #region Variables
 
-        private readonly IUserDialogs _dialogs;
-        private readonly ImageChooser _imageChooser;
+        
+        protected IImageService _imageService;
+        protected IMediaService _mediaPicker;
+
+        private IQuery _tasksFilteredQuery;
+        private IQuery _tasksFullQuery;
+        private Database _db = CoreApp.Database;
+        private Document _taskList;
 
         #endregion
 
@@ -60,17 +77,11 @@ namespace Training
                 }
 
                 _selectedItem = value;
-                value.IsChecked = !value.IsChecked;
-                SetProperty(ref _selectedItem, null);
+                SetCheck(_selectedItem);
+                SetPropertyChanged(ref _selectedItem, null);
             }
         }
         private TaskCellModel _selectedItem;
-
-        /// <summary>
-        /// Gets the list of tasks for display in the list view
-        /// </summary>
-        /// <value>The list data.</value>
-        public ObservableCollection<TaskCellModel> ListData => Model.ListData;
 
         /// <summary>
         /// Gets or sets the current text being searched for in the list
@@ -81,8 +92,8 @@ namespace Training
                 return _searchTerm;
             }
             set {
-                if(SetProperty(ref _searchTerm, value)) {
-                    Model.Filter(value);
+                if(SetPropertyChanged(ref _searchTerm, value)) {
+                    Filter(value);
                 }
             }
         }
@@ -92,83 +103,79 @@ namespace Training
         /// Gets the command that is fired when the add button is pressed
         /// </summary>
         /// <value>The add command.</value>
-        public ICommand AddCommand => new MvxCommand(AddNewItem);
+        public ICommand AddCommand => new Command(() => AddNewItem());
+
+        ICommand _selectCommand;
+        public ICommand SelectCommand
+        {
+            get
+            {
+                if (_selectCommand == null)
+                {
+                    _selectCommand = new Command<KeyValuePair<string, TaskCellModel>>((pair) => SelectList(pair));
+                }
+
+                return _selectCommand;
+            }
+        }
+
+        /// <summary>
+        /// Gets the list of tasks for display in the list view
+        /// </summary>
+        /// <value>The list data.</value>
+        ObservableConcurrentDictionary<string, TaskCellModel> _items = new ObservableConcurrentDictionary<string, TaskCellModel>();
+        public ObservableConcurrentDictionary<string, TaskCellModel> ListData
+        {
+            get { return _items; }
+            set {
+                _items = value;
+                SetPropertyChanged(ref _items, value);
+            }
+        }
+
+        /// <summary>
+        /// Gets the name of the database being worked on
+        /// </summary>
+        public string DatabaseName => _db.Name;
 
         #endregion
 
         #region Constructors
 
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="parent">The parent view model (this is a nested view model).</param>
-        public TasksViewModel(ListDetailViewModel parent) : base(new TasksModel(parent.CurrentListID))
+        public TasksViewModel(INavigationService navigation
+            , IUserDialogs dialogs, IImageService imageService, IMediaService mediaPicker) 
+            : base(navigation, dialogs)
         {
-            _dialogs = Mvx.Resolve<IUserDialogs>();
-            _imageChooser = new ImageChooser(new ImageChooserConfig {
-                Dialogs = _dialogs
-            });
+            Navigation = navigation;
+            Dialogs = dialogs;
 
-            ListData.CollectionChanged += (sender, e) => 
-            {
-                if(e.NewItems == null) {
-                    return;
-                }
-
-                UpdateButtons(e.NewItems);
-            };
-
-            UpdateButtons(ListData);
+            _imageService = imageService;
+            _mediaPicker = mediaPicker;
         }
 
-        #endregion
-
-        #region Internal API
-
-        internal async Task ShowOrChooseImage(TaskCellModel taskDocument)
+        public void Init(string docID)
         {
-            if(!taskDocument.HasImage()) {
-                await ChooseImage(taskDocument);
-            } else {
-                ShowViewModel<TaskImageViewModel>(new { documentID = taskDocument.DocumentID });
-            }
+            _taskList = _db.GetDocument(docID);
+            SetupQuery();
         }
 
         #endregion
 
         #region Private API
 
-        private void UpdateButtons(IList newItems)
+        private void SelectList(KeyValuePair<string, TaskCellModel> pair)
         {
-            foreach (TaskCellModel item in newItems) {
-                if (item.AddImageCommand == null) {
-                    item.AddImageCommand = new MvxAsyncCommand<TaskCellModel>(ShowOrChooseImage);
-                }
-            }
+            SelectedItem = pair.Value;
         }
 
-        private async Task ChooseImage(TaskCellModel taskCellModel)
+        private void SetCheck(TaskCellModel taskCell)
         {
-            var result = await _imageChooser.GetPhotoAsync();
-            if(result == null) {
-                return;
-            }
-
-            if(result == Stream.Null) {
-                result = null;
-            }
-
-            try {
-                taskCellModel.SetImage(result);
-            } catch(Exception e) {
-                _dialogs.Toast(e.Message);
-                return;
-            }
+            taskCell.SetCheck();
         }
     
         private void AddNewItem()
         {
-            _dialogs.Prompt(new PromptConfig {
+            Dialogs.Prompt(new PromptConfig {
                 OnAction = CreateNewItem,
                 Title = "New Task",
                 Placeholder = "Task Name"
@@ -182,10 +189,110 @@ namespace Training
             }
 
             try {
-                Model.CreateNewTask(result.Text);
+                CreateNewTask(result.Text);
             } catch(Exception e) {
-                _dialogs.Toast(e.Message);
+                Dialogs.Toast(e.Message);
             }
+        }
+
+        /// <summary>
+        /// Creates a new task in the current list
+        /// </summary>
+        /// <param name="taskName">The name of the task</param>
+        public Document CreateNewTask(string taskName)
+        {
+            var taskListInfo = new Dictionary<string, object>
+            {
+                ["id"] = _taskList.Id,
+                ["owner"] = _taskList.GetString("owner")
+            };
+
+            var properties = new Dictionary<string, object>
+            {
+                ["type"] = TaskType,
+                ["taskList"] = taskListInfo,
+                ["createdAt"] = DateTimeOffset.UtcNow,
+                ["task"] = taskName,
+                ["complete"] = false
+            };
+
+            try
+            {
+                var doc = new MutableDocument(properties);
+                _db.Save(doc);
+                return doc;
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Couldn't save task", e);
+            }
+        }
+
+        /// <summary>
+        /// Filters the list of tasks based on a given search string.
+        /// </summary>
+        /// <param name="searchString">The search string to filter on.</param>
+        public void Filter(string searchString)
+        {
+            var query = default(IQuery);
+            if (!String.IsNullOrEmpty(searchString)) {
+                query = _tasksFilteredQuery;
+                query.Parameters.SetString("searchString", $"%{searchString}%");
+
+                var results = query.Execute();
+                RunQuery(results.AllResults());
+            }
+        }
+
+
+        private void SetupQuery()
+        {
+            _tasksFilteredQuery = QueryBuilder.Select(SelectResult.Expression(Meta.ID))
+                .From(DataSource.Database(_db))
+                .Where(Expression.Property("type").EqualTo(Expression.String(TaskType))//"task"
+                    .And(Expression.Property("taskList.id").EqualTo(Expression.String(_taskList.Id)))
+                    .And(Expression.Property("task").Like(Expression.Parameter("searchString"))))
+                .OrderBy(Ordering.Property("createdAt"));
+
+            _tasksFullQuery = QueryBuilder.Select(SelectResult.Expression(Meta.ID))
+                .From(DataSource.Database(_db))
+                .Where(Expression.Property("type").EqualTo(Expression.String(TaskType))//"task"
+                    .And(Expression.Property("taskList.id").EqualTo(Expression.String(_taskList.Id))));
+
+            _tasksFullQuery.AddChangeListener((sender, args) =>
+            {
+                //run live query
+                RunQuery(args.Results.AllResults());
+            });
+        }
+
+        private void RunQuery(List<Result> allResult)
+        {
+            if (allResult.Count < ListData.Count) {
+                ListData = new ObservableConcurrentDictionary<string, TaskCellModel>();
+            }
+            Task.Run(() =>
+            {
+                Parallel.ForEach(allResult, result =>
+                {
+                    var idKey = result.GetString("id");
+                    var document = _db.GetDocument(idKey);
+                    if (!idKey.Equals(document.Id))
+                        return;
+                    var name = document.GetString("task");
+                    if (name == null) {
+                        _db.Delete(document);
+                    } else {
+                        if (_items.ContainsKey(idKey)) {
+                            _items[idKey].Name = name;
+                        } else {
+                            var task = new TaskCellModel(Dialogs, _imageService, _mediaPicker, idKey, _items);
+                            task.Name = name;
+                            ListData.Add(idKey, task);
+                        }
+                    }
+                });
+            });
         }
 
         #endregion
@@ -194,7 +301,10 @@ namespace Training
 
         public void Dispose()
         {
-            Model.Dispose();
+            ListData = new ObservableConcurrentDictionary<string, TaskCellModel>();
+            _tasksFilteredQuery.Dispose();
+            _tasksFullQuery.Dispose();
+
         }
 
         #endregion
