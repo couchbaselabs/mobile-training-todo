@@ -18,24 +18,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+using Acr.UserDialogs;
+using Couchbase.Lite;
+using Robo.Mvvm.Input;
+using Robo.Mvvm.Services;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-using Acr.UserDialogs;
-using MvvmCross.Core.ViewModels;
-using XLabs.Platform.Services.Media;
+using Training.Core;
+using Training.Models;
 
-namespace Training.Core
+namespace Training.ViewModels
 {
     /// <summary>
     /// The view model for the page that displays a task's image
     /// </summary>
-    public class TaskImageViewModel : BaseViewModel<TaskImageModel>
+    public class TaskImageViewModel : BaseNavigationViewModel
     {
 
         #region Variables
 
+        private Document _taskDocument;
         private ImageChooser _imageChooser;
 
         #endregion
@@ -45,18 +49,26 @@ namespace Training.Core
         /// <summary>
         /// Gets the command to handle an edit request
         /// </summary>
-        public ICommand EditCommand => new MvxAsyncCommand(EditImage);
+        public ICommand EditCommand => new Command(async() => await EditImage());
 
         /// <summary>
-        /// Gets the stream containing the image data
+        /// The image stored on the task
         /// </summary>
         /// <value>The image.</value>
-        public Stream Image
+        public byte[] Image
         {
-            get => Model.Image ?? Stream.Null;
+            get => _taskDocument.GetBlob("image")?.Content;
             set {
-                Model.Image = value;
-                RaisePropertyChanged();
+                using (var mutableTask = _taskDocument.ToMutable()) {
+                    if (value == null) {
+                        mutableTask.Remove("image");
+                    } else {
+                        mutableTask.SetBlob("image", new Blob("image/png", value));
+                    }
+
+                    CoreApp.Database.Save(mutableTask);
+                    _taskDocument = mutableTask;
+                }
             }
         }
 
@@ -69,9 +81,11 @@ namespace Training.Core
         /// </summary>
         /// <param name="dialogs">The interface responsible for showing dialogs.</param>
         /// <param name="mediaPicker">The interface responsible for getting photos.</param>
-        public TaskImageViewModel(IUserDialogs dialogs, IMediaPicker mediaPicker)
+        public TaskImageViewModel(INavigationService navigation, IUserDialogs dialogs, IMediaService mediaPicker)
+            :base(navigation, dialogs)
         {
-            _imageChooser = new ImageChooser(new ImageChooserConfig {
+            _imageChooser = new ImageChooser(new ImageChooserConfig
+            {
                 Dialogs = dialogs,
                 MediaPicker = mediaPicker,
                 DeleteText = "Delete"
@@ -88,7 +102,7 @@ namespace Training.Core
         /// <param name="documentID">The ID of the task document</param>
         public void Init(string documentID)
         {
-            Model = new TaskImageModel(documentID);
+            _taskDocument = CoreApp.Database.GetDocument(documentID);
         }
 
         #endregion
@@ -100,10 +114,6 @@ namespace Training.Core
             var result = await _imageChooser.GetPhotoAsync();
             if(result == null) {
                 return;
-            }
-
-            if(result == Stream.Null) {
-                result = null;
             }
 
             Image = result;

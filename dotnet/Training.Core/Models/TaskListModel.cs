@@ -21,13 +21,15 @@
 using System;
 
 using Couchbase.Lite;
+using Robo.Mvvm;
+using Training.Core;
 
-namespace Training.Core
+namespace Training.Models
 {
     /// <summary>
     /// The model for an entry in the TaskListsPage table view
     /// </summary>
-    public class TaskListModel : BaseModel
+    public class TaskListModel : BaseNotify
     {
 
         #region Variables
@@ -91,7 +93,7 @@ namespace Training.Core
         /// Edits the list entry's name
         /// </summary>
         /// <param name="name">The new name to use.</param>
-        public void Edit(string name)
+        public string Edit(string name)
         {
             try {
                 using(var mutableDoc = _document.ToMutable()) {
@@ -100,6 +102,7 @@ namespace Training.Core
                     CoreApp.Database.Save(mutableDoc);
                     _document = mutableDoc;
                     document.Dispose();
+                    return name;
                 }
             } catch(Exception e) {
                 throw new Exception("Couldn't edit task list", e);

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pages:BaseTabbedPage
+    xmlns:pages="clr-namespace:Robo.Mvvm.Forms.Pages;assembly=Robo.Mvvm.Forms"
+    xmlns:vm="clr-namespace:Training.ViewModels;assembly=Training.Core"
+    xmlns="http://xamarin.com/schemas/2014/forms" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:TypeArguments="vm:ListDetailViewModel"
+    x:Class="Training.Views.ListDetailPage"
+    Title="{Binding PageTitle}">
+    <pages:BaseTabbedPage.ToolbarItems>
+        <ToolbarItem Text="Back" Command="{Binding BackCommand}" />
+        <!--<ToolbarItem Text="{Binding SwitchTabText}" Command="{Binding SwitchCommand}" />-->
+        <ToolbarItem Text="+" Command="{Binding AddCommand}" />
+    </pages:BaseTabbedPage.ToolbarItems>
+</pages:BaseTabbedPage>

@@ -119,6 +119,28 @@ namespace Training.Android
             });
         }
 
+        public async Task<byte[]> Square(Stream image, string cacheName)
+        {
+            if (image == null || image == Stream.Null) {
+                return null;
+            }
+
+            var existing = GetExisting(cacheName);
+            if (existing != null) {
+                return existing;
+            }
+
+            return GetBytesFromStream(image) ?? null;
+        }
+
+        byte[] GetBytesFromStream(Stream stream)
+        {
+            using (var ms = new MemoryStream()) {
+                stream.CopyTo(ms);
+                return ms.ToArray();
+            }
+        }
+
         #endregion
     }
 

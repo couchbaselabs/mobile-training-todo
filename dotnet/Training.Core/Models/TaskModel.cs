@@ -20,22 +20,27 @@
 //
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading;
-
+using System.Threading.Tasks;
 using Couchbase.Lite;
+using Plugin.Media;
+using Robo.Mvvm;
+using Training.Core;
 
-namespace Training.Core
+namespace Training.Models
 {
     /// <summary>
     /// The model for an entry in the TasksPage table view
     /// </summary>
-    public sealed class TaskModel : BaseModel
+    public sealed class TaskModel : BaseNotify
     {
 
         #region Variables
 
         private Document _document;
+        private Database _database = CoreApp.Database;
+
+        string _docID;
 
         #endregion
 
@@ -54,22 +59,25 @@ namespace Training.Core
         /// <value><c>true</c> if the entry is checked off; otherwise, <c>false</c>.</value>
         public bool IsChecked
         {
-            get => _document.GetBoolean("complete");
+            get {
+                _checked = _document.GetBoolean("complete");
+                return _checked;
+            }
             set {
                 try {
                     using (var mutableDoc = _document.ToMutable())
                     {
                         mutableDoc["complete"].Value = value;
-                        var doc = _document;
-                        CoreApp.Database.Save(mutableDoc);
-                        _document = mutableDoc;
-                        doc.Dispose();
+                        _database.Save(mutableDoc);
                     }
                 } catch(Exception e) {
                     throw new Exception("Failed to edit task", e);
                 }
+                _checked = value;
+                SetPropertyChanged(ref _checked, value);
             }
         }
+        private bool _checked;
 
         #endregion
 
@@ -82,14 +90,14 @@ namespace Training.Core
         /// this task</param>
         public TaskModel(string documentID)
         {
-            _document = CoreApp.Database.GetDocument(documentID);
+            _docID = documentID;
+            _document = _database.GetDocument(documentID);
             _name = new Lazy<string>(() => _document.GetString("task"), LazyThreadSafetyMode.None);
             _imageDigest = new Lazy<string>(() => {
                 var metadata = _document.GetBlob("image")?.Properties;
                 if(metadata?.ContainsKey("digest") != true) {
                     return null;
                 }
-
                 return _document.GetBlob ("image")?.Digest;
             }, LazyThreadSafetyMode.None);
         }
@@ -123,29 +131,26 @@ namespace Training.Core
         /// <returns>The image associated with this task</returns>
         public Stream GetImage()
         {
-            return _document.GetBlob("image")?.ContentStream;
+            return _database.GetDocument(_docID).GetBlob("image")?.ContentStream;
         }
 
         /// <summary>
         /// Sets the image associated with this task
         /// </summary>
         /// <param name="image">The image to associate with the task.</param>
-        public void SetImage(Stream image)
+        public void SetImage(byte[] image)
         {
             try {
-                using(var mutableDoc = _document.ToMutable()) {
-                    if(image == null) {
+                using (var mutableDoc = _document.ToMutable()) {
+                    if (image == null) {
                         mutableDoc.Remove("image");
                     } else {
-                        mutableDoc["image"].Blob = new Blob("image/png", image);
+                        var blob = new Blob("image/png", image);
+                        mutableDoc["image"].Blob = blob;
                     }
-
-                    var doc = _document;
-                    CoreApp.Database.Save(mutableDoc);
-                    _document = mutableDoc;
-                    doc.Dispose();
+                    _database.Save(mutableDoc);
                 }
-            } catch(Exception e) {
+            } catch (Exception e) {
                 throw new Exception("Failed to save image", e);
             }
         }
@@ -156,8 +161,7 @@ namespace Training.Core
         public void Delete()
         {
             try {
-                CoreApp.Database.Delete(_document);
-                _document = null;
+                _database.Delete(_document);
             } catch(Exception e) {
                 throw new Exception("Failed to delete task", e);
             }
@@ -173,10 +177,7 @@ namespace Training.Core
                 using (var mutableDoc = _document.ToMutable())
                 {
                     mutableDoc["task"].String = name;
-                    var doc = _document;
-                    CoreApp.Database.Save(mutableDoc);
-                    _document = mutableDoc;
-                    doc.Dispose();
+                    _database.Save(mutableDoc);
                 }
             } catch(Exception e) {
                 throw new Exception("Failed to edit task", e);

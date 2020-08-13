@@ -23,12 +23,16 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 using Acr.UserDialogs;
-using Couchbase.Lite;
-using MvvmCross.Core.ViewModels;
 
-namespace Training.Core
+using Couchbase.Lite;
+using Robo.Mvvm;
+using Robo.Mvvm.Input;
+using Robo.Mvvm.Services;
+using Training.Core;
+
+namespace Training.ViewModels
 {
-    public sealed class LoginViewModel : BaseViewModel<LoginModel>
+    public sealed class LoginViewModel : BaseNavigationViewModel
     {
 
         #region Variables 
@@ -44,34 +48,32 @@ namespace Training.Core
         /// </summary>
         public string Username
         {
-            get {
-                return _username;
-            }
-            set {
-                SetProperty(ref _username, value);
-            }
+            get =>_username;
+            set => SetPropertyChanged(ref _username, value);
         }
         private string _username;
+
+        public string Password
+        {
+            get => _password;
+            set => SetPropertyChanged(ref _password, value);
+        }
+        private string _password;
 
         /// <summary>
         /// Gets the command to execute for login
         /// </summary>
-        public ICommand LoginCommand
-        {
-            get {
-                return new MvxAsyncCommand<string>(Login);
-            }
-        }
+        public ICommand LoginCommand => new Command(async () => await Login());
 
         #endregion
 
         #region Constructors
-
-        /// <summary>
-        /// Constructor (not to be called directly)
-        /// </summary>
-        /// <param name="dialogs">The interface controlling UI dialogs</param>
-        public LoginViewModel(IUserDialogs dialogs) : base(new LoginModel())
+        
+        ///// <summary>
+        ///// Constructor(not to be called directly)
+        ///// </summary>
+        ///// <param name = "dialogs" > The interface controlling UI dialogs</param>
+        public LoginViewModel(INavigationService navigation, IUserDialogs dialogs) : base(navigation, dialogs)
         {
             _dialogs = dialogs;
         }
@@ -80,47 +82,47 @@ namespace Training.Core
 
         #region Private API
 
-        private async Task Login(string password)
+        private async Task Login()
         {
-            if(String.IsNullOrWhiteSpace(Username) || String.IsNullOrWhiteSpace(password)) {
+            if(String.IsNullOrWhiteSpace(Username) || String.IsNullOrWhiteSpace(Password)) {
                 _dialogs.Toast("Username or password cannot be empty");
                 return;
             }
 
-            if(!LoginModel.IsValidUsername(Username)) {
+            if(!IsValidUsername(Username)) {
                 _dialogs.Toast("Invalid username");
                 return;
             }
 
             try {
-                CoreApp.StartSession(Username, password, null);
-            //} catch(CouchbaseLiteException e) {
-            //    if(e.Status == StatusCode.Unauthorized) {
-            //        var result = await _dialogs.PromptAsync(new PromptConfig {
-            //            Title = "Password Changed",
-            //            OkText = "Migrate",
-            //            CancelText = "Delete",
-            //            IsCancellable = true,
-            //            InputType = Acr.UserDialogs.InputType.Password
-            //        });
-
-            //        if(result.Ok) {
-            //            CoreApp.StartSession(Username, result.Text, password);
-            //        } else {
-            //            Model.DeleteDatabase(Username);
-            //            Login(password);
-            //            return;
-            //        }
-            //    } else {
-            //        _dialogs.Toast($"Login has an error occurred, code = {e.Code}");
-            //        return;
-            //    }
+                CoreApp.StartSession(Username, Password, null);
             } catch(Exception e) {
                 _dialogs.Toast($"Login has an error occurred, code = {e}");
                 return;
             }
 
-            ShowViewModel<TaskListsViewModel>(new { loginEnabled = true });
+            var vm = GetViewModel<TaskListsViewModel>();
+            vm.Init(true);
+            await Navigation.SetDetailAsync(vm);
+        }
+
+        /// <summary>
+        /// Checks to see if a username is valid (i.e. can be used as a database name)
+        /// </summary>
+        /// <param name="username">The username to check</param>
+        /// <returns><c>true</c> if the username is valid, <c>false</c> otherwise</returns>
+        private bool IsValidUsername(string username)
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Deletes a database by name (used in migration logic)
+        /// </summary>
+        /// <param name="dbName">The name of the database to delete</param>
+        private void DeleteDatabase(string dbName)
+        {
+            Database.Delete(dbName, null);
         }
 
         #endregion

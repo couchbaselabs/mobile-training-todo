@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<local:BaseContentPage 
+    xmlns:local="clr-namespace:Robo.Mvvm.Forms.Pages;assembly=Robo.Mvvm.Forms"
+    xmlns:vm="clr-namespace:Training.ViewModels;assembly=Training.Core"
+    xmlns="http://xamarin.com/schemas/2014/forms" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+    x:TypeArguments="vm:LoginViewModel"
+    x:Class="Training.Views.LoginPage">
+    <StackLayout Padding="5" Orientation="Vertical" >
+        <Entry Placeholder="Username" Text="{Binding Username}" />
+        <Entry x:Name="_passBox" Text="{Binding Password}" Placeholder="Password" IsPassword="true" Margin="0,10,0,0" />
+        <Button Text="Login" Command="{Binding LoginCommand}"/>
+    </StackLayout>
+</local:BaseContentPage>

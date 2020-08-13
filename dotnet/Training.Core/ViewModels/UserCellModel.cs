@@ -22,46 +22,61 @@ using System;
 using System.Windows.Input;
 
 using Acr.UserDialogs;
-using MvvmCross.Core.ViewModels;
-using MvvmCross.Platform;
+using Robo.Mvvm;
+using Robo.Mvvm.Input;
+using Robo.Mvvm.Services;
+using Training.Core;
+using Training.Models;
 
-namespace Training.Core
+namespace Training.ViewModels
 {
     /// <summary>
     /// The view model for an entry in the 
     /// </summary>
-    public sealed class UserCellModel : BaseViewModel<UserModel>
+    public sealed class UserCellModel : BaseNotify
     {
 
         #region Variables
 
-        private IUserDialogs _dialogs = Mvx.Resolve<IUserDialogs>();
-        public delegate void StatusUpdatedEventHandler();
-        public event StatusUpdatedEventHandler StatusUpdated;
+        IUserDialogs _dialogs;
 
         #endregion
 
         #region Properties
 
+        ObservableConcurrentDictionary<string, UserCellModel> _users;
+        public ObservableConcurrentDictionary<string, UserCellModel> Users
+        {
+            get => _users;
+            set => SetPropertyChanged(ref _users, value);
+        }
+
+        UserModel _user;
+        public UserModel User
+        {
+            get => _user;
+            set => SetPropertyChanged(ref _user, value);
+        }
+
         /// <summary>
         /// Gets the handler for a delete request
         /// </summary>
-        public ICommand DeleteCommand
-        {
-            get {
-                return new MvxCommand(Delete);
-            }
-        }
+        public ICommand DeleteCommand => new Command(() => Delete());
 
         /// <summary>
         /// Gets the name of the user
         /// </summary>
-        public string Name 
+        public string Name
         {
-            get {
-                return Model.Name;
-            }
+            get => _name;
+            set => SetPropertyChanged(ref _name, value);
         }
+        string _name = "";
+
+        /// <summary>
+        /// Gets the document ID of the document being tracked
+        /// </summary>
+        public string DocumentID { get; set; }
 
         #endregion
 
@@ -71,8 +86,12 @@ namespace Training.Core
         /// Constructor
         /// </summary>
         /// <param name="documentID">The ID of the document containing the user information</param>
-        public UserCellModel(string documentID) : base(new UserModel(documentID))
+        public UserCellModel(IUserDialogs dialogs, string documentID, ObservableConcurrentDictionary<string, UserCellModel> users) 
         {
+            _dialogs = dialogs;
+            DocumentID = documentID;
+            User = new UserModel(DocumentID);
+            Users = users;
         }
 
         #endregion
@@ -82,11 +101,12 @@ namespace Training.Core
         private void Delete()
         {
             try {
-                Model.Delete();
+                User.Delete();
             } catch(Exception e) {
                 _dialogs.Toast(e.Message);
+                return;
             }
-            StatusUpdated?.Invoke();
+            Users.Remove(DocumentID);
         }
 
         #endregion
