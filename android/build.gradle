@@ -3,7 +3,7 @@
 buildscript {
     ext {
         // couchbase version
-        COUCHBASE_LITE_VERSION = "2.8.0-184"
+        COUCHBASE_LITE_VERSION = "2.8.0-261"
 
         // application parameters
         LOGGING_ENABLED = true
@@ -11,10 +11,10 @@ buildscript {
         CCR_REMOTE_WINS = false
         CCR_LOCAL_WINS = false
         DB_NAME = "todo"
-        SG_URI = "ws://ec2-18-212-13-240.compute-1.amazonaws.com:4984/todo"
+        SG_URI = "ws://ec2-3-90-70-164.compute-1.amazonaws.com:4984/todo"
 
         // support library version
-        SUPPORT_LIBRARY_VERSION = "1.1.0"
+        SUPPORT_LIBRARY_VERSION = "1.2.0"
     }
 
     repositories {
@@ -22,7 +22,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.0'
+        classpath 'com.android.tools.build:gradle:4.0.1'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
     }
 }

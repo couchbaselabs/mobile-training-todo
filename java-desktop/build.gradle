@@ -5,7 +5,7 @@ plugins {
 }
 
 ext {
-    COUCHBASE_LITE_VERSION = "2.8.0-176"
+    COUCHBASE_LITE_VERSION = "2.8.0-177"
 }
 
 group 'com.couchbase'

@@ -129,7 +129,7 @@ namespace Training.ViewModels
 
         public ICommand LogoutCommand => new Command(() => Logout());
 
-        public ICommand CloseDBCommand => new Command(() => CloseDB());
+        public ICommand DbDeleteLogoutCommand => new Command(() => DbDeleteLogout());
 
         ICommand _selectCommand;
         public ICommand SelectCommand
@@ -197,9 +197,10 @@ namespace Training.ViewModels
             Navigation.SetRoot(ServiceContainer.GetInstance<LoginViewModel>(), false);
         }
 
-        private void CloseDB()
+        private void DbDeleteLogout()
         {
-            CoreApp.CloseDatabase();
+            CoreApp.EndSession(true);
+            Navigation.SetRoot(ServiceContainer.GetInstance<LoginViewModel>(), false);
         }
 
         private void CreateNewItem(PromptResult result)

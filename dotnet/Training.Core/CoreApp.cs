@@ -104,10 +104,13 @@ namespace Training.Core
             Debug.WriteLine($"Custom Conflict Resolver Type = {Hint.CCRType}");
         }
 
-        public static void EndSession()
+        public static void EndSession(bool dbDeletion = false)
         {
-            StopReplication();
-            CloseDatabase();
+            if (dbDeletion) {
+                DeleteDatabase();
+            } else {
+                CloseDatabase();
+            }
         }
 
         /// <summary>
@@ -170,6 +173,18 @@ namespace Training.Core
                 Database.Close();
             } catch(Exception e) {
                 Debug.WriteLine($"Failed to close DB {e}");
+            }
+        }
+
+        /// <summary>
+        /// Delete the session database
+        /// </summary>
+        public static void DeleteDatabase()
+        {
+            try {
+                Database.Delete();
+            } catch (Exception e) {
+                Debug.WriteLine($"Failed to delete DB {e}");
             }
         }
 

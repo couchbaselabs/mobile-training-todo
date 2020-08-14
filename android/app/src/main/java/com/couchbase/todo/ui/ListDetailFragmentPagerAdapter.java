@@ -15,38 +15,27 @@
 //
 package com.couchbase.todo.ui;
 
+import android.content.Context;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
+import com.couchbase.todo.R;
 import com.couchbase.todo.TasksFragment;
 import com.couchbase.todo.UsersFragment;
+import com.couchbase.todo.app.ToDo;
 
 
 public class ListDetailFragmentPagerAdapter extends FragmentPagerAdapter {
     private static final String TAG = "DETAILS";
 
-    private static final List<String> TAB_NAMES;
-
-    static {
-        final List<String> l = new ArrayList<>(2);
-        l.add(0, "Tasks");
-        l.add(1, "Users");
-        TAB_NAMES = Collections.unmodifiableList(l);
-    }
-
 
     private final int pageCount;
 
     public ListDetailFragmentPagerAdapter(FragmentManager fm, int pageCount) {
-        super(fm);
+        super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         this.pageCount = pageCount;
     }
 
@@ -55,10 +44,15 @@ public class ListDetailFragmentPagerAdapter extends FragmentPagerAdapter {
 
     @Override
     public CharSequence getPageTitle(int i) {
-        if ((i < 0) || (i >= pageCount)) {
-            throw new IllegalArgumentException("Page index out of bounds: " + i);
+        Context ctxt = ToDo.getAppContext();
+        switch (i) {
+            case 0:
+                return ctxt.getResources().getString(R.string.tasks);
+            case 1:
+                return ctxt.getResources().getString(R.string.shares);
+            default:
+                throw new IllegalArgumentException("Page index out of bounds: " + i);
         }
-        return TAB_NAMES.get(i);
     }
 
     @NonNull

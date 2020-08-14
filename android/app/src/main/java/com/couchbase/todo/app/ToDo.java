@@ -16,6 +16,7 @@
 package com.couchbase.todo.app;
 
 import android.app.Application;
+import android.content.Context;
 
 import com.couchbase.lite.CouchbaseLite;
 import com.couchbase.todo.db.DAO;
@@ -24,9 +25,17 @@ import com.couchbase.todo.db.DAO;
 public class ToDo extends Application {
     private static final String TAG = "APP";
 
+    private static Context appContext;
+
+    public static Context getAppContext() { return appContext; }
+
+    public static void setAppContext(Context context) { appContext = context; }
+
     @Override
     public void onCreate() {
         super.onCreate();
+
+        setAppContext(this);
 
         CouchbaseLite.init(this);
 
