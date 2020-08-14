@@ -17,8 +17,8 @@ import Crashlytics
 let kLoggingEnabled = true
 let kLoginFlowEnabled = true
 let kSyncEnabled = true
-let kSyncEndpoint = "ws://localhost:4984/todo"
-let kSyncWithPushNotification = false
+let kSyncEndpoint = "ws://ec2-3-90-70-164.compute-1.amazonaws.com:4984/todo"
+let kSyncWithPushNotification = true
 
 // Custom conflict resolver
 enum CCRType {
@@ -59,7 +59,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         initCrashlytics()
         
         if kLoggingEnabled {
-            Database.log.console.level = .verbose
+            Database.log.console.level = .info
         }
         
         if kLoginFlowEnabled {
@@ -261,27 +261,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         guard kSyncWithPushNotification else {
             return
         }
-        
-        let center = UNUserNotificationCenter.current();
-        center.delegate = self
-        center.requestAuthorization(options: [.alert, .sound, .badge]) { (granted, error) in
-            if granted {
-                DispatchQueue.main.async {
-                    UIApplication.shared.registerForRemoteNotifications()
-                }
-            } else {
-                NSLog("WARNING: Remote Notification has not been authorized");
-            }
-            if let err = error {
-                NSLog("Register Remote Notification Error: \(err)");
-            }
-        }
+        UIApplication.shared.registerForRemoteNotifications()
     }
     
     func startPushNotificationSync() {
         guard kSyncWithPushNotification else {
             return
         }
+        
+        NSLog("[Todo] Start Push Notification ...")
         
         let target = URLEndpoint(url: URL(string: kSyncEndpoint)!)
         let config = ReplicatorConfiguration(database: database, target: target)
@@ -325,7 +313,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
     
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
-        
         // Start single shot replicator:
         self.startPushNotificationSync()
         

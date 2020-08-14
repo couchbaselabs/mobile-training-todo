@@ -14,8 +14,8 @@
 #define kLoggingEnabled YES
 #define kLoginFlowEnabled YES
 #define kSyncEnabled YES
-#define kSyncEndpoint @"ws://ec2-18-212-13-240.compute-1.amazonaws.com:4984/todo"
-#define kSyncWithPushNotification NO
+#define kSyncEndpoint @"ws://ec2-3-90-70-164.compute-1.amazonaws.com:4984/todo"
+#define kSyncWithPushNotification YES
 
 # pragma mark - Custom conflict resolver
 typedef enum: NSUInteger {
@@ -262,27 +262,14 @@ typedef enum: NSUInteger {
     if (!kSyncWithPushNotification)
         return;
     
-    UNUserNotificationCenter *center = UNUserNotificationCenter.currentNotificationCenter;
-    center.delegate = self;
-    [center requestAuthorizationWithOptions:(UNAuthorizationOptionSound | UNAuthorizationOptionAlert | UNAuthorizationOptionBadge)
-                          completionHandler:
-     ^(BOOL granted, NSError * _Nullable error) {
-         if (granted) {
-             dispatch_async(dispatch_get_main_queue(), ^(void) {
-                 [[UIApplication sharedApplication] registerForRemoteNotifications];
-             });
-         } else {
-             NSLog(@"WARNING: Remote Notification has not been authorized");
-         }
-         if (error) {
-             NSLog(@"Register Remote Notification Error: %@", error);
-         }
-    }];
+    [[UIApplication sharedApplication] registerForRemoteNotifications];
 }
     
 - (void)startPushNotificationSync {
     if (!kSyncWithPushNotification)
         return;
+    
+    NSLog(@"[Todo] Start Push Notification ...");
     
     CBLURLEndpoint *target = [[CBLURLEndpoint alloc] initWithURL:[NSURL URLWithString:kSyncEndpoint]];
     CBLReplicatorConfiguration *config = [[CBLReplicatorConfiguration alloc] initWithDatabase:_database target:target];
