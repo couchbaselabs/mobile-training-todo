@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 29
-    buildToolsVersion '29.0.3'
+    compileSdkVersion 30
+    buildToolsVersion '30.0.2'
 
     defaultConfig {
         applicationId "com.couchbase.todo"
-        minSdkVersion 24
-        targetSdkVersion 29
+        minSdkVersion 19
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -15,6 +15,7 @@ android {
 
     buildTypes {
         debug {
+            testCoverageEnabled true
             minifyEnabled false
             buildConfigField "boolean", "LOGGING_ENABLED", "${LOGGING_ENABLED.toString()}"
             buildConfigField "boolean", "LOGIN_REQUIRED", "${LOGIN_REQUIRED.toString()}"
@@ -44,6 +45,7 @@ repositories {
     maven { url "http://mobile.maven.couchbase.com/maven2/internalmaven/" }
     google()
     jcenter()
+    mavenLocal()
 }
 
 dependencies {
@@ -56,9 +58,6 @@ dependencies {
 
     // Couchbase Lite Android v2.x
     implementation "com.couchbase.lite:couchbase-lite-android-ee:${COUCHBASE_LITE_VERSION}"
-
-    // NOTE: For submodule
-    //implementation project(':libs:couchbase-lite-android:android:CouchbaseLite')
 
     // Glide for image download: https://github.com/bumptech/glide
     implementation 'com.github.bumptech.glide:glide:3.7.0'

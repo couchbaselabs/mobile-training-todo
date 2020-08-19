@@ -24,9 +24,8 @@
     <string name="db_name">DB Name</string>
     <string name="cancel">Cancel</string>
     <string name="update">Update</string>
-    <string name="instructions">
-Turn replication on by specifying a complete SG URL. Leave the field empty to turn replication off.
-        \n\n<b>Changing any value on this page will force a logout.</b></string>
+    <string name="warning">Changing any value on this page will force a logout.</string>
+    <string name="instructions">Enter a complete SG URL. Empty field turns replication off.</string>
 
     <!-- ??? -->
     <string name="one">1</string>

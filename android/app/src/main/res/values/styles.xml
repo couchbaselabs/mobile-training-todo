@@ -18,6 +18,11 @@
         <item name="android:textSize">@dimen/text_label</item>
     </style>
 
+    <style name="TodoTheme.Text.Warn">
+        <item name="android:textSize">@dimen/text_small_label</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
     <style name="TodoTheme.Text.Large">
         <item name="android:textSize">@dimen/text_large</item>
     </style>

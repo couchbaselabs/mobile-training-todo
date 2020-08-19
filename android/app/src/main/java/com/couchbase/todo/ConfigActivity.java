@@ -21,12 +21,14 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.widget.CheckBox;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.textfield.TextInputEditText;
 
+import com.couchbase.lite.internal.core.CBLVersion;
 import com.couchbase.todo.config.Config;
 import com.couchbase.todo.db.DAO;
 
@@ -53,6 +55,9 @@ public class ConfigActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_config);
+
+        TextView version = findViewById(R.id.version);
+        version.setText(CBLVersion.getVersionInfo());
 
         loggingCheckBox = findViewById(R.id.loggingEnabled);
         loginCheckBox = findViewById(R.id.loginRequired);

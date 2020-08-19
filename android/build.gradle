@@ -3,7 +3,7 @@
 buildscript {
     ext {
         // couchbase version
-        COUCHBASE_LITE_VERSION = "2.8.0-261"
+        COUCHBASE_LITE_VERSION = "2.8.0-263"
 
         // application parameters
         LOGGING_ENABLED = true
@@ -11,7 +11,7 @@ buildscript {
         CCR_REMOTE_WINS = false
         CCR_LOCAL_WINS = false
         DB_NAME = "todo"
-        SG_URI = "ws://ec2-3-90-70-164.compute-1.amazonaws.com:4984/todo"
+        SG_URI = "ws://ec2-52-86-246-142.compute-1.amazonaws.com:4984/todo"
 
         // support library version
         SUPPORT_LIBRARY_VERSION = "1.2.0"

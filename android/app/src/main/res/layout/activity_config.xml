@@ -9,10 +9,36 @@
     >
 
     <TextView
-        android:id="@+id/loggingEnabledLabel"
+        android:id="@+id/warning"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/version"
+        android:layout_marginTop="@dimen/spacing_medium"
+        android:text="@string/warning"
+        android:textStyle="bold"
+        style="@style/TodoTheme.Text.Warn"
+        />
+
+    <TextView
+        android:id="@+id/version"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/warning"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/loggingEnabledLabel"
+        android:maxLines="4"
+        android:lines="4"
+        style="@style/TodoTheme.Text.Small"
+        />
+
+    <TextView
+        android:id="@+id/loggingEnabledLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/version"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/loginRequiredLabel"
         android:layout_marginTop="@dimen/spacing_medium"
@@ -150,9 +176,8 @@
         app:layout_constraintTop_toBottomOf="@+id/sgUrlLayout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:singleLine="false"
         android:text="@string/instructions"
-        style="@style/TodoTheme.Text"
+        style="@style/TodoTheme.Text.Small"
         />
 
     <Button
