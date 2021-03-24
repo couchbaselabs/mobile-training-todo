@@ -17,7 +17,7 @@ import Crashlytics
 let kLoggingEnabled = true
 let kLoginFlowEnabled = true
 let kSyncEnabled = true
-let kSyncEndpoint = "ws://ec2-3-90-70-164.compute-1.amazonaws.com:4984/todo"
+let kSyncEndpoint = "ws://localhost:4984/todo"
 let kSyncWithPushNotification = true
 
 // Custom conflict resolver

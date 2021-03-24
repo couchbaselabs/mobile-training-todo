@@ -275,8 +275,8 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
         let docID = result.string(at: 0)!
         cell.taskLabel.text = result.string(at: 1)!
         
-        let complete: Bool = result.boolean(at: 2)
-        cell.accessoryType = complete ? .checkmark : .none
+        cell.accessoryType = .disclosureIndicator
+        cell.selectionStyle = .none
         
         if let imageBlob = result.blob(at: 3) {
             let digest = imageBlob.digest!
@@ -320,15 +320,9 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let row = self.data![indexPath.row]
-        let docID = row.string(at: 0)!
-        let doc = database.document(withID: docID)!
+        taskIDForImage = row.string(at: 0)!
         
-        let complete: Bool = !doc.boolean(forKey: "complete")
-        updateTask(taskID: docID, withComplete: complete)
-        
-        // Optimistically update the UI:
-        let cell = tableView.cellForRow(at: indexPath) as! TaskTableViewCell
-        cell.accessoryType = complete ? .checkmark : .none
+        self.performSegue(withIdentifier: "showTaskDetail", sender: self)
     }
     
     override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
@@ -405,6 +399,11 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
         if segue.identifier == "showTaskImage" {
             let navController = segue.destination as! UINavigationController
             let controller = navController.topViewController as! TaskImageViewController
+            controller.taskID = taskIDForImage
+            taskIDForImage = nil
+        } else if segue.identifier == "showTaskDetail" {
+            let navController = segue.destination as! UINavigationController
+            let controller = navController.topViewController as! TaskDetailViewController
             controller.taskID = taskIDForImage
             taskIDForImage = nil
         }
