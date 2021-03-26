@@ -22,9 +22,8 @@ fileprivate let kCCRType: CCRType = .remote
 fileprivate let kMaxRetry = 9
 fileprivate let kMaxRetryWaitTime = 300.0
 
-
 class Config {
-    // props
+    // MARK: Props
     public private(set) var loggingEnabled: Bool
     public private(set) var loginFlowEnabled: Bool
     public private(set) var syncEnabled: Bool
@@ -34,12 +33,14 @@ class Config {
     public private(set) var maxRetry: Int
     public private(set) var maxRetryWaitTime: TimeInterval
     
+    // can be set from outside
     public var syncURL: String
- 
-    // internal
+    
     public static var shared: Config {
         return Config()
     }
+    
+    // MARK: Lifecycle
     
     private init() {
         syncURL = kSyncEndpoint
