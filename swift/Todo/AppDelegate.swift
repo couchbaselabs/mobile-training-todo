@@ -234,8 +234,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                     })
                 }
             }
+            
+            // update the title color to reflect the status
+            self.updateReplicatorStatus(s.activity)
         })
         replicator.start()
+    }
+    
+    func updateReplicatorStatus(_ level: Replicator.ActivityLevel) {
+        if let vc = (window?.rootViewController as? UINavigationController)?.topViewController as? ListsViewController {
+            vc.updateReplicatorStatus(level)
+        }
     }
     
     func stopReplication() {

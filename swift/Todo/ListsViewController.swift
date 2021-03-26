@@ -51,6 +51,23 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating, UISea
         self.navigationItem.leftBarButtonItem?.isEnabled = Config.shared.loginFlowEnabled;
     }
     
+    func updateReplicatorStatus(_ level: Replicator.ActivityLevel) {
+        DispatchQueue.main.async {
+            var textAttributes: [NSAttributedStringKey: UIColor]
+            switch level {
+            case .connecting, .busy:
+                textAttributes = [NSAttributedString.Key.foregroundColor: UIColor.yellow]
+            case .idle:
+                textAttributes = [NSAttributedString.Key.foregroundColor: UIColor.green]
+            case .offline:
+                textAttributes = [NSAttributedString.Key.foregroundColor: UIColor.orange]
+            case .stopped:
+                textAttributes = [NSAttributedString.Key.foregroundColor: UIColor.red]
+            }
+            self.navigationController?.navigationBar.titleTextAttributes = textAttributes
+        }
+    }
+    
     // MARK: - Database
     
     func reload() {
