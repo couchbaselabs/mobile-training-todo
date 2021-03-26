@@ -18,6 +18,24 @@ class SettingsViewController: UIViewController {
     @IBOutlet weak var maxRetries: UITextField!
     @IBOutlet weak var maxRetryWaitTime: UITextField!
     
+    @IBOutlet weak var syncBackground: UIStackView!
+    @IBOutlet weak var ccrBackground: UIStackView!
+    @IBOutlet weak var maxRetryBackground: UIStackView!
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        syncBackground.layer.borderColor = UIColor.black.cgColor
+        syncBackground.layer.borderWidth = 0.1
+        syncBackground.layer.cornerRadius = 5;
+        ccrBackground.layer.borderColor = UIColor.black.cgColor
+        ccrBackground.layer.borderWidth = 0.1
+        ccrBackground.layer.cornerRadius = 5;
+        maxRetryBackground.layer.borderColor = UIColor.black.cgColor
+        maxRetryBackground.layer.borderWidth = 0.1
+        maxRetryBackground.layer.cornerRadius = 5;
+    }
+    
     @IBAction func cancel(_ sender: Any) {
         dismiss(animated: true, completion: nil)
     }
