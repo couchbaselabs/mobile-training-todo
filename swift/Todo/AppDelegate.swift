@@ -13,19 +13,10 @@ import Fabric
 import Crashlytics
 
 
-// Configuration:
-let kLoggingEnabled = true
-let kLoginFlowEnabled = true
-let kSyncEnabled = true
-let kSyncEndpoint = "ws://localhost:4984/todo"
-let kSyncWithPushNotification = true
-
 // Custom conflict resolver
-enum CCRType {
-    case local, remote, delete;
+enum CCRType: Int {
+    case local = 0, remote, delete;
 }
-let kCCREnabled = false
-let kCCRType: CCRType = .remote
 
 // Database Encryption:
 // Note: changing this value requires to delete the app before rerun:
@@ -58,11 +49,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         
         initCrashlytics()
         
-        if kLoggingEnabled {
+        if Config.shared.loggingEnabled {
             Database.log.console.level = .info
         }
         
-        if kLoginFlowEnabled {
+        if Config.shared.loginFlowEnabled {
             login(username: nil)
         } else {
             do {
@@ -83,9 +74,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         Session.password = password
         
         var resolver: ConflictResolverProtocol?
-        if kCCREnabled {
+        if Config.shared.ccrEnabled {
             resolver = TestConflictResolver() { (conflict) -> Document? in
-                switch kCCRType {
+                switch Config.shared.ccrType {
                 case .local:
                     return conflict.localDocument
                 case .remote:
@@ -210,17 +201,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     // MARK: - Replication
     
     func startReplication(withUsername username:String, password:String? = "", resolver: ConflictResolverProtocol?) {
-        guard kSyncEnabled else {
+        guard Config.shared.syncEnabled else {
             return
         }
         
-        let auth = kLoginFlowEnabled ? BasicAuthenticator(username: username, password: password!) : nil
-        let target = URLEndpoint(url: URL(string: kSyncEndpoint)!)
+        let auth = Config.shared.loginFlowEnabled ? BasicAuthenticator(username: username, password: password!) : nil
+        let target = URLEndpoint(url: URL(string: Config.shared.syncURL)!)
         let config = ReplicatorConfiguration(database: database, target: target)
         config.continuous = true
         config.authenticator = auth
         config.conflictResolver = resolver
-        NSLog(">> Custom Conflict Resolver: Enabled = \(kCCREnabled); Type = \(kCCRType)")
+        NSLog(">> Custom Conflict Resolver: Enabled = \(Config.shared.ccrEnabled); Type = \(Config.shared.ccrType)")
+        config.maxRetries = Config.shared.maxRetry
+        config.maxRetryWaitTime = Config.shared.maxRetryWaitTime
         
         replicator = Replicator(config: config)
         changeListener = replicator.addChangeListener({ (change) in
@@ -246,7 +239,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
     
     func stopReplication() {
-        guard kSyncEnabled else {
+        guard Config.shared.syncEnabled else {
             return
         }
         
@@ -258,22 +251,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     // MARK: Push Notification Sync
     
     func registerRemoteNotification() {
-        guard kSyncWithPushNotification else {
+        guard Config.shared.pushNotificationEnabled else {
             return
         }
         UIApplication.shared.registerForRemoteNotifications()
     }
     
     func startPushNotificationSync() {
-        guard kSyncWithPushNotification else {
+        guard Config.shared.pushNotificationEnabled else {
             return
         }
         
         NSLog("[Todo] Start Push Notification ...")
         
-        let target = URLEndpoint(url: URL(string: kSyncEndpoint)!)
+        let target = URLEndpoint(url: URL(string: Config.shared.syncURL)!)
         let config = ReplicatorConfiguration(database: database, target: target)
-        if kLoginFlowEnabled, let u = Session.username, let p = Session.password {
+        if Config.shared.loginFlowEnabled, let u = Session.username, let p = Session.password {
             config.authenticator = BasicAuthenticator(username: u, password: p)
         }
         
@@ -337,12 +330,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 Crashlytics.sharedInstance().setObjectValue(build, forKey: "Build")
             }
         }
-    }
-    
-    // MARK: UserDefaults
-    
-    func setConfig(_ value: Any, forKey key: String) {
-        UserDefaults.standard.set(value, forKey: key)
     }
 }
 

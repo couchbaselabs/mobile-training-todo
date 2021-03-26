@@ -46,6 +46,11 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating, UISea
         reload()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.navigationItem.leftBarButtonItem?.isEnabled = Config.shared.loginFlowEnabled;
+    }
+    
     // MARK: - Database
     
     func reload() {
