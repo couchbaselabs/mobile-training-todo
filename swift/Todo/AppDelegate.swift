@@ -19,8 +19,8 @@ let kSyncEnabled = true
 let kSyncEndpoint = "ws://localhost:4984/todo"
 
 // Custom conflict resolver
-enum CCRType {
-    case local, remote, delete;
+enum CCRType: Int {
+    case local = 0, remote, delete;
 }
 let kCCREnabled = false
 let kCCRType: CCRType = .remote
@@ -39,9 +39,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
     var replicator: Replicator!
     var changeListener: ListenerToken?
     
+    // Settings
+    var loggingEnabled: Bool = kLoggingEnabled
+    var loginFlowEnabled: Bool = kLoginFlowEnabled
+    var syncEnabled: Bool = kSyncEnabled
+    var ccrEnabled: Bool = kCCREnabled
+    var ccrType: Int = kCCRType.rawValue
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions
         launchOptions: [UIApplicationLaunchOptionsKey : Any]? = nil) -> Bool {
         
+        loadSettingsConfigs()
         initCrashlytics()
         
         if kLoggingEnabled {
@@ -59,6 +67,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate, LoginViewControllerDelega
             }
         }
         return true
+    }
+    
+    func loadSettingsConfigs() {
+        let defaults = UserDefaults.standard
+        if defaults.bool(forKey: "settings.hasSettings") {
+            loggingEnabled = defaults.bool(forKey: "settings.loggingEnabled")
+            syncEnabled = defaults.bool(forKey: "settings.syncEnabled")
+            ccrEnabled = defaults.bool(forKey: "settings.ccrEnabled")
+            ccrType = CCRType(rawValue: defaults.integer(forKey: "settings.ccrType"))!.rawValue
+        } else {
+            defaults.set(true, forKey: "settings.hasSettings")
+            defaults.set(kLoggingEnabled, forKey: "settings.loggingEnabled")
+            defaults.set(kSyncEnabled, forKey: "settings.syncEnabled")
+            defaults.set(kCCREnabled, forKey: "settings.ccrEnabled")
+            defaults.set(kCCRType.rawValue, forKey: "settings.ccrType")
+        }
     }
     
     // MARK: - Session

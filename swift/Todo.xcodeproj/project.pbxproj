@@ -3,14 +3,14 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1A993705260D71D100D5E911 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A993704260D71D100D5E911 /* SettingsViewController.swift */; };
+		1A993707260D72DB00D5E911 /* CouchbaseLiteSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A993706260D72DB00D5E911 /* CouchbaseLiteSwift.xcframework */; };
 		932EA5E02065D59300EDB667 /* Fabric.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 932EA5DE2065D59300EDB667 /* Fabric.framework */; };
 		932EA5E12065D59300EDB667 /* Crashlytics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 932EA5DF2065D59300EDB667 /* Crashlytics.framework */; };
-		932EA5E62065E69A00EDB667 /* CouchbaseLiteSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 932EA5E52065E69900EDB667 /* CouchbaseLiteSwift.framework */; };
-		932EA5E72065E69A00EDB667 /* CouchbaseLiteSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 932EA5E52065E69900EDB667 /* CouchbaseLiteSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		933F1AB81F393EEE00338C6A /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 933F1AB71F393EEE00338C6A /* Constants.swift */; };
 		934646BC1C69CF6B002F52C9 /* TasksViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 934646BB1C69CF6B002F52C9 /* TasksViewController.swift */; };
 		934646C31C6AC4CD002F52C9 /* TaskTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 934646C21C6AC4CD002F52C9 /* TaskTableViewCell.swift */; };
@@ -35,7 +35,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				932EA5E72065E69A00EDB667 /* CouchbaseLiteSwift.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -43,9 +42,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1A993704260D71D100D5E911 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
+		1A993706260D72DB00D5E911 /* CouchbaseLiteSwift.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CouchbaseLiteSwift.xcframework; path = Frameworks/CouchbaseLiteSwift.xcframework; sourceTree = "<group>"; };
 		932EA5DE2065D59300EDB667 /* Fabric.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Fabric.framework; path = Frameworks/Fabric.framework; sourceTree = "<group>"; };
 		932EA5DF2065D59300EDB667 /* Crashlytics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Crashlytics.framework; path = Frameworks/Crashlytics.framework; sourceTree = "<group>"; };
-		932EA5E52065E69900EDB667 /* CouchbaseLiteSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CouchbaseLiteSwift.framework; path = Frameworks/CouchbaseLiteSwift.framework; sourceTree = "<group>"; };
 		933F1AB71F393EEE00338C6A /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		934646BB1C69CF6B002F52C9 /* TasksViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TasksViewController.swift; sourceTree = "<group>"; };
 		934646C21C6AC4CD002F52C9 /* TaskTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TaskTableViewCell.swift; sourceTree = "<group>"; };
@@ -70,7 +70,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				932EA5E62065E69A00EDB667 /* CouchbaseLiteSwift.framework in Frameworks */,
+				1A993707260D72DB00D5E911 /* CouchbaseLiteSwift.xcframework in Frameworks */,
 				932EA5E12065D59300EDB667 /* Crashlytics.framework in Frameworks */,
 				932EA5E02065D59300EDB667 /* Fabric.framework in Frameworks */,
 			);
@@ -82,7 +82,7 @@
 		9322DCCA1F1406A600C4ACF7 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				932EA5E52065E69900EDB667 /* CouchbaseLiteSwift.framework */,
+				1A993706260D72DB00D5E911 /* CouchbaseLiteSwift.xcframework */,
 				932EA5DF2065D59300EDB667 /* Crashlytics.framework */,
 				932EA5DE2065D59300EDB667 /* Fabric.framework */,
 			);
@@ -127,6 +127,7 @@
 				934646BB1C69CF6B002F52C9 /* TasksViewController.swift */,
 				934646C51C6B218D002F52C9 /* TaskImageViewController.swift */,
 				93D6508D1EF441DE00EA44F3 /* UsersViewController.swift */,
+				1A993704260D71D100D5E911 /* SettingsViewController.swift */,
 				933F1AB71F393EEE00338C6A /* Constants.swift */,
 				93D9D9AB1EDF8427001355EE /* Session.swift */,
 				93F4B2C61C6940D6005FF4D8 /* Main.storyboard */,
@@ -182,6 +183,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);
@@ -254,6 +256,7 @@
 				939279F81C72E9C8009D9A92 /* Image.swift in Sources */,
 				93D999FD1C7FE78300FEFF17 /* TextDialog.swift in Sources */,
 				93D9D9AE1EDF8495001355EE /* LoginViewController.swift in Sources */,
+				1A993705260D71D100D5E911 /* SettingsViewController.swift in Sources */,
 				93D9D9AC1EDF8427001355EE /* Session.swift in Sources */,
 				933F1AB81F393EEE00338C6A /* Constants.swift in Sources */,
 			);
@@ -375,7 +378,8 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 3.0;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -395,7 +399,10 @@
 				);
 				INFOPLIST_FILE = Todo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.2;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -423,7 +430,10 @@
 				);
 				INFOPLIST_FILE = Todo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.2;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
