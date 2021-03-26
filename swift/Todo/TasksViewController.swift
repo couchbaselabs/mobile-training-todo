@@ -369,7 +369,17 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
             logTask(doc: doc)
         }
         
-        return [delete, update, log]
+        let detail = UITableViewRowAction(style: .normal, title: "Detail") {
+            (action, indexPath) -> Void in
+            // Dismiss row actions:
+            tableView.setEditing(false, animated: true)
+            
+            self.taskIDForImage = row.string(at: 0)!
+            self.performSegue(withIdentifier: "showTaskDetail", sender: self)
+        }
+        detail.backgroundColor = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
+        
+        return [delete, update, log, detail]
     }
     
     // MARK: - UISearchController
@@ -405,6 +415,11 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
         if segue.identifier == "showTaskImage" {
             let navController = segue.destination as! UINavigationController
             let controller = navController.topViewController as! TaskImageViewController
+            controller.taskID = taskIDForImage
+            taskIDForImage = nil
+        } else if segue.identifier == "showTaskDetail" {
+            let navController = segue.destination as! UINavigationController
+            let controller = navController.topViewController as! TaskDetailViewController
             controller.taskID = taskIDForImage
             taskIDForImage = nil
         }
