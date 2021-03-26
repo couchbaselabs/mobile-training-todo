@@ -10,6 +10,7 @@
 		1A52D218260AEA1E00A9BEBD /* CouchbaseLiteSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A52D216260AEA1700A9BEBD /* CouchbaseLiteSwift.xcframework */; };
 		1A52D219260AEA1E00A9BEBD /* CouchbaseLiteSwift.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 1A52D216260AEA1700A9BEBD /* CouchbaseLiteSwift.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1A52D21D260B0FCF00A9BEBD /* TaskDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A52D21C260B0FCF00A9BEBD /* TaskDetailViewController.swift */; };
+		1AF9A228260B4EFF00618A98 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AF9A227260B4EFF00618A98 /* SettingsViewController.swift */; };
 		932EA5E02065D59300EDB667 /* Fabric.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 932EA5DE2065D59300EDB667 /* Fabric.framework */; };
 		932EA5E12065D59300EDB667 /* Crashlytics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 932EA5DF2065D59300EDB667 /* Crashlytics.framework */; };
 		933F1AB81F393EEE00338C6A /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 933F1AB71F393EEE00338C6A /* Constants.swift */; };
@@ -58,6 +59,7 @@
 /* Begin PBXFileReference section */
 		1A52D216260AEA1700A9BEBD /* CouchbaseLiteSwift.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CouchbaseLiteSwift.xcframework; path = Frameworks/CouchbaseLiteSwift.xcframework; sourceTree = "<group>"; };
 		1A52D21C260B0FCF00A9BEBD /* TaskDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailViewController.swift; sourceTree = "<group>"; };
+		1AF9A227260B4EFF00618A98 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		932EA5DE2065D59300EDB667 /* Fabric.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Fabric.framework; path = Frameworks/Fabric.framework; sourceTree = "<group>"; };
 		932EA5DF2065D59300EDB667 /* Crashlytics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Crashlytics.framework; path = Frameworks/Crashlytics.framework; sourceTree = "<group>"; };
 		933F1AB71F393EEE00338C6A /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
@@ -173,6 +175,7 @@
 				934646C51C6B218D002F52C9 /* TaskImageViewController.swift */,
 				1A52D21C260B0FCF00A9BEBD /* TaskDetailViewController.swift */,
 				93D6508D1EF441DE00EA44F3 /* UsersViewController.swift */,
+				1AF9A227260B4EFF00618A98 /* SettingsViewController.swift */,
 				933F1AB71F393EEE00338C6A /* Constants.swift */,
 				93D9D9AB1EDF8427001355EE /* Session.swift */,
 				93DED1962499CDE900595294 /* DogLogger.swift */,
@@ -319,6 +322,7 @@
 				93D6508E1EF441DE00EA44F3 /* UsersViewController.swift in Sources */,
 				93F4B2C31C6940D6005FF4D8 /* AppDelegate.swift in Sources */,
 				9382586B21632B46006A75AD /* QE.swift in Sources */,
+				1AF9A228260B4EFF00618A98 /* SettingsViewController.swift in Sources */,
 				934646C61C6B218D002F52C9 /* TaskImageViewController.swift in Sources */,
 				93F4B2E01C696C78005FF4D8 /* Ui.swift in Sources */,
 				1A52D21D260B0FCF00A9BEBD /* TaskDetailViewController.swift in Sources */,
