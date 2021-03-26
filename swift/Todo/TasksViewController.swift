@@ -377,6 +377,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
             self.taskIDForImage = row.string(at: 0)!
             self.performSegue(withIdentifier: "showTaskDetail", sender: self)
         }
+        detail.backgroundColor = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
         
         return [delete, update, log, detail]
     }
