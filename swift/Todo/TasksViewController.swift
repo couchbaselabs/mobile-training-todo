@@ -275,8 +275,8 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
         let docID = result.string(at: 0)!
         cell.taskLabel.text = result.string(at: 1)!
         
-        cell.accessoryType = .disclosureIndicator
-        cell.selectionStyle = .none
+        let complete: Bool = result.boolean(at: 2)
+        cell.accessoryType = complete ? .checkmark : .none
         
         if let imageBlob = result.blob(at: 3) {
             let digest = imageBlob.digest!
@@ -320,9 +320,15 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let row = self.data![indexPath.row]
-        taskIDForImage = row.string(at: 0)!
+        let docID = row.string(at: 0)!
+        let doc = database.document(withID: docID)!
         
-        self.performSegue(withIdentifier: "showTaskDetail", sender: self)
+        let complete: Bool = !doc.boolean(forKey: "complete")
+        updateTask(taskID: docID, withComplete: complete)
+        
+        // Optimistically update the UI:
+        let cell = tableView.cellForRow(at: indexPath) as! TaskTableViewCell
+        cell.accessoryType = complete ? .checkmark : .none
     }
     
     override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
@@ -363,7 +369,16 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
             logTask(doc: doc)
         }
         
-        return [delete, update, log]
+        let detail = UITableViewRowAction(style: .normal, title: "Detail") {
+            (action, indexPath) -> Void in
+            // Dismiss row actions:
+            tableView.setEditing(false, animated: true)
+            
+            self.taskIDForImage = row.string(at: 0)!
+            self.performSegue(withIdentifier: "showTaskDetail", sender: self)
+        }
+        
+        return [delete, update, log, detail]
     }
     
     // MARK: - UISearchController
