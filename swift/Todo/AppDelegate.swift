@@ -338,6 +338,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             }
         }
     }
+    
+    // MARK: UserDefaults
+    
+    func setConfig(_ value: Any, forKey key: String) {
+        UserDefaults.standard.set(value, forKey: key)
+    }
 }
 
 class TestConflictResolver: ConflictResolverProtocol {

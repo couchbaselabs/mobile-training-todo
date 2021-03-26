@@ -30,3 +30,13 @@ let S_NAME = SelectResult.expression(NAME)
 let S_TASK = SelectResult.expression(TASK)
 let S_TASK_LIST_ID = SelectResult.expression(TASK_LIST_ID)
 let S_USERNAME = SelectResult.expression(USERNAME)
+
+// Config Keys
+
+let HAS_SETTINGS_KEY = "settings.hasSettings"
+let IS_LOGGING_KEY = "settings.isLoggingEnabled"
+let IS_LOGIN_FLOW_KEY = "settings.isLoginFlowEnabled"
+let IS_SYNC_KEY = "settings.isSyncEnabled"
+let IS_PUSH_NOTIFICATION_ENABLED_KEY = "settings.isPushNotificationEnabled"
+let IS_CCR_ENABLED_KEY = "settings.isCCREnabled"
+let CCR_TYPE_KEY = "settings.ccrType"
