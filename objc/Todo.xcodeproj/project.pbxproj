@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		1A793FFB2612AA62001B577C /* CouchbaseLite.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A793FF92612AA5F001B577C /* CouchbaseLite.xcframework */; };
 		1A793FFC2612AA62001B577C /* CouchbaseLite.xcframework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1A793FF92612AA5F001B577C /* CouchbaseLite.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		1A793FFF2612B01E001B577C /* CBLTaskDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A793FFE2612B01E001B577C /* CBLTaskDetailViewController.m */; };
 		9336350C1EDE1DA500349E9A /* CBLLoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9336350B1EDE1DA500349E9A /* CBLLoginViewController.m */; };
 		933635121EDE2A7C00349E9A /* CBLSession.m in Sources */ = {isa = PBXBuildFile; fileRef = 933635111EDE2A7C00349E9A /* CBLSession.m */; };
 		937EAC0B1E3AB72200133693 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 937EAC0A1E3AB72200133693 /* main.m */; };
@@ -42,6 +43,8 @@
 
 /* Begin PBXFileReference section */
 		1A793FF92612AA5F001B577C /* CouchbaseLite.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CouchbaseLite.xcframework; path = Frameworks/CouchbaseLite.xcframework; sourceTree = "<group>"; };
+		1A793FFD2612B01E001B577C /* CBLTaskDetailViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CBLTaskDetailViewController.h; sourceTree = "<group>"; };
+		1A793FFE2612B01E001B577C /* CBLTaskDetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CBLTaskDetailViewController.m; sourceTree = "<group>"; };
 		9336350A1EDE1DA500349E9A /* CBLLoginViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBLLoginViewController.h; sourceTree = "<group>"; };
 		9336350B1EDE1DA500349E9A /* CBLLoginViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CBLLoginViewController.m; sourceTree = "<group>"; };
 		933635101EDE2A7C00349E9A /* CBLSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBLSession.h; sourceTree = "<group>"; };
@@ -127,6 +130,8 @@
 				93A8432C1E3B13E100B4AF2D /* CBLTasksViewController.m */,
 				93A843381E3B420B00B4AF2D /* CBLTaskImageViewController.h */,
 				93A843391E3B420B00B4AF2D /* CBLTaskImageViewController.m */,
+				1A793FFD2612B01E001B577C /* CBLTaskDetailViewController.h */,
+				1A793FFE2612B01E001B577C /* CBLTaskDetailViewController.m */,
 				93A019D71EF305470097D427 /* CBLUsersViewController.h */,
 				93A019D81EF305470097D427 /* CBLUsersViewController.m */,
 				933635101EDE2A7C00349E9A /* CBLSession.h */,
@@ -251,6 +256,7 @@
 			files = (
 				933635121EDE2A7C00349E9A /* CBLSession.m in Sources */,
 				937EAC0E1E3AB72200133693 /* AppDelegate.m in Sources */,
+				1A793FFF2612B01E001B577C /* CBLTaskDetailViewController.m in Sources */,
 				93A843371E3B307D00B4AF2D /* CBLImage.m in Sources */,
 				93A8433A1E3B420B00B4AF2D /* CBLTaskImageViewController.m in Sources */,
 				93A843301E3B154200B4AF2D /* CBLTaskTableViewCell.m in Sources */,

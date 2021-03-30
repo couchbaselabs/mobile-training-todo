@@ -13,6 +13,7 @@
 #import "CBLImage.h"
 #import "CBLTaskTableViewCell.h"
 #import "CBLTaskImageViewController.h"
+#import "CBLTaskDetailViewController.h"
 #import "CBLSession.h"
 #import "CBLDocLogger.h"
 
@@ -333,7 +334,19 @@
         [CBLDocLogger logTask:doc];
     }];
     
-    return @[delete, update, log];
+    // Details
+    UITableViewRowAction *details = [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleNormal
+                                                                   title:@"Details"
+                                                                 handler:
+     ^(UITableViewRowAction *action, NSIndexPath *indexPath) {
+        // Dismiss row actions:
+        [tableView setEditing:NO animated:YES];
+        _taskIDForImage = docID;
+        [self performSegueWithIdentifier: @"showTaskDetail" sender: self];
+    }];
+    details.backgroundColor = [UIColor colorWithRed:0.0 green: 1.00 blue: 0.0 alpha: 1.0];
+    
+    return @[delete, update, log, details];
 }
 
 #pragma mark - UISearchController
@@ -372,6 +385,11 @@ didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info
     if ([segue.identifier isEqualToString:@"showTaskImage"]) {
         UINavigationController *navController = segue.destinationViewController;
         CBLTaskImageViewController *controller = (CBLTaskImageViewController*)navController.topViewController;
+        controller.taskID = _taskIDForImage;
+        _taskIDForImage = nil;
+    } else if ([segue.identifier isEqualToString: @"showTaskDetail"]) {
+        UINavigationController *navController = segue.destinationViewController;
+        CBLTaskDetailViewController* controller = (CBLTaskDetailViewController*)navController.topViewController;
         controller.taskID = _taskIDForImage;
         _taskIDForImage = nil;
     }
