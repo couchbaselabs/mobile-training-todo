@@ -70,6 +70,7 @@ fastlane/screenshots
 # CouchbaseLite
 CouchbaseLite.framework
 CouchbaseLiteSwift.framework
+CouchbaseLite.xcframework/
 CouchbaseLiteSwift.xcframework/
 
 # Certificates

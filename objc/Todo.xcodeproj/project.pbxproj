@@ -3,12 +3,12 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		9322DCC41F13FC7C00C4ACF7 /* CouchbaseLite.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9322DCC31F13FC7C00C4ACF7 /* CouchbaseLite.framework */; };
-		9322DCC91F1404FE00C4ACF7 /* CouchbaseLite.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9322DCC31F13FC7C00C4ACF7 /* CouchbaseLite.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		1A793FFB2612AA62001B577C /* CouchbaseLite.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A793FF92612AA5F001B577C /* CouchbaseLite.xcframework */; };
+		1A793FFC2612AA62001B577C /* CouchbaseLite.xcframework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1A793FF92612AA5F001B577C /* CouchbaseLite.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9336350C1EDE1DA500349E9A /* CBLLoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9336350B1EDE1DA500349E9A /* CBLLoginViewController.m */; };
 		933635121EDE2A7C00349E9A /* CBLSession.m in Sources */ = {isa = PBXBuildFile; fileRef = 933635111EDE2A7C00349E9A /* CBLSession.m */; };
 		937EAC0B1E3AB72200133693 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 937EAC0A1E3AB72200133693 /* main.m */; };
@@ -34,14 +34,14 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				9322DCC91F1404FE00C4ACF7 /* CouchbaseLite.framework in CopyFiles */,
+				1A793FFC2612AA62001B577C /* CouchbaseLite.xcframework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		9322DCC31F13FC7C00C4ACF7 /* CouchbaseLite.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CouchbaseLite.framework; path = Frameworks/CouchbaseLite.framework; sourceTree = "<group>"; };
+		1A793FF92612AA5F001B577C /* CouchbaseLite.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CouchbaseLite.xcframework; path = Frameworks/CouchbaseLite.xcframework; sourceTree = "<group>"; };
 		9336350A1EDE1DA500349E9A /* CBLLoginViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBLLoginViewController.h; sourceTree = "<group>"; };
 		9336350B1EDE1DA500349E9A /* CBLLoginViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CBLLoginViewController.m; sourceTree = "<group>"; };
 		933635101EDE2A7C00349E9A /* CBLSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBLSession.h; sourceTree = "<group>"; };
@@ -81,7 +81,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9322DCC41F13FC7C00C4ACF7 /* CouchbaseLite.framework in Frameworks */,
+				1A793FFB2612AA62001B577C /* CouchbaseLite.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -91,7 +91,7 @@
 		9322DCC21F13FC7C00C4ACF7 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				9322DCC31F13FC7C00C4ACF7 /* CouchbaseLite.framework */,
+				1A793FF92612AA5F001B577C /* CouchbaseLite.xcframework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -401,7 +401,10 @@
 					"$(PROJECT_DIR)/Frameworks",
 				);
 				INFOPLIST_FILE = Todo/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.couchbase.MobileTrainingTodo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -419,7 +422,10 @@
 					"$(PROJECT_DIR)/Frameworks",
 				);
 				INFOPLIST_FILE = Todo/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.couchbase.MobileTrainingTodo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
