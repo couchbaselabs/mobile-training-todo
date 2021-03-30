@@ -9,6 +9,12 @@
 #import <UIKit/UIKit.h>
 #import <CouchbaseLite/CouchbaseLite.h>
 
+typedef NS_ENUM(NSInteger, CCRType) {
+    CCRTypeLocal = 0,
+    CCRTypeRemote,
+    CCRTypeDelete
+};
+
 typedef NS_ENUM(NSInteger, CBLLogoutMethod) {
     CBLLogoutModeCloseDatabase = 0,
     CBLLogoutModeDeleteDatabase

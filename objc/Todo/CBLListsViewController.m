@@ -7,7 +7,6 @@
 //
 
 #import "CBLListsViewController.h"
-#import <CouchbaseLite/CouchbaseLite.h>
 #import "AppDelegate.h"
 #import "CBLConstants.h"
 #import "CBLSession.h"
@@ -15,6 +14,7 @@
 #import "CBLUsersViewController.h"
 #import "CBLUi.h"
 #import "CBLDocLogger.h"
+#import "CBLConfig.h"
 
 @interface CBLListsViewController () <UISearchResultsUpdating, UISearchBarDelegate> {
     UISearchController *_searchController;
@@ -60,6 +60,34 @@
     
     // Load data:
     [self reload];
+}
+
+- (void) viewWillAppear:(BOOL)animated {
+    [super viewWillAppear: animated];
+    
+    [self.navigationItem.leftBarButtonItem setEnabled: CBLConfig.shared.loginFlowEnabled];
+}
+
+- (void) updateReplicatorStatus: (CBLReplicatorActivityLevel)level {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        UIColor* color;
+        switch (level) {
+            case kCBLReplicatorConnecting:
+            case kCBLReplicatorBusy:
+                color = UIColor.yellowColor;
+                break;
+            case kCBLReplicatorIdle:
+                color = UIColor.greenColor;
+                break;
+            case kCBLReplicatorOffline:
+                color = UIColor.orangeColor;
+                break;
+            case kCBLReplicatorStopped:
+                color = UIColor.redColor;
+                break;
+        }
+        self.navigationController.navigationBar.titleTextAttributes = @{NSForegroundColorAttributeName: color};
+    });
 }
 
 #pragma mark - Database
@@ -293,17 +321,19 @@
 #pragma mark - Navigation
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    NSString *docID = [self.data[[self.tableView indexPathForSelectedRow].row] stringAtIndex:0];
-    CBLDocument *taskList = [_database documentWithID:docID];
-    
-    UITabBarController *tabBarController = (UITabBarController*)segue.destinationViewController;
-    CBLTasksViewController *tasksController = tabBarController.viewControllers[0];
-    tasksController.taskList = taskList;
-    
-    CBLUsersViewController *usersController = tabBarController.viewControllers[1];
-    usersController.taskList = taskList;
-    
-    shouldUpdateIncompTasksCount = YES;
+    if ([segue.identifier isEqualToString: @"showTaskList"]) {
+        NSString *docID = [self.data[[self.tableView indexPathForSelectedRow].row] stringAtIndex:0];
+        CBLDocument *taskList = [_database documentWithID:docID];
+        
+        UITabBarController *tabBarController = (UITabBarController*)segue.destinationViewController;
+        CBLTasksViewController *tasksController = tabBarController.viewControllers[0];
+        tasksController.taskList = taskList;
+        
+        CBLUsersViewController *usersController = tabBarController.viewControllers[1];
+        usersController.taskList = taskList;
+        
+        shouldUpdateIncompTasksCount = YES;
+    }
 }
 
 @end

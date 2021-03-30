@@ -27,4 +27,16 @@
 #define S_TASK_LIST_ID    [CBLQuerySelectResult expression:TASK_LIST_ID]
 #define S_USERNAME        [CBLQuerySelectResult expression:USERNAME]
 
+// Config Keys
+
+#define HAS_SETTINGS_KEY                    @"settings.hasSettings"
+#define IS_LOGGING_KEY                      @"settings.isLoggingEnabled"
+#define IS_LOGIN_FLOW_KEY                   @"settings.isLoginFlowEnabled"
+#define IS_SYNC_KEY                         @"settings.isSyncEnabled"
+#define IS_PUSH_NOTIFICATION_ENABLED_KEY    @"settings.isPushNotificationEnabled"
+#define IS_CCR_ENABLED_KEY                  @"settings.isCCREnabled"
+#define CCR_TYPE_KEY                        @"settings.ccrType"
+#define MAX_RETRY_KEY                       @"setting.maxRetry"
+#define MAX_RETRY_WAIT_TIME_KEY             @"setting.maxRetryWaitTime"
+
 #endif /* CBLConstants_h */

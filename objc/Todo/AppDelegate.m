@@ -10,22 +10,10 @@
 #import "CBLSession.h"
 #import "CBLUi.h"
 #import <UserNotifications/UserNotifications.h>
-
-#define kLoggingEnabled YES
-#define kLoginFlowEnabled YES
-#define kSyncEnabled YES
-#define kSyncEndpoint @"ws://ec2-3-90-70-164.compute-1.amazonaws.com:4984/todo"
-#define kSyncWithPushNotification YES
+#import "CBLConfig.h"
+#import "CBLListsViewController.h"
 
 # pragma mark - Custom conflict resolver
-typedef enum: NSUInteger {
-    LOCAL = 0,
-    REMOTE = 1,
-    DELETE = 2
-} CCRType;
-
-#define kCCREnabled NO
-#define kCCRType 1
 
 @interface TestConflictResolver: NSObject<CBLConflictResolver>
 - (instancetype) init NS_UNAVAILABLE;
@@ -43,15 +31,15 @@ typedef enum: NSUInteger {
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    if (kLoggingEnabled) {
+    if ([CBLConfig shared].loggingEnabled) {
         CBLDatabase.log.console.level = kCBLLogLevelVerbose;
     }
     
-    if (kLoginFlowEnabled) {
-        [self loginWithUsername:nil];
+    if ([CBLConfig shared].loginFlowEnabled) {
+        [self loginWithUsername: nil];
     } else {
         NSError *error;
-        if (![self startSession:@"todo" password:nil error:&error]) {
+        if (![self startSession: @"todo" password: nil error:&error]) {
             NSLog(@"Cannot start a session: %@", error);
             return NO;
         }
@@ -65,14 +53,14 @@ typedef enum: NSUInteger {
         CBLSession.sharedInstance.password = password;
         
         id<CBLConflictResolver> resolver = nil;
-        if (kCCREnabled) {
+        if ([CBLConfig shared].ccrEnabled) {
             resolver = [[TestConflictResolver alloc] initWithResolver: ^CBLDocument* (CBLConflict* con) {
-                switch (kCCRType) {
-                    case LOCAL:
+                switch ([CBLConfig shared].ccrType) {
+                    case CCRTypeLocal:
                         return con.localDocument;
-                    case REMOTE:
+                    case CCRTypeRemote:
                         return con.remoteDocument;
-                    case DELETE:
+                    case CCRTypeDelete:
                         return nil;
                 }
                 return con.remoteDocument;
@@ -142,7 +130,7 @@ typedef enum: NSUInteger {
 }
 
 - (void)logout: (CBLLogoutMethod)method {
-    if (!kLoginFlowEnabled)
+    if (![CBLConfig shared].loginFlowEnabled)
         return;
     
     NSTimeInterval startTime = [NSDate timeIntervalSinceReferenceDate];
@@ -201,15 +189,19 @@ typedef enum: NSUInteger {
 - (void)startReplicator:(NSString *)username
                password:(NSString *)password
                resolver:(id<CBLConflictResolver>)resolver {
-    if (!kSyncEnabled)
+    if (![CBLConfig shared].syncEnabled)
         return;
     
-    CBLURLEndpoint *target = [[CBLURLEndpoint alloc] initWithURL:[NSURL URLWithString:kSyncEndpoint]];
+    CBLURLEndpoint *target = [[CBLURLEndpoint alloc] initWithURL:[NSURL URLWithString: [CBLConfig shared].syncEndpoint]];
     CBLReplicatorConfiguration *config = [[CBLReplicatorConfiguration alloc] initWithDatabase:_database target:target];
     config.continuous = YES;
-    config.authenticator = [[CBLBasicAuthenticator alloc] initWithUsername:username password:password];
+    if (CBLConfig.shared.loginFlowEnabled)
+        config.authenticator = [[CBLBasicAuthenticator alloc] initWithUsername:username password:password];
+    
     config.conflictResolver = resolver;
-    NSLog(@">> Custom Conflict Resolver: Enabled = %d; Type = %d", kCCREnabled, kCCRType);
+    NSLog(@">> Custom Conflict Resolver: Enabled = %d; Type = %ld", [CBLConfig shared].ccrEnabled, (long)[CBLConfig shared].ccrType);
+    config.maxRetries = CBLConfig.shared.maxRetries;
+    config.maxRetryWaitTime = CBLConfig.shared.maxRetryWaitTime;
     
     _replicator = [[CBLReplicator alloc] initWithConfig:config];
     __weak typeof(self) wSelf = self;
@@ -227,13 +219,22 @@ typedef enum: NSUInteger {
                          onClose:^{ [wSelf logout: CBLLogoutModeCloseDatabase]; }
              ];
         }
+        
+        // update the title color to reflect the status
+        [wSelf updateReplicatorStatus: s.activity];
 
     }];
     [_replicator start];
 }
 
+- (void) updateReplicatorStatus: (CBLReplicatorActivityLevel)level {
+    id vc = ((UINavigationController*)self.window.rootViewController).topViewController;
+    if ([vc isKindOfClass: [CBLListsViewController class]])
+         [vc updateReplicatorStatus: level];
+}
+
 - (void)stopReplicator {
-    if (!kSyncEnabled)
+    if (![CBLConfig shared].syncEnabled)
         return;
 
     [_replicator stop];
@@ -259,22 +260,22 @@ typedef enum: NSUInteger {
 #pragma mark - Push Notification Sync
     
 - (void)registerRemoteNotification {
-    if (!kSyncWithPushNotification)
+    if (![CBLConfig shared].pushNotificationEnabled)
         return;
     
     [[UIApplication sharedApplication] registerForRemoteNotifications];
 }
     
 - (void)startPushNotificationSync {
-    if (!kSyncWithPushNotification)
+    if (![CBLConfig shared].pushNotificationEnabled)
         return;
     
     NSLog(@"[Todo] Start Push Notification ...");
     
-    CBLURLEndpoint *target = [[CBLURLEndpoint alloc] initWithURL:[NSURL URLWithString:kSyncEndpoint]];
+    CBLURLEndpoint *target = [[CBLURLEndpoint alloc] initWithURL:[NSURL URLWithString: [CBLConfig shared].syncEndpoint]];
     CBLReplicatorConfiguration *config = [[CBLReplicatorConfiguration alloc] initWithDatabase:_database target:target];
     CBLSession *session = CBLSession.sharedInstance;
-    if (kLoginFlowEnabled && session.username && session.password) {
+    if ([CBLConfig shared].loginFlowEnabled && session.username && session.password) {
         config.authenticator = [[CBLBasicAuthenticator alloc] initWithUsername:session.username password:session.password];
     }
     

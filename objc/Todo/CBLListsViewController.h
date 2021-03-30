@@ -7,7 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <CouchbaseLite/CouchbaseLite.h>
 
 @interface CBLListsViewController : UITableViewController
+
+- (void) updateReplicatorStatus: (CBLReplicatorActivityLevel)level;
 
 @end
