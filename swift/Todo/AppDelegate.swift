@@ -93,7 +93,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
     
     func openDatabase(username:String) throws {
-        let config = DatabaseConfiguration()
+        var config = DatabaseConfiguration()
         if let password = kDatabaseEncryptionKey {
             config.encryptionKey = EncryptionKey.password(password)
         }
@@ -207,7 +207,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         
         let auth = Config.shared.loginFlowEnabled ? BasicAuthenticator(username: username, password: password!) : nil
         let target = URLEndpoint(url: URL(string: Config.shared.syncURL)!)
-        let config = ReplicatorConfiguration(database: database, target: target)
+        var config = ReplicatorConfiguration(database: database, target: target)
         config.continuous = true
         config.authenticator = auth
         config.conflictResolver = resolver
@@ -274,7 +274,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         NSLog("[Todo] Start Push Notification ...")
         
         let target = URLEndpoint(url: URL(string: Config.shared.syncURL)!)
-        let config = ReplicatorConfiguration(database: database, target: target)
+        var config = ReplicatorConfiguration(database: database, target: target)
         if Config.shared.loginFlowEnabled, let u = Session.username, let p = Session.password {
             config.authenticator = BasicAuthenticator(username: u, password: p)
         }
