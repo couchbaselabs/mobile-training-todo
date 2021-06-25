@@ -51,7 +51,7 @@ public class UsersFragment extends Fragment {
     private UsersAdapter adapter;
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         listId = getDetailActivity().getListId();
     }
@@ -72,7 +72,7 @@ public class UsersFragment extends Fragment {
         return view;
     }
 
-    boolean handleLongClick(AdapterView unused, View view, int pos, long id) {
+    boolean handleLongClick(AdapterView<?> unused, View view, int pos, long id) {
         final PopupMenu popup = new PopupMenu(getContext(), view);
         popup.inflate(R.menu.menu_user);
         popup.setOnMenuItemClickListener(item -> {

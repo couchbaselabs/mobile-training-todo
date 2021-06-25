@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.couchbase.lite.AbstractReplicator;
 import com.couchbase.lite.BasicAuthenticator;
 import com.couchbase.lite.CBLError;
 import com.couchbase.lite.CouchbaseLiteException;
@@ -49,8 +48,11 @@ import com.couchbase.lite.Query;
 import com.couchbase.lite.QueryBuilder;
 import com.couchbase.lite.QueryChangeListener;
 import com.couchbase.lite.Replicator;
+import com.couchbase.lite.ReplicatorActivityLevel;
 import com.couchbase.lite.ReplicatorChange;
 import com.couchbase.lite.ReplicatorConfiguration;
+import com.couchbase.lite.ReplicatorStatus;
+import com.couchbase.lite.ReplicatorType;
 import com.couchbase.lite.SelectResult;
 import com.couchbase.lite.URLEndpoint;
 import com.couchbase.todo.config.Config;
@@ -62,7 +64,7 @@ public final class DAO {
     public interface DAOListener {
         void onError(CouchbaseLiteException err);
 
-        void onNewState(AbstractReplicator.ActivityLevel state);
+        void onNewState(ReplicatorActivityLevel state);
     }
 
     private static class LogoutTask extends AsyncTask<Database, Void, Void> {
@@ -105,7 +107,7 @@ public final class DAO {
     private volatile String username;
 
     private Replicator replicator;
-    private AbstractReplicator.ActivityLevel replicatorState;
+    private ReplicatorActivityLevel replicatorState;
 
     // Called from the UI thread only once, in ToDo.onCreate()
     private DAO() {
@@ -349,11 +351,11 @@ public final class DAO {
         final Endpoint endpoint = new URLEndpoint(sgUri);
 
         final ReplicatorConfiguration config = new ReplicatorConfiguration(db, endpoint)
-            .setReplicatorType(ReplicatorConfiguration.ReplicatorType.PUSH_AND_PULL)
+            .setType(ReplicatorType.PUSH_AND_PULL)
             .setContinuous(true);
 
         // authentication
-        config.setAuthenticator(new BasicAuthenticator(username, new String(password)));
+        config.setAuthenticator(new BasicAuthenticator(username, password));
         Arrays.fill(password, ' ');
 
         final Config.CcrState ccrState = Config.get().getCcrState();
@@ -365,13 +367,13 @@ public final class DAO {
 
         replicator.addChangeListener(this::changed);
 
-        replicator.start(false);
+        replicator.start();
 
         this.replicator = replicator;
     }
 
     void changed(ReplicatorChange change) {
-        final AbstractReplicator.Status status = change.getStatus();
+        final ReplicatorStatus status = change.getStatus();
         Log.i(TAG, "Replicator status : " + status);
 
         updateState(status.getActivityLevel());
@@ -418,7 +420,7 @@ public final class DAO {
         deliverError(listener, err);
     }
 
-    private void updateState(AbstractReplicator.ActivityLevel state) {
+    private void updateState(ReplicatorActivityLevel state) {
         final DAOListener listener;
         synchronized (this) {
             if (replicatorState == state) { return; }
@@ -436,11 +438,11 @@ public final class DAO {
     }
 
     // always deliver state asynchronously, on the main thread
-    private void deliverNewState(@NonNull DAOListener listener, @NonNull AbstractReplicator.ActivityLevel state) {
+    private void deliverNewState(@NonNull DAOListener listener, @NonNull ReplicatorActivityLevel state) {
         mainHandler.post(
             () -> listener.onNewState((Config.get().isSyncEnabled())
                 ? state
-                : AbstractReplicator.ActivityLevel.OFFLINE));
+                : ReplicatorActivityLevel.OFFLINE));
     }
 
     private void verifyNotUIThread() {

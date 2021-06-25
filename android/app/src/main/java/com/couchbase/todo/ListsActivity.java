@@ -27,7 +27,6 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.PopupMenu;
-
 import androidx.annotation.NonNull;
 
 import java.util.List;
@@ -67,7 +66,8 @@ public class ListsActivity extends ToDoActivity {
         adapter = new ListsAdapter(this);
         listView = findViewById(R.id.lists_list);
         listView.setAdapter(adapter);
-        listView.setOnItemClickListener((adapterView, view, i, l) -> new FetchTask(this::showTaskListView).execute(adapter.getItem(i)));
+        listView.setOnItemClickListener((adapterView, view, i, l) -> new FetchTask(this::showTaskListView)
+            .execute(adapter.getItem(i)));
         listView.setOnItemLongClickListener(this::showPopup);
     }
 
@@ -84,16 +84,19 @@ public class ListsActivity extends ToDoActivity {
     }
 
     private boolean handleListPopupAction(MenuItem item, String docId) {
-        switch (item.getItemId()) {
-            case R.id.action_list_update:
-                new FetchTask(this::displayUpdateListDialog).execute(docId);
-                return true;
-            case R.id.action_list_delete:
-                new DeleteByIdTask().execute(docId);
-                return true;
-            default:
-                return false;
+        final int itemId = item.getItemId();
+
+        if (R.id.action_list_update == itemId) {
+            new FetchTask(this::displayUpdateListDialog).execute(docId);
+            return true;
         }
+
+        if (R.id.action_list_delete == itemId) {
+            new DeleteByIdTask().execute(docId);
+            return true;
+        }
+
+        return false;
     }
 
     // display create list dialog

@@ -28,25 +28,25 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.couchbase.lite.AbstractReplicator;
 import com.couchbase.lite.CouchbaseLiteException;
+import com.couchbase.lite.ReplicatorActivityLevel;
 import com.couchbase.todo.db.DAO;
 
 
 public abstract class ToDoActivity extends AppCompatActivity {
     private static final String TAG = "ACT_BASE";
 
-    private static Map<AbstractReplicator.ActivityLevel, Integer> colorMap;
+    private static Map<ReplicatorActivityLevel, Integer> colorMap;
 
     private static void buildColorMap(Context ctxt) {
         if (colorMap != null) { return; }
 
-        final Map<AbstractReplicator.ActivityLevel, Integer> cMap = new HashMap<>();
-        cMap.put(AbstractReplicator.ActivityLevel.CONNECTING, ctxt.getColor(R.color.connecting));
-        cMap.put(AbstractReplicator.ActivityLevel.IDLE, ctxt.getColor(R.color.idle));
-        cMap.put(AbstractReplicator.ActivityLevel.BUSY, ctxt.getColor(R.color.busy));
-        cMap.put(AbstractReplicator.ActivityLevel.STOPPED, ctxt.getColor(R.color.failed));
-        cMap.put(AbstractReplicator.ActivityLevel.OFFLINE, ctxt.getColor(R.color.failed));
+        final Map<ReplicatorActivityLevel, Integer> cMap = new HashMap<>();
+        cMap.put(ReplicatorActivityLevel.CONNECTING, ctxt.getColor(R.color.connecting));
+        cMap.put(ReplicatorActivityLevel.IDLE, ctxt.getColor(R.color.idle));
+        cMap.put(ReplicatorActivityLevel.BUSY, ctxt.getColor(R.color.busy));
+        cMap.put(ReplicatorActivityLevel.STOPPED, ctxt.getColor(R.color.failed));
+        cMap.put(ReplicatorActivityLevel.OFFLINE, ctxt.getColor(R.color.failed));
         colorMap = cMap;
     }
 
@@ -117,7 +117,7 @@ public abstract class ToDoActivity extends AppCompatActivity {
                 public void onError(CouchbaseLiteException e) { onDbError(e); }
 
                 @Override
-                public void onNewState(AbstractReplicator.ActivityLevel s) { updateState(s); }
+                public void onNewState(ReplicatorActivityLevel s) { updateState(s); }
             }
         );
     }
@@ -126,11 +126,11 @@ public abstract class ToDoActivity extends AppCompatActivity {
         Toast.makeText(this, "DB error: " + err.getMessage(), Toast.LENGTH_LONG).show();
     }
 
-    private void updateState(AbstractReplicator.ActivityLevel state) {
+    private void updateState(ReplicatorActivityLevel state) {
         final Integer color = colorMap.get(state);
         rootWindow.setStatusBarColor((color != null)
             ? color
-            : colorMap.get(AbstractReplicator.ActivityLevel.OFFLINE));
+            : colorMap.get(ReplicatorActivityLevel.OFFLINE));
     }
 
     private boolean verifyLoggedIn() {

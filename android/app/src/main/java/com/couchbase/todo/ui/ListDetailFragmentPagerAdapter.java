@@ -27,7 +27,6 @@ import com.couchbase.todo.TasksFragment;
 import com.couchbase.todo.UsersFragment;
 import com.couchbase.todo.app.ToDo;
 
-
 public class ListDetailFragmentPagerAdapter extends FragmentPagerAdapter {
     private static final String TAG = "DETAILS";
 

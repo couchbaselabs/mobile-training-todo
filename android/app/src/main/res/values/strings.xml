@@ -36,4 +36,7 @@
     <string name="title_dialog_update">Update task</string>
     <string name="ok">OK</string>
     <string name="desc_avatar">Avatar</string>
+    <string name="add_list">Add List</string>
+    <string name="add_task">Add Task</string>
+    <string name="add_user">Add User</string>
 </resources>

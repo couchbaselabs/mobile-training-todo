@@ -103,7 +103,7 @@ public class TasksFragment extends Fragment {
     private String selectedTask;
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         listId = getDetailActivity().getListId();
     }
@@ -163,7 +163,7 @@ public class TasksFragment extends Fragment {
         return view;
     }
 
-    boolean handleLongClick(AdapterView unused, View view, int pos, long id) {
+    boolean handleLongClick(AdapterView<?> unused, View view, int pos, long id) {
         final PopupMenu popup = new PopupMenu(getContext(), view);
         popup.inflate(R.menu.menu_task);
         popup.setOnMenuItemClickListener(item -> {
@@ -225,8 +225,7 @@ public class TasksFragment extends Fragment {
     private File createImageFile() throws IOException {
         final String imgFileName = "TODO_LITE-" + dateFormatter.format(new Date());
         final File storageDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        final File image = File.createTempFile(imgFileName, ".jpg", storageDir);
-        return image;
+        return File.createTempFile(imgFileName, ".jpg", storageDir);
     }
 
     private ListDetailActivity getDetailActivity() { return (ListDetailActivity) getActivity(); }

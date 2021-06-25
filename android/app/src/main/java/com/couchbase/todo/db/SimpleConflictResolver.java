@@ -1,4 +1,4 @@
-//
+    //
 // Copyright (c) 2019 Couchbase, Inc All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +18,7 @@ package com.couchbase.todo.db;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import java.text.SimpleDateFormat;
+import java.text.DateFormat;
 import java.util.Date;
 
 import com.couchbase.lite.Conflict;
@@ -31,8 +31,9 @@ import com.couchbase.todo.config.Config;
 public class SimpleConflictResolver implements ConflictResolver {
     public static final String KEY_CONFLICT = "conflict";
 
-    private static final ThreadLocal<SimpleDateFormat> formatter = new ThreadLocal<SimpleDateFormat>() {
-        @Override protected SimpleDateFormat initialValue() { return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"); }
+    private static final ThreadLocal<DateFormat> formatter = new ThreadLocal<DateFormat>() {
+        @Override
+        protected DateFormat initialValue() { return DateFormat.getDateTimeInstance(); }
     };
 
 
@@ -55,7 +56,8 @@ public class SimpleConflictResolver implements ConflictResolver {
             default:
                 // shouldn't happen: use default strategy
                 final String localRevId = localDoc.getRevisionID();
-                winner = ((localRevId != null) && (localRevId.compareTo(remoteDoc.getRevisionID()) > 0))
+                final String remoteRevId = remoteDoc.getRevisionID();
+                winner = ((remoteRevId == null) || ((localRevId != null) && (localRevId.compareTo(remoteRevId) > 0)))
                     ? localDoc
                     : remoteDoc;
         }

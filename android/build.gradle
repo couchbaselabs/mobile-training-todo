@@ -3,7 +3,7 @@
 buildscript {
     ext {
         // couchbase version
-        COUCHBASE_LITE_VERSION = "2.8.0-263"
+        COUCHBASE_LITE_VERSION = "3.0.0-135"
 
         // application parameters
         LOGGING_ENABLED = true
@@ -14,16 +14,15 @@ buildscript {
         SG_URI = "ws://ec2-52-86-246-142.compute-1.amazonaws.com:4984/todo"
 
         // support library version
-        SUPPORT_LIBRARY_VERSION = "1.2.0"
+        SUPPORT_LIBRARY_VERSION = "1.3.0"
     }
 
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.1'
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
+        classpath 'com.android.tools.build:gradle:4.2.1'
     }
 }
 
