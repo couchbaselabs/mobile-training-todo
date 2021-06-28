@@ -1,10 +1,12 @@
 ﻿using Couchbase.Lite;
+using Couchbase.Lite.Query;
 using Couchbase.Lite.Sync;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Threading;
+using Training.Models;
 
 namespace Training
 {
@@ -42,6 +44,8 @@ namespace Training
         /// </summary>
         public static Database Database { get; private set; }
 
+        public static Dictionary<QueryType, IQuery> QueryDictionary { get; private set; }
+
         internal static CoreAppStartHint Hint { get; set; }
 
         #endregion
@@ -64,6 +68,8 @@ namespace Training
             var p = Hint.EncryptionEnabled ? password : null;
             var np = Hint.EncryptionEnabled ? newPassword : null;
             OpenDatabase(username, p, np);
+            var qs = new TodoQueries();
+            QueryDictionary = qs.QueryDictionary;
 
             if (Hint.SyncEnabled)
             {
@@ -303,7 +309,7 @@ namespace Training
         /// </summary>
         public TimeSpan MaxRetryWaitTime { get; set; }
 
-        public bool IsDebugging { get; set; } //Deafult set to disable for performance. Only enable when there is issues.
+        public bool IsDebugging { get; set; } //Deafult set to disable for better performance. Only enable when there are issues.
 
         public bool IsDatabaseChangeMonitoring { get; set; }
     }

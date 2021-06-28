@@ -1,6 +1,6 @@
 ﻿using Couchbase.Lite;
 using System;
-using Training.Services;
+using Training.Data;
 using Xamarin.Forms;
 
 namespace Training
@@ -32,6 +32,8 @@ namespace Training
             }
 
             DependencyService.Register<TodoDataStore>();
+            DependencyService.Register<TasksData>();
+            DependencyService.Register<UsersData>();
             MainPage = new AppShell();
             if (!CoreApp.Hint.LoginEnabled)
             {

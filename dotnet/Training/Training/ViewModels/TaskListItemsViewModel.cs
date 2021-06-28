@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Couchbase.Lite;
+using MvvmHelpers;
+using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -11,20 +13,16 @@ namespace Training.ViewModels
 {
     public class TaskListItemsViewModel : BaseViewModel
     {
-        private TaskListItem _selectedItem;
-
-        public ObservableCollection<TaskListItem> Items { get; set; }
-        public Command LoadItemsCommand { get; }
+        public ObservableRangeCollection<TaskListItem> Items { get; } = new ObservableRangeCollection<TaskListItem>();
         public Command AddItemCommand { get; }
         public Command ToJSONCommand { get; }
         public Command<TaskListItem> ItemTapped { get; }
         public Command<TaskListItem> ItemSwiped { get; }
+        public Command LoadItemsCommand { get; }
 
         public TaskListItemsViewModel()
         {
             Title = "Task List";
-            var store = new TodoDataStore();
-            Items = new ObservableCollection<TaskListItem>();
             LoadItemsCommand = new Command(async () => await ExecuteLoadItemsCommand());
             ItemTapped = new Command<TaskListItem>(OnItemSelected);
             ItemSwiped = new Command<TaskListItem>(OnItemSwiped);
@@ -32,7 +30,7 @@ namespace Training.ViewModels
             ToJSONCommand = new Command(OnToJSON);
         }
 
-        async Task ExecuteLoadItemsCommand()
+        private async Task ExecuteLoadItemsCommand()
         {
             IsBusy = true;
 
@@ -58,29 +56,18 @@ namespace Training.ViewModels
         public void OnAppearing()
         {
             IsBusy = true;
-            SelectedItem = null;
-        }
-
-        public TaskListItem SelectedItem
-        {
-            get => _selectedItem;
-            set
-            {
-                SetProperty(ref _selectedItem, value);
-                OnItemSelected(value);
-            }
         }
 
         private async void OnAddItem(object obj)
         {
-            await Shell.Current.GoToAsync($"{nameof(NewTaskListItemPage)}?{nameof(NewTaskListItemViewModel.IsEditing)}={false}");
+            await Shell.Current.GoToAsync($"{nameof(TaskListDetailPage)}?{nameof(TaskListDetailViewModel.IsEditing)}={false}");
         }
 
         private async void OnToJSON()
         {
             string jsonStr = "";
             var jsons = await DataStore.ReturnJsonsAsync(true);
-            foreach(var json in jsons)
+            foreach (var json in jsons)
             {
                 jsonStr += json + "\n";
             }
@@ -88,7 +75,7 @@ namespace Training.ViewModels
             await Shell.Current.GoToAsync($"{nameof(ToJSONPage)}?{nameof(ToJSONViewModel.JSONString)}={jsonStr}");
         }
 
-        async void OnItemSelected(TaskListItem item)
+        private async void OnItemSelected(TaskListItem item)
         {
             if (item == null)
                 return;
@@ -97,17 +84,17 @@ namespace Training.ViewModels
             await Shell.Current.GoToAsync($"{nameof(TaskListItemPage)}?{nameof(TaskListItemViewModel.ListItemId)}={item.DocumentID}");
         }
 
-        async void OnItemSwiped(TaskListItem item)
+        private async void OnItemSwiped(TaskListItem item)
         {
             if (item == null)
                 return;
 
             var selection = await DependencyService.Get<IDisplayAlert>().DisplayActionSheetAsync("Edit or Delete", "Cancel", null, "Edit", "Delete");
-            if(selection == "Edit")
+            if (selection == "Edit")
             {
-                await Shell.Current.GoToAsync($"{nameof(NewTaskListItemPage)}?{nameof(NewTaskListItemViewModel.ListItemId)}={item.DocumentID}&{nameof(NewTaskListItemViewModel.TaskItemName)}={item.Name}&{nameof(NewTaskListItemViewModel.IsEditing)}={true}");
+                await Shell.Current.GoToAsync($"{nameof(TaskListDetailPage)}?{nameof(TaskListDetailViewModel.ListItemId)}={item.DocumentID}&{nameof(TaskListDetailViewModel.TaskItemName)}={item.Name}&{nameof(TaskListDetailViewModel.IsEditing)}={true}");
             }
-            else if(selection == "Delete")
+            else if (selection == "Delete")
             {
                 await DataStore.DeleteItemAsync(item.DocumentID);
                 await ExecuteLoadItemsCommand();

@@ -11,6 +11,8 @@ namespace Training.ViewModels
     public class BaseViewModel : INotifyPropertyChanged
     {
         public IDataStore<TaskListItem> DataStore => DependencyService.Get<IDataStore<TaskListItem>>();
+        public IDataStore<TaskItem> TasksDataStore => DependencyService.Get<IDataStore<TaskItem>>();
+        public IDataStore<User> UsersDataStore => DependencyService.Get<IDataStore<User>>();
 
         bool isBusy = false;
         public bool IsBusy

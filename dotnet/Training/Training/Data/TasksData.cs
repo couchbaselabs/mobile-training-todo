@@ -2,60 +2,164 @@
 using Couchbase.Lite.Query;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Training.Models;
+using Training.Services;
 
 namespace Training.Data
 {
-    public class TasksData
+    public class TasksData : IDataStore<TaskItem>
     {
+        #region Constants
+
+        internal const string TaskType = "task";
+
+        #endregion
+
+        private string _taskListId;
         private IQuery _tasksFilteredQuery;
         private IQuery _tasksFullQuery;
         private Database _db = CoreApp.Database;
-        private readonly ObservableCollection<TaskItem> _items;
+        private readonly IList<TaskItem> _tasks = new List<TaskItem>();
+        private IList<string> _listenerStarted = new List<string>();
 
-        public string TaskListItemID { get; set; }
-
-        public TasksData(string Id)
+        public void LoadItems(string listId = null)
         {
-            _items = new ObservableCollection<TaskItem>();
-            TaskListItemID = Id;
+            _taskListId = listId;
+            SetupQuery(listId);
+            var results = _tasksFullQuery.Execute();
+            RunQuery(results.AllResults());
+            if(!_listenerStarted.Contains(listId))
+                StartListener();
+            _listenerStarted.Add(listId);
         }
 
         public async Task<bool> AddItemAsync(TaskItem item)
         {
-            _items.Add(item);
+            string owner;
+            using (var doc = _db.GetDocument(_taskListId))
+            {
+                owner = doc.GetString("owner");
+            }
+            
+            var taskListInfo = new Dictionary<string, object>
+            {
+                ["id"] = _taskListId,
+                ["owner"] = owner
+            };
+
+            var properties = new Dictionary<string, object>
+            {
+                ["type"] = TaskType,
+                ["taskList"] = taskListInfo,
+                ["createdAt"] = DateTimeOffset.UtcNow,
+                ["task"] = item.Name,
+                ["complete"] = false
+            };
+
+            try
+            {
+                using (var doc = new MutableDocument(properties))
+                {
+                    if (item.Thumbnail != null)
+                    {
+                        var blob = new Blob("image/png", item.Thumbnail);
+                        doc.SetBlob("image", blob);
+                    }
+                    else
+                    {
+                        doc.Remove("image");
+                    }
+
+                    _db.Save(doc);
+                }
+
+                //_tasks.Add(item);
+            }
+            catch (Exception e)
+            {
+                var newException = new Exception("Couldn't save task", e);
+                return await Task.FromResult(false);
+            }
 
             return await Task.FromResult(true);
         }
 
         public async Task<bool> UpdateItemAsync(TaskItem item)
         {
-            var oldItem = _items.Where((TaskItem arg) => arg.Name == item.Name).FirstOrDefault();
-            _items.Remove(oldItem);
-            _items.Add(item);
+            try
+            {
+                using(var doc = _db.GetDocument(item.DocumentID))
+                using (var mdoc = doc.ToMutable())
+                {
+                    mdoc.SetString(TaskType, item.Name);
+                    mdoc.SetBoolean("complete", item.IsChecked);
+                    if (item.Thumbnail != null)
+                    {
+                        var blob = new Blob("image/png", item.Thumbnail);
+                        mdoc.SetBlob("image", blob);
+                    }
+                    else
+                    {
+                        mdoc.Remove("image");
+                    }
+
+                    _db.Save(mdoc);
+                }
+
+                var oldItem = await GetItemAsync(item.DocumentID);
+                _tasks.Remove(oldItem);
+                _tasks.Add(item);
+            }
+            catch (Exception e)
+            {
+                var newException = new Exception("Couldn't update task", e);
+                return await Task.FromResult(false);
+            }
 
             return await Task.FromResult(true);
         }
 
-        public async Task<bool> DeleteItemAsync(string name)
+        public async Task<bool> DeleteItemAsync(string id)
         {
-            var oldItem = _items.Where((TaskItem arg) => arg.Name == name).FirstOrDefault();
-            _items.Remove(oldItem);
+            var item = await GetItemAsync(id);
+            if (item == null)
+            {
+                return true; //nothing to be deleted
+            }
+
+            try
+            {
+                using (var doc = _db.GetDocument(item.DocumentID))
+                {
+                    _db.Delete(doc);
+                }
+
+                _tasks.Remove(item);
+            }
+            catch (Exception e)
+            {
+                var newException = new Exception("Couldn't delete task", e);
+                return await Task.FromResult(false);
+            }
 
             return await Task.FromResult(true);
         }
 
-        public async Task<TaskItem> GetItemAsync(string name)
+        public async Task<TaskItem> GetItemAsync(string id)
         {
-            return await Task.FromResult(_items.FirstOrDefault(s => s.Name == name));
+            return await Task.FromResult(_tasks.FirstOrDefault(s => s.DocumentID == id));
         }
 
         public async Task<IEnumerable<TaskItem>> GetItemsAsync(bool forceRefresh = false)
         {
-            return await Task.FromResult(_items);
+            return await Task.FromResult(_tasks);
+        }
+
+        public Task<IEnumerable<string>> ReturnJsonsAsync(bool forceRefresh = false)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -75,20 +179,16 @@ namespace Training.Data
             }
         }
 
-        private void SetupQuery()
+        private void SetupQuery(string listId)
         {
-            _tasksFilteredQuery = QueryBuilder.Select(SelectResult.Expression(Meta.ID))
-                .From(DataSource.Database(_db))
-                .Where(Expression.Property("type").EqualTo(Expression.String("task"))
-                    .And(Expression.Property("taskList.id").EqualTo(Expression.String(TaskListItemID)))
-                    .And(Expression.Property("task").Like(Expression.Parameter("searchString"))))
-                .OrderBy(Ordering.Property("createdAt"));
+            _tasksFilteredQuery = CoreApp.QueryDictionary[QueryType.TasksFilteredQuery];
+            _tasksFilteredQuery.Parameters.SetString("taskListId", listId);
+            _tasksFullQuery = CoreApp.QueryDictionary[QueryType.TasksFullQuery];
+            _tasksFullQuery.Parameters.SetString("taskListId", listId);
+        }
 
-            _tasksFullQuery = QueryBuilder.Select(SelectResult.Expression(Meta.ID))
-                .From(DataSource.Database(_db))
-                .Where(Expression.Property("type").EqualTo(Expression.String("task"))
-                    .And(Expression.Property("taskList.id").EqualTo(Expression.String(TaskListItemID))));
-
+        private void StartListener()
+        {
             _tasksFullQuery.AddChangeListener((sender, args) =>
             {
                 //run live query
@@ -96,21 +196,21 @@ namespace Training.Data
             });
         }
 
-        private void RunQuery(List<Result> allResult)
+        private void RunQuery(IList<Result> allResult)
         {
-            if (allResult.Count < _items.Count)
+            if (allResult.Count() < _tasks.Count || (_tasks.Count > 0 && _tasks[0].TaskListID != _taskListId))
             {
-                _items.Clear();
+                _tasks.Clear();
             }
 
-            Task.Run(() =>
+            foreach (var result in allResult)
             {
-                Parallel.ForEach(allResult, result =>
+                var idKey = result.GetString("id");
+                using (var document = _db.GetDocument(idKey))
                 {
-                    var idKey = result.GetString("id");
-                    var document = _db.GetDocument(idKey);
                     if (!idKey.Equals(document.Id))
                         return;
+
                     var name = document.GetString("task");
                     if (name == null)
                     {
@@ -118,20 +218,26 @@ namespace Training.Data
                     }
                     else
                     {
-                        var item = _items.Where(x => x.DocumentID == idKey).SingleOrDefault();
-                        if (item != null)
+                        var task = GetItemAsync(idKey).Result;
+                        if (task != null)
                         {
-                            item.Name = name;
+                            task.TaskListID = _taskListId;
+                            task.Name = name;
                         }
                         else
                         {
-                            var task = new TaskItem() { DocumentID = idKey };
-                            task.Name = name;
-                            _items.Add(task);
+                            _tasks.Add(new TaskItem()
+                            {
+                                TaskListID = _taskListId,
+                                DocumentID = idKey,
+                                Name = name,
+                                Thumbnail = document.GetBlob("image")?.Content,
+                                IsChecked = document.GetBoolean("complete")
+                            });
                         }
                     }
-                });
-            });
+                }
+            }
         }
     }
 }

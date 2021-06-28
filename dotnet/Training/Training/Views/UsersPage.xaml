@@ -3,11 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:controls="clr-namespace:Training.Controls"
              xmlns:views="clr-namespace:Training.Views"
-             xmlns:model="clr-namespace:Training.Models" 
+             xmlns:viewmodels="clr-namespace:Training.ViewModels"
              x:Class="Training.Views.UsersPage"
-             Title="Users">
+             Title="{Binding Title}">
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Add" />
+        <ToolbarItem Text="Add" 
+                     Command="{Binding AddItemCommand}" 
+                     CommandParameter="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TaskListItemViewModel}}, Path=ListItemId}" />
     </ContentPage.ToolbarItems>
     <ContentPage.Resources>
         <Style TargetType="Grid">
@@ -26,7 +28,7 @@
             </Setter>
         </Style>
     </ContentPage.Resources>
- 
+
     <Shell.SearchHandler>
         <controls:UserSearchHandler Placeholder="Enter search term"
                                       ShowsResults="true"
@@ -34,10 +36,31 @@
                                       
                                       SelectedItemNavigationTarget="{x:Type views:UserDetailPage}" />
     </Shell.SearchHandler>
-    
-    <CollectionView Margin="20"
-                    ItemsSource="{Binding Users}"
-                    ItemTemplate="{StaticResource UserTemplate}"
-                    SelectionMode="Single"
-                    SelectionChanged="OnCollectionViewSelectionChanged" />        
+
+    <RefreshView Command="{Binding LoadItemsCommand}" IsRefreshing="{Binding IsBusy, Mode=TwoWay}">
+        <CollectionView Margin="20"
+                        ItemsSource="{Binding Users}"
+                        SelectionMode="None">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="10"
+                  ColumnDefinitions="Auto">
+                        <Label Grid.Column="0" 
+                       Text="{Binding Name}" 
+                       FontAttributes="Bold" />
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer 
+                                NumberOfTapsRequired="1"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:UsersViewModel}}, Path=ItemTapped}"		
+                                CommandParameter="{Binding .}"/>
+                            <SwipeGestureRecognizer
+                                Direction="Right"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:UsersViewModel}}, Path=ItemSwiped}" 
+                                CommandParameter="{Binding .}" />
+                        </Grid.GestureRecognizers>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+    </CollectionView>
+    </RefreshView>
 </ContentPage>

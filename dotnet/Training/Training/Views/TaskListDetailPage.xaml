@@ -1,14 +1,14 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Training.Views.NewTaskListItemPage"
+             x:Class="Training.Views.TaskListDetailPage"
              Shell.PresentationMode="ModalAnimated"
-             Title="New Task List"
+             Title="{Binding Title}"
              xmlns:ios="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
              ios:Page.UseSafeArea="true">
     <ContentPage.Content>
         <StackLayout Spacing="3" Padding="15">
-            <Label Text="New Task List" FontSize="Large" HorizontalOptions="StartAndExpand" />
+            <Label Text="{Binding Title}" FontSize="Large" HorizontalOptions="StartAndExpand" />
             <Label Text="Name" FontSize="Medium" />
             <Entry Text="{Binding TaskItemName, Mode=TwoWay}" FontSize="Medium" />
             <StackLayout Orientation="Horizontal">

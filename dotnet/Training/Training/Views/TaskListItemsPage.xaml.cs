@@ -1,14 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Training.Models;
-using Training.ViewModels;
-using Training.Views;
+﻿using Training.ViewModels;
 using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
 
 namespace Training.Views
 {
@@ -19,7 +10,6 @@ namespace Training.Views
         public TaskListItemsPage()
         {
             InitializeComponent();
-
             BindingContext = _viewModel = new TaskListItemsViewModel();
         }
 

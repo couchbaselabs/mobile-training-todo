@@ -2,21 +2,38 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms" 
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Training.Views.TaskDetailPage"
-             Title="Task Details">
+             xmlns:local="clr-namespace:Training.Utils"
+             Shell.PresentationMode="ModalAnimated"
+             xmlns:ios="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
+             ios:Page.UseSafeArea="true"
+             Title="{Binding Title}">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <local:ByteArrayToImageConverter x:Key="ImageSourceConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
     <ScrollView>
         <StackLayout Margin="20">
-            <Label Text="{Binding Name}" 
-                   HorizontalOptions="Center" 
-                   Style="{DynamicResource TitleStyle}" />
-            <Label Text="{Binding Location}" 
-                   FontAttributes="Italic" 
-                   HorizontalOptions="Center" />
-            <Image Source="{Binding ImageUrl}" 
+            <Label Text="{Binding Title}" FontSize="Large" HorizontalOptions="StartAndExpand" />
+            <Image Source="{Binding TaskItem.Thumbnail, Converter={StaticResource ImageSourceConverter}}"
                    HeightRequest="200" 
-                   WidthRequest="200" 
-                   HorizontalOptions="CenterAndExpand" />
-            <Label Text="{Binding Details}" 
-                   Style="{DynamicResource BodyStyle}" />
+                   WidthRequest="200"
+                   BackgroundColor="LightGray"
+                   HorizontalOptions="CenterAndExpand">
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding ImageTapped}" />
+                    <SwipeGestureRecognizer
+                                Direction="Right"
+                                Command="{Binding ImageSwiped}" 
+                                CommandParameter="{Binding .}" />
+                </Image.GestureRecognizers>
+            </Image>
+            <Label Text="Task Name" FontSize="Medium" />
+            <Entry Text="{Binding TaskItemName, Mode=TwoWay}" FontSize="Medium" />
+            <StackLayout Orientation="Horizontal">
+                <Button Text="Cancel" Command="{Binding CancelCommand}" HorizontalOptions="FillAndExpand"></Button>
+                <Button Text="Save" Command="{Binding SaveCommand}" HorizontalOptions="FillAndExpand"></Button>
+            </StackLayout>
         </StackLayout>
     </ScrollView>
 </ContentPage>

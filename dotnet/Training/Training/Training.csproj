@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="Couchbase.Lite.Enterprise" Version="3.0.0-b0043" />
+    <PackageReference Include="Refractored.MvvmHelpers" Version="1.6.2" />
     <PackageReference Include="Xamarin.Forms" Version="5.0.0.2012" />  
     <PackageReference Include="Xamarin.Essentials" Version="1.6.1" />
   </ItemGroup>
@@ -27,8 +28,8 @@
     <Compile Update="Views\TasksPage.xaml.cs">
       <DependentUpon>TasksPage.xaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\NewTaskListItemPage.xaml.cs">
-      <DependentUpon>NewTaskListItemPage.xaml</DependentUpon>
+    <Compile Update="Views\TaskListDetailPage.xaml.cs">
+      <DependentUpon>TaskListDetailPage.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\TaskListItemsPage.xaml.cs">
       <DependentUpon>TaskListItemsPage.xaml</DependentUpon>

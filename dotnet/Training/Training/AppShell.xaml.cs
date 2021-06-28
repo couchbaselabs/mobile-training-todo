@@ -20,7 +20,7 @@ namespace Training
             Routes.Add(nameof(TaskListItemPage), typeof(TaskListItemPage));
             Routes.Add(nameof(TaskDetailPage), typeof(TaskDetailPage));
             Routes.Add(nameof(UserDetailPage), typeof(UserDetailPage));
-            Routes.Add(nameof(NewTaskListItemPage), typeof(NewTaskListItemPage));
+            Routes.Add(nameof(TaskListDetailPage), typeof(TaskListDetailPage));
             Routes.Add(nameof(ToJSONPage), typeof(ToJSONPage));
 
             foreach (var item in Routes)

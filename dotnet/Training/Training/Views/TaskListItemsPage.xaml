@@ -22,11 +22,11 @@
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <StackLayout Padding="10" x:DataType="model:TaskListItem">
-                        <Label Text="{Binding Name}" 
+                        <Label Text="{Binding Name, Mode=TwoWay}" 
                             LineBreakMode="NoWrap" 
                             Style="{DynamicResource ListItemTextStyle}" 
                             FontSize="16" />
-                        <Label Text="{Binding IncompleteCount}" 
+                        <Label Text="{Binding IncompleteCount, Mode=TwoWay}" 
                             LineBreakMode="NoWrap"
                             Style="{DynamicResource ListTaskItemsTextStyle}"
                             FontSize="13" />

@@ -3,13 +3,19 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:controls="clr-namespace:Training.Controls"
              xmlns:views="clr-namespace:Training.Views"
-             xmlns:viewmodels="clr-namespace:Training.ViewModels" 
+             xmlns:viewmodels="clr-namespace:Training.ViewModels"
+             xmlns:utils="clr-namespace:Training.Utils" 
              x:Class="Training.Views.TasksPage"
-             Title="Tasks">
+             Title="{Binding Title}">
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Add" />
+        <ToolbarItem Text="Add" 
+                     Command="{Binding AddItemCommand}" 
+                     CommandParameter="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TaskListItemViewModel}}, Path=ListItemId}"/>
     </ContentPage.ToolbarItems>
     <ContentPage.Resources>
+        <ResourceDictionary>
+            <utils:ByteArrayToImageConverter x:Key="ImageSourceConverter" />
+        </ResourceDictionary>
         <Style TargetType="Grid">
             <Setter Property="VisualStateManager.VisualStateGroups">
                 <VisualStateGroupList>
@@ -33,10 +39,45 @@
                                     
                                       SelectedItemNavigationTarget="{x:Type views:TaskDetailPage}" />
     </Shell.SearchHandler>
-    <CollectionView Margin="20"
+    <RefreshView Command="{Binding LoadItemsCommand}" IsRefreshing="{Binding IsBusy, Mode=TwoWay}">
+        <CollectionView Margin="20"
                     ItemsSource="{Binding Tasks}"
-                    ItemTemplate="{StaticResource TaskTemplate}"
-                    SelectionMode="Single"
-                    SelectionChanged="OnCollectionViewSelectionChanged" />
-
+                    SelectionMode="None">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="10"
+                          HorizontalOptions="Fill"
+                          ColumnDefinitions="Auto,Auto,Auto">
+                        <Image Grid.Column="0"
+                               Source="{Binding Thumbnail, Converter={StaticResource ImageSourceConverter}}" 
+                               HeightRequest="60" 
+                               WidthRequest="60" 
+                               BackgroundColor="LightGray">
+                            <Image.GestureRecognizers>
+                                <TapGestureRecognizer 
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TasksViewModel}}, Path=ItemImageTapped}"		
+                                    CommandParameter="{Binding .}"/>
+                            </Image.GestureRecognizers>
+                        </Image>
+                        <Label Grid.Column="1" 
+                               Text="{Binding Name}" 
+                               FontAttributes="Bold" />
+                        <CheckBox Grid.Column="2"
+                                  IsChecked="{Binding IsChecked, Mode=TwoWay}"
+                                  HorizontalOptions="EndAndExpand"/>
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer 
+                                NumberOfTapsRequired="1"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TasksViewModel}}, Path=ItemTapped}"		
+                                CommandParameter="{Binding .}"/>
+                            <SwipeGestureRecognizer
+                                Direction="Right"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TasksViewModel}}, Path=ItemSwiped}" 
+                                CommandParameter="{Binding .}" />
+                        </Grid.GestureRecognizers>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </RefreshView>
 </ContentPage>

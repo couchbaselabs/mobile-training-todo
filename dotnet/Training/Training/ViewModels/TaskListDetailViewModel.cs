@@ -7,7 +7,7 @@ namespace Training.ViewModels
     [QueryProperty(nameof(ListItemId), nameof(ListItemId))]
     [QueryProperty(nameof(TaskItemName), nameof(TaskItemName))]
     [QueryProperty(nameof(IsEditing), nameof(IsEditing))]
-    public class NewTaskListItemViewModel : BaseViewModel
+    public class TaskListDetailViewModel : BaseViewModel
     {
         private string _listItemId;
         private string _taskItemName;
@@ -16,7 +16,14 @@ namespace Training.ViewModels
         public bool IsEditing 
         {
             get => _isEditing;
-            set => SetProperty(ref _isEditing, value);
+            set
+            {
+                SetProperty(ref _isEditing, value);
+                if (_isEditing)
+                    Title = "Edit Task List";
+                else
+                    Title = "New Task List";
+            }
         }
 
         public string ListItemId
@@ -50,7 +57,7 @@ namespace Training.ViewModels
         public Command SaveCommand { get; }
         public Command CancelCommand { get; }
 
-        public NewTaskListItemViewModel()
+        public TaskListDetailViewModel()
         {
             SaveCommand = new Command(OnSave, ValidateSave);
             CancelCommand = new Command(OnCancel);
