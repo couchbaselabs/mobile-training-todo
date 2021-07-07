@@ -5,7 +5,7 @@ plugins {
 }
 
 ext {
-    COUCHBASE_LITE_VERSION = "2.8.0-177"
+    COUCHBASE_LITE_VERSION = "3.0.0-149"
 }
 
 group 'com.couchbase'
@@ -14,7 +14,7 @@ version '1.0'
 sourceCompatibility = 1.8
 
 repositories {
-    maven { url "http://mobile.maven.couchbase.com/maven2/internalmaven/" }
+    maven { url "http://proget.build.couchbase.com/maven2/internalmaven" }
     mavenCentral()
 }
 

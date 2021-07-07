@@ -30,6 +30,7 @@ import com.couchbase.lite.QueryChangeListener;
 import com.couchbase.lite.Replicator;
 import com.couchbase.lite.ReplicatorChange;
 import com.couchbase.lite.ReplicatorConfiguration;
+import com.couchbase.lite.ReplicatorStatus;
 import com.couchbase.lite.URLEndpoint;
 import com.couchbase.todo.TodoApp;
 
@@ -270,7 +271,7 @@ public class DB {
         }
 
         // authentication
-        config.setAuthenticator(new BasicAuthenticator(username, password));
+        config.setAuthenticator(new BasicAuthenticator(username, password.toCharArray()));
 
         final Replicator replicator = new Replicator(config);
 
@@ -282,7 +283,7 @@ public class DB {
     }
 
     void changed(ReplicatorChange change) {
-        final AbstractReplicator.Status status = change.getStatus();
+        final ReplicatorStatus status = change.getStatus();
         final CouchbaseLiteException error = status.getError();
         if (error == null) { return; }
         reportError(error);
