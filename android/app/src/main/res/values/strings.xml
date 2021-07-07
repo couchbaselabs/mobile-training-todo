@@ -30,6 +30,8 @@
     <!-- ??? -->
     <string name="one">1</string>
     <string name="delete">Delete</string>
+    <string name="dump">Dump</string>
+    <string name="dumpAll">Dump All</string>
     <string name="title_dialog_new_list">Create new list</string>
     <string name="title_dialog_new_task">Create new task</string>
     <string name="title_dialog_new_user">Create new user</string>

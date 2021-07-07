@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import com.couchbase.lite.Document;
+import com.couchbase.lite.Log;
 import com.couchbase.lite.MutableDocument;
 
 

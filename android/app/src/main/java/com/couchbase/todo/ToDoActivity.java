@@ -79,6 +79,14 @@ public abstract class ToDoActivity extends AppCompatActivity {
             finish();
             return true;
         }
+        if(item.getItemId() == R.id.dumpAll){
+            try {
+                DAO.get().logAll();
+            } catch (CouchbaseLiteException e) {
+                e.printStackTrace();
+            }
+            return true;
+        }
 
         return super.onOptionsItemSelected(item);
     }

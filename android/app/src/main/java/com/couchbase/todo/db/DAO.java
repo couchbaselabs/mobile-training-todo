@@ -41,11 +41,15 @@ import com.couchbase.lite.Database;
 import com.couchbase.lite.DatabaseConfiguration;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.Endpoint;
+import com.couchbase.lite.Expression;
 import com.couchbase.lite.From;
 import com.couchbase.lite.ListenerToken;
+import com.couchbase.lite.Meta;
 import com.couchbase.lite.MutableDocument;
+import com.couchbase.lite.Ordering;
 import com.couchbase.lite.Query;
 import com.couchbase.lite.QueryBuilder;
+import com.couchbase.lite.QueryChange;
 import com.couchbase.lite.QueryChangeListener;
 import com.couchbase.lite.Replicator;
 import com.couchbase.lite.ReplicatorActivityLevel;
@@ -53,6 +57,8 @@ import com.couchbase.lite.ReplicatorChange;
 import com.couchbase.lite.ReplicatorConfiguration;
 import com.couchbase.lite.ReplicatorStatus;
 import com.couchbase.lite.ReplicatorType;
+import com.couchbase.lite.Result;
+import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
 import com.couchbase.lite.URLEndpoint;
 import com.couchbase.todo.config.Config;
@@ -282,6 +288,27 @@ public final class DAO {
         catch (CouchbaseLiteException e) { reportError(e); }
     }
 
+    public void logAll() throws CouchbaseLiteException {
+        Query query = createQuery(
+                SelectResult.all());
+        ResultSet results = query.execute();
+        for(Result result:results){
+            Log.i("allData", result.toJSON());
+        }
+    }
+
+    public ResultSet getAllTasksFromList(String listID) throws CouchbaseLiteException {
+       Query query= createQuery(SelectResult.expression(Meta.id),
+                SelectResult.property("task"),
+                SelectResult.property("image"))
+                .where(Expression.property("type").equalTo(Expression.string("task"))
+                        .and(Expression.property("taskList.id").equalTo(Expression.string(listID))))
+                .orderBy(Ordering.property("createdAt"), Ordering.property("task"));
+       ResultSet allTasks = query.execute();
+
+
+       return allTasks;
+    }
     // -------------------------
     // Database operations
     // -------------------------

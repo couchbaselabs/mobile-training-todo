@@ -32,6 +32,7 @@ import androidx.annotation.NonNull;
 import java.util.List;
 import java.util.UUID;
 
+import com.couchbase.todo.db.DumpTask;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import com.couchbase.lite.Document;
@@ -94,6 +95,9 @@ public class ListsActivity extends ToDoActivity {
         if (R.id.action_list_delete == itemId) {
             new DeleteByIdTask().execute(docId);
             return true;
+        }
+        if(R.id.action_list_dump==itemId){
+            new DumpTask().execute(docId);
         }
 
         return false;

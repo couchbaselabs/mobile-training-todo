@@ -9,4 +9,8 @@
         android:id="@+id/action_task_delete"
         android:title="@string/delete"
         />
+    <item
+        android:id="@+id/action_task_dump"
+        android:title="@string/dump"
+        />
 </menu>
