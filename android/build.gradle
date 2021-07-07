@@ -3,7 +3,7 @@
 buildscript {
     ext {
         // couchbase version
-        COUCHBASE_LITE_VERSION = "3.0.0-135"
+        COUCHBASE_LITE_VERSION = "3.0.0-149"
 
         // application parameters
         LOGGING_ENABLED = true
@@ -12,17 +12,15 @@ buildscript {
         CCR_LOCAL_WINS = false
         DB_NAME = "todo"
         SG_URI = "ws://ec2-52-86-246-142.compute-1.amazonaws.com:4984/todo"
-
-        // support library version
-        SUPPORT_LIBRARY_VERSION = "1.3.0"
     }
 
     repositories {
         google()
         mavenCentral()
     }
+
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.2.1'
+        classpath 'com.android.tools.build:gradle:4.2.2'
     }
 }
 
