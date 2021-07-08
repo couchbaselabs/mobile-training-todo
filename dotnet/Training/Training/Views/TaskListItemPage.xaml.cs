@@ -3,7 +3,7 @@ using Xamarin.Forms;
 
 namespace Training.Views
 {
-    public partial class TaskListItemPage : ShellContent
+    public partial class TaskListItemPage : Shell
     {
         TaskListItemViewModel _viewModel;
         public TaskListItemPage()
