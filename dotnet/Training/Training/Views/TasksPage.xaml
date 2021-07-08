@@ -46,10 +46,10 @@
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Grid Padding="10"
-                          HorizontalOptions="Fill"
                           ColumnDefinitions="Auto,Auto,Auto">
                         <Image Grid.Column="0"
                                Source="{Binding Thumbnail, Converter={StaticResource ImageSourceConverter}}" 
+                               Aspect="AspectFill"
                                HeightRequest="60" 
                                WidthRequest="60" 
                                BackgroundColor="LightGray">

@@ -26,7 +26,7 @@ namespace Training
     {
         #region Constants
 
-        private static readonly Uri SyncGatewayUrl = new Uri("ws://ec2-52-86-246-142.compute-1.amazonaws.com:4984/todo");
+        private static readonly Uri SyncGatewayUrl = new Uri("ws://ec2-54-209-32-207.compute-1.amazonaws.com:4984/todo");
 
         #endregion
 
@@ -193,12 +193,12 @@ namespace Training
 
             if (Hint.MaxRetryWaitTime > TimeSpan.Zero)
             {
-                config.MaxRetryWaitTime = Hint.MaxRetryWaitTime;
+                config.MaxAttemptsWaitTime = Hint.MaxRetryWaitTime;
             }
 
             if (Hint.MaxRetries >= 0)
             {
-                config.MaxRetries = Hint.MaxRetries;
+                config.MaxAttempts = Hint.MaxRetries;
             }
 
             if (username != null && password != null)
