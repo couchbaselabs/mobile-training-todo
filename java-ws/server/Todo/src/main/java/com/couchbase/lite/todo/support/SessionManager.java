@@ -136,8 +136,8 @@ public class SessionManager {
         config.setAuthenticator(new SessionAuthenticator(syncGatewaySession));
         final Replicator replicator = new Replicator(config);
         replicator.addChangeListener(change -> {
-            Replicator.Status status = change.getStatus();
-            if (status.getActivityLevel() == Replicator.ActivityLevel.STOPPED && status.getError() != null) {
+            ReplicatorStatus status = change.getStatus();
+            if (status.getActivityLevel() == ReplicatorActivityLevel.STOPPED && status.getError() != null) {
                 unregisterAll(username);
             }
         });
