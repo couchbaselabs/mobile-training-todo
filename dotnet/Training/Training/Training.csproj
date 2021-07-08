@@ -13,6 +13,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="SimpleInjector" Version="5.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Views\TaskListItemPage.xaml.cs">
       <DependentUpon>TaskListItemPage.xaml</DependentUpon>
     </Compile>
