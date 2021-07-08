@@ -200,8 +200,8 @@
     
     config.conflictResolver = resolver;
     NSLog(@">> Custom Conflict Resolver: Enabled = %d; Type = %ld", [CBLConfig shared].ccrEnabled, (long)[CBLConfig shared].ccrType);
-    config.maxRetries = CBLConfig.shared.maxRetries;
-    config.maxRetryWaitTime = CBLConfig.shared.maxRetryWaitTime;
+    config.maxAttempts = CBLConfig.shared.maxAttempts;
+    config.maxAttemptWaitTime = CBLConfig.shared.maxAttemptWaitTime;
     
     _replicator = [[CBLReplicator alloc] initWithConfig:config];
     __weak typeof(self) wSelf = self;

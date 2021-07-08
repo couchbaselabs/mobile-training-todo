@@ -28,8 +28,8 @@
 @property(nonatomic) BOOL pushNotificationEnabled;
 @property(nonatomic) BOOL ccrEnabled;
 @property(nonatomic) CCRType ccrType;
-@property(nonatomic) NSInteger maxRetries;
-@property(nonatomic) NSInteger maxRetryWaitTime;
+@property(nonatomic) NSInteger maxAttempts;
+@property(nonatomic) NSInteger maxAttemptWaitTime;
 @end
 
 @implementation CBLConfig
@@ -65,8 +65,8 @@
         self.pushNotificationEnabled = [defaults boolForKey: IS_PUSH_NOTIFICATION_ENABLED_KEY];
         self.ccrEnabled = [defaults boolForKey: IS_CCR_ENABLED_KEY];
         self.ccrType = [defaults integerForKey: CCR_TYPE_KEY];
-        self.maxRetries = [defaults doubleForKey: MAX_RETRY_KEY];
-        self.maxRetryWaitTime = [defaults doubleForKey: MAX_RETRY_WAIT_TIME_KEY];
+        self.maxAttempts = [defaults doubleForKey: MAX_RETRY_KEY];
+        self.maxAttemptWaitTime = [defaults doubleForKey: MAX_RETRY_WAIT_TIME_KEY];
         
     }
     return self;

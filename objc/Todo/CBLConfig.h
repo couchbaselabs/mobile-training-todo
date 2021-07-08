@@ -20,8 +20,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(readonly, nonatomic) BOOL pushNotificationEnabled;
 @property(readonly, nonatomic) BOOL ccrEnabled;
 @property(readonly, nonatomic) CCRType ccrType;
-@property(readonly, nonatomic) NSInteger maxRetries;
-@property(readonly, nonatomic) NSInteger maxRetryWaitTime;
+@property(readonly, nonatomic) NSInteger maxAttempts;
+@property(readonly, nonatomic) NSInteger maxAttemptWaitTime;
 
 + (CBLConfig*) shared;
 
