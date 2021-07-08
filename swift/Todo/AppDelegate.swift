@@ -212,8 +212,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         config.authenticator = auth
         config.conflictResolver = resolver
         NSLog(">> Custom Conflict Resolver: Enabled = \(Config.shared.ccrEnabled); Type = \(Config.shared.ccrType)")
-        config.maxRetries = Config.shared.maxRetry
-        config.maxRetryWaitTime = Config.shared.maxRetryWaitTime
+        config.maxAttempts = Config.shared.maxAttempts
+        config.maxAttemptWaitTime = Config.shared.maxAttemptWaitTime
         
         replicator = Replicator(config: config)
         changeListener = replicator.addChangeListener({ (change) in

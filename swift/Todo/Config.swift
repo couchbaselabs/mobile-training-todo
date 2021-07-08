@@ -30,8 +30,8 @@ class Config {
     public private(set) var ccrEnabled: Bool
     public private(set) var ccrType: CCRType
     public private(set) var pushNotificationEnabled: Bool
-    public private(set) var maxRetry: Int
-    public private(set) var maxRetryWaitTime: TimeInterval
+    public private(set) var maxAttempts: UInt
+    public private(set) var maxAttemptWaitTime: TimeInterval
     
     // can be set from outside
     public var syncURL: String
@@ -64,8 +64,8 @@ class Config {
         pushNotificationEnabled = defaults.bool(forKey: IS_PUSH_NOTIFICATION_ENABLED_KEY)
         ccrEnabled = defaults.bool(forKey: IS_CCR_ENABLED_KEY)
         ccrType = CCRType(rawValue: defaults.integer(forKey: CCR_TYPE_KEY))!
-        maxRetry = defaults.integer(forKey: MAX_RETRY_KEY)
-        maxRetryWaitTime = defaults.double(forKey: MAX_RETRY_WAIT_TIME_KEY)
+        maxAttempts = UInt(defaults.integer(forKey: MAX_RETRY_KEY))
+        maxAttemptWaitTime = defaults.double(forKey: MAX_RETRY_WAIT_TIME_KEY)
     }
     
 }
