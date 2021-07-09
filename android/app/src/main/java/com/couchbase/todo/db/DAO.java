@@ -18,6 +18,7 @@ package com.couchbase.todo.db;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.JsonReader;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,6 +28,7 @@ import androidx.annotation.WorkerThread;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -288,26 +290,27 @@ public final class DAO {
         catch (CouchbaseLiteException e) { reportError(e); }
     }
 
-    public void logAll() throws CouchbaseLiteException {
-        Query query = createQuery(
-                SelectResult.all());
-        ResultSet results = query.execute();
-        for(Result result:results){
-            Log.i("allData", result.toJSON());
-        }
+    public List getAllDocIds() throws CouchbaseLiteException {
+        List<String> idList = new ArrayList<>();
+        Query query = createQuery(SelectResult.expression(Meta.id));
+        ResultSet idsSet = query.execute();
+        for (Result id = idsSet.next(); id != null; id = idsSet.next()) { idList.add(id.getString(0)); }
+        return idList;
     }
 
-    public ResultSet getAllTasksFromList(String listID) throws CouchbaseLiteException {
-       Query query= createQuery(SelectResult.expression(Meta.id),
-                SelectResult.property("task"),
-                SelectResult.property("image"))
-                .where(Expression.property("type").equalTo(Expression.string("task"))
-                        .and(Expression.property("taskList.id").equalTo(Expression.string(listID))))
-                .orderBy(Ordering.property("createdAt"), Ordering.property("task"));
-       ResultSet allTasks = query.execute();
-
-
-       return allTasks;
+    /*
+    get ids of all tasks from a list
+    return list of id
+     */
+    @WorkerThread
+    public List getTaskIdsFromList(String listID) throws CouchbaseLiteException {
+        List<String> taskIds = new ArrayList<>();
+        Query query = createQuery(SelectResult.expression(Meta.id))
+            .where(Expression.property("type").equalTo(Expression.string("task"))
+                .and(Expression.property("taskList.id").equalTo(Expression.string(listID))));
+        ResultSet allTaskIds = query.execute();
+        for (Result id = allTaskIds.next(); id != null; id = allTaskIds.next()) { taskIds.add(id.getString(0)); }
+        return taskIds;
     }
     // -------------------------
     // Database operations

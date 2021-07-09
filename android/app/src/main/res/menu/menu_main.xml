@@ -21,6 +21,6 @@
         />
     <item
         android:id="@+id/dumpAll"
-        android:title="@string/dumpAll"></item>
+        android:title="@string/dump_all"></item>
 
 </menu>
