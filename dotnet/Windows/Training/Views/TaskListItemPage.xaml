@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://xamarin.com/schemas/2014/forms"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:local="clr-namespace:Training.Views"
+       x:Class="Training.Views.TaskListItemPage"
+         FlyoutHeaderBehavior="CollapseOnScroll">
+    <Shell.Resources>
+        <Style x:Key="BaseStyle"
+                 TargetType="Element">
+            <Setter Property="Shell.BackgroundColor"
+                      Value="#455A64" />
+            <Setter Property="Shell.ForegroundColor"
+                      Value="White" />
+            <Setter Property="Shell.TitleColor"
+                      Value="White" />
+            <Setter Property="Shell.DisabledColor"
+                      Value="#B4FFFFFF" />
+            <Setter Property="Shell.UnselectedColor"
+                      Value="#95FFFFFF" />
+        </Style>
+        <Style x:Key="TaskListItemShell"
+                 TargetType="Element"
+                 BasedOn="{StaticResource BaseStyle}">
+            <Setter Property="Shell.BackgroundColor"
+                      Value="#039BE6" />
+
+        </Style>
+    </Shell.Resources>
+    <Tab Title="Domestic"
+             Route="taskListItem"
+             Icon="todo.png">
+        <ShellContent Route="tasks"
+                          Style="{StaticResource TaskListItemShell}"
+                          Title="Tasks"
+                          Icon="tasks.png"
+                          ContentTemplate="{DataTemplate local:TasksPage}" />
+        <ShellContent Route="users"
+                          Style="{StaticResource TaskListItemShell}"
+                          Title="Users"
+                          Icon="person.png"
+                          ContentTemplate="{DataTemplate local:UsersPage}" />
+    </Tab>
+</Shell>

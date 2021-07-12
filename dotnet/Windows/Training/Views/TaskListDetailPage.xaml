@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Training.Views.TaskListDetailPage"
+             Shell.PresentationMode="ModalAnimated"
+             Title="{Binding Title}"
+             xmlns:ios="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
+             ios:Page.UseSafeArea="true">
+    <ContentPage.Content>
+        <StackLayout Spacing="3" Padding="15">
+            <Label Text="{Binding Title}" FontSize="Large" HorizontalOptions="StartAndExpand" />
+            <Label Text="Name" FontSize="Medium" />
+            <Entry Text="{Binding TaskItemName, Mode=TwoWay}" FontSize="Medium" />
+            <StackLayout Orientation="Horizontal">
+                <Button Text="Cancel" Command="{Binding CancelCommand}" HorizontalOptions="FillAndExpand"></Button>
+                <Button Text="Save" Command="{Binding SaveCommand}" HorizontalOptions="FillAndExpand"></Button>
+            </StackLayout>
+            <Label IsVisible="{Binding IsEditing, Mode=OneWay}" Text="ToJSON String" FontSize="Large" HorizontalOptions="StartAndExpand" />
+            <Editor IsVisible="{Binding IsEditing, Mode=OneWay}" Text="{Binding ToJSONString, Mode=OneWay}" AutoSize="TextChanges" />
+        </StackLayout>
+    </ContentPage.Content>
+    
+</ContentPage>

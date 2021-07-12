@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" 
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:Training.Controls"
+             xmlns:views="clr-namespace:Training.Views"
+             xmlns:viewmodels="clr-namespace:Training.ViewModels"
+             x:Class="Training.Views.UsersPage"
+             Title="{Binding Title}">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Add" 
+                     Command="{Binding AddItemCommand}" 
+                     CommandParameter="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TaskListItemViewModel}}, Path=ListItemId}" />
+    </ContentPage.ToolbarItems>
+    <ContentPage.Resources>
+        <Style TargetType="Grid">
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal" />
+                        <VisualState x:Name="Selected">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor" 
+                                        Value="#039BE6" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>
+    </ContentPage.Resources>
+
+    <Shell.SearchHandler>
+        <controls:UserSearchHandler Placeholder="Enter search term"
+                                      ShowsResults="true"
+                                      ItemTemplate="{StaticResource UserSearchTemplate}"
+                                      
+                                      SelectedItemNavigationTarget="{x:Type views:UserDetailPage}" />
+    </Shell.SearchHandler>
+
+    <RefreshView Command="{Binding LoadItemsCommand}" IsRefreshing="{Binding IsBusy, Mode=TwoWay}">
+        <CollectionView Margin="20"
+                        ItemsSource="{Binding Users}"
+                        SelectionMode="None">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="10"
+                  ColumnDefinitions="Auto">
+                        <Label Grid.Column="0" 
+                       Text="{Binding Name}" 
+                       FontAttributes="Bold" />
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer 
+                                NumberOfTapsRequired="1"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:UsersViewModel}}, Path=ItemTapped}"		
+                                CommandParameter="{Binding .}"/>
+                            <SwipeGestureRecognizer
+                                Direction="Right"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:UsersViewModel}}, Path=ItemSwiped}" 
+                                CommandParameter="{Binding .}" />
+                        </Grid.GestureRecognizers>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+    </CollectionView>
+    </RefreshView>
+</ContentPage>
