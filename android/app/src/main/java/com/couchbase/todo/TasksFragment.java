@@ -112,9 +112,7 @@ public class TasksFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if ((resultCode != Activity.RESULT_OK) || (requestCode != REQUEST_TAKE_PHOTO)) {
-            return;
-        }
+        if ((resultCode != Activity.RESULT_OK) || (requestCode != REQUEST_TAKE_PHOTO)) { return; }
         new AttachImageTask().execute(selectedTask, imageToBeAttachedPath);
     }
 

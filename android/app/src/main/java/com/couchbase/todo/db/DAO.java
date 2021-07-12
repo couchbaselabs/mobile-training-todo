@@ -290,12 +290,10 @@ public final class DAO {
         catch (CouchbaseLiteException e) { reportError(e); }
     }
 
+    @WorkerThread
     public List getAllDocIds() throws CouchbaseLiteException {
-        List<String> idList = new ArrayList<>();
         Query query = createQuery(SelectResult.expression(Meta.id));
-        ResultSet idsSet = query.execute();
-        for (Result id = idsSet.next(); id != null; id = idsSet.next()) { idList.add(id.getString(0)); }
-        return idList;
+        return DbUtils.getIdsList(query);
     }
 
     /*
@@ -304,13 +302,10 @@ public final class DAO {
      */
     @WorkerThread
     public List getTaskIdsFromList(String listID) throws CouchbaseLiteException {
-        List<String> taskIds = new ArrayList<>();
         Query query = createQuery(SelectResult.expression(Meta.id))
             .where(Expression.property("type").equalTo(Expression.string("task"))
                 .and(Expression.property("taskList.id").equalTo(Expression.string(listID))));
-        ResultSet allTaskIds = query.execute();
-        for (Result id = allTaskIds.next(); id != null; id = allTaskIds.next()) { taskIds.add(id.getString(0)); }
-        return taskIds;
+        return DbUtils.getIdsList(query);
     }
     // -------------------------
     // Database operations

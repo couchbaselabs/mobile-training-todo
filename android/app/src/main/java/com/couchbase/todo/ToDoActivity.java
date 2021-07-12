@@ -80,7 +80,8 @@ public abstract class ToDoActivity extends AppCompatActivity {
             finish();
             return true;
         }
-        if(item.getItemId() == R.id.dumpAll){
+
+        if (item.getItemId() == R.id.dumpAll) {
             new DbDumper().execute();
             return true;
         }
