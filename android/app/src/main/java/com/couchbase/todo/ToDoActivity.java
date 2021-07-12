@@ -31,6 +31,7 @@ import java.util.Map;
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.ReplicatorActivityLevel;
 import com.couchbase.todo.db.DAO;
+import com.couchbase.todo.db.DbDumper;
 
 
 public abstract class ToDoActivity extends AppCompatActivity {
@@ -77,6 +78,11 @@ public abstract class ToDoActivity extends AppCompatActivity {
             DAO.get().logout(true);
             LoginActivity.start(this);
             finish();
+            return true;
+        }
+
+        if (item.getItemId() == R.id.dumpAll) {
+            new DbDumper().execute();
             return true;
         }
 

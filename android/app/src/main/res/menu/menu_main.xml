@@ -19,4 +19,8 @@
         android:title="@string/delete_db"
         app:showAsAction="never"
         />
+    <item
+        android:id="@+id/dumpAll"
+        android:title="@string/dump_all"></item>
+
 </menu>

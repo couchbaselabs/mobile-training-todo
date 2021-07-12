@@ -27,10 +27,13 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.PopupMenu;
+
 import androidx.annotation.NonNull;
 
 import java.util.List;
 import java.util.UUID;
+
+import com.couchbase.todo.db.ListDumper;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -93,6 +96,10 @@ public class ListsActivity extends ToDoActivity {
 
         if (R.id.action_list_delete == itemId) {
             new DeleteByIdTask().execute(docId);
+            return true;
+        }
+        if (R.id.action_list_dump == itemId) {
+            new ListDumper().execute(docId);
             return true;
         }
 

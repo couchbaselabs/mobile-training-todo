@@ -48,6 +48,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import com.couchbase.todo.db.TaskDumper;
+
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import com.couchbase.lite.Document;
@@ -180,6 +182,9 @@ public class TasksFragment extends Fragment {
         }
         if (item.getItemId() == R.id.action_task_delete) {
             new DeleteByIdTask().execute(taskId);
+        }
+        if (item.getItemId() == R.id.action_task_dump) {
+            new TaskDumper().execute(taskId);
         }
     }
 
