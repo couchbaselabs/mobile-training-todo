@@ -372,12 +372,15 @@ public final class DAO {
         final URI sgUri = getReplicationUri(username);
         if (sgUri == null) { return; }
 
+        final int maxAttempts = Config.get().getRetries();
+        final int waitTime = Config.get().getWaitTime();
+
         Log.i(TAG, "Starting replication to: " + sgUri);
         final Endpoint endpoint = new URLEndpoint(sgUri);
 
         final ReplicatorConfiguration config = new ReplicatorConfiguration(db, endpoint)
             .setType(ReplicatorType.PUSH_AND_PULL)
-            .setContinuous(true);
+            .setContinuous(true).setMaxAttempts(maxAttempts).setMaxAttemptWaitTime(waitTime);
 
         // authentication
         config.setAuthenticator(new BasicAuthenticator(username, password));

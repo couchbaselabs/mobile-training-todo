@@ -20,6 +20,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.CheckBox;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -46,6 +47,9 @@ public class ConfigActivity extends AppCompatActivity {
     private CheckBox ccrLocalCheckBox;
     private CheckBox ccrRemoteCheckBox;
 
+    private TextInputEditText retriesView;
+    private TextInputEditText timeoutView;
+
     // Heresy!!  Ignore the back button.
     @Override
     public void onBackPressed() { }
@@ -70,6 +74,9 @@ public class ConfigActivity extends AppCompatActivity {
         ccrLocalCheckBox.setOnClickListener(v -> ccrRemoteCheckBox.setChecked(false));
         ccrRemoteCheckBox.setOnClickListener(v -> ccrLocalCheckBox.setChecked(false));
 
+        retriesView = findViewById(R.id.retries);
+        timeoutView = findViewById(R.id.timeout);
+
         findViewById(R.id.btnUpdate).setOnClickListener(view -> update());
         findViewById(R.id.btnCancel).setOnClickListener(view -> finish());
 
@@ -86,6 +93,9 @@ public class ConfigActivity extends AppCompatActivity {
 
         dbNameView.setText(config.getDbName());
         sgUriView.setText(config.getSgUri());
+
+        retriesView.setText(String.valueOf(config.getRetries()));
+        timeoutView.setText(String.valueOf(config.getWaitTime()));
     }
 
     private void update() {
@@ -95,12 +105,20 @@ public class ConfigActivity extends AppCompatActivity {
         final Editable eSgUri = sgUriView.getText();
         final String sgUri = (TextUtils.isEmpty(eSgUri)) ? null : eSgUri.toString();
 
+        final Editable eRetries = retriesView.getText();
+        final int retries = (TextUtils.isEmpty(eRetries)) ? null : Integer.parseInt(eRetries.toString());
+
+        final Editable eTimeout = timeoutView.getText();
+        final int timeout = (TextUtils.isEmpty(eTimeout)) ? null : Integer.parseInt(eTimeout.toString());
+
         final boolean updated = Config.get().update(
             loggingCheckBox.isChecked(),
             loginCheckBox.isChecked(),
             getCcrState(),
             dbName,
-            sgUri);
+            sgUri,
+            retries,
+            timeout);
 
         if (updated) { DAO.get().logout(); }
 

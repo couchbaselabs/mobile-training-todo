@@ -49,6 +49,9 @@ public final class Config {
     @Nullable
     private String sgUri = BuildConfig.SG_URI;
 
+    private int retries;
+    private int waitTime;
+
     private Config() {
         setLoggingEnabled(BuildConfig.LOGGING_ENABLED);
         setCcrState(BuildConfig.CCR_LOCAL_WINS, BuildConfig.CCR_REMOTE_WINS);
@@ -68,12 +71,19 @@ public final class Config {
     @Nullable
     public String getSgUri() { return sgUri; }
 
+    public int getRetries() { return retries; }
+
+    public int getWaitTime() { return waitTime; }
+
     public boolean update(
         boolean loggingEnabled,
         boolean loginRequired,
         CcrState ccrState,
         @Nullable String dbName,
-        @Nullable String sgUri) {
+        @Nullable String sgUri,
+        int retries,
+        int waitTime) {
+
         boolean updated = false;
 
         if (this.loggingEnabled != loggingEnabled) {
@@ -101,6 +111,15 @@ public final class Config {
             updated = true;
         }
 
+        if (this.retries != retries) {
+            this.retries = retries;
+            updated = true;
+        }
+
+        if (this.waitTime != waitTime) {
+            this.waitTime = waitTime;
+            updated = true;
+        }
         return updated;
     }
 
