@@ -14,10 +14,10 @@ namespace Training
             CoreApp.Hint = new CoreAppStartHint
             {
                 LoginEnabled = true,
-                CCRType = CCR_TYPE.NONE,
-                Heartbeat = TimeSpan.Zero,
-                MaxRetries = -1,
-                MaxRetryWaitTime = TimeSpan.Zero,
+                CCRType = CCR_TYPE.LOCAL,
+                Heartbeat = null,
+                MaxRetries = 0,
+                MaxRetryWaitTime = null,
                 IsDebugging = false,
                 EncryptionEnabled = false,
                 IsDatabaseChangeMonitoring = false,

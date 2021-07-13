@@ -15,9 +15,9 @@ namespace Training
             {
                 LoginEnabled = true,
                 CCRType = CCR_TYPE.NONE,
-                Heartbeat = TimeSpan.Zero,
-                MaxRetries = -1,
-                MaxRetryWaitTime = TimeSpan.Zero,
+                Heartbeat = null,
+                MaxRetries = 0,
+                MaxRetryWaitTime = null,
                 IsDebugging = false,
                 EncryptionEnabled = false,
                 IsDatabaseChangeMonitoring = false,

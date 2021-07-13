@@ -193,17 +193,17 @@ namespace Training
                 Continuous = true
             };
 
-            if (Hint.Heartbeat > TimeSpan.Zero)
+            if (Hint.Heartbeat != null)
             {
                 config.Heartbeat = Hint.Heartbeat;
             }
 
-            if (Hint.MaxRetryWaitTime > TimeSpan.Zero)
+            if (Hint.MaxRetryWaitTime != null)
             {
                 config.MaxAttemptsWaitTime = Hint.MaxRetryWaitTime;
             }
 
-            if (Hint.MaxRetries >= 0)
+            if (Hint.MaxRetries > 0)
             {
                 config.MaxAttempts = Hint.MaxRetries;
             }
@@ -304,7 +304,7 @@ namespace Training
         /// <summary>
         /// Gets or sets replicator heartbeat
         /// </summary>
-        public TimeSpan Heartbeat { get; set; }
+        public TimeSpan? Heartbeat { get; set; }
 
         /// <summary>
         /// Gets or sets Max retries to reconnect
@@ -314,7 +314,7 @@ namespace Training
         /// <summary>
         /// Gets or sets the Max wait time to retry to reconnect
         /// </summary>
-        public TimeSpan MaxRetryWaitTime { get; set; }
+        public TimeSpan? MaxRetryWaitTime { get; set; }
 
         public bool IsDebugging { get; set; } //Deafult set to disable for better performance. Only enable when there are issues.
 
