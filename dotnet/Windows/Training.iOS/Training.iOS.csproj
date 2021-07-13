@@ -135,11 +135,14 @@
   <ItemGroup>
     <PackageReference Include="Xamarin.Forms" Version="5.0.0.2012" />
     <PackageReference Include="Xamarin.Essentials" Version="1.6.1" />
+    <PackageReference Include="Couchbase.Lite.Enterprise.Support.iOS">
+      <Version>3.0.0-b0091</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <ItemGroup>
     <ProjectReference Include="..\Training\Training.csproj">
-      <Project>{807C1D35-892E-47B5-95EC-3F4CB4CC7794}</Project>
+      <Project>{3709F7DF-9674-483D-8BED-BF0939A8BF48}</Project>
       <Name>Training</Name>
     </ProjectReference>
   </ItemGroup>
