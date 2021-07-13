@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Threading;
+using Training.Data;
 using Training.Models;
+using Xamarin.Forms;
 
 namespace Training
 {
@@ -140,6 +142,11 @@ namespace Training
             {
                 Database = new Database(dbName);
             }
+
+            // Setup data
+            DependencyService.Register<TodoDataStore>();
+            DependencyService.Register<TasksData>();
+            DependencyService.Register<UsersData>();
 
             if (newKey != null)
             {

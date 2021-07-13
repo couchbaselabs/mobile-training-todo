@@ -203,7 +203,7 @@ namespace Training.Data
         private void RunQuery(IList<Result> allResult)
         {
             var allResultCnt = allResult.Count();
-            int datasCnt = 0;
+            //int datasCnt = 0;
             if (allResultCnt < _tasks.Count || (_tasks.Count > 0 && _tasks[0].TaskListID != _taskListId))
             {
                 _tasks.Clear();
@@ -211,8 +211,8 @@ namespace Training.Data
 
             foreach (var result in allResult)
             {
-                if (allResultCnt > 20)
-                    datasCnt++;
+                //if (allResultCnt > 20)
+                    //datasCnt++;
                 var idKey = result.GetString("id");
                 using (var document = _db.GetDocument(idKey))
                 {
@@ -246,7 +246,7 @@ namespace Training.Data
                     }
                 }
 
-                if (allResultCnt > 20 && datasCnt == 10)
+                /*if (allResultCnt >= 5 && datasCnt == 3)
                 {
                     DataHasChanged?.Invoke(this, null);
                     datasCnt = 0;
@@ -254,10 +254,10 @@ namespace Training.Data
                 else
                 {
                     DataHasChanged?.Invoke(this, null);
-                }
+                }*/
             }
 
-            if(allResultCnt > 20)
+            //if(allResultCnt > 20)
                 DataHasChanged?.Invoke(this, null);
         }
     }

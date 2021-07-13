@@ -31,9 +31,6 @@ namespace Training
                 Database.Log.Console.Level = Couchbase.Lite.Logging.LogLevel.Info;
             }
 
-            DependencyService.Register<TodoDataStore>();
-            DependencyService.Register<TasksData>();
-            DependencyService.Register<UsersData>();
             MainPage = new AppShell();
             if (!CoreApp.Hint.LoginEnabled)
             {
