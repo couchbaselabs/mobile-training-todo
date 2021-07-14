@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_margin="@dimen/spacing_large"
+    android:fillViewport="true"
     tools:context="com.couchbase.todo.ConfigActivity"
     >
 
@@ -253,5 +254,4 @@
             android:textColor="@color/colorAccent"
             />
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 </ScrollView>
