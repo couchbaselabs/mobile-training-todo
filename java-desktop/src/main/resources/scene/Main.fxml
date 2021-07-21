@@ -13,6 +13,7 @@
                         <Menu text="File">
                             <items>
                                 <MenuItem fx:id="logoutMenuItem" text="Logout"/>
+                                <MenuItem fx:id="configMenuItem" text="Config"/>
                             </items>
                         </Menu>
                     </menus>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
+
+<?import javafx.scene.text.Text?>
+<AnchorPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" prefHeight="400.0" prefWidth="600.0">
+    <VBox>
+        <children>
+            <Text text="Change any value on this page will cause a log out"></Text>
+            <Label text="CBL Version"></Label>
+            <TextField fx:id="cblVersionTextField"></TextField>
+        </children>
+        <children>
+            <CheckBox fx:id="loggingCheckbox" text="Verbose Logging"></CheckBox>
+            <CheckBox fx:id="loginCheckbox" text="Login Required"></CheckBox>
+        </children>
+        <children>
+            <Text text="Custom conflict resolution"></Text>
+            <CheckBox fx:id="localCheckbox" text="local"></CheckBox>
+            <CheckBox fx:id="remoteCheckbox" text="remote"></CheckBox>
+        </children>
+        <children>
+            <Label text="Db Name"></Label>
+            <TextField fx:id="dbNameTextField"></TextField>
+            <Label text="SG URL"></Label>
+            <TextField fx:id="sgUrlTextField"></TextField>
+            <Text text="Enter a complete SG URL. Empty field turns replication off"></Text>
+        </children>
+        <children>
+            <Label text="Max Retries"></Label>
+            <TextField fx:id="maxRetriesTextField"> </TextField>
+            <Label text="Max Retries Wait Time"></Label>
+            <TextField fx:id="waitTimeTextField"> </TextField>
+        </children>
+        <children>
+            <Button fx:id="cancelButton" text="Cancel"></Button>
+            <Button fx:id="saveButton" text="Save"></Button>
+        </children>
+    </VBox>
+</AnchorPane>

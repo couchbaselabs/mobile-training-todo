@@ -12,13 +12,20 @@ import org.jetbrains.annotations.NotNull;
 import com.couchbase.todo.TodoApp;
 import com.couchbase.todo.model.DB;
 
+
 public class MainController implements Initializable {
 
-    @FXML private TaskListsController taskListsController;
+    @FXML
+    private TaskListsController taskListsController;
 
-    @FXML private TaskListController taskListController;
+    @FXML
+    private TaskListController taskListController;
 
-    @FXML private MenuItem logoutMenuItem;
+    @FXML
+    private MenuItem logoutMenuItem;
+
+    @FXML
+    private MenuItem configMenuItem;
 
     private @NotNull Stage stage;
 
@@ -29,10 +36,13 @@ public class MainController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         taskListsController.setTaskListController(taskListController);
+
         logoutMenuItem.setOnAction(event -> {
             DB.get().logout();
             TodoApp.gotoLoginScreen(this.stage);
         });
+        configMenuItem.setOnAction(event -> {
+            TodoApp.gotoConfigScreen(this.stage);
+        });
     }
-
 }

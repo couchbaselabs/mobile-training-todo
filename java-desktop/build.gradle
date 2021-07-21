@@ -11,7 +11,7 @@ ext {
 group 'com.couchbase'
 version '1.0'
 
-sourceCompatibility = 1.8
+sourceCompatibility = 1.9
 
 repositories {
     maven { url "http://proget.build.couchbase.com/maven2/internalmaven" }

@@ -246,11 +246,16 @@ public class DB {
         final URI sgUri = getReplicationUri();
         if (sgUri == null) { return; }
 
+        final int attempts = Config.get().getAttempts();
+        final int waitTime = Config.get().getAttemptsWaitTime();
+
         final Endpoint endpoint = new URLEndpoint(sgUri);
 
         final ReplicatorConfiguration config = new ReplicatorConfiguration(db, endpoint)
             .setReplicatorType(ReplicatorConfiguration.ReplicatorType.PUSH_AND_PULL)
-            .setContinuous(true);
+            .setContinuous(true)
+            .setMaxAttempts(attempts)
+            .setMaxAttemptWaitTime(waitTime);
 
         TodoApp.CR_MODE crmode = TodoApp.SYNC_CR_MODE;
         if (crmode == TodoApp.CR_MODE.DEFAULT) {
