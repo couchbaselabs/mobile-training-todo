@@ -1,8 +1,4 @@
-﻿using MvvmHelpers;
-using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using Training.Models;
+﻿using Training.Models;
 using Training.Services;
 using Training.Views;
 using Xamarin.Forms;
@@ -11,7 +7,6 @@ namespace Training.ViewModels
 {
     public class UsersViewModel : BaseViewModel
     {
-        public ObservableRangeCollection<User> Users { get; } = new ObservableRangeCollection<User>();
         public Command LoadItemsCommand { get; }
         public Command AddItemCommand { get; }
         public Command<User> ItemTapped { get; }
@@ -20,50 +15,40 @@ namespace Training.ViewModels
         public UsersViewModel()
         {
             Title = "Users";
-            UsersDataStore.DataHasChanged += DataStore_DataHasChanged;
-            LoadItemsCommand = new Command(async () => await ExecuteLoadItemsCommand());
+            //LoadItemsCommand = new Command(async () => await ExecuteLoadItemsCommand());
             ItemTapped = new Command<User>(OnItemSelected);
             ItemSwiped = new Command<User>(OnItemSwiped);
-            AddItemCommand = new Command(async (object id) => await OnAddItem(id));
+            AddItemCommand = new Command(OnAddItem);
         }
 
-        private void DataStore_DataHasChanged(object sender, EventArgs e)
-        {
-            ExecuteLoadItemsCommand();
-        }
+        //private async Task ExecuteLoadItemsCommand()
+        //{
+        //    IsBusy = true;
 
-        private async Task ExecuteLoadItemsCommand()
-        {
-            IsBusy = true;
+        //    try
+        //    {
+        //        Users.Clear();
+        //        var items = await UsersDataStore.GetItemsAsync(true);
+        //        Users.AddRange(items);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Debug.WriteLine(ex);
+        //    }
+        //    finally
+        //    {
+        //        IsBusy = false;
+        //    }
+        //}
 
-            try
-            {
-                Users.Clear();
-                var items = await UsersDataStore.GetItemsAsync(true);
-                foreach (var item in items)
-                {
-                    Users.Add(item);
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
-            }
-            finally
-            {
-                IsBusy = false;
-            }
-        }
+        //public void OnAppearing()
+        //{
+        //    IsBusy = true;
+        //}
 
-        public void OnAppearing()
+        private async void OnAddItem()
         {
-            IsBusy = true;
-        }
-
-        private async Task OnAddItem(object taskListId)
-        {
-            var id = taskListId as string;
-            await Shell.Current.GoToAsync($"{nameof(UserDetailPage)}?{nameof(UserDetailViewModel.TaskListId)}={id}&{nameof(UserDetailViewModel.IsEditing)}={false}");
+            await Shell.Current.GoToAsync($"{nameof(UserDetailPage)}");
         }
 
         async void OnItemSelected(User user)
@@ -72,7 +57,7 @@ namespace Training.ViewModels
                 return;
 
             //This will push the TaskItemsPage onto the navigation stack
-            await Shell.Current.GoToAsync($"{nameof(UserDetailPage)}?{nameof(UserDetailViewModel.UserId)}={user.DocumentID}&{nameof(UserDetailViewModel.IsEditing)}={true}");
+            await Shell.Current.GoToAsync($"{nameof(UserDetailPage)}?{nameof(UserDetailViewModel.UserId)}={user.DocumentID}");
         }
 
         async void OnItemSwiped(User user)
@@ -83,12 +68,12 @@ namespace Training.ViewModels
             var selection = await DependencyService.Get<IDisplayAlert>().DisplayActionSheetAsync("Edit or Delete", "Cancel", null, "Edit", "Delete");
             if (selection == "Edit")
             {
-                await Shell.Current.GoToAsync($"{nameof(UserDetailPage)}?{nameof(UserDetailViewModel.UserId)}={user.DocumentID}&{nameof(UserDetailViewModel.IsEditing)}={true}");
+                await Shell.Current.GoToAsync($"{nameof(UserDetailPage)}?{nameof(UserDetailViewModel.UserId)}={user.DocumentID}");
             }
             else if (selection == "Delete")
             {
                 await UsersDataStore.DeleteItemAsync(user.DocumentID);
-                await ExecuteLoadItemsCommand();
+                //await ExecuteLoadItemsCommand();
             }
         }
     }

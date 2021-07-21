@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
+﻿using Training.ViewModels;
 
 namespace Training.Models
 {
-    public class TaskItem : INotifyPropertyChanged
+    public class TaskItem : BaseViewModel
     {
         private string _docId;
         private string _name;
@@ -41,14 +38,18 @@ namespace Training.Models
         {
             get { return _isChecked; }
             set 
-            { 
-                if(SetProperty(ref _isChecked, value))
+            {
+                if (_isChecked != value)
                 {
-                    using(var doc = CoreApp.Database.GetDocument(_docId))
-                    using(var mdoc =  doc.ToMutable())
+                    SetProperty(ref _isChecked, value);
+                    using (var doc = CoreApp.Database.GetDocument(_docId))
+                    using (var mdoc = doc.ToMutable())
                     {
-                        mdoc.SetBoolean("complete", value);
-                        CoreApp.Database.Save(mdoc);
+                        if (mdoc.GetBoolean("complete") != _isChecked)
+                        {
+                            mdoc.SetBoolean("complete", _isChecked);
+                            CoreApp.Database.Save(mdoc);
+                        }
                     }
                 }
             }
@@ -62,30 +63,5 @@ namespace Training.Models
             get { return _image; }
             set { SetProperty(ref _image, value); }
         }
-
-        protected bool SetProperty<T>(ref T backingStore, T value,
-            [CallerMemberName] string propertyName = "",
-            Action onChanged = null)
-        {
-            if (EqualityComparer<T>.Default.Equals(backingStore, value))
-                return false;
-
-            backingStore = value;
-            onChanged?.Invoke();
-            OnPropertyChanged(propertyName);
-            return true;
-        }
-
-        #region INotifyPropertyChanged
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
-        {
-            var changed = PropertyChanged;
-            if (changed == null)
-                return;
-
-            changed.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-        #endregion
     }
 }

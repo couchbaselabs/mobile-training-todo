@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Shell xmlns="http://xamarin.com/schemas/2014/forms" 
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:controls="clr-namespace:Training.Controls"
+       xmlns:sys="clr-namespace:System;assembly=netstandard"
        xmlns:local="clr-namespace:Training.Views"
-       xmlns:viewmodel="clr-namespace:Training.ViewModels"
        Title="Training"
        x:Class="Training.AppShell"
-        FlyoutHeaderBehavior="CollapseOnScroll">
+       FlyoutHeaderBehavior="CollapseOnScroll">
 
     <!--
         The overall app visual hierarchy is defined here, along with navigation.
@@ -80,6 +81,10 @@
         </ResourceDictionary>
     </Shell.Resources>
 
+    <Shell.FlyoutFooter>
+        <controls:FlyoutFooter />
+    </Shell.FlyoutFooter>
+
     <!-- 
         When the Flyout is visible this defines the content to display in the flyout.
         FlyoutDisplayOptions="AsMultipleItems" will create a separate flyout item for each child element    
@@ -92,11 +97,10 @@
     </FlyoutItem-->
     <FlyoutItem Route="flyout" FlyoutDisplayOptions="AsMultipleItems">
         <ShellContent Route="taskListItems" Title="Task List" Icon="icon_feed.png" ContentTemplate="{DataTemplate local:TaskListItemsPage}" />
-        <Tab Route="taskListItem" FlyoutItemIsVisible="False">
-            <ShellContent Route="tasks"
+        <Tab Route="taskListItem" Title="" FlyoutItemIsVisible="False">
+            <ShellContent Route="tasks"  FlyoutItemIsVisible="False" 
                           Style="{StaticResource TaskListItemShell}"
                           Title="Tasks"
-                          Icon="tasks.png"
                           ContentTemplate="{DataTemplate local:TasksPage}" />
             <ShellContent Route="users"
                           Style="{StaticResource TaskListItemShell}"
@@ -105,7 +109,7 @@
                           ContentTemplate="{DataTemplate local:UsersPage}" />
         </Tab>
     </FlyoutItem>
-
+    
     
 
     <!-- When the Flyout is visible this will be a menu item you can tie a click behavior to  -->

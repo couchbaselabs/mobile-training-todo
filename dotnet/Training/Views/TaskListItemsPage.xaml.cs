@@ -16,10 +16,10 @@ namespace Training.Views
             BindingContext = _viewModel = new TaskListItemsViewModel();
         }
 
-        protected override void OnAppearing()
-        {
-            base.OnAppearing();
-            _viewModel.OnAppearing();
-        }
+        //protected override void OnAppearing()
+        //{
+        //    base.OnAppearing();
+        //    _viewModel.OnAppearing();
+        //}
     }
 }

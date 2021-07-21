@@ -62,7 +62,6 @@ namespace Training
         /// <param name="newPassword">The new password for the database (optional)</param>
         public static void StartSession(string username, string password, string newPassword)
         {
-            Couchbase.Lite.Database.Log.Console.Level = Couchbase.Lite.Logging.LogLevel.Debug;
             //if(Hint.UsePrebuiltDB) {
             //    InstallPrebuiltDB();
             //}
@@ -70,8 +69,15 @@ namespace Training
             var p = Hint.EncryptionEnabled ? password : null;
             var np = Hint.EncryptionEnabled ? newPassword : null;
             OpenDatabase(username, p, np);
+
+            // Setup Couchbase Lite Queries
             var qs = new TodoQueries();
             QueryDictionary = qs.QueryDictionary;
+
+            // Setup app data
+            DependencyService.Register<TodoDataStore>();
+            DependencyService.Register<TasksData>();
+            DependencyService.Register<UsersData>();
 
             if (Hint.SyncEnabled)
             {
@@ -158,11 +164,6 @@ namespace Training
                     }
                 });
             }
-
-            //Setup data
-            DependencyService.Register<TodoDataStore>();
-            DependencyService.Register<TasksData>();
-            DependencyService.Register<UsersData>();
         }
 
         /// <summary>

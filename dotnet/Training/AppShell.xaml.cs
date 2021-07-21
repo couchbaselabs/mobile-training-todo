@@ -17,8 +17,8 @@ namespace Training
 
         void RegisterRoutes()
         {
-            Routes.Add(nameof(TasksPage), typeof(TasksPage));
-            Routes.Add(nameof(UsersPage), typeof(UsersPage));
+            //Routes.Add(nameof(TasksPage), typeof(TasksPage));
+            //Routes.Add(nameof(UsersPage), typeof(UsersPage));
             Routes.Add(nameof(TaskDetailPage), typeof(TaskDetailPage));
             Routes.Add(nameof(UserDetailPage), typeof(UserDetailPage));
             Routes.Add(nameof(TaskListDetailPage), typeof(TaskListDetailPage));

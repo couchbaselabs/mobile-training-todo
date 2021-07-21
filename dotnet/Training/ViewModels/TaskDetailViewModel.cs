@@ -8,19 +8,15 @@ using Xamarin.Forms;
 
 namespace Training.ViewModels
 {
-    [QueryProperty(nameof(TaskListId), nameof(TaskListId))]
     [QueryProperty(nameof(TaskId), nameof(TaskId))]
-    [QueryProperty(nameof(IsNew), nameof(IsNew))]
     public class TaskDetailViewModel : BaseViewModel
     {
         private Database _db = CoreApp.Database;
-        private string _taskItemName;
         private string _toJSONString;
-        private bool _isNew;
-        private string _taskId;
+        private bool _isEditing;
+        private string _id;
+        private string _taskItemName;
         private TaskItem _taskItem = new TaskItem();
-
-        public string TaskListId { get; set; }
 
         public TaskItem TaskItem
         {
@@ -30,38 +26,36 @@ namespace Training.ViewModels
 
         public string TaskId
         {
-            get => _taskId;
+            get => _id;
             set
             {
-                if (SetProperty(ref _taskId, value))
-                {
-                    _taskItem.DocumentID = _taskId;
-                    _taskItem.TaskListID = TaskListId;
-                    using (var d = _db.GetDocument(_taskId))
-                    {
-                        if (d == null)
-                        {
-                            return;
-                        }
+                if (_id == value)
+                    return;
 
-                        TaskItemName = _taskItem.Name = d.GetString("task");
-                        _taskItem.IsChecked = d.GetBoolean("complete");
-                        _taskItem.Thumbnail = d.GetBlob("image")?.Content;
+                _id = value;
+                if (!String.IsNullOrEmpty(_id))
+                {
+                    IsEditing = true;
+                    TaskItem = TasksDataStore.GetItemAsync(_id).Result;
+                    TaskItemName = TaskItem.Name;
+                    using (var d = _db.GetDocument(_id))
+                    {
+                        ToJSONString = d.ToJSON();
                     }
                 }
             }
         }
 
-        public bool IsNew
+        public bool IsEditing
         {
-            get => _isNew;
+            get => _isEditing;
             set
             {
-                SetProperty(ref _isNew, value);
-                if (_isNew)
-                    Title = "New Task";
-                else
+                SetProperty(ref _isEditing, value);
+                if (_isEditing)
                     Title = "Edit Task";
+                else
+                    Title = "New Task";
             }
         }
 
@@ -71,7 +65,7 @@ namespace Training.ViewModels
             set
             {
                 SetProperty(ref _taskItemName, value);
-                _taskItem.Name = _taskItemName;
+                TaskItem.Name = _taskItemName;
             }
         }
 
@@ -117,19 +111,20 @@ namespace Training.ViewModels
             var selection = await DependencyService.Get<IDisplayAlert>().DisplayActionSheetAsync("Delete?", "Cancel", null, "Delete");
             if (selection == "Delete")
             {
-                _taskItem.Thumbnail = null;
+                TaskItem.Thumbnail = null;
+                await TasksDataStore.UpdateItemAsync(TaskItem);
             }
         }
 
         private async void OnSave()
         {
-            if (IsNew)
+            if (IsEditing)
             {
-                await TasksDataStore.AddItemAsync(_taskItem);
+                await TasksDataStore.UpdateItemAsync(TaskItem);
             }
             else
             {
-                await TasksDataStore.UpdateItemAsync(_taskItem);
+                await TasksDataStore.AddItemAsync(TaskItem);
             }
 
             // This will pop the current page off the navigation stack
@@ -147,7 +142,7 @@ namespace Training.ViewModels
             using (var memoryStream = new MemoryStream())
             {
                 stream.CopyTo(memoryStream);
-                _taskItem.Thumbnail = memoryStream.ToArray();
+                TaskItem.Thumbnail = memoryStream.ToArray();
             }
         }
     }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Training.Services;
 using Training.Views;
 using Xamarin.Forms;
@@ -39,7 +40,7 @@ namespace Training.ViewModels
 
             try
             {
-                CoreApp.StartSession(Username, Password, null);
+                await Task.Run(() => CoreApp.StartSession(Username, Password, null));
             }
             catch (Exception e)
             {

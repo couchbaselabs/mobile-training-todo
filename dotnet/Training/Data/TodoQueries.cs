@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Training.Models
+namespace Training.Data
 {
     public enum QueryType
     {
@@ -37,7 +37,7 @@ namespace Training.Models
                     SelectResult.Expression(Expression.Property("name")))
                 .From(DataSource.Database(_db))
                 .Where(Expression.Property("name")
-                    .NotNullOrMissing()
+                    .IsValued()
                     .And(Expression.Property("type").EqualTo(Expression.String("task-list"))))
                 .OrderBy(Ordering.Property("name")));
 
@@ -74,7 +74,7 @@ namespace Training.Models
             QueryDictionary.Add(QueryType.UsersFullQuery, QueryBuilder.Select(SelectResult.Expression(username))
                 .From(DataSource.Database(_db))
                 .Where(username
-                    .NotNullOrMissing()
+                    .IsValued()
                     .And((exp1).And(exp2)))
                 .OrderBy(Ordering.Property("username")));
 

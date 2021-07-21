@@ -1,6 +1,7 @@
 ﻿using Couchbase.Lite;
 using System;
-using Training.Data;
+using System.Threading.Tasks;
+using Training.Services;
 using Xamarin.Forms;
 
 namespace Training
@@ -13,15 +14,15 @@ namespace Training
 
             CoreApp.Hint = new CoreAppStartHint
             {
-                LoginEnabled = true,
-                CCRType = CCR_TYPE.LOCAL,
+                LoginEnabled = false,
+                CCRType = CCR_TYPE.NONE,
                 Heartbeat = null,
                 MaxRetries = 0,
                 MaxRetryWaitTime = null,
                 IsDebugging = false,
                 EncryptionEnabled = false,
                 IsDatabaseChangeMonitoring = false,
-                SyncEnabled = true,
+                SyncEnabled = false,
                 UsePrebuiltDB = false,
                 Username = "todo"
             };
@@ -34,7 +35,15 @@ namespace Training
             MainPage = new AppShell();
             if (!CoreApp.Hint.LoginEnabled)
             {
-                CoreApp.StartSession(CoreApp.Hint.Username, null, null);
+                try
+                {
+                    CoreApp.StartSession(CoreApp.Hint.Username, null, null);
+                }
+                catch (Exception e)
+                {
+                    DependencyService.Get<IDisplayAlert>().DisplayAlertAsync("Enter Task Lists page Error", $"Error occurred, code = {e}", "Cancel");
+                    return;
+                }
             } 
             else
             {

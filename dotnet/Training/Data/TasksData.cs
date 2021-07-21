@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Training.Models;
 using Training.Services;
+using Training.Utils;
 
 namespace Training.Data
 {
@@ -17,50 +18,54 @@ namespace Training.Data
 
         #endregion
 
+        private Database _db = CoreApp.Database;
         private string _taskListId;
         private IQuery _tasksFilteredQuery;
         private IQuery _tasksFullQuery;
-        private Database _db = CoreApp.Database;
-        private readonly IList<TaskItem> _tasks = new List<TaskItem>();
-        private IList<string> _listenerStarted = new List<string>();
 
-        public event EventHandler DataHasChanged;
+        public ObservableConcurrentDictionary<string, TaskItem> Data { get; private set; }
 
-        public void LoadItems(string listId = null)
+        public TasksData()
         {
-            _taskListId = listId;
-            SetupQuery(listId);
-            var results = _tasksFullQuery.Execute();
-            RunQuery(results.AllResults());
-            if (!_listenerStarted.Contains(listId))
-            {
-                StartListener();
-                _listenerStarted.Add(listId);
-            }
+            Data = new ObservableConcurrentDictionary<string, TaskItem>();
+            _tasksFilteredQuery = CoreApp.QueryDictionary[QueryType.TasksFilteredQuery];
+            _tasksFullQuery = CoreApp.QueryDictionary[QueryType.TasksFullQuery];
+            StartListener();
         }
 
-        public async Task<bool> AddItemAsync(TaskItem item)
+        public async Task<bool> LoadItemsAsync(string listId = null)
         {
-            string owner;
+            if (_taskListId != listId)
+            {
+                _taskListId = listId;
+                SetupQuery(listId);
+                var results = _tasksFullQuery.Execute();
+                ProcessQueryResults(results.AllResults());
+            }
+
+            return await Task.FromResult(true);
+        }
+
+        public async Task<string> AddItemAsync(TaskItem item)
+        {
+            Dictionary<string, object> properties;
             using (var doc = _db.GetDocument(_taskListId))
             {
-                owner = doc.GetString("owner");
-            }
-            
-            var taskListInfo = new Dictionary<string, object>
-            {
-                ["id"] = _taskListId,
-                ["owner"] = owner
-            };
+                var taskListInfo = new Dictionary<string, object>
+                {
+                    ["id"] = _taskListId,
+                    ["owner"] = doc.GetString("owner")
+                };
 
-            var properties = new Dictionary<string, object>
-            {
-                ["type"] = TaskType,
-                ["taskList"] = taskListInfo,
-                ["createdAt"] = DateTimeOffset.UtcNow,
-                ["task"] = item.Name,
-                ["complete"] = false
-            };
+                properties = new Dictionary<string, object>
+                {
+                    ["type"] = TaskType,
+                    ["taskList"] = taskListInfo,
+                    ["createdAt"] = DateTimeOffset.UtcNow,
+                    ["task"] = item.Name,
+                    ["complete"] = false
+                };
+            }
 
             try
             {
@@ -77,24 +82,23 @@ namespace Training.Data
                     }
 
                     _db.Save(doc);
+                    //item.DocumentID = doc.Id;
+                    //Data.Add(doc.Id, item);
                 }
-
-                //_tasks.Add(item);
             }
             catch (Exception e)
             {
-                var newException = new Exception("Couldn't save task", e);
-                return await Task.FromResult(false);
+                return await Task.FromResult($"{e.Message}/Inner Exception {e.InnerException?.Message}");
             }
 
-            return await Task.FromResult(true);
+            return await Task.FromResult<string>(null);
         }
 
-        public async Task<bool> UpdateItemAsync(TaskItem item)
+        public async Task<string> UpdateItemAsync(TaskItem item)
         {
             try
             {
-                using(var doc = _db.GetDocument(item.DocumentID))
+                using (var doc = _db.GetDocument(item.DocumentID))
                 using (var mdoc = doc.ToMutable())
                 {
                     mdoc.SetString(TaskType, item.Name);
@@ -112,25 +116,23 @@ namespace Training.Data
                     _db.Save(mdoc);
                 }
 
-                var oldItem = await GetItemAsync(item.DocumentID);
-                _tasks.Remove(oldItem);
-                _tasks.Add(item);
+                //Data.Remove(item.DocumentID);
+                //Data.Add(item.DocumentID, item);
             }
             catch (Exception e)
             {
-                var newException = new Exception("Couldn't update task", e);
-                return await Task.FromResult(false);
+                return await Task.FromResult($"{e.Message}/Inner Exception {e.InnerException?.Message}");
             }
 
-            return await Task.FromResult(true);
+            return await Task.FromResult<string>(null);
         }
 
-        public async Task<bool> DeleteItemAsync(string id)
+        public async Task<string> DeleteItemAsync(string id)
         {
             var item = await GetItemAsync(id);
             if (item == null)
             {
-                return true; //nothing to be deleted
+                return null; //nothing to be deleted
             }
 
             try
@@ -140,25 +142,20 @@ namespace Training.Data
                     _db.Delete(doc);
                 }
 
-                _tasks.Remove(item);
+                //Data.TryRemove(id, out var tl);
             }
             catch (Exception e)
             {
-                var newException = new Exception("Couldn't delete task", e);
-                return await Task.FromResult(false);
+                return await Task.FromResult($"{e.Message}/Inner Exception {e.InnerException?.Message}");
             }
 
-            return await Task.FromResult(true);
+            return await Task.FromResult<string>(null);
         }
 
         public async Task<TaskItem> GetItemAsync(string id)
         {
-            return await Task.FromResult(_tasks.FirstOrDefault(s => s.DocumentID == id));
-        }
-
-        public async Task<IEnumerable<TaskItem>> GetItemsAsync(bool forceRefresh = false)
-        {
-            return await Task.FromResult(_tasks);
+            Data.TryGetValue(id, out var task);
+            return await Task.FromResult(task);
         }
 
         public Task<IEnumerable<string>> ReturnJsonsAsync(bool forceRefresh = false)
@@ -179,15 +176,13 @@ namespace Training.Data
                 query.Parameters.SetString("searchString", $"%{searchString}%");
 
                 var results = query.Execute();
-                RunQuery(results.AllResults());
+                ProcessQueryResults(results.AllResults());
             }
         }
 
         private void SetupQuery(string listId)
         {
-            _tasksFilteredQuery = CoreApp.QueryDictionary[QueryType.TasksFilteredQuery];
             _tasksFilteredQuery.Parameters.SetString("taskListId", listId);
-            _tasksFullQuery = CoreApp.QueryDictionary[QueryType.TasksFullQuery];
             _tasksFullQuery.Parameters.SetString("taskListId", listId);
         }
 
@@ -195,24 +190,19 @@ namespace Training.Data
         {
             _tasksFullQuery.AddChangeListener((sender, args) =>
             {
-                //run live query
-                RunQuery(args.Results.AllResults());
+                ProcessQueryResults(args.Results.AllResults());
             });
         }
 
-        private void RunQuery(IList<Result> allResult)
+        private void ProcessQueryResults(IList<Result> allResult)
         {
-            var allResultCnt = allResult.Count();
-            //int datasCnt = 0;
-            if (allResultCnt < _tasks.Count || (_tasks.Count > 0 && _tasks[0].TaskListID != _taskListId))
+            if (allResult.Count() != Data.Count || (Data.Count > 0 && Data.First().Key != _taskListId))
             {
-                _tasks.Clear();
+                Data.Clear();
             }
 
-            foreach (var result in allResult)
+            Parallel.ForEach(allResult, result =>
             {
-                //if (allResultCnt > 20)
-                    //datasCnt++;
                 var idKey = result.GetString("id");
                 using (var document = _db.GetDocument(idKey))
                 {
@@ -226,39 +216,23 @@ namespace Training.Data
                     }
                     else
                     {
-                        var task = GetItemAsync(idKey).Result;
-                        if (task != null)
+                        Data.AddOrUpdate(idKey, new TaskItem()
                         {
-                            task.TaskListID = _taskListId;
-                            task.Name = name;
-                        }
-                        else
+                            TaskListID = _taskListId,
+                            DocumentID = idKey,
+                            Name = name,
+                            Thumbnail = document.GetBlob("image")?.Content,
+                            IsChecked = document.GetBoolean("complete")
+                        },
+                        (key, oldVal) =>
                         {
-                            _tasks.Add(new TaskItem()
-                            {
-                                TaskListID = _taskListId,
-                                DocumentID = idKey,
-                                Name = name,
-                                Thumbnail = document.GetBlob("image")?.Content,
-                                IsChecked = document.GetBoolean("complete")
-                            });
-                        }
+                            oldVal.Name = name;
+                            oldVal.TaskListID = _taskListId;
+                            return oldVal;
+                        });
                     }
                 }
-
-                /*if (allResultCnt >= 5 && datasCnt == 3)
-                {
-                    DataHasChanged?.Invoke(this, null);
-                    datasCnt = 0;
-                }
-                else
-                {
-                    DataHasChanged?.Invoke(this, null);
-                }*/
-            }
-
-            //if(allResultCnt > 20)
-                DataHasChanged?.Invoke(this, null);
+            });
         }
     }
 }

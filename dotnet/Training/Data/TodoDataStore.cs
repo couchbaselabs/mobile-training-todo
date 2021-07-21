@@ -1,14 +1,12 @@
 ﻿using Couchbase.Lite;
 using Couchbase.Lite.Query;
-using MvvmHelpers;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Training.Models;
 using Training.Services;
+using Training.Utils;
 
 namespace Training.Data
 {
@@ -23,32 +21,33 @@ namespace Training.Data
         Database _db = CoreApp.Database;
         private IQuery _fullQuery;
         private IQuery _incompleteQuery;
-        private IDictionary<string, int> _incompleteCount = new Dictionary<string, int>();
-        private static IList<TaskListItem> _items = new List<TaskListItem>();
+        private readonly ConcurrentDictionary<string, int> _incompleteCount = new ConcurrentDictionary<string, int>();
         private readonly IList<string> _jsons = new List<string>();
-
-        public event EventHandler DataHasChanged;
 
         /// <summary>
         /// Gets the username of the user using the app
         /// </summary>
         public string Username => _db?.Name;
 
+        public ObservableConcurrentDictionary<string, TaskListItem> Data { get; private set; } = new ObservableConcurrentDictionary<string, TaskListItem>();
+
         public TodoDataStore()
         {
             SetupQuery();
             var results = _fullQuery.Execute();
-            RunQuery(results.AllResults());
+            ProcessQueryResults(results.AllResults());
             StartListeners();
         }
 
-        public void LoadItems(string id = null)
+        public async Task<bool> LoadItemsAsync(string id = null)
         {
+            return await Task.FromResult(true);
         }
 
-        public async Task<bool> AddItemAsync(TaskListItem item)
+        public async Task<string> AddItemAsync(TaskListItem item)
         {
             var docId = $"{Username}.{Guid.NewGuid()}";
+
             try
             {
                 using (var doc = new MutableDocument(docId))
@@ -60,22 +59,24 @@ namespace Training.Data
                 }
 
                 //item.DocumentID = docId;
-                //_items.Add(item);
+                //if(!Data.TryAdd(docId, item))
+                //{
+                //    return await Task.FromResult("Data Add Item failed.");
+                //}
             }
             catch (Exception e)
             {
-                var newException = new Exception("Couldn't save task list", e);
-                return await Task.FromResult(false);
+                return await Task.FromResult($"{e.Message}/Inner Exception {e.InnerException?.Message}");
             }
 
-            return await Task.FromResult(true);
+            return await Task.FromResult<string>(null);
         }
 
-        public async Task<bool> UpdateItemAsync(TaskListItem item)
+        public async Task<string> UpdateItemAsync(TaskListItem item)
         {
-            if(item.DocumentID == null)
+            if (item.DocumentID == null)
             {
-                return false;
+                return await Task.FromResult("The document id is null.");
             }
 
             try
@@ -89,24 +90,22 @@ namespace Training.Data
                     _db.Save(mdoc);
                 }
 
-                //var oldItem = _items.Where((TaskListItem arg) => arg.DocumentID == item.DocumentID).FirstOrDefault();
-                //_items.Remove(oldItem);
-                //_items.Add(item);
+                //Data.Remove(item.DocumentID);
+                //Data.Add(item.DocumentID, item);
             }
             catch (Exception e)
             {
-                var newException = new Exception("Couldn't save task list", e);
-                return await Task.FromResult(false);
+                return await Task.FromResult($"{e.Message}/Inner Exception {e.InnerException?.Message}");
             }
 
-            return await Task.FromResult(true);
+            return await Task.FromResult<string>(null);
         }
 
-        public async Task<bool> DeleteItemAsync(string id)
+        public async Task<string> DeleteItemAsync(string id)
         {
             if (String.IsNullOrEmpty(id))
             {
-                return true; //nothing to be deleted
+                return null; //nothing to be deleted
             }
 
             try
@@ -116,26 +115,25 @@ namespace Training.Data
                     _db.Delete(doc);
                 }
 
-                var oldItem = await GetItemAsync(id);
-                _items.Remove(oldItem);
+                //Data.TryRemove(id, out var tl);
             }
             catch (Exception e)
             {
-                var newException = new Exception("Couldn't delete task list", e);
-                return await Task.FromResult(false);
+                return await Task.FromResult($"{e.Message}/Inner Exception {e.InnerException?.Message}");
             }
 
-            return await Task.FromResult(true);
+            return await Task.FromResult<string>(null);
         }
 
         public async Task<TaskListItem> GetItemAsync(string id)
         {
-            return await Task.FromResult(_items.FirstOrDefault(s => s.DocumentID == id));
+            Data.TryGetValue(id, out var tasklist);
+            return await Task.FromResult(tasklist);
         }
 
-        public async Task<IEnumerable<TaskListItem>> GetItemsAsync(bool forceRefresh = false)
+        public async Task<ObservableConcurrentDictionary<string, TaskListItem>> GetItemsAsync(bool forceRefresh = false)
         {
-            return await Task.FromResult(_items);
+            return await Task.FromResult(Data);
         }
 
         public async Task<IEnumerable<string>> ReturnJsonsAsync(bool forceRefresh = false)
@@ -152,7 +150,7 @@ namespace Training.Data
                 query.Parameters.SetString("searchText", $"%{searchText}%");
 
                 var results = query.Execute();
-                RunQuery(results.AllResults());
+                ProcessQueryResults(results.AllResults());
             }
         }
 
@@ -169,50 +167,42 @@ namespace Training.Data
         {
             _incompleteQuery.AddChangeListener((sender, args) =>
             {
-                //Task.Run(() =>
-                //{
-                    _incompleteCount = new Dictionary<string, int>();
-                    Parallel.ForEach(args.Results, result =>
+                var results = args.Results.AllResults();
+                if (results.Count != _incompleteCount.Count)
+                {
+                    _incompleteCount.Clear();
+                }
+
+                Parallel.ForEach(results, result =>
                     {
                         var key = result.GetString(0);
                         var value = result.GetInt(1);
-                        var document = _db.GetDocument(key);
-                        if (document == null)
-                            return;
-
-                        var name = document.GetString("name");
-                        _incompleteCount.Add(key, value);
+                        _incompleteCount.AddOrUpdate(key, value,
+                            (k, oldValue) =>
+                            {
+                                oldValue = value;
+                                return oldValue;
+                            });
                     });
 
-                    Parallel.ForEach(_items, item =>
-                    {
-                        if (_incompleteCount.ContainsKey(item.DocumentID))
-                        {
-                            item.IncompleteCount = _incompleteCount[item.DocumentID];
-                        }
-                        else
-                        {
-                            item.IncompleteCount = 0;
-                        }
-                    });
-                //});
+                UpdateIncompleteCount();
             });
 
             _fullQuery.AddChangeListener((sender, args) =>
             {
                 //run live query
-                RunQuery(args.Results.AllResults());
+                ProcessQueryResults(args.Results.AllResults());
             });
         }
 
-        private void RunQuery(IList<Result> allResult)
+        private void ProcessQueryResults(IList<Result> allResult)
         {
-            if (allResult.Count() < _items.Count)
+            if (allResult.Count != Data.Count)
             {
-                _items.Clear();
+                Data.Clear();
             }
 
-            foreach (var result in allResult)
+            Parallel.ForEach(allResult, result =>
             {
                 var idKey = result.GetString("id");
                 using (var document = _db.GetDocument(idKey))
@@ -224,24 +214,36 @@ namespace Training.Data
                     }
                     else
                     {
-                        var item = _items.Where(x => x.DocumentID == idKey).SingleOrDefault();
-                        if (item != null)
-                        {
-                            item.Name = name;
-                        }
-                        else
-                        {
-                            _items.Add(new TaskListItem()
+                        Data.AddOrUpdate(idKey, 
+                            (key) =>
                             {
-                                DocumentID = idKey,
-                                Name = name
+                                var newVal = new TaskListItem();
+                                newVal.DocumentID = idKey;
+                                newVal.Name = name;
+                                return newVal;
+                            }, (key, oldVal) =>
+                            {
+                                oldVal.Name = name;
+                                return oldVal;
                             });
-                        }
                     }
                 }
+            });
+        }
 
-                DataHasChanged?.Invoke(this, null);
-            }
+        private void UpdateIncompleteCount()
+        {
+            Parallel.ForEach(Data, item =>
+            {
+                if (_incompleteCount.ContainsKey(item.Key))
+                {
+                    item.Value.IncompleteCount = _incompleteCount[item.Key];
+                }
+                else
+                {
+                    item.Value.IncompleteCount = 0;
+                }
+            });
         }
 
         #endregion

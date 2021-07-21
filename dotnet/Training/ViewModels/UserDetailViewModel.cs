@@ -7,24 +7,20 @@ using Xamarin.Forms;
 
 namespace Training.ViewModels
 {
-    [QueryProperty(nameof(TaskListId), nameof(TaskListId))]
     [QueryProperty(nameof(UserId), nameof(UserId))]
-    [QueryProperty(nameof(IsEditing), nameof(IsEditing))]
     public class UserDetailViewModel : BaseViewModel
     {
         private Database _db = CoreApp.Database;
-        private string _userId;
+        private string _id;
         private string _userName;
         private string _toJSONString;
         private bool _isEditing;
         private User _user = new User();
 
-        public string TaskListId { get; set; }
-
         public User User
         {
             get => _user;
-            set { SetProperty(ref _user, value); }
+            set => SetProperty(ref _user, value);
         }
 
         public bool IsEditing
@@ -42,22 +38,22 @@ namespace Training.ViewModels
 
         public string UserId
         {
-            get { return _userId; }
+            get { return _id; }
 
             set
             {
-                if (SetProperty(ref _userId, value))
-                {
-                    _user.DocumentID = _userId;
-                    _user.TaskListID = TaskListId;
-                    using (var d = _db.GetDocument(_userId))
-                    {
-                        if (d == null)
-                        {
-                            return;
-                        }
+                if (_id == value)
+                    return;
 
-                        UserName = _user.Name = d.GetString("username");
+                _id = value;
+                if (!String.IsNullOrEmpty(_id))
+                {
+                    IsEditing = true;
+                    User = UsersDataStore.GetItemAsync(_id).Result;
+                    UserName = User.Name;
+                    using (var d = _db.GetDocument(_id))
+                    {
+                        ToJSONString = d.ToJSON();
                     }
                 }
             }
@@ -69,7 +65,7 @@ namespace Training.ViewModels
             set 
             { 
                 SetProperty(ref _userName, value);
-                _user.Name = _userName;
+                User.Name = _userName;
             }
         }
 
@@ -110,7 +106,6 @@ namespace Training.ViewModels
 
             if (IsEditing)
             {
-                user.DocumentID = UserId;
                 await UsersDataStore.UpdateItemAsync(user);
             }
             else

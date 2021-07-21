@@ -1,40 +1,33 @@
 ﻿using System;
 using Training.Models;
+using Training.Services;
 using Xamarin.Forms;
 
 namespace Training.ViewModels
 {
     [QueryProperty(nameof(ListItemId), nameof(ListItemId))]
-    [QueryProperty(nameof(TaskItemName), nameof(TaskItemName))]
-    [QueryProperty(nameof(IsEditing), nameof(IsEditing))]
     public class TaskListDetailViewModel : BaseViewModel
     {
-        private string _listItemId;
-        private string _taskItemName;
-        private string _toJSONString;
         private bool _isEditing;
-        public bool IsEditing 
+        private string _toJSONString;
+        private string _id;
+        private string _taskListName;
+        private TaskListItem _taskListItem = new TaskListItem();
+
+        public string ListItemId 
         {
-            get => _isEditing;
+            get => _id;
             set
             {
-                SetProperty(ref _isEditing, value);
-                if (_isEditing)
-                    Title = "Edit Task List";
-                else
-                    Title = "New Task List";
-            }
-        }
+                if (_id == value)
+                    return;
 
-        public string ListItemId
-        {
-            get { return _listItemId; }
-
-            set
-            {
-                _listItemId = value;
+                _id = value;
                 if (!String.IsNullOrEmpty(ListItemId))
                 {
+                    IsEditing = true;
+                    _taskListItem = DataStore.GetItemAsync(ListItemId).Result;
+                    TaskListName = _taskListItem.Name;
                     using (var doc = CoreApp.Database.GetDocument(ListItemId))
                     {
                         ToJSONString = doc.ToJSON();
@@ -42,10 +35,28 @@ namespace Training.ViewModels
                 }
             }
         }
-        public string TaskItemName
+
+        public string TaskListName
         {
-            get => _taskItemName;
-            set => SetProperty(ref _taskItemName, value);
+            get => _taskListName;
+            set
+            {
+                SetProperty(ref _taskListName, value);
+                _taskListItem.Name = _taskListName;
+            }
+        }
+
+        public bool IsEditing
+        {
+            get => _isEditing;
+            set
+            {
+                SetProperty(ref _isEditing, value);
+                if(_isEditing)
+                    Title = "Edit Task List";
+                else
+                    Title = "New Task List";
+            }
         }
 
         public string ToJSONString 
@@ -67,7 +78,7 @@ namespace Training.ViewModels
 
         private bool ValidateSave()
         {
-            return !String.IsNullOrWhiteSpace(_taskItemName);
+            return !String.IsNullOrWhiteSpace(TaskListName);
         }
 
         private async void OnCancel()
@@ -78,19 +89,17 @@ namespace Training.ViewModels
 
         private async void OnSave()
         {
-            TaskListItem item = new TaskListItem()
-            {
-                Name = TaskItemName
-            };
-
             if (IsEditing)
             {
-                item.DocumentID = ListItemId;
-                await DataStore.UpdateItemAsync(item);
+                await DataStore.UpdateItemAsync(_taskListItem);
             }
             else
             {
-                await DataStore.AddItemAsync(item);
+                var res = await DataStore.AddItemAsync(_taskListItem);
+                if(res != null)
+                {
+                    await DependencyService.Get<IDisplayAlert>().DisplayAlertAsync("Add Error", $"Couldn't add task list {_taskListItem.Name}: {res}", "OK");
+                }
             }
 
             // This will pop the current page off the navigation stack

@@ -1,11 +1,13 @@
 ﻿using Couchbase.Lite;
 using Couchbase.Lite.Query;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Training.Models;
 using Training.Services;
+using Training.Utils;
 using Xamarin.Forms;
 
 namespace Training.Data
@@ -23,25 +25,32 @@ namespace Training.Data
         private IQuery _fullQuery;
         private IQuery _usersLiveQuery;
         private string _searchUserName;
-        private readonly IList<User> _users = new List<User>();
-        private IList<string> _listenerStarted = new List<string>();
         private string _taskListId;
 
-        public event EventHandler DataHasChanged;
+        public ObservableConcurrentDictionary<string, User> Data { get; private set; }
 
-        public void LoadItems(string listId)
+        public UsersData()
         {
-            _taskListId = listId;
-            SetupQuery(listId);
-            QueryRun(_usersLiveQuery);
-            if (!_listenerStarted.Contains(listId))
-            {
-                StartListener();
-                _listenerStarted.Add(listId);
-            }
+            Data = new ObservableConcurrentDictionary<string, User>();
+            _filteredQuery = CoreApp.QueryDictionary[QueryType.UsersFilteredQuery]; 
+            _fullQuery = CoreApp.QueryDictionary[QueryType.UsersFullQuery]; 
+            _usersLiveQuery = CoreApp.QueryDictionary[QueryType.UsersLiveQuery];
+            StartListener();
         }
 
-        public async Task<bool> AddItemAsync(User user)
+        public async Task<bool> LoadItemsAsync(string listId)
+        {
+            if (_taskListId != listId)
+            {
+                _taskListId = listId;
+                SetupQuery(listId);
+                QueryRun(_usersLiveQuery);
+            }
+
+            return await Task.FromResult(true);
+        }
+
+        public async Task<string> AddItemAsync(User user)
         {
             string owner;
             using (var doc = _db.GetDocument(_taskListId))
@@ -68,25 +77,26 @@ namespace Training.Data
                 using (var doc = new MutableDocument(docId, properties))
                 {
                     _db.Save(doc);
+                    //user.DocumentID = docId;
+                    //Data.Add(doc.Id, user);
                 }
 
                 Filter(_searchUserName);
             }
             catch (Exception e)
             {
-                var newException = new Exception("Couldn't create user", e);
-                return await Task.FromResult(false);
+                return await Task.FromResult($"{e.Message}/Inner Exception {e.InnerException?.Message}");
             }
 
-            return await Task.FromResult(true);
+            return await Task.FromResult<string>(null);
         }
 
-        public async Task<bool> DeleteItemAsync(string id)
+        public async Task<string> DeleteItemAsync(string id)
         {
             var user = await GetItemAsync(id);
             if (user == null)
             {
-                return true; //nothing to be deleted
+                return null; //nothing to be deleted
             }
 
             try
@@ -96,35 +106,28 @@ namespace Training.Data
                     _db.Delete(doc);
                 }
 
-                _users.Remove(user);
+                Data.TryRemove(id, out var u);
             }
             catch (Exception e)
             {
-                var newException = new Exception("Couldn't delete user", e);
-                return await Task.FromResult(false);
+                return await Task.FromResult($"{e.Message}/Inner Exception {e.InnerException?.Message}");
             }
 
-            return await Task.FromResult(true);
+            return await Task.FromResult<string>(null);
         }
 
         public async Task<User> GetItemAsync(string id)
         {
-            return await Task.FromResult(_users.FirstOrDefault(s => s.DocumentID == id));
+            Data.TryGetValue(id, out var user);
+            return await Task.FromResult(user);
         }
-
-        public async Task<IEnumerable<User>> GetItemsAsync(bool forceRefresh = false)
-        {
-            return await Task.FromResult(_users);
-        }
-
-
 
         public Task<IEnumerable<string>> ReturnJsonsAsync(bool forceRefresh = false)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<bool> UpdateItemAsync(User user)
+        public async Task<string> UpdateItemAsync(User user)
         {
             try
             {
@@ -135,17 +138,15 @@ namespace Training.Data
                     _db.Save(mdoc);
                 }
 
-                var oldItem = await GetItemAsync(user.DocumentID);
-                _users.Remove(oldItem);
-                _users.Add(user);
+                //Data.Remove(user.DocumentID);
+                //Data.Add(user.DocumentID, user);
             }
             catch (Exception e)
             {
-                var newException = new Exception("Couldn't update user", e);
-                return await Task.FromResult(false);
+                return await Task.FromResult($"{e.Message}/Inner Exception {e.InnerException?.Message}");
             }
 
-            return await Task.FromResult(true);
+            return await Task.FromResult<string>(null);
         }
 
         /// <summary>
@@ -171,11 +172,8 @@ namespace Training.Data
 
         private void SetupQuery(string listId)
         {
-            _filteredQuery = CoreApp.QueryDictionary[QueryType.UsersFilteredQuery];
-            _filteredQuery.Parameters.SetString("taskListId", listId);
-            _fullQuery = CoreApp.QueryDictionary[QueryType.UsersFullQuery];
+             _filteredQuery.Parameters.SetString("taskListId", listId);
             _fullQuery.Parameters.SetString("taskListId", listId);
-            _usersLiveQuery = CoreApp.QueryDictionary[QueryType.UsersLiveQuery];
             _usersLiveQuery.Parameters.SetString("taskListId", listId);
         }
 
@@ -191,12 +189,13 @@ namespace Training.Data
         {
             var results = query.Execute();
             var allResult = results.AllResults();
-            if (allResult.Count() < _users.Count || (_users.Count > 0 && _users[0].TaskListID != _taskListId))
+
+            if (allResult.Count() != Data.Count || (Data.Count > 0 && Data.First().Key != _taskListId))
             {
-                _users.Clear();
+                Data.Clear();
             }
 
-            foreach (var result in allResult)
+            Parallel.ForEach(allResult, result =>
             {
                 var name = result.GetString("username");
                 var idKey = $"{_taskListId}.{name}";
@@ -206,25 +205,20 @@ namespace Training.Data
                         return;
 
                     var user = GetItemAsync(idKey).Result;
-
-                    if (user != null)
+                    Data.AddOrUpdate(idKey, new User()
                     {
-                        user.TaskListID = _taskListId;
-                        user.Name = name;
-                    }
-                    else
+                        TaskListID = _taskListId,
+                        DocumentID = idKey,
+                        Name = name
+                    },
+                    (key, oldVal) =>
                     {
-                        _users.Add(new User()
-                        {
-                            TaskListID = _taskListId,
-                            DocumentID = idKey,
-                            Name = name
-                        });
-                    }
+                        oldVal.TaskListID = _taskListId;
+                        oldVal.Name = name;
+                        return oldVal;
+                    });
                 }
-            }
-
-            DataHasChanged?.Invoke(this, null);
+            });
         }
     }
 }
