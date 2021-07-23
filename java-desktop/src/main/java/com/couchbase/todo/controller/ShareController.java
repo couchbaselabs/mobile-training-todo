@@ -40,17 +40,22 @@ public class ShareController implements Initializable, UserCell.UserCellListener
     static final String KEY_OWNER = "owner";
     static final String KEY_TASK_LIST_ID = "taskList.id";
 
-    @FXML private TextField userNameTextField;
+    @FXML
+    private TextField userNameTextField;
 
-    @FXML private Button addUserButton;
+    @FXML
+    private Button addUserButton;
 
-    @FXML private ListView<User> listView;
+    @FXML
+    private ListView<User> listView;
 
     private final AtomicBoolean initialized = new AtomicBoolean();
 
-    private @NotNull TaskList taskList;
+    @NotNull
+    private TaskList taskList;
 
-    private @NotNull Query query;
+    @NotNull
+    private Query query;
 
     public ShareController(@NotNull TaskList taskList) {
         this.taskList = taskList;

@@ -34,6 +34,7 @@ import com.couchbase.lite.ReplicatorStatus;
 import com.couchbase.lite.URLEndpoint;
 import com.couchbase.todo.TodoApp;
 
+
 public class DB {
 
     private static volatile DB instance;
@@ -222,14 +223,14 @@ public class DB {
         final List<ListenerToken> listeners = changeListeners.get(query);
         if (listeners == null) { return; }
 
-        for (ListenerToken token : listeners) { query.removeChangeListener(token); }
+        for (ListenerToken token: listeners) { query.removeChangeListener(token); }
 
         changeListeners.remove(query);
     }
 
     public void removeAllChangeListeners() {
         List<Query> queries = new ArrayList<>(changeListeners.keySet());
-        for (Query query : queries) {
+        for (Query query: queries) {
             removeChangeListeners(query);
         }
     }
@@ -246,8 +247,8 @@ public class DB {
         final URI sgUri = getReplicationUri();
         if (sgUri == null) { return; }
 
-        final int attempts = Config.get().getAttempts();
-        final int waitTime = Config.get().getAttemptsWaitTime();
+        final int attempts = TodoApp.getConfig().getAttempts();
+        final int waitTime = TodoApp.getConfig().getAttemptsWaitTime();
 
         final Endpoint endpoint = new URLEndpoint(sgUri);
 
@@ -260,16 +261,19 @@ public class DB {
         TodoApp.CR_MODE crmode = TodoApp.SYNC_CR_MODE;
         if (crmode == TodoApp.CR_MODE.DEFAULT) {
             config.setConflictResolver(null);
-        } else {
+        }
+        else {
             config.setConflictResolver(conflict -> {
                 Document local = conflict.getLocalDocument();
                 Document remote = conflict.getRemoteDocument();
                 if (local == null || remote == null) { return null; }
                 if (crmode == TodoApp.CR_MODE.LOCAL) {
                     return local;
-                } else if (crmode == TodoApp.CR_MODE.REMOTE) {
+                }
+                else if (crmode == TodoApp.CR_MODE.REMOTE) {
                     return remote;
-                } else {
+                }
+                else {
                     return null;
                 }
             });
@@ -311,5 +315,4 @@ public class DB {
         final Replicator repl = replicator;
         if (repl != null) { repl.stop(); }
     }
-
 }

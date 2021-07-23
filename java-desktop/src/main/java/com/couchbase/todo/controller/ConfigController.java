@@ -1,5 +1,6 @@
 package com.couchbase.todo.controller;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.Objects;
 import java.util.ResourceBundle;
@@ -14,6 +15,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import org.jetbrains.annotations.NotNull;
 
+import com.couchbase.lite.internal.core.CBLVersion;
 import com.couchbase.todo.TodoApp;
 import com.couchbase.todo.model.Config;
 import com.couchbase.todo.model.DB;
@@ -45,53 +47,53 @@ public class ConfigController implements Initializable {
     @FXML
     private Button cancelButton;
 
+
     public ConfigController(@NotNull Stage stage) { this.stage = stage; }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         //set initial values of checkbox and text field
-        buttonsEventHandler();
-        cblVersionTextField.setText("CBL Version?");
+        RegisterButtonEventHandler();
 
-        loggingCheckbox.setSelected(Config.get().isLoggingEnabled());
-        loginCheckbox.setSelected(Config.get().isLoginRequired());
+        cblVersionTextField.setText(CBLVersion.getVersionInfo());
 
-        setCcrState(Config.get().getCr_mode());
+        loggingCheckbox.setSelected(TodoApp.getConfig().isLoggingEnabled());
+        loginCheckbox.setSelected(TodoApp.getConfig().isLoginRequired());
 
-        dbNameTextField.setText(Config.get().getDbName());
-        sgUrlTextField.setText(Config.get().getSgUri());
-        maxRetriesTextField.setText(String.valueOf(Config.get().getAttempts()));
-        waitTimeTextField.setText(String.valueOf(Config.get().getAttemptsWaitTime()));
+        setCcrState(TodoApp.getConfig().getCr_mode());
+
+        dbNameTextField.setText(TodoApp.getConfig().getDbName());
+        sgUrlTextField.setText(TodoApp.getConfig().getSgUri());
+        maxRetriesTextField.setText(String.valueOf(TodoApp.getConfig().getAttempts()));
+        waitTimeTextField.setText(String.valueOf(TodoApp.getConfig().getAttemptsWaitTime()));
     }
 
-    private void buttonsEventHandler() {
+    private void RegisterButtonEventHandler()  {
         // handle events clicking cancel button and save buttons
         cancelButton.setOnAction(event -> {
-            TodoApp.gotoMainScreen(this.stage);
+            TodoApp.setScene(this.stage,TodoApp.MAIN_FXML);
         });
 
         saveButton.setOnAction(event -> {
             update();
-            TodoApp.gotoLoginScreen(this.stage);
+            TodoApp.setScene(this.stage,TodoApp.LOGIN_FXML);
         });
     }
 
     private void update() {
         String eDbName = (dbNameTextField.getText().isEmpty()) ? null : dbNameTextField.getText();
         String eSgUri = (sgUrlTextField.getText().isEmpty()) ? null : sgUrlTextField.getText();
-        String eAttempts = (maxRetriesTextField.getText().isEmpty()) ? null : maxRetriesTextField.getText();
-        String eTimeout = (waitTimeTextField.getText().isEmpty()) ? null : waitTimeTextField.getText();
+        String eAttempts = (maxRetriesTextField.getText().isEmpty()) ? "0" : maxRetriesTextField.getText();
+        String eWaitTime = (waitTimeTextField.getText().isEmpty()) ? "0" : waitTimeTextField.getText();
+        TodoApp.CR_MODE mode = getCcrState();
+        boolean logging = loggingCheckbox.isSelected();
+        boolean login = loginCheckbox.isSelected();
 
-        final boolean updated = Config.get().update(
-            loggingCheckbox.isSelected(),
-            loginCheckbox.isSelected(),
-            getCcrState(),
-            eDbName,
-            eSgUri,
-            Integer.parseInt(eAttempts),
-            Integer.parseInt(eTimeout));
+        Config newConfig = Config.builder().logging(logging).login(login).dbName(eDbName).sgUri(eSgUri).attempts(Integer
+            .parseInt(eAttempts)).waitTime(Integer.parseInt(eWaitTime)).mode(mode).build();
 
-        if (updated) { DB.get().logout(); }
+        TodoApp.setConfig(newConfig);
+        DB.get().logout();
     }
 
     private TodoApp.CR_MODE getCcrState() {

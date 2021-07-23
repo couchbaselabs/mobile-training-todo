@@ -10,27 +10,81 @@ import com.couchbase.todo.TodoApp;
 
 
 public final class Config {
-    private static Config instance;
 
-    private boolean loggingEnabled = TodoApp.LOG_ENABLED;
-    private boolean loginRequired = TodoApp.LOGIN_REQUIRED;
+    private final boolean loggingEnabled;
+    private final boolean loginRequired;
+    private final int attempts;
+    private final int attemptsWaitTime;
 
-    private int attempts;
-    private int attemptsWaitTime;
+    private final String dbName;
+    private final String sgUri;
 
-    private String dbName = TodoApp.DB_DIR;
-    private String sgUri = TodoApp.SYNC_URL;
+    private final TodoApp.CR_MODE cr_mode;
 
-    private TodoApp.CR_MODE cr_mode;
+    public static class Builder {
+        private boolean loggingEnabled = TodoApp.LOG_ENABLED;
+        private boolean loginRequired = TodoApp.LOGIN_REQUIRED;
 
-    private Config() {
-        setLoggingEnabled(TodoApp.LOG_ENABLED);
-        setCcrState(TodoApp.CCR_LOCAL_WINS, TodoApp.CCR_REMOTE_WINS);
+        private String dbName = TodoApp.DB_DIR;
+        private String sgUri = TodoApp.SYNC_URL;
+
+        private int attempts;
+        private int attemptsWaitTime;
+
+        private TodoApp.CR_MODE cr_mode = TodoApp.SYNC_CR_MODE;
+
+        public Builder logging(boolean loggingEnabled) {
+            this.loggingEnabled = loggingEnabled;
+            return this;
+        }
+
+        public Builder login(boolean loginRequired) {
+            this.loginRequired = loginRequired;
+            return this;
+        }
+
+        public Builder dbName(String dbName) {
+            this.dbName = dbName;
+            return this;
+        }
+
+        public Builder sgUri(String sgUri) {
+            this.sgUri = sgUri;
+            return this;
+        }
+
+        public Builder attempts(int attempts) {
+            this.attempts = attempts;
+            return this;
+        }
+
+        public Builder waitTime(int attemptsWaitTime) {
+            this.attemptsWaitTime = attemptsWaitTime;
+            return this;
+        }
+
+        public Builder mode(TodoApp.CR_MODE cr_mode) {
+            this.cr_mode = cr_mode;
+            return this;
+        }
+
+        public Config build() {
+            return new Config(this);
+        }
     }
 
-    public static synchronized Config get() {
-        if (instance == null) { instance = new Config(); }
-        return instance;
+    public Config(Builder builder) {
+        this.loggingEnabled = builder.loggingEnabled;
+        this.loginRequired = builder.loginRequired;
+        this.dbName = builder.dbName;
+        this.sgUri = builder.sgUri;
+        this.attempts = builder.attempts;
+        this.attemptsWaitTime = builder.attemptsWaitTime;
+        this.cr_mode = builder.cr_mode;
+    }
+
+    public static Builder builder() {
+        return new Builder();
     }
 
     public boolean isLoggingEnabled() { return loggingEnabled; }
@@ -46,64 +100,4 @@ public final class Config {
     public int getAttempts() { return attempts; }
 
     public int getAttemptsWaitTime() { return attemptsWaitTime; }
-
-    public boolean update(
-        boolean loggingEnabled,
-        boolean loginRequired,
-        TodoApp.CR_MODE cr_mode,
-        String dbName,
-        String sgUri,
-        int attempts,
-        int attemptsWaitTime) {
-
-        boolean updated = false;
-
-        if (this.loggingEnabled != loggingEnabled) {
-            setLoggingEnabled(loggingEnabled);
-            updated = true;
-        }
-
-        if (this.loginRequired != loginRequired) {
-            this.loginRequired = loginRequired;
-            updated = true;
-        }
-
-        if (this.cr_mode != cr_mode) {
-            this.cr_mode = cr_mode;
-            updated = true;
-        }
-
-        if (!Objects.equals(this.dbName, dbName)) {
-            this.dbName = dbName;
-            updated = true;
-        }
-
-        if (!Objects.equals(this.sgUri, sgUri)) {
-            this.sgUri = sgUri;
-            updated = true;
-        }
-
-        if (this.attempts != attempts) {
-            this.attempts = attempts;
-            updated = true;
-        }
-
-        if (this.attemptsWaitTime != attemptsWaitTime) {
-            this.attemptsWaitTime = attemptsWaitTime;
-            updated = true;
-        }
-        return updated;
-    }
-
-    private void setLoggingEnabled(boolean enabled) {
-        final ConsoleLogger logger = Database.log.getConsole();
-        logger.setDomains(LogDomain.ALL_DOMAINS);
-        logger.setLevel((enabled) ? LogLevel.DEBUG : LogLevel.ERROR);
-        loggingEnabled = enabled;
-    }
-
-    private void setCcrState(boolean local, boolean remote) {
-        cr_mode = (local) ? TodoApp.CR_MODE.LOCAL : ((remote) ? TodoApp.CR_MODE.REMOTE : TodoApp.CR_MODE.DEFAULT);
-    }
-
 }

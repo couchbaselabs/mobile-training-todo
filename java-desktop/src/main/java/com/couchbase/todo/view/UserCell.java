@@ -20,15 +20,20 @@ public class UserCell extends ListCell<User> {
         void onUserCellDeleteMenuSelected(@NotNull User user);
     }
 
-    @FXML private AnchorPane pane;
+    @FXML
+    private AnchorPane pane;
 
-    @FXML private ImageView imageView;
+    @FXML
+    private ImageView imageView;
 
-    @FXML private Label nameLabel;
+    @FXML
+    private Label nameLabel;
 
-    @FXML private CheckBox completeCheckbox;
+    @FXML
+    private CheckBox completeCheckbox;
 
-    @FXML private Button moreButton;
+    @FXML
+    private Button moreButton;
 
     private FXMLLoader loader;
 

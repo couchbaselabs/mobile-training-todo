@@ -14,15 +14,20 @@ import org.jetbrains.annotations.NotNull;
 import com.couchbase.todo.TodoApp;
 import com.couchbase.todo.model.DB;
 
+
 public class LoginController implements Initializable {
 
-    @FXML private TextField userNameField;
+    @FXML
+    private TextField userNameField;
 
-    @FXML private PasswordField passwordField;
+    @FXML
+    private PasswordField passwordField;
 
-    @FXML private Button signInButton;
+    @FXML
+    private Button signInButton;
 
-    private @NotNull Stage stage;
+    @NotNull
+    private Stage stage;
 
     public LoginController(@NotNull Stage stage) {
         this.stage = stage;
@@ -39,9 +44,8 @@ public class LoginController implements Initializable {
             String password = passwordField.getText();
             if (username.trim().length() > 0 && password.trim().length() > 0) {
                 DB.get().login(username, password);
-                TodoApp.gotoMainScreen(this.stage);
+                TodoApp.setScene(this.stage,TodoApp.MAIN_FXML);
             }
         });
     }
-
 }

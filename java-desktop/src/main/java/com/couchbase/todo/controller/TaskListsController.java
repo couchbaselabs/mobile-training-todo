@@ -37,9 +37,11 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
     private static final String KEY_NAME = "name";
     private static final String KEY_OWNER = "owner";
 
-    @FXML private ListView<TaskList> listView;
+    @FXML
+    private ListView<TaskList> listView;
 
-    @FXML private Button createListButton;
+    @FXML
+    private Button createListButton;
 
     private @NotNull TaskListController taskListController;
 

@@ -65,17 +65,23 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
     static final String KEY_TASK_LIST_ID = "id";
     static final String KEY_TASK_LIST_OWNER = "owner";
 
-    @FXML private AnchorPane pane;
+    @FXML
+    private AnchorPane pane;
 
-    @FXML private Label listNameLabel;
+    @FXML
+    private Label listNameLabel;
 
-    @FXML private Button shareButton;
+    @FXML
+    private Button shareButton;
 
-    @FXML private TextField taskTextField;
+    @FXML
+    private TextField taskTextField;
 
-    @FXML private Button createTaskButton;
+    @FXML
+    private Button createTaskButton;
 
-    @FXML private ListView<Task> listView;
+    @FXML
+    private ListView<Task> listView;
 
     private final AtomicBoolean initialized = new AtomicBoolean();
 

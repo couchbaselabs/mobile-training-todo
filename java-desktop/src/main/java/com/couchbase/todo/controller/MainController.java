@@ -1,5 +1,6 @@
 package com.couchbase.todo.controller;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -27,7 +28,8 @@ public class MainController implements Initializable {
     @FXML
     private MenuItem configMenuItem;
 
-    private @NotNull Stage stage;
+    @NotNull
+    private Stage stage;
 
     public MainController(@NotNull Stage stage) {
         this.stage = stage;
@@ -39,10 +41,10 @@ public class MainController implements Initializable {
 
         logoutMenuItem.setOnAction(event -> {
             DB.get().logout();
-            TodoApp.gotoLoginScreen(this.stage);
+            TodoApp.setScene(this.stage, TodoApp.LOGIN_FXML);
         });
         configMenuItem.setOnAction(event -> {
-            TodoApp.gotoConfigScreen(this.stage);
+            TodoApp.setScene(this.stage, TodoApp.CONFIG_FXML);
         });
     }
 }
