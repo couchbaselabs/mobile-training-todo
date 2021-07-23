@@ -1,4 +1,4 @@
-<androidx.constraintlayout.widget.ConstraintLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -8,244 +8,250 @@
     tools:context="com.couchbase.todo.ConfigActivity"
     >
 
-    <TextView
-        android:id="@+id/warning"
-        android:layout_width="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/version"
-        android:layout_marginTop="@dimen/spacing_medium"
-        android:text="@string/warning"
-        android:textStyle="bold"
-        style="@style/TodoTheme.Text.Warn"
-        />
-
-    <TextView
-        android:id="@+id/version"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/warning"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/loggingEnabledLabel"
-        android:maxLines="4"
-        android:lines="4"
-        style="@style/TodoTheme.Text.Small"
-        />
-
-    <TextView
-        android:id="@+id/loggingEnabledLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/version"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/loginRequiredLabel"
-        android:layout_marginTop="@dimen/spacing_medium"
-        android:text="@string/verbose_logging_enabled"
-        style="@style/TodoTheme.Text"
-        />
-
-    <CheckBox
-        android:id="@+id/loggingEnabled"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBaseline_toBaselineOf="@+id/loggingEnabledLabel"
-        app:layout_constraintEnd_toEndOf="parent"
-        />
-
-    <TextView
-        android:id="@+id/loginRequiredLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/loggingEnabledLabel"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/ccrLabel"
-        android:layout_marginTop="@dimen/spacing_medium"
-        android:text="@string/login_required"
-        style="@style/TodoTheme.Text"
-        />
-
-    <CheckBox
-        android:id="@+id/loginRequired"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBaseline_toBaselineOf="@+id/loginRequiredLabel"
-        app:layout_constraintEnd_toEndOf="parent"
-        />
-
-    <TextView
-        android:id="@+id/ccrLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/loginRequiredLabel"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/ccrLocalLabel"
-        android:layout_marginTop="@dimen/spacing_medium"
-        android:text="@string/ccr_label"
-        style="@style/TodoTheme.Text"
-        />
-
-    <TextView
-        android:id="@+id/ccrLocalLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/ccrLabel"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/ccrRemoteLabel"
-        android:layout_marginTop="@dimen/spacing_medium"
-        android:layout_marginStart="@dimen/spacing_large"
-        android:text="@string/ccr_local"
-        style="@style/TodoTheme.Text"
-        />
-
-    <TextView
-        android:id="@+id/ccrRemoteLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/ccrLocalLabel"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/dbNameLayout"
-        android:layout_marginTop="@dimen/spacing_medium"
-        android:layout_marginStart="@dimen/spacing_large"
-        android:text="@string/ccr_remote"
-        style="@style/TodoTheme.Text"
-        />
-
-    <CheckBox
-        android:id="@+id/ccrLocalWins"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBaseline_toBaselineOf="@+id/ccrLocalLabel"
-        app:layout_constraintEnd_toEndOf="parent"
-        />
-
-    <CheckBox
-        android:id="@+id/ccrRemoteWins"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBaseline_toBaselineOf="@+id/ccrRemoteLabel"
-        app:layout_constraintEnd_toEndOf="parent"
-        />
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/dbNameLayout"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/ccrRemoteLabel"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/sgUrlLayout"
-        android:layout_marginTop="@dimen/spacing_medium"
         >
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/dbName"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/warning"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="@string/db_name"
-            android:inputType="text"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/version"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:text="@string/warning"
+            android:textStyle="bold"
+            style="@style/TodoTheme.Text.Warn"
+            />
+
+        <TextView
+            android:id="@+id/version"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/warning"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/loggingEnabledLabel"
+            android:maxLines="4"
+            android:lines="4"
+            style="@style/TodoTheme.Text.Small"
+            />
+
+        <TextView
+            android:id="@+id/loggingEnabledLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/version"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/loginRequiredLabel"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:text="@string/verbose_logging_enabled"
             style="@style/TodoTheme.Text"
             />
-    </com.google.android.material.textfield.TextInputLayout>
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/sgUrlLayout"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/dbNameLayout"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="@dimen/spacing_medium"
-        >
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/sgUri"
-            android:layout_width="match_parent"
+        <CheckBox
+            android:id="@+id/loggingEnabled"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="@string/sg_url"
-            android:inputType="text"
+            app:layout_constraintBaseline_toBaselineOf="@+id/loggingEnabledLabel"
+            app:layout_constraintEnd_toEndOf="parent"
+            />
+
+        <TextView
+            android:id="@+id/loginRequiredLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/loggingEnabledLabel"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/ccrLabel"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:text="@string/login_required"
             style="@style/TodoTheme.Text"
             />
-    </com.google.android.material.textfield.TextInputLayout>
 
-    <TextView
-        android:id="@+id/instructions"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/sgUrlLayout"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:text="@string/instructions"
-        style="@style/TodoTheme.Text.Small"
-        />
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/retriesLayout"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/instructions"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="@dimen/spacing_medium"
-        >
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/retries"
-            android:layout_width="match_parent"
+        <CheckBox
+            android:id="@+id/loginRequired"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="@string/max_retries"
-            android:inputType="text"
+            app:layout_constraintBaseline_toBaselineOf="@+id/loginRequiredLabel"
+            app:layout_constraintEnd_toEndOf="parent"
+            />
+
+        <TextView
+            android:id="@+id/ccrLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/loginRequiredLabel"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/ccrLocalLabel"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:text="@string/ccr_label"
             style="@style/TodoTheme.Text"
             />
-    </com.google.android.material.textfield.TextInputLayout>
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/timeoutLayout"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/retriesLayout"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="@dimen/spacing_medium"
-        >
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/timeout"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/ccrLocalLabel"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="@string/max_timeout"
-            android:inputType="text"
+            app:layout_constraintTop_toBottomOf="@+id/ccrLabel"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/ccrRemoteLabel"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:layout_marginStart="@dimen/spacing_large"
+            android:text="@string/ccr_local"
             style="@style/TodoTheme.Text"
             />
-    </com.google.android.material.textfield.TextInputLayout>
 
-    <Button
-        android:id="@+id/btnCancel"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/cancel"
-        app:layout_constraintTop_toBottomOf="@+id/timeoutLayout"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/btnUpdate"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        style="?android:attr/borderlessButtonStyle"
-        android:textColor="@color/colorAccent"
-        />
+        <TextView
+            android:id="@+id/ccrRemoteLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/ccrLocalLabel"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/dbNameLayout"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:layout_marginStart="@dimen/spacing_large"
+            android:text="@string/ccr_remote"
+            style="@style/TodoTheme.Text"
+            />
 
-    <Button
-        android:id="@+id/btnUpdate"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/update"
-        app:layout_constraintTop_toBottomOf="@+id/timeoutLayout"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        style="?android:attr/borderlessButtonStyle"
-        android:textColor="@color/colorAccent"
-        />
+        <CheckBox
+            android:id="@+id/ccrLocalWins"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBaseline_toBaselineOf="@+id/ccrLocalLabel"
+            app:layout_constraintEnd_toEndOf="parent"
+            />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <CheckBox
+            android:id="@+id/ccrRemoteWins"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBaseline_toBaselineOf="@+id/ccrRemoteLabel"
+            app:layout_constraintEnd_toEndOf="parent"
+            />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/dbNameLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/ccrRemoteLabel"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/sgUrlLayout"
+            android:layout_marginTop="@dimen/spacing_medium"
+            >
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/dbName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/db_name"
+                android:inputType="text"
+                style="@style/TodoTheme.Text"
+                />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/sgUrlLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/dbNameLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="@dimen/spacing_medium"
+            >
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/sgUri"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/sg_url"
+                android:inputType="text"
+                style="@style/TodoTheme.Text"
+                />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/instructions"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/sgUrlLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:text="@string/instructions"
+            style="@style/TodoTheme.Text.Small"
+            />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/retriesLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/instructions"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="@dimen/spacing_medium"
+            >
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/retries"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/max_retries"
+                android:inputType="text"
+                style="@style/TodoTheme.Text"
+                />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/timeoutLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/retriesLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="@dimen/spacing_medium"
+            >
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/timeout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/max_timeout"
+                android:inputType="text"
+                style="@style/TodoTheme.Text"
+                />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/btnCancel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/cancel"
+            app:layout_constraintTop_toBottomOf="@+id/timeoutLayout"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btnUpdate"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="8dp"
+            style="?android:attr/borderlessButtonStyle"
+            android:textColor="@color/colorAccent"
+            />
+
+        <Button
+            android:id="@+id/btnUpdate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/update"
+            app:layout_constraintTop_toBottomOf="@+id/timeoutLayout"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="8dp"
+            style="?android:attr/borderlessButtonStyle"
+            android:textColor="@color/colorAccent"
+            />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>
