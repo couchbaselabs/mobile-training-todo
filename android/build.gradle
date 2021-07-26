@@ -3,7 +3,7 @@
 buildscript {
     ext {
         // couchbase version
-        COUCHBASE_LITE_VERSION = "3.0.0-149"
+        COUCHBASE_LITE_VERSION = "3.0.0-1"
 
         // application parameters
         LOGGING_ENABLED = true
