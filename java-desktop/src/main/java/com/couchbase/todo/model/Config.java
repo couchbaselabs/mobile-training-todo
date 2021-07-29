@@ -1,37 +1,18 @@
 package com.couchbase.todo.model;
 
-import java.util.Objects;
-
-import com.couchbase.lite.ConsoleLogger;
-import com.couchbase.lite.Database;
-import com.couchbase.lite.LogDomain;
-import com.couchbase.lite.LogLevel;
 import com.couchbase.todo.TodoApp;
 
 
 public final class Config {
 
-    private final boolean loggingEnabled;
-    private final boolean loginRequired;
-    private final int attempts;
-    private final int attemptsWaitTime;
-
-    private final String dbName;
-    private final String sgUri;
-
-    private final TodoApp.CR_MODE cr_mode;
-
     public static class Builder {
         private boolean loggingEnabled = TodoApp.LOG_ENABLED;
         private boolean loginRequired = TodoApp.LOGIN_REQUIRED;
-
         private String dbName = TodoApp.DB_DIR;
-        private String sgUri = TodoApp.SYNC_URL;
-
+        private String sgwUri = TodoApp.SYNC_URL;
+        private TodoApp.CR_MODE cr_mode = TodoApp.SYNC_CR_MODE;
         private int attempts;
         private int attemptsWaitTime;
-
-        private TodoApp.CR_MODE cr_mode = TodoApp.SYNC_CR_MODE;
 
         public Builder logging(boolean loggingEnabled) {
             this.loggingEnabled = loggingEnabled;
@@ -48,8 +29,8 @@ public final class Config {
             return this;
         }
 
-        public Builder sgUri(String sgUri) {
-            this.sgUri = sgUri;
+        public Builder sgwUri(String sgwUri) {
+            this.sgwUri = sgwUri;
             return this;
         }
 
@@ -73,29 +54,35 @@ public final class Config {
         }
     }
 
-    public Config(Builder builder) {
+    public static Builder builder() { return new Builder(); }
+
+    private final boolean loggingEnabled;
+    private final boolean loginRequired;
+    private final int attempts;
+    private final int attemptsWaitTime;
+    private final String dbName;
+    private final String sgwUri;
+    private final TodoApp.CR_MODE cr_mode;
+
+    private Config(Builder builder) {
         this.loggingEnabled = builder.loggingEnabled;
         this.loginRequired = builder.loginRequired;
         this.dbName = builder.dbName;
-        this.sgUri = builder.sgUri;
+        this.sgwUri = builder.sgwUri;
         this.attempts = builder.attempts;
         this.attemptsWaitTime = builder.attemptsWaitTime;
         this.cr_mode = builder.cr_mode;
     }
 
-    public static Builder builder() {
-        return new Builder();
-    }
-
     public boolean isLoggingEnabled() { return loggingEnabled; }
 
-    public boolean isLoginRequired() { return loginRequired || dbName == null || sgUri != null; }
+    public boolean isLoginRequired() { return loginRequired || dbName == null || sgwUri != null; }
 
     public TodoApp.CR_MODE getCr_mode() { return cr_mode; }
 
     public String getDbName() { return dbName; }
 
-    public String getSgUri() { return sgUri; }
+    public String getSgwUri() { return sgwUri; }
 
     public int getAttempts() { return attempts; }
 

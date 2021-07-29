@@ -247,35 +247,24 @@ public class DB {
         final URI sgUri = getReplicationUri();
         if (sgUri == null) { return; }
 
-        final int attempts = TodoApp.getConfig().getAttempts();
-        final int waitTime = TodoApp.getConfig().getAttemptsWaitTime();
-
         final Endpoint endpoint = new URLEndpoint(sgUri);
 
         final ReplicatorConfiguration config = new ReplicatorConfiguration(db, endpoint)
             .setReplicatorType(ReplicatorConfiguration.ReplicatorType.PUSH_AND_PULL)
             .setContinuous(true)
-            .setMaxAttempts(attempts)
-            .setMaxAttemptWaitTime(waitTime);
+            .setMaxAttempts(TodoApp.getConfig().getAttempts())
+            .setMaxAttemptWaitTime(TodoApp.getConfig().getAttemptsWaitTime());
 
         TodoApp.CR_MODE crmode = TodoApp.SYNC_CR_MODE;
-        if (crmode == TodoApp.CR_MODE.DEFAULT) {
-            config.setConflictResolver(null);
-        }
+        if (crmode == TodoApp.CR_MODE.DEFAULT) { config.setConflictResolver(null); }
         else {
             config.setConflictResolver(conflict -> {
                 Document local = conflict.getLocalDocument();
                 Document remote = conflict.getRemoteDocument();
                 if (local == null || remote == null) { return null; }
-                if (crmode == TodoApp.CR_MODE.LOCAL) {
-                    return local;
-                }
-                else if (crmode == TodoApp.CR_MODE.REMOTE) {
-                    return remote;
-                }
-                else {
-                    return null;
-                }
+                if (crmode == TodoApp.CR_MODE.LOCAL) { return local; }
+                else if (crmode == TodoApp.CR_MODE.REMOTE) { return remote; }
+                else { return null; }
             });
         }
 

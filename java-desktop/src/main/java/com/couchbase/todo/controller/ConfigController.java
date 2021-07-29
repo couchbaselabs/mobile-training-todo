@@ -1,12 +1,8 @@
 package com.couchbase.todo.controller;
 
-import java.io.IOException;
 import java.net.URL;
-import java.util.Objects;
 import java.util.ResourceBundle;
 
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -63,20 +59,20 @@ public class ConfigController implements Initializable {
         setCcrState(TodoApp.getConfig().getCr_mode());
 
         dbNameTextField.setText(TodoApp.getConfig().getDbName());
-        sgUrlTextField.setText(TodoApp.getConfig().getSgUri());
+        sgUrlTextField.setText(TodoApp.getConfig().getSgwUri());
         maxRetriesTextField.setText(String.valueOf(TodoApp.getConfig().getAttempts()));
         waitTimeTextField.setText(String.valueOf(TodoApp.getConfig().getAttemptsWaitTime()));
     }
 
-    private void RegisterButtonEventHandler()  {
+    private void RegisterButtonEventHandler() {
         // handle events clicking cancel button and save buttons
         cancelButton.setOnAction(event -> {
-            TodoApp.setScene(this.stage,TodoApp.MAIN_FXML);
+            TodoApp.goToPage(this.stage, TodoApp.MAIN_FXML);
         });
 
         saveButton.setOnAction(event -> {
             update();
-            TodoApp.setScene(this.stage,TodoApp.LOGIN_FXML);
+            TodoApp.goToPage(this.stage, TodoApp.LOGIN_FXML);
         });
     }
 
@@ -89,8 +85,8 @@ public class ConfigController implements Initializable {
         boolean logging = loggingCheckbox.isSelected();
         boolean login = loginCheckbox.isSelected();
 
-        Config newConfig = Config.builder().logging(logging).login(login).dbName(eDbName).sgUri(eSgUri).attempts(Integer
-            .parseInt(eAttempts)).waitTime(Integer.parseInt(eWaitTime)).mode(mode).build();
+        Config newConfig = Config.builder().logging(logging).login(login).dbName(eDbName).sgwUri(eSgUri)
+            .attempts(Integer.parseInt(eAttempts)).waitTime(Integer.parseInt(eWaitTime)).mode(mode).build();
 
         TodoApp.setConfig(newConfig);
         DB.get().logout();

@@ -1,11 +1,11 @@
 package com.couchbase.todo;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.couchbase.todo.controller.ConfigController;
 
 import javafx.application.Application;
-import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -18,10 +18,6 @@ import com.couchbase.todo.model.DB;
 
 
 public class TodoApp extends Application {
-    public static volatile Config config;
-
-    public enum CR_MODE {DEFAULT, LOCAL, REMOTE}
-
     public static final String DB_DIR = "db";
     public static final boolean SYNC_ENABLED = true;
     public static final String SYNC_URL = "ws://127.0.0.1:4984/todo";
@@ -32,10 +28,21 @@ public class TodoApp extends Application {
     public static final String MAIN_FXML = "/scene/Main.fxml";
     public static final String CONFIG_FXML = "/scene/Config.fxml";
 
+    public static Config config;
+    public static AtomicReference<Config> aConfig = new AtomicReference<>();
+
+    public enum CR_MODE {DEFAULT, LOCAL, REMOTE}
+
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void init() throws Exception {
+        super.init();
+        config = Config.builder().build();
+    }
+
+    @Override
+    public void start(Stage primaryStage) {
         primaryStage.setTitle("Todo");
-        setScene(primaryStage, LOGIN_FXML);
+        goToPage(primaryStage, LOGIN_FXML);
         primaryStage.show();
     }
 
@@ -45,34 +52,37 @@ public class TodoApp extends Application {
         super.stop();
     }
 
-    public static void setScene(Stage stage, String fxmlFile) {
+    public static void goToPage(Stage stage, String fxmlFile) {
         FXMLLoader loader = new FXMLLoader(TodoApp.class.getResource(fxmlFile));
-
-        if (fxmlFile.equals(MAIN_FXML)) {
-            loader.setController(new MainController(stage));
+        switch (fxmlFile) {
+            case MAIN_FXML:
+                loader.setController(new MainController(stage));
+                break;
+            case LOGIN_FXML:
+                loader.setController(new LoginController(stage));
+                break;
+            case CONFIG_FXML:
+                loader.setController(new ConfigController(stage));
+                break;
         }
-        else if (fxmlFile.equals(LOGIN_FXML)) {
-            loader.setController(new LoginController(stage));
-        }
-        else if (fxmlFile.equals(CONFIG_FXML)) {
-            loader.setController(new ConfigController(stage));
-        }
-
         Parent root;
         try { root = loader.load(); }
         catch (IOException e) { throw new RuntimeException("IOException when set scene to : " + fxmlFile, e); }
-
         Scene scene = new Scene(root);
         stage.setScene(scene);
     }
 
-    public static synchronized Config getConfig() {
-        if (config == null) { config = new Config(Config.builder()); }
-        return config;
+    public static Config getConfig() {
+        config = aConfig.get();
+        if (config != null) { return config; }
+        config = new Config.Builder().build();
+        aConfig.compareAndSet(null, config);
+        return aConfig.get();
     }
 
-    public static synchronized void setConfig(Config newConfig) {
-        if (newConfig != null) { config = newConfig; }
+    public static void setConfig(Config newConfig) {
+        if (newConfig == null) { throw new NullPointerException("Parameter cannot be null"); }
+        aConfig.compareAndSet(config, newConfig);
     }
 
     public static void main(String[] args) { launch(args); }
