@@ -6,12 +6,14 @@ import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import org.jetbrains.annotations.NotNull;
 
 import com.couchbase.todo.TodoApp;
+import com.couchbase.todo.model.Config;
 import com.couchbase.todo.model.DB;
 
 
@@ -26,8 +28,11 @@ public class LoginController implements Initializable {
     @FXML
     private Button signInButton;
 
+    @FXML
+    private CheckBox loggingCheckbox;
+
     @NotNull
-    private Stage stage;
+    private final Stage stage;
 
     public LoginController(@NotNull Stage stage) {
         this.stage = stage;
@@ -36,6 +41,9 @@ public class LoginController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         registerEventHandlers();
+        //this gives npe
+        //final Config config = TodoApp.getTodoApp().getConfig();
+        //loggingCheckbox.setSelected(config.isLoggingEnabled());
     }
 
     private void registerEventHandlers() {

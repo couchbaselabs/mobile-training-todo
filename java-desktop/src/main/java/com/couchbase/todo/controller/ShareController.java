@@ -2,8 +2,6 @@ package com.couchbase.todo.controller;
 
 import java.net.URL;
 import java.util.ResourceBundle;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -14,14 +12,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import org.jetbrains.annotations.NotNull;
 
-import com.couchbase.lite.Expression;
-import com.couchbase.lite.Meta;
-import com.couchbase.lite.MutableDictionary;
-import com.couchbase.lite.MutableDocument;
-import com.couchbase.lite.Query;
-import com.couchbase.lite.QueryBuilder;
-import com.couchbase.lite.Result;
-import com.couchbase.lite.SelectResult;
+import com.couchbase.lite.*;
 import com.couchbase.todo.model.DB;
 import com.couchbase.todo.model.service.DeleteDocService;
 import com.couchbase.todo.model.service.SaveDocService;
@@ -49,10 +40,8 @@ public class ShareController implements Initializable, UserCell.UserCellListener
     @FXML
     private ListView<User> listView;
 
-    private final AtomicBoolean initialized = new AtomicBoolean();
-
     @NotNull
-    private TaskList taskList;
+    private final TaskList taskList;
 
     @NotNull
     private Query query;
@@ -69,9 +58,7 @@ public class ShareController implements Initializable, UserCell.UserCellListener
         getUserList();
     }
 
-    public void close() {
-        DB.get().removeChangeListeners(query);
-    }
+    public void close() { DB.get().removeChangeListeners(query); }
 
     private void registerEventHandlers() {
         addUserButton.setOnAction(event -> {
@@ -92,6 +79,7 @@ public class ShareController implements Initializable, UserCell.UserCellListener
 
         DB.get().addChangeListener(query, change -> {
             ObservableList<User> users = FXCollections.observableArrayList();
+            assert change.getResults() != null;
             for (Result r : change.getResults()) {
                 User user = new User(
                     r.getString(0),
@@ -99,9 +87,7 @@ public class ShareController implements Initializable, UserCell.UserCellListener
                 users.add(user);
             }
 
-            Platform.runLater(() -> {
-                listView.setItems(users);
-            });
+            Platform.runLater(() -> listView.setItems(users));
         });
     }
 

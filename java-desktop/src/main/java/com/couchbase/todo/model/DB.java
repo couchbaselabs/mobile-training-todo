@@ -12,7 +12,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.couchbase.lite.AbstractReplicator;
 import com.couchbase.lite.BasicAuthenticator;
 import com.couchbase.lite.CBLError;
 import com.couchbase.lite.CouchbaseLite;
@@ -41,7 +40,7 @@ public class DB {
 
     private static synchronized void newInstance() { instance = new DB(); }
 
-    private ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public static synchronized DB get() {
         if (instance == null) { newInstance(); }
@@ -203,20 +202,13 @@ public class DB {
 
     private final Map<Query, List<ListenerToken>> changeListeners = new HashMap<>();
 
-    @NotNull
-    public ListenerToken addChangeListener(@NotNull Query query, @NotNull QueryChangeListener listener) {
+    public void addChangeListener(@NotNull Query query, @NotNull QueryChangeListener listener) {
         getAndVerifyDb();
 
-        List<ListenerToken> listeners = changeListeners.get(query);
-        if (listeners == null) {
-            listeners = new ArrayList<>();
-            changeListeners.put(query, listeners);
-        }
+        List<ListenerToken> listeners = changeListeners.computeIfAbsent(query, k -> new ArrayList<>());
 
         final ListenerToken token = query.addChangeListener(listener);
         listeners.add(token);
-
-        return token;
     }
 
     public void removeChangeListeners(@NotNull Query query) {
@@ -249,11 +241,13 @@ public class DB {
 
         final Endpoint endpoint = new URLEndpoint(sgUri);
 
+        final Config appConfig = TodoApp.getTodoApp().getConfig();
+
         final ReplicatorConfiguration config = new ReplicatorConfiguration(db, endpoint)
             .setReplicatorType(ReplicatorConfiguration.ReplicatorType.PUSH_AND_PULL)
             .setContinuous(true)
-            .setMaxAttempts(TodoApp.getConfig().getAttempts())
-            .setMaxAttemptWaitTime(TodoApp.getConfig().getAttemptsWaitTime());
+            .setMaxAttempts(appConfig.getAttempts())
+            .setMaxAttemptWaitTime(appConfig.getAttemptsWaitTime());
 
         TodoApp.CR_MODE crmode = TodoApp.SYNC_CR_MODE;
         if (crmode == TodoApp.CR_MODE.DEFAULT) { config.setConflictResolver(null); }
@@ -264,7 +258,7 @@ public class DB {
                 if (local == null || remote == null) { return null; }
                 if (crmode == TodoApp.CR_MODE.LOCAL) { return local; }
                 else if (crmode == TodoApp.CR_MODE.REMOTE) { return remote; }
-                else { return null; }
+                return null;
             });
         }
 

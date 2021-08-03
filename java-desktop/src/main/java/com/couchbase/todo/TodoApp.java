@@ -1,7 +1,6 @@
 package com.couchbase.todo;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicReference;
 
 import com.couchbase.todo.controller.ConfigController;
 
@@ -28,28 +27,13 @@ public class TodoApp extends Application {
     public static final String MAIN_FXML = "/scene/Main.fxml";
     public static final String CONFIG_FXML = "/scene/Config.fxml";
 
-    public static Config config;
-    public static AtomicReference<Config> aConfig = new AtomicReference<>();
+    public static volatile TodoApp todoApp;
+    private Config config = Config.builder().build();
 
     public enum CR_MODE {DEFAULT, LOCAL, REMOTE}
 
-    @Override
-    public void init() throws Exception {
-        super.init();
-        config = Config.builder().build();
-    }
-
-    @Override
-    public void start(Stage primaryStage) {
-        primaryStage.setTitle("Todo");
-        goToPage(primaryStage, LOGIN_FXML);
-        primaryStage.show();
-    }
-
-    @Override
-    public void stop() throws Exception {
-        DB.get().shutdown();
-        super.stop();
+    public static TodoApp getTodoApp() {
+        return todoApp;
     }
 
     public static void goToPage(Stage stage, String fxmlFile) {
@@ -72,17 +56,27 @@ public class TodoApp extends Application {
         stage.setScene(scene);
     }
 
-    public static Config getConfig() {
-        config = aConfig.get();
-        if (config != null) { return config; }
-        config = new Config.Builder().build();
-        aConfig.compareAndSet(null, config);
-        return aConfig.get();
+    @Override
+    public void start(Stage primaryStage) {
+        primaryStage.setTitle("Todo");
+        goToPage(primaryStage, LOGIN_FXML);
+        primaryStage.show();
+        todoApp = this;
     }
 
-    public static void setConfig(Config newConfig) {
-        if (newConfig == null) { throw new NullPointerException("Parameter cannot be null"); }
-        aConfig.compareAndSet(config, newConfig);
+    @Override
+    public void stop() throws Exception {
+        DB.get().shutdown();
+        super.stop();
+        todoApp = null;
+    }
+
+    public Config getConfig() {
+        return config;
+    }
+
+    public void setConfig(Config newConfig) {
+        config = newConfig;
     }
 
     public static void main(String[] args) { launch(args); }

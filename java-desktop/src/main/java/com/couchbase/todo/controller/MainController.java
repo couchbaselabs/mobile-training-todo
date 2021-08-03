@@ -28,7 +28,7 @@ public class MainController implements Initializable {
     private MenuItem configMenuItem;
 
     @NotNull
-    private Stage stage;
+    private final Stage stage;
 
     public MainController(@NotNull Stage stage) {
         this.stage = stage;
@@ -42,8 +42,6 @@ public class MainController implements Initializable {
             DB.get().logout();
             TodoApp.goToPage(this.stage, TodoApp.LOGIN_FXML);
         });
-        configMenuItem.setOnAction(event -> {
-            TodoApp.goToPage(this.stage, TodoApp.CONFIG_FXML);
-        });
+        configMenuItem.setOnAction(event -> TodoApp.goToPage(this.stage, TodoApp.CONFIG_FXML));
     }
 }

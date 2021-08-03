@@ -18,7 +18,7 @@ import com.couchbase.todo.model.DB;
 
 
 public class ConfigController implements Initializable {
-    private @NotNull Stage stage;
+    private @NotNull final Stage stage;
 
     @FXML
     private CheckBox loggingCheckbox;
@@ -51,24 +51,23 @@ public class ConfigController implements Initializable {
         //set initial values of checkbox and text field
         RegisterButtonEventHandler();
 
+        final Config config = TodoApp.getTodoApp().getConfig();
         cblVersionTextField.setText(CBLVersion.getVersionInfo());
 
-        loggingCheckbox.setSelected(TodoApp.getConfig().isLoggingEnabled());
-        loginCheckbox.setSelected(TodoApp.getConfig().isLoginRequired());
+        loggingCheckbox.setSelected(config.isLoggingEnabled());
+        loginCheckbox.setSelected(config.isLoginRequired());
 
-        setCcrState(TodoApp.getConfig().getCr_mode());
+        setCcrState(config.getCrMode());
 
-        dbNameTextField.setText(TodoApp.getConfig().getDbName());
-        sgUrlTextField.setText(TodoApp.getConfig().getSgwUri());
-        maxRetriesTextField.setText(String.valueOf(TodoApp.getConfig().getAttempts()));
-        waitTimeTextField.setText(String.valueOf(TodoApp.getConfig().getAttemptsWaitTime()));
+        dbNameTextField.setText(config.getDbName());
+        sgUrlTextField.setText(config.getSgwUri());
+        maxRetriesTextField.setText(String.valueOf(config.getAttempts()));
+        waitTimeTextField.setText(String.valueOf(config.getAttemptsWaitTime()));
     }
 
     private void RegisterButtonEventHandler() {
         // handle events clicking cancel button and save buttons
-        cancelButton.setOnAction(event -> {
-            TodoApp.goToPage(this.stage, TodoApp.MAIN_FXML);
-        });
+        cancelButton.setOnAction(event -> TodoApp.goToPage(this.stage, TodoApp.MAIN_FXML));
 
         saveButton.setOnAction(event -> {
             update();
@@ -88,7 +87,7 @@ public class ConfigController implements Initializable {
         Config newConfig = Config.builder().logging(logging).login(login).dbName(eDbName).sgwUri(eSgUri)
             .attempts(Integer.parseInt(eAttempts)).waitTime(Integer.parseInt(eWaitTime)).mode(mode).build();
 
-        TodoApp.setConfig(newConfig);
+        TodoApp.getTodoApp().setConfig(newConfig);
         DB.get().logout();
     }
 
