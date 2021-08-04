@@ -39,12 +39,7 @@ public class LoginController implements Initializable {
     }
 
     @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        registerEventHandlers();
-        //this gives npe
-        //final Config config = TodoApp.getTodoApp().getConfig();
-        //loggingCheckbox.setSelected(config.isLoggingEnabled());
-    }
+    public void initialize(URL location, ResourceBundle resources) { registerEventHandlers(); }
 
     private void registerEventHandlers() {
         signInButton.setOnAction(event -> {
@@ -52,7 +47,7 @@ public class LoginController implements Initializable {
             String password = passwordField.getText();
             if (username.trim().length() > 0 && password.trim().length() > 0) {
                 DB.get().login(username, password);
-                TodoApp.goToPage(this.stage,TodoApp.MAIN_FXML);
+                TodoApp.goToPage(this.stage, TodoApp.MAIN_FXML);
             }
         });
     }

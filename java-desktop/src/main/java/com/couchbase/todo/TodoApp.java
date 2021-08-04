@@ -17,20 +17,23 @@ import com.couchbase.todo.model.DB;
 
 
 public class TodoApp extends Application {
-    public static final String DB_DIR = "db";
+    public enum CR_MODE {DEFAULT, LOCAL, REMOTE}
+
     public static final boolean SYNC_ENABLED = true;
-    public static final String SYNC_URL = "ws://127.0.0.1:4984/todo";
-    public static final CR_MODE SYNC_CR_MODE = CR_MODE.DEFAULT;
     public static final boolean LOG_ENABLED = true;
     public static final boolean LOGIN_REQUIRED = true;
+
+    public static final CR_MODE SYNC_CR_MODE = CR_MODE.DEFAULT;
+
+    public static final String DB_DIR = "db";
+    public static final String SYNC_URL = "ws://127.0.0.1:4984/todo";
     public static final String LOGIN_FXML = "/scene/Login.fxml";
     public static final String MAIN_FXML = "/scene/Main.fxml";
     public static final String CONFIG_FXML = "/scene/Config.fxml";
 
     public static volatile TodoApp todoApp;
-    private Config config = Config.builder().build();
 
-    public enum CR_MODE {DEFAULT, LOCAL, REMOTE}
+    private Config config = Config.builder().build();
 
     public static TodoApp getTodoApp() {
         return todoApp;
@@ -58,10 +61,10 @@ public class TodoApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        todoApp = this;
         primaryStage.setTitle("Todo");
         goToPage(primaryStage, LOGIN_FXML);
         primaryStage.show();
-        todoApp = this;
     }
 
     @Override

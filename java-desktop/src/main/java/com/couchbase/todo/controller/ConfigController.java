@@ -49,7 +49,7 @@ public class ConfigController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         //set initial values of checkbox and text field
-        RegisterButtonEventHandler();
+        registerButtonEventHandler();
 
         final Config config = TodoApp.getTodoApp().getConfig();
         cblVersionTextField.setText(CBLVersion.getVersionInfo());
@@ -65,7 +65,7 @@ public class ConfigController implements Initializable {
         waitTimeTextField.setText(String.valueOf(config.getAttemptsWaitTime()));
     }
 
-    private void RegisterButtonEventHandler() {
+    private void registerButtonEventHandler() {
         // handle events clicking cancel button and save buttons
         cancelButton.setOnAction(event -> TodoApp.goToPage(this.stage, TodoApp.MAIN_FXML));
 
