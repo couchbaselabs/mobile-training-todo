@@ -37,9 +37,11 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
     private static final String KEY_NAME = "name";
     private static final String KEY_OWNER = "owner";
 
-    @FXML private ListView<TaskList> listView;
+    @FXML
+    private ListView<TaskList> listView;
 
-    @FXML private Button createListButton;
+    @FXML
+    private Button createListButton;
 
     private @NotNull TaskListController taskListController;
 
@@ -48,10 +50,7 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
         registerEventHandlers();
 
         listView.setItems(FXCollections.observableArrayList());
-        listView.setCellFactory(listView -> {
-            TaskListCell cell = new TaskListCell(this);
-            return cell;
-        });
+        listView.setCellFactory(listView -> new TaskListCell(this));
 
         Query query = QueryBuilder
             .select(
@@ -64,6 +63,7 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
 
         DB.get().addChangeListener(query, change -> {
             ObservableList<TaskList> taskLists = FXCollections.observableArrayList();
+            assert change.getResults() != null;
             for (Result r : change.getResults()) {
                 TaskList list = new TaskList(
                     r.getString(0),
@@ -72,16 +72,12 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
                 taskLists.add(list);
             }
 
-            Platform.runLater(() -> {
-                listView.setItems(taskLists);
-            });
+            Platform.runLater(() -> listView.setItems(taskLists));
         });
     }
 
     private void registerEventHandlers() {
-        createListButton.setOnAction(event -> {
-            createList();
-        });
+        createListButton.setOnAction(event -> createList());
 
         listView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) { selectList(newValue); }

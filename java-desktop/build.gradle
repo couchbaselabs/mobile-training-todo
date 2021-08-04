@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'application'
-    id 'org.openjfx.javafxplugin' version '0.0.8'
+    id 'org.openjfx.javafxplugin' version '0.0.10'
 }
 
 ext {
@@ -11,7 +11,7 @@ ext {
 group 'com.couchbase'
 version '1.0'
 
-sourceCompatibility = 1.8
+sourceCompatibility = 1.9
 
 repositories {
     maven { url "http://proget.build.couchbase.com/maven2/internalmaven" }
@@ -19,7 +19,7 @@ repositories {
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'junit', name: 'junit', version: '4.13.1'
 
     implementation "com.couchbase.lite:couchbase-lite-java-ee-macos:${COUCHBASE_LITE_VERSION}"
 
@@ -27,7 +27,7 @@ dependencies {
 }
 
 javafx {
-    version = "13"
+    version = "16"
     modules = [ 'javafx.controls', 'javafx.fxml' ]
 }
 

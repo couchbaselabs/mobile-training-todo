@@ -12,7 +12,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.couchbase.lite.AbstractReplicator;
 import com.couchbase.lite.BasicAuthenticator;
 import com.couchbase.lite.CBLError;
 import com.couchbase.lite.CouchbaseLite;
@@ -34,13 +33,14 @@ import com.couchbase.lite.ReplicatorStatus;
 import com.couchbase.lite.URLEndpoint;
 import com.couchbase.todo.TodoApp;
 
+
 public class DB {
 
     private static volatile DB instance;
 
     private static synchronized void newInstance() { instance = new DB(); }
 
-    private ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public static synchronized DB get() {
         if (instance == null) { newInstance(); }
@@ -202,34 +202,27 @@ public class DB {
 
     private final Map<Query, List<ListenerToken>> changeListeners = new HashMap<>();
 
-    @NotNull
-    public ListenerToken addChangeListener(@NotNull Query query, @NotNull QueryChangeListener listener) {
+    public void addChangeListener(@NotNull Query query, @NotNull QueryChangeListener listener) {
         getAndVerifyDb();
 
-        List<ListenerToken> listeners = changeListeners.get(query);
-        if (listeners == null) {
-            listeners = new ArrayList<>();
-            changeListeners.put(query, listeners);
-        }
+        List<ListenerToken> listeners = changeListeners.computeIfAbsent(query, k -> new ArrayList<>());
 
         final ListenerToken token = query.addChangeListener(listener);
         listeners.add(token);
-
-        return token;
     }
 
     public void removeChangeListeners(@NotNull Query query) {
         final List<ListenerToken> listeners = changeListeners.get(query);
         if (listeners == null) { return; }
 
-        for (ListenerToken token : listeners) { query.removeChangeListener(token); }
+        for (ListenerToken token: listeners) { query.removeChangeListener(token); }
 
         changeListeners.remove(query);
     }
 
     public void removeAllChangeListeners() {
         List<Query> queries = new ArrayList<>(changeListeners.keySet());
-        for (Query query : queries) {
+        for (Query query: queries) {
             removeChangeListeners(query);
         }
     }
@@ -248,25 +241,24 @@ public class DB {
 
         final Endpoint endpoint = new URLEndpoint(sgUri);
 
+        final Config appConfig = TodoApp.getTodoApp().getConfig();
+
         final ReplicatorConfiguration config = new ReplicatorConfiguration(db, endpoint)
             .setReplicatorType(ReplicatorConfiguration.ReplicatorType.PUSH_AND_PULL)
-            .setContinuous(true);
+            .setContinuous(true)
+            .setMaxAttempts(appConfig.getAttempts())
+            .setMaxAttemptWaitTime(appConfig.getAttemptsWaitTime());
 
         TodoApp.CR_MODE crmode = TodoApp.SYNC_CR_MODE;
-        if (crmode == TodoApp.CR_MODE.DEFAULT) {
-            config.setConflictResolver(null);
-        } else {
+        if (crmode == TodoApp.CR_MODE.DEFAULT) { config.setConflictResolver(null); }
+        else {
             config.setConflictResolver(conflict -> {
                 Document local = conflict.getLocalDocument();
                 Document remote = conflict.getRemoteDocument();
                 if (local == null || remote == null) { return null; }
-                if (crmode == TodoApp.CR_MODE.LOCAL) {
-                    return local;
-                } else if (crmode == TodoApp.CR_MODE.REMOTE) {
-                    return remote;
-                } else {
-                    return null;
-                }
+                if (crmode == TodoApp.CR_MODE.LOCAL) { return local; }
+                else if (crmode == TodoApp.CR_MODE.REMOTE) { return remote; }
+                return null;
             });
         }
 
@@ -306,5 +298,4 @@ public class DB {
         final Replicator repl = replicator;
         if (repl != null) { repl.stop(); }
     }
-
 }

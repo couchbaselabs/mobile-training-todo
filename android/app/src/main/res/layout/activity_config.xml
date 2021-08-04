@@ -253,5 +253,4 @@
             android:textColor="@color/colorAccent"
             />
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 </ScrollView>

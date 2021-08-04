@@ -22,8 +22,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-import javafx.scene.control.MultipleSelectionModel;
-import javafx.scene.control.SelectionMode;
+
+
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.AnchorPane;
@@ -50,7 +50,7 @@ import com.couchbase.todo.model.service.SaveDocService;
 import com.couchbase.todo.model.Task;
 import com.couchbase.todo.model.TaskList;
 import com.couchbase.todo.view.TaskCell;
-import com.couchbase.todo.view.TaskCellSelectionModel;;
+import com.couchbase.todo.view.TaskCellSelectionModel;
 
 public class TaskListController implements Initializable, TaskCell.TaskCellListener {
 
@@ -65,17 +65,23 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
     static final String KEY_TASK_LIST_ID = "id";
     static final String KEY_TASK_LIST_OWNER = "owner";
 
-    @FXML private AnchorPane pane;
+    @FXML
+    private AnchorPane pane;
 
-    @FXML private Label listNameLabel;
+    @FXML
+    private Label listNameLabel;
 
-    @FXML private Button shareButton;
+    @FXML
+    private Button shareButton;
 
-    @FXML private TextField taskTextField;
+    @FXML
+    private TextField taskTextField;
 
-    @FXML private Button createTaskButton;
+    @FXML
+    private Button createTaskButton;
 
-    @FXML private ListView<Task> listView;
+    @FXML
+    private ListView<Task> listView;
 
     private final AtomicBoolean initialized = new AtomicBoolean();
 
@@ -116,7 +122,7 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
                 Stage stage = new Stage();
                 stage.initModality(Modality.APPLICATION_MODAL);
                 stage.setScene(scene);
-                stage.setOnCloseRequest(event1 -> { controller.close(); });
+                stage.setOnCloseRequest(event1 -> controller.close());
                 stage.showAndWait();
             } catch (IOException e) { e.printStackTrace(); }
         });
@@ -158,6 +164,7 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
 
             DB.get().addChangeListener(query, change -> {
                 ObservableList<Task> tasks = FXCollections.observableArrayList();
+                assert change.getResults() != null;
                 for (Result r : change.getResults().allResults()) {
                     tasks.add(new Task(
                         r.getString(0),
@@ -165,9 +172,7 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
                         r.getBoolean(2),
                         r.getBlob(3)));
                 }
-                Platform.runLater(() -> {
-                    listView.setItems(tasks);
-                });
+                Platform.runLater(() -> listView.setItems(tasks));
             });
 
             listNameLabel.setText(taskList.getName());
@@ -257,9 +262,7 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
         dialog.setHeaderText("Enter Task Name");
         dialog.setContentText("Task Name");
         Optional<String> result = dialog.showAndWait();
-        result.ifPresent(name -> {
-            updateTaskName(task.getId(), name);
-        });
+        result.ifPresent(name -> updateTaskName(task.getId(), name));
     }
 
     @Override

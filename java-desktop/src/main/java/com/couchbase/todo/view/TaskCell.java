@@ -29,15 +29,20 @@ public class TaskCell extends ListCell<Task> {
         void onTaskCellCompleteChanged(@NotNull Task task, boolean newComplete);
     }
 
-    @FXML private AnchorPane pane;
+    @FXML
+    private AnchorPane pane;
 
-    @FXML private ImageView imageView;
+    @FXML
+    private ImageView imageView;
 
-    @FXML private Label nameLabel;
+    @FXML
+    private Label nameLabel;
 
-    @FXML private CheckBox completeCheckbox;
+    @FXML
+    private CheckBox completeCheckbox;
 
-    @FXML private Button moreButton;
+    @FXML
+    private Button moreButton;
 
     private FXMLLoader loader;
 
