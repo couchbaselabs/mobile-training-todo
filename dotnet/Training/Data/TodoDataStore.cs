@@ -205,29 +205,29 @@ namespace Training.Data
             Parallel.ForEach(allResult, result =>
             {
                 var idKey = result.GetString("id");
+                string name;
                 using (var document = _db.GetDocument(idKey))
                 {
-                    var name = result.GetString("name");
+                    name = result.GetString("name");
                     if (name == null)
                     {
                         _db.Delete(document);
-                    }
-                    else
-                    {
-                        Data.AddOrUpdate(idKey, 
-                            (key) =>
-                            {
-                                var newVal = new TaskListItem();
-                                newVal.DocumentID = idKey;
-                                newVal.Name = name;
-                                return newVal;
-                            }, (key, oldVal) =>
-                            {
-                                oldVal.Name = name;
-                                return oldVal;
-                            });
+                        return;
                     }
                 }
+
+                Data.AddOrUpdate(idKey,
+                    (key) =>
+                    {
+                        var newVal = new TaskListItem();
+                        newVal.DocumentID = idKey;
+                        newVal.Name = name;
+                        return newVal;
+                    }, (key, oldVal) =>
+                    {
+                        oldVal.Name = name;
+                        return oldVal;
+                    });
             });
         }
 

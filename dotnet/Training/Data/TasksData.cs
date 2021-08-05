@@ -2,11 +2,14 @@
 using Couchbase.Lite.Query;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Training.Models;
 using Training.Services;
 using Training.Utils;
+using Xamarin.Forms;
 
 namespace Training.Data
 {
@@ -40,6 +43,7 @@ namespace Training.Data
                 _taskListId = listId;
                 SetupQuery(listId);
                 var results = _tasksFullQuery.Execute();
+                Debug.WriteLine("_tasksFullQuery processed from LoadItemsAsync!");
                 ProcessQueryResults(results.AllResults());
             }
 
@@ -174,7 +178,6 @@ namespace Training.Data
             {
                 query = _tasksFilteredQuery;
                 query.Parameters.SetString("searchString", $"%{searchString}%");
-
                 var results = query.Execute();
                 ProcessQueryResults(results.AllResults());
             }
@@ -184,13 +187,18 @@ namespace Training.Data
         {
             _tasksFilteredQuery.Parameters.SetString("taskListId", listId);
             _tasksFullQuery.Parameters.SetString("taskListId", listId);
+            _tasksFullQuery.Parameters.SetInt("limit", 20);
+            _tasksFullQuery.Parameters.SetInt("offset", 0);
         }
 
         private void StartListener()
         {
             _tasksFullQuery.AddChangeListener((sender, args) =>
             {
+                Debug.WriteLine("_tasksFullQuery Changed!");
+                //Task.Run(()=>
                 ProcessQueryResults(args.Results.AllResults());
+                //);
             });
         }
 
@@ -198,41 +206,66 @@ namespace Training.Data
         {
             if (allResult.Count() != Data.Count || (Data.Count > 0 && Data.First().Key != _taskListId))
             {
-                Data.Clear();
+                Device.BeginInvokeOnMainThread(() =>
+                    Data.Clear()
+                );
             }
 
-            Parallel.ForEach(allResult, result =>
-            {
-                var idKey = result.GetString("id");
-                using (var document = _db.GetDocument(idKey))
-                {
-                    if (!idKey.Equals(document.Id))
-                        return;
+            //foreach(var result in allResult)
+            _ = Parallel.ForEach(allResult, result =>
+              {
+                  var idKey = result.GetString("id");
+                  string name;
+                  byte[] image;
+                  bool isCompleted;
+                  using (var document = _db.GetDocument(idKey))
+                  {
+                      if (!idKey.Equals(document.Id))
+                          return;
 
-                    var name = document.GetString("task");
-                    if (name == null)
-                    {
-                        _db.Delete(document);
-                    }
-                    else
-                    {
-                        Data.AddOrUpdate(idKey, new TaskItem()
-                        {
-                            TaskListID = _taskListId,
-                            DocumentID = idKey,
-                            Name = name,
-                            Thumbnail = document.GetBlob("image")?.Content,
-                            IsChecked = document.GetBoolean("complete")
-                        },
-                        (key, oldVal) =>
-                        {
-                            oldVal.Name = name;
-                            oldVal.TaskListID = _taskListId;
-                            return oldVal;
-                        });
-                    }
-                }
-            });
+                      name = document.GetString("task");
+                      if (name == null)
+                      {
+                          _db.Delete(document);
+                          return;
+                      }
+                      else
+                      {
+                          image = document.GetBlob("image")?.Content;
+                          isCompleted = document.GetBoolean("complete");
+                      }
+                  }
+
+                  Device.BeginInvokeOnMainThread(() =>
+                  {
+                      try
+                      {
+                          _ = Data.AddOrUpdate(idKey,
+                              (k)=>
+                              {
+                                  var newVal = new TaskItem();
+                                  newVal.TaskListID = _taskListId;
+                                  newVal.DocumentID = idKey;
+                                  newVal.Name = name;
+                                  newVal.Thumbnail = image;
+                                  newVal.IsChecked = isCompleted;
+                                  return newVal;
+                              },
+                              (k, oldVal) =>
+                              {
+                                  oldVal.Name = name;
+                                  oldVal.TaskListID = _taskListId;
+                                  oldVal.Thumbnail = image;
+                                  oldVal.IsChecked = isCompleted;
+                                  return oldVal;
+                              });
+                      }
+                      catch (Exception ex)
+                      {
+                          Debug.WriteLine("TasksData ProcessQueryResults Exception: " + ex.Message + " Inner Exception: " + ex.InnerException?.Message);
+                      }
+                  });
+              });
         }
     }
 }

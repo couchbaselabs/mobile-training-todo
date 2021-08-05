@@ -38,14 +38,13 @@
     </Shell.SearchHandler>
     <!--RefreshView Command="{Binding LoadItemsCommand}" IsRefreshing="{Binding IsBusy, Mode=TwoWay}"-->
         <CollectionView Margin="20"
+                        RemainingItemsThreshold="20"
                     ItemsSource="{Binding TasksDataStore.Data.Values}"
                     SelectionMode="None">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                <Grid Padding="10" x:DataType="model:TaskItem"
-                          ColumnDefinitions="Auto,Auto,Auto">
-                        <Image Grid.Column="0"
-                               Source="{Binding Thumbnail, Converter={StaticResource ImageSourceConverter}}" 
+                <StackLayout Padding="10" x:DataType="model:TaskItem" HorizontalOptions="FillAndExpand" Orientation="Horizontal">
+                        <Image Source="{Binding Thumbnail, Converter={StaticResource ImageSourceConverter}}" 
                                Aspect="AspectFill"
                                HeightRequest="60" 
                                WidthRequest="60" 
@@ -56,13 +55,11 @@
                                     CommandParameter="{Binding .}"/>
                             </Image.GestureRecognizers>
                         </Image>
-                        <Label Grid.Column="1" 
-                               Text="{Binding Name}" 
+                        <Label Text="{Binding Name}" 
                                FontAttributes="Bold" />
-                        <CheckBox Grid.Column="2"
-                                  IsChecked="{Binding IsChecked, Mode=TwoWay}"
+                        <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}"
                                   HorizontalOptions="EndAndExpand"/>
-                        <Grid.GestureRecognizers>
+                    <StackLayout.GestureRecognizers>
                             <TapGestureRecognizer 
                                 NumberOfTapsRequired="1"
                                 Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TasksViewModel}}, Path=ItemTapped}"		
@@ -71,8 +68,8 @@
                                 Direction="Right"
                                 Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:TasksViewModel}}, Path=ItemSwiped}" 
                                 CommandParameter="{Binding .}" />
-                        </Grid.GestureRecognizers>
-                    </Grid>
+                        </StackLayout.GestureRecognizers>
+                    </StackLayout>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

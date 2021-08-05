@@ -14,7 +14,7 @@ namespace Training
 
             CoreApp.Hint = new CoreAppStartHint
             {
-                LoginEnabled = false,
+                LoginEnabled = true,
                 CCRType = CCR_TYPE.NONE,
                 Heartbeat = null,
                 MaxRetries = 0,

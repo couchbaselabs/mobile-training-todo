@@ -58,7 +58,8 @@ namespace Training.Data
             QueryDictionary.Add(QueryType.TasksFullQuery, QueryBuilder.Select(SelectResult.Expression(Meta.ID))
                 .From(DataSource.Database(_db))
                 .Where(Expression.Property("type").EqualTo(Expression.String("task"))
-                    .And(Expression.Property("taskList.id").EqualTo(Expression.Parameter("taskListId")))));
+                    .And(Expression.Property("taskList.id").EqualTo(Expression.Parameter("taskListId"))))
+                .Limit(Expression.Parameter("limit"), Expression.Parameter("offset")));
 
             var username = Expression.Property("username");
             var exp1 = Expression.Property("type").EqualTo(Expression.String("task-list.user"));
