@@ -15,6 +15,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.ws.rs.ApplicationPath;
 
+
 @ApplicationPath("/")
 public class Application extends ResourceConfig {
     public static final int SESSION_MAX_INACTIVE_INTERVAL_SECONDS = 3600;
@@ -39,6 +40,16 @@ public class Application extends ResourceConfig {
         System.out.println("> Database Directory: " + getDatabaseDirectory());
 
         System.out.println("> Sync Gateway URL: " + getSyncGatewayUrl());
+
+        System.out.println("> Verbose Logging: " + getLoggingEnabled());
+
+        System.out.println("> Login Required: " + getLoginRequired());
+
+        System.out.println("> Custom Conflict Resolution: " + getCustomConflictResolution());
+
+        System.out.println("> Max retries: " + getMaxRetries());
+
+        System.out.println("> Wait time: " + getWaitTime());
     }
 
     public static String getDatabaseDirectory() {
@@ -49,11 +60,23 @@ public class Application extends ResourceConfig {
         return (String) getEnvironmentConfig("syncGatewayUrl");
     }
 
+    public static boolean getLoggingEnabled() { return (Boolean) getEnvironmentConfig("loggingEnabled"); }
+
+    public static boolean getLoginRequired() { return (Boolean) getEnvironmentConfig("loginRequired"); }
+
+    public static String getCustomConflictResolution() { return (String) getEnvironmentConfig("customConflictResolution"); }
+
+    public static int getMaxRetries() { return (Integer) getEnvironmentConfig("maxRetries"); }
+
+    public static int getWaitTime() { return (Integer) getEnvironmentConfig("waitTime"); }
+
+
     private static Object getEnvironmentConfig(String name) {
         try {
             Context context = new InitialContext();
             return context.lookup("java:/comp/env/" + name);
-        } catch (NamingException e) {
+        }
+        catch (NamingException e) {
             e.printStackTrace();
         }
         return null;
