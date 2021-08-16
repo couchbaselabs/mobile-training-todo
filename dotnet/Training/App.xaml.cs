@@ -22,7 +22,7 @@ namespace Training
                 IsDebugging = false,
                 EncryptionEnabled = false,
                 IsDatabaseChangeMonitoring = false,
-                SyncEnabled = false,
+                SyncEnabled = true,
                 UsePrebuiltDB = false,
                 Username = "todo"
             };

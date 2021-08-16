@@ -34,8 +34,6 @@ namespace Training.Data
         public TodoDataStore()
         {
             SetupQuery();
-            var results = _fullQuery.Execute();
-            ProcessQueryResults(results.AllResults());
             StartListeners();
         }
 
@@ -188,16 +186,16 @@ namespace Training.Data
                 UpdateIncompleteCount();
             });
 
-            _fullQuery.AddChangeListener((sender, args) =>
+            _fullQuery.AddChangeListener(async (sender, args) =>
             {
                 //run live query
-                ProcessQueryResults(args.Results.AllResults());
+                await ProcessQueryResults(args.Results.AllResults());
             });
         }
 
-        private void ProcessQueryResults(IList<Result> allResult)
+        private async Task<bool> ProcessQueryResults(IList<Result> allResult)
         {
-            if (allResult.Count != Data.Count)
+            if (allResult.Count < Data.Count)
             {
                 Data.Clear();
             }
@@ -229,6 +227,10 @@ namespace Training.Data
                         return oldVal;
                     });
             });
+
+            UpdateIncompleteCount();
+
+            return await Task.FromResult(true);
         }
 
         private void UpdateIncompleteCount()

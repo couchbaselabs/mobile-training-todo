@@ -204,12 +204,16 @@ namespace Training.Utils
 
         public TValue AddOrUpdate(TKey key, TValue addValue, Func<TKey, TValue, TValue> updateValueFactory)
         {
-            return _dictionary.AddOrUpdate(key, addValue, updateValueFactory);
+            var v = _dictionary.AddOrUpdate(key, addValue, updateValueFactory);
+            NotifyObserversOfChange();
+            return v;
         }
 
         public TValue AddOrUpdate(TKey key, Func<TKey, TValue> addValueFactory, Func<TKey, TValue, TValue> updateValueFactory)
         {
-            return _dictionary.AddOrUpdate(key, addValueFactory, updateValueFactory);
+            var v = _dictionary.AddOrUpdate(key, addValueFactory, updateValueFactory);
+            NotifyObserversOfChange();
+            return v;
         }
 
         public bool TryUpdate(TKey key, TValue newValue, TValue comparisonValue)
