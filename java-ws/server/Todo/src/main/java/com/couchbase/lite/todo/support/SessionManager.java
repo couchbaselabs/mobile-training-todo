@@ -5,12 +5,14 @@ import com.couchbase.lite.todo.Application;
 import com.couchbase.lite.todo.model.User;
 
 import javax.servlet.http.HttpSession;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 
 public class SessionManager {
     public static final String HTTP_SESSION_USER_KEY = "user";
@@ -94,7 +96,7 @@ public class SessionManager {
     }
 
     public synchronized void unregisterAll() {
-        for (String username : sessions.keySet()) {
+        for (String username: sessions.keySet()) {
             unregisterAll(username);
         }
     }
@@ -121,7 +123,8 @@ public class SessionManager {
         config.setDirectory(Application.getDatabaseDirectory());
         try {
             return new Database(username, config);
-        } catch (CouchbaseLiteException e) {
+        }
+        catch (CouchbaseLiteException e) {
             e.printStackTrace();
         }
         return null;
@@ -131,8 +134,24 @@ public class SessionManager {
         URLEndpoint endpoint = null;
         try { endpoint = new URLEndpoint(new URI(Application.getSyncGatewayUrl())); } catch (URISyntaxException e) { }
 
-        ReplicatorConfiguration config = new ReplicatorConfiguration(database, endpoint);
-        config.setContinuous(true);
+        ReplicatorConfiguration config = new ReplicatorConfiguration(database, endpoint)
+            .setContinuous(true)
+            .setMaxAttempts(Application.getMaxRetries())
+            .setMaxAttemptWaitTime(Application.getWaitTime());
+
+        String mode = Application.getCustomConflictResolution();
+        if (mode == "default") { config.setConflictResolver(null); }
+        else {
+            config.setConflictResolver(conflict -> {
+                Document local = conflict.getLocalDocument();
+                Document remote = conflict.getRemoteDocument();
+                if (local == null || remote == null) { return null; }
+                if (mode.equals("local")) { return local; }
+                else if (mode.equals("remote")) { return remote; }
+                return null;
+            });
+        }
+
         config.setAuthenticator(new SessionAuthenticator(syncGatewaySession));
         final Replicator replicator = new Replicator(config);
         replicator.addChangeListener(change -> {
