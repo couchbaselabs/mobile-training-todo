@@ -12,25 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.couchbase.lite.BasicAuthenticator;
-import com.couchbase.lite.CBLError;
-import com.couchbase.lite.CouchbaseLite;
-import com.couchbase.lite.CouchbaseLiteException;
-import com.couchbase.lite.DataSource;
-import com.couchbase.lite.Database;
-import com.couchbase.lite.DatabaseConfiguration;
-import com.couchbase.lite.Document;
-import com.couchbase.lite.Endpoint;
-import com.couchbase.lite.ListenerToken;
-import com.couchbase.lite.LogLevel;
-import com.couchbase.lite.MutableDocument;
-import com.couchbase.lite.Query;
-import com.couchbase.lite.QueryChangeListener;
-import com.couchbase.lite.Replicator;
-import com.couchbase.lite.ReplicatorChange;
-import com.couchbase.lite.ReplicatorConfiguration;
-import com.couchbase.lite.ReplicatorStatus;
-import com.couchbase.lite.URLEndpoint;
+import com.couchbase.lite.*;
 import com.couchbase.todo.TodoApp;
 
 
@@ -151,6 +133,11 @@ public class DB {
         return db;
     }
 
+
+    public From createQuery( SelectResult... results) {
+        final Database db = getAndVerifyDb();
+        return QueryBuilder.select(results).from(DataSource.database(db));
+    }
     // -------------------------
     // Document
     // -------------------------
@@ -273,7 +260,6 @@ public class DB {
 
         this.replicator = replicator;
     }
-
     void changed(ReplicatorChange change) {
         final ReplicatorStatus status = change.getStatus();
         final CouchbaseLiteException error = status.getError();

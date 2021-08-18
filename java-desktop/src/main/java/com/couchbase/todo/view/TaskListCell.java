@@ -1,8 +1,6 @@
 package com.couchbase.todo.view;
 
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.MenuItem;
+import javafx.scene.control.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -36,7 +34,6 @@ public class TaskListCell extends ListCell<TaskList> {
         }
 
         setText(taskList.getName());
-
         setupContextMenu();
     }
 
