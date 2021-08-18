@@ -272,13 +272,13 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
         let cell = tableView.dequeueReusableCell(withIdentifier: "TaskCell") as! TaskTableViewCell
         
         let result = self.data![indexPath.row]
-        let docID = result.string(at: 0)!
-        cell.taskLabel.text = result.string(at: 1)!
+        let docID = result.string(forKey: "id")!
+        cell.taskLabel.text = result.string(forKey: "task")
         
-        let complete: Bool = result.boolean(at: 2)
+        let complete: Bool = result.boolean(forKey: "complete")
         cell.accessoryType = complete ? .checkmark : .none
         
-        if let imageBlob = result.blob(at: 3) {
+        if let imageBlob = result.blob(forKey: "image") {
             let digest = imageBlob.digest!
             let image = UIImage(data: imageBlob.content!, scale: UIScreen.main.scale)
             let thumbnail = Image.square(image: image,
