@@ -1,9 +1,7 @@
 package com.couchbase.todo.controller;
 
 import java.net.URL;
-import java.util.Optional;
-import java.util.ResourceBundle;
-import java.util.UUID;
+import java.util.*;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -15,20 +13,13 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextInputDialog;
 import org.jetbrains.annotations.NotNull;
 
-import com.couchbase.lite.Document;
-import com.couchbase.lite.Expression;
-import com.couchbase.lite.Meta;
-import com.couchbase.lite.MutableDocument;
-import com.couchbase.lite.Ordering;
-import com.couchbase.lite.Query;
-import com.couchbase.lite.QueryBuilder;
-import com.couchbase.lite.Result;
-import com.couchbase.lite.SelectResult;
+import com.couchbase.lite.*;
 import com.couchbase.todo.model.DB;
 import com.couchbase.todo.model.service.DeleteDocService;
 import com.couchbase.todo.model.service.SaveDocService;
 import com.couchbase.todo.model.TaskList;
 import com.couchbase.todo.view.TaskListCell;
+
 
 public final class TaskListsController implements Initializable, TaskListCell.TaskListCellListener {
 
@@ -36,6 +27,10 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
     private static final String KEY_TYPE = "type";
     private static final String KEY_NAME = "name";
     private static final String KEY_OWNER = "owner";
+    private static final String KEY_NUM_UNDONE = "num-undone";
+
+    private final Map<String, Integer> incompleteTaskCounts = new HashMap<>();
+    private final Query incompleteTasksCountQuery = getIncompleteTasksCountQuery();
 
     @FXML
     private ListView<TaskList> listView;
@@ -56,7 +51,8 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
             .select(
                 SelectResult.expression(Meta.id),
                 SelectResult.property(KEY_NAME),
-                SelectResult.property(KEY_OWNER))
+                SelectResult.property(KEY_OWNER),
+                SelectResult.property(KEY_NUM_UNDONE))
             .from(DB.get().getDataSource())
             .where(Expression.property(KEY_TYPE).equalTo(Expression.string(TYPE)))
             .orderBy(Ordering.property(KEY_NAME));
@@ -64,16 +60,20 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
         DB.get().addChangeListener(query, change -> {
             ObservableList<TaskList> taskLists = FXCollections.observableArrayList();
             assert change.getResults() != null;
-            for (Result r : change.getResults()) {
-                TaskList list = new TaskList(
-                    r.getString(0),
-                    r.getString(1),
-                    r.getString(2));
+            for (Result r: change.getResults()) {
+                TaskList list = TaskList.builder()
+                    .id(r.getString(0))
+                    .name(r.getString(1))
+                    .owner(r.getString(2))
+                    .numIncomplete(r.getInt(3))
+                    .build();
                 taskLists.add(list);
             }
 
             Platform.runLater(() -> listView.setItems(taskLists));
         });
+
+        DB.get().addChangeListener(incompleteTasksCountQuery, this::onIncompleteTasksChanged);
     }
 
     private void registerEventHandlers() {
@@ -101,11 +101,12 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
 
         result.ifPresent(name -> {
             String username = DB.get().getLoggedInUsername();
-            String docId =  username + "." + UUID.randomUUID();
+            String docId = username + "." + UUID.randomUUID();
             MutableDocument doc = new MutableDocument(docId);
             doc.setValue(KEY_TYPE, TYPE);
             doc.setValue(KEY_NAME, name);
             doc.setValue(KEY_OWNER, username);
+            doc.setValue(KEY_NUM_UNDONE,0); // ??? 0 is hardcoded as the default value for num_undone
             new SaveDocService(doc).start();
         });
     }
@@ -130,12 +131,12 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
         new DeleteDocService(taskList.getId()).start();
 
         TaskList selTaskList = taskListController.getTaskList();
-        if (selTaskList != null) { if (taskList.equals(selTaskList.getId())) {
-            taskListController.setTaskList(null);}
+        if (selTaskList != null) {
+            if (taskList.equals(selTaskList.getId())) {
+                taskListController.setTaskList(null);
+            }
         }
     }
-
-    // TaskListCellListener
 
     @Override
     public void onTaskListCellEditMenuSelected(@NotNull TaskList taskList) {
@@ -147,4 +148,21 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
         deleteList(taskList);
     }
 
+    public void onIncompleteTasksChanged(@NotNull QueryChange change) {
+        /*
+        TODO
+         */
+        for (Result r: change.getResults()) {
+            incompleteTaskCounts.put(r.getString(0), r.getInt(1));
+        }
+    }
+
+    private Query getIncompleteTasksCountQuery() {
+        return DB.get().createQuery(
+            SelectResult.expression(Expression.property(TaskListController.KEY_TASK_LIST_ID)),
+            SelectResult.expression(Function.count(Expression.all())))
+            .where(Expression.property(KEY_TYPE).equalTo(Expression.string(TaskListController.KEY_TASK))
+                .and(Expression.property(TaskListController.KEY_COMPLETE).equalTo(Expression.booleanValue(false))))
+            .groupBy(Meta.id);
+    }
 }

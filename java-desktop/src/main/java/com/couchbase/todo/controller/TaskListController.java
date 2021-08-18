@@ -11,6 +11,8 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.print.Doc;
+
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -33,17 +35,7 @@ import javafx.stage.Stage;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.couchbase.lite.Blob;
-import com.couchbase.lite.Document;
-import com.couchbase.lite.Expression;
-import com.couchbase.lite.Meta;
-import com.couchbase.lite.MutableDictionary;
-import com.couchbase.lite.MutableDocument;
-import com.couchbase.lite.Ordering;
-import com.couchbase.lite.Query;
-import com.couchbase.lite.QueryBuilder;
-import com.couchbase.lite.Result;
-import com.couchbase.lite.SelectResult;
+import com.couchbase.lite.*;
 import com.couchbase.todo.model.DB;
 import com.couchbase.todo.model.service.DeleteDocService;
 import com.couchbase.todo.model.service.SaveDocService;
@@ -258,7 +250,7 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
     @Override
     public void onTaskCellEditNameMenuSelected(@NotNull Task task) {
         TextInputDialog dialog = new TextInputDialog(task.getName());
-        dialog.setTitle("Edit Taks Name");
+        dialog.setTitle("Edit Task Name");
         dialog.setHeaderText("Enter Task Name");
         dialog.setContentText("Task Name");
         Optional<String> result = dialog.showAndWait();
