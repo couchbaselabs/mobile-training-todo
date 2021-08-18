@@ -203,16 +203,7 @@ namespace Training.Data
             Parallel.ForEach(allResult, result =>
             {
                 var idKey = result.GetString("id");
-                string name;
-                using (var document = _db.GetDocument(idKey))
-                {
-                    name = result.GetString("name");
-                    if (name == null)
-                    {
-                        _db.Delete(document);
-                        return;
-                    }
-                }
+                var name = result.GetString("name");
 
                 Data.AddOrUpdate(idKey,
                     (key) =>
@@ -233,8 +224,12 @@ namespace Training.Data
             return await Task.FromResult(true);
         }
 
+        bool isBusy;
         private void UpdateIncompleteCount()
         {
+            if (isBusy)
+                return;
+            isBusy = true;
             Parallel.ForEach(Data, item =>
             {
                 if (_incompleteCount.ContainsKey(item.Key))
@@ -246,6 +241,7 @@ namespace Training.Data
                     item.Value.IncompleteCount = 0;
                 }
             });
+            isBusy = false;
         }
 
         #endregion

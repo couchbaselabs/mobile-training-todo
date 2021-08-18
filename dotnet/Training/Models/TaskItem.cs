@@ -42,13 +42,15 @@ namespace Training.Models
                 if (_isChecked != value)
                 {
                     SetProperty(ref _isChecked, value);
-                    using (var doc = CoreApp.Database.GetDocument(_docId))
-                    using (var mdoc = doc.ToMutable())
+                    using (var doc = CoreApp.Database.GetDocument(DocumentID))
                     {
-                        if (mdoc.GetBoolean("complete") != _isChecked)
+                        if (doc.GetBoolean("complete") != _isChecked)
                         {
-                            mdoc.SetBoolean("complete", _isChecked);
-                            CoreApp.Database.Save(mdoc);
+                            using (var mdoc = doc.ToMutable())
+                            {
+                                mdoc.SetBoolean("complete", _isChecked);
+                                CoreApp.Database.Save(mdoc);
+                            }
                         }
                     }
                 }

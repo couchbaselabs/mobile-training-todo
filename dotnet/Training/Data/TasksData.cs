@@ -4,12 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Training.Models;
 using Training.Services;
 using Training.Utils;
-using Xamarin.Forms;
 
 namespace Training.Data
 {
@@ -44,7 +42,7 @@ namespace Training.Data
                 SetupQuery(listId);
                 var results = _tasksFullQuery.Execute();
                 Debug.WriteLine("_tasksFullQuery processed from LoadItemsAsync!");
-                ProcessQueryResults(results.AllResults());
+                await ProcessQueryResults(results.AllResults());
             }
 
             return await Task.FromResult(true);
@@ -100,6 +98,11 @@ namespace Training.Data
 
         public async Task<string> UpdateItemAsync(TaskItem item)
         {
+            if (item.DocumentID == null)
+            {
+                return await Task.FromResult("The document id is null.");
+            }
+
             try
             {
                 using (var doc = _db.GetDocument(item.DocumentID))
@@ -193,79 +196,55 @@ namespace Training.Data
 
         private void StartListener()
         {
-            _tasksFullQuery.AddChangeListener((sender, args) =>
+            _tasksFullQuery.AddChangeListener(async (sender, args) =>
             {
-                Debug.WriteLine("_tasksFullQuery Changed!");
-                //Task.Run(()=>
-                ProcessQueryResults(args.Results.AllResults());
-                //);
+                await ProcessQueryResults(args.Results.AllResults());
             });
         }
 
-        private void ProcessQueryResults(IList<Result> allResult)
+        private async Task<bool> ProcessQueryResults(IList<Result> allResult)
         {
-            if (allResult.Count() != Data.Count || (Data.Count > 0 && Data.First().Key != _taskListId))
+            if (allResult.Count < Data.Count || (Data.Count > 0 && Data.First().Key != _taskListId))
             {
-                Device.BeginInvokeOnMainThread(() =>
-                    Data.Clear()
-                );
+                Data.Clear();
             }
 
-            //foreach(var result in allResult)
-            _ = Parallel.ForEach(allResult, result =>
+            Parallel.ForEach(allResult, result =>
               {
                   var idKey = result.GetString("id");
-                  string name;
-                  byte[] image;
-                  bool isCompleted;
-                  using (var document = _db.GetDocument(idKey))
-                  {
-                      if (!idKey.Equals(document.Id))
-                          return;
+                  var name = result.GetString("task");
+                  var image = result.GetBlob("image");
+                  var isCompleted = result.GetBoolean("complete");
 
-                      name = document.GetString("task");
-                      if (name == null)
-                      {
-                          _db.Delete(document);
-                          return;
-                      }
-                      else
-                      {
-                          image = document.GetBlob("image")?.Content;
-                          isCompleted = document.GetBoolean("complete");
-                      }
+                  try
+                  {
+                      Data.AddOrUpdate(idKey,
+                          (k) =>
+                          {
+                              var newVal = new TaskItem();
+                              newVal.TaskListID = _taskListId;
+                              newVal.DocumentID = idKey;
+                              newVal.Name = name;
+                              newVal.Thumbnail = image?.Content;
+                              newVal.IsChecked = isCompleted;
+                              return newVal;
+                          },
+                          (k, oldVal) =>
+                          {
+                              oldVal.TaskListID = _taskListId;
+                              oldVal.Name = name;
+                              oldVal.Thumbnail = image?.Content;
+                              oldVal.IsChecked = isCompleted;
+                              return oldVal;
+                          });
                   }
-
-                  Device.BeginInvokeOnMainThread(() =>
+                  catch (Exception ex)
                   {
-                      try
-                      {
-                          _ = Data.AddOrUpdate(idKey,
-                              (k)=>
-                              {
-                                  var newVal = new TaskItem();
-                                  newVal.TaskListID = _taskListId;
-                                  newVal.DocumentID = idKey;
-                                  newVal.Name = name;
-                                  newVal.Thumbnail = image;
-                                  newVal.IsChecked = isCompleted;
-                                  return newVal;
-                              },
-                              (k, oldVal) =>
-                              {
-                                  oldVal.Name = name;
-                                  oldVal.TaskListID = _taskListId;
-                                  oldVal.Thumbnail = image;
-                                  oldVal.IsChecked = isCompleted;
-                                  return oldVal;
-                              });
-                      }
-                      catch (Exception ex)
-                      {
-                          Debug.WriteLine("TasksData ProcessQueryResults Exception: " + ex.Message + " Inner Exception: " + ex.InnerException?.Message);
-                      }
-                  });
+                      Debug.WriteLine("TasksData ProcessQueryResults Exception: " + ex.Message + " Inner Exception: " + ex.InnerException?.Message);
+                  }
               });
+
+            return await Task.FromResult(true);
         }
     }
 }

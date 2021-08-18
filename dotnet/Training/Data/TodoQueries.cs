@@ -55,11 +55,17 @@ namespace Training.Data
                     .And(Expression.Property("task").Like(Expression.Parameter("searchString"))))
                 .OrderBy(Ordering.Property("createdAt")));
 
-            QueryDictionary.Add(QueryType.TasksFullQuery, QueryBuilder.Select(SelectResult.Expression(Meta.ID))
+            QueryDictionary.Add(QueryType.TasksFullQuery, QueryBuilder
+                .Select(SelectResult.Expression(Meta.ID), 
+                        SelectResult.Expression(Expression.Property("task")), 
+                        SelectResult.Expression(Expression.Property("complete")), 
+                        SelectResult.Property("image"))
                 .From(DataSource.Database(_db))
                 .Where(Expression.Property("type").EqualTo(Expression.String("task"))
                     .And(Expression.Property("taskList.id").EqualTo(Expression.Parameter("taskListId"))))
-                .Limit(Expression.Parameter("limit"), Expression.Parameter("offset")));
+                .OrderBy(Ordering.Property("createdAt"), Ordering.Property("task"))
+                .Limit(Expression.Parameter("limit"), Expression.Parameter("offset"))
+                );
 
             var username = Expression.Property("username");
             var exp1 = Expression.Property("type").EqualTo(Expression.String("task-list.user"));
