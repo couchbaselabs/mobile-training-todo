@@ -21,17 +21,6 @@
 #define kMaxRetries 9
 #define kMaxRetryWaitTime 300.0
 
-@interface CBLConfig ()
-@property(nonatomic) BOOL loggingEnabled;
-@property(nonatomic) BOOL loginFlowEnabled;
-@property(nonatomic) BOOL syncEnabled;
-@property(nonatomic) BOOL pushNotificationEnabled;
-@property(nonatomic) BOOL ccrEnabled;
-@property(nonatomic) CCRType ccrType;
-@property(nonatomic) NSInteger maxAttempts;
-@property(nonatomic) NSInteger maxAttemptWaitTime;
-@end
-
 @implementation CBLConfig
 
 + (CBLConfig*) shared {
@@ -44,8 +33,6 @@
 - (instancetype) init {
     self = [super init];
     if (self) {
-        self.syncEndpoint = kSyncEndpoint;
-        
         NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
         if (![defaults boolForKey: HAS_SETTINGS_KEY]) {
             [defaults setBool: YES forKey: HAS_SETTINGS_KEY];
@@ -55,10 +42,12 @@
             [defaults setBool: kSyncWithPushNotification forKey: IS_PUSH_NOTIFICATION_ENABLED_KEY];
             [defaults setBool: kCCREnabled forKey: IS_CCR_ENABLED_KEY];
             [defaults setInteger: kCCRType forKey: CCR_TYPE_KEY];
-            [defaults setInteger: kMaxRetries forKey: MAX_RETRY_KEY];
-            [defaults setInteger: kMaxRetryWaitTime forKey: MAX_RETRY_WAIT_TIME_KEY];
+            [defaults setDouble: kMaxRetries forKey: MAX_RETRY_KEY];
+            [defaults setDouble: kMaxRetryWaitTime forKey: MAX_RETRY_WAIT_TIME_KEY];
+            [defaults setValue: kSyncEndpoint forKey: SYNC_ENDPOINT];
         }
         
+        self.syncEndpoint = [defaults valueForKey: SYNC_ENDPOINT];
         self.loggingEnabled = [defaults boolForKey: IS_LOGGING_KEY];
         self.loginFlowEnabled = [defaults boolForKey: IS_LOGIN_FLOW_KEY];
         self.syncEnabled = [defaults boolForKey: IS_SYNC_KEY];
@@ -67,9 +56,22 @@
         self.ccrType = [defaults integerForKey: CCR_TYPE_KEY];
         self.maxAttempts = [defaults doubleForKey: MAX_RETRY_KEY];
         self.maxAttemptWaitTime = [defaults doubleForKey: MAX_RETRY_WAIT_TIME_KEY];
-        
     }
     return self;
+}
+
+- (void) persist {
+    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    [defaults setBool: true forKey: HAS_SETTINGS_KEY];
+    [defaults setBool: self.loggingEnabled forKey: IS_LOGGING_KEY];
+    [defaults setBool: self.loginFlowEnabled forKey: IS_LOGIN_FLOW_KEY];
+    [defaults setBool: self.syncEnabled forKey: IS_SYNC_KEY];
+    [defaults setBool: self.pushNotificationEnabled forKey: IS_PUSH_NOTIFICATION_ENABLED_KEY];
+    [defaults setBool: self.ccrEnabled forKey: IS_CCR_ENABLED_KEY];
+    [defaults setInteger: self.ccrType forKey: CCR_TYPE_KEY];
+    [defaults setDouble: self.maxAttempts forKey: MAX_RETRY_KEY];
+    [defaults setDouble: self.maxAttemptWaitTime forKey: MAX_RETRY_WAIT_TIME_KEY];
+    [defaults setValue: self.syncEndpoint forKey: SYNC_ENDPOINT];
 }
 
 @end
