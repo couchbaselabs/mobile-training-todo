@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+
 public class Task {
     static final String TYPE = "task";
     static final String KEY_TYPE = "type";
@@ -89,8 +90,8 @@ public class Task {
         return taksList;
     }
 
-    public void setTaksList(TaskList taksList) {
-        this.taksList = taksList;
+    public void setTaskList(TaskList taskList) {
+        this.taksList = taskList;
     }
 
     public static String create(UserContext context, String taskListId, Task task) throws CouchbaseLiteException {
@@ -101,7 +102,7 @@ public class Task {
         Database db = context.getDatabase();
         String username = context.getUsername();
 
-        Document taskList =  db.getDocument(taskListId);
+        Document taskList = db.getDocument(taskListId);
         if (taskList == null) { throw ResponseException.NOT_FOUND("task list id : " + taskListId); }
 
         MutableDocument doc = new MutableDocument();
@@ -116,17 +117,21 @@ public class Task {
         taskListInfo.setValue(KEY_TASK_LIST_OWNER, taskList.getValue("owner"));
         doc.setValue(KEY_TASK_LIST, taskListInfo);
         db.save(doc);
+
+        System.out.println("Current List Document to JSON (when create new task): " + taskList.toJSON());
+
         return doc.getId();
     }
 
-    public static void update(UserContext context, String taskListId, String taskId, Task task) throws CouchbaseLiteException {
+    public static void update(UserContext context, String taskListId, String taskId, Task task)
+        throws CouchbaseLiteException {
         Preconditions.checkArgNotNull(taskListId, "taskListId");
         Preconditions.checkArgNotNull(taskId, "taskId");
         Preconditions.checkArgNotNull(task, "task");
         Preconditions.checkArgNotNull(task.getTask(), "task name");
 
         Database db = context.getDatabase();
-        Document doc =  db.getDocument(taskId);
+        Document doc = db.getDocument(taskId);
         if (doc == null) { throw ResponseException.NOT_FOUND("task id : " + taskId); }
 
         Dictionary taskList = doc.getDictionary(KEY_TASK_LIST);
@@ -138,30 +143,34 @@ public class Task {
         mdoc.setValue(KEY_TASK, task.task);
         mdoc.setValue(KEY_COMPLETE, task.isComplete());
         db.save(mdoc);
+
+        System.out.println("Current List Document to JSON (when update task): " + doc.toJSON());
+        System.out.println("Task List Dictionary to JSON (when update task): " + taskList.toJSON());
     }
 
     public static void delete(UserContext context, String taskId) throws CouchbaseLiteException {
         Preconditions.checkArgNotNull(taskId, "taskId");
 
         Database db = context.getDatabase();
-        Document doc =  db.getDocument(taskId);
+        Document doc = db.getDocument(taskId);
         if (doc != null) {
             db.delete(doc);
         }
     }
 
-    public static void updateImage(UserContext context,
-                                   String taskListId,
-                                   String taskId,
-                                   InputStream is,
-                                   String contentType) throws CouchbaseLiteException {
+    public static void updateImage(
+        UserContext context,
+        String taskListId,
+        String taskId,
+        InputStream is,
+        String contentType) throws CouchbaseLiteException {
         Preconditions.checkArgNotNull(taskListId, "taskListId");
         Preconditions.checkArgNotNull(taskId, "taskId");
         Preconditions.checkArgNotNull(is, "photo");
         Preconditions.checkArgNotNull(contentType, "content-type");
 
         Database db = context.getDatabase();
-        Document doc =  db.getDocument(taskId);
+        Document doc = db.getDocument(taskId);
         if (doc == null) { throw ResponseException.NOT_FOUND("task id : " + taskId); }
 
         Dictionary taskList = doc.getDictionary(KEY_TASK_LIST);
@@ -173,14 +182,17 @@ public class Task {
         MutableDocument mdoc = doc.toMutable();
         mdoc.setValue(KEY_IMAGE, blob);
         db.save(mdoc);
+
+        System.out.println(" Updated Blob Image to JSON (of current task)  : " + blob.toJSON());
     }
 
-    public static void deleteImage(UserContext context, String taskListId, String taskId) throws CouchbaseLiteException {
+    public static void deleteImage(UserContext context, String taskListId, String taskId)
+        throws CouchbaseLiteException {
         Preconditions.checkArgNotNull(taskListId, "taskListId");
         Preconditions.checkArgNotNull(taskId, "taskId");
 
         Database db = context.getDatabase();
-        Document doc =  db.getDocument(taskId);
+        Document doc = db.getDocument(taskId);
         if (doc == null) { throw ResponseException.NOT_FOUND("task id : " + taskId); }
 
         MutableDocument mdoc = doc.toMutable();
@@ -193,11 +205,14 @@ public class Task {
         Preconditions.checkArgNotNull(taskId, "taskId");
 
         Database db = context.getDatabase();
-        Document doc =  db.getDocument(taskId);
+        Document doc = db.getDocument(taskId);
         if (doc == null) { throw ResponseException.NOT_FOUND("task id : " + taskId); }
 
         Blob blob = doc.getBlob(KEY_IMAGE);
         if (blob == null) { throw ResponseException.NOT_FOUND("image"); }
+
+        System.out.println("Blob image to JSON (when get image): " + blob.toJSON());
+
         return blob;
     }
 
@@ -206,22 +221,23 @@ public class Task {
 
         Database database = context.getDatabase();
         Query query = QueryBuilder
-                .select(SelectResult.expression(Meta.id),
-                        SelectResult.property(KEY_TASK),
-                        SelectResult.property(KEY_COMPLETE),
-                        SelectResult.property(KEY_IMAGE),
-                        SelectResult.property(KEY_OWNER),
-                        SelectResult.property(KEY_CREATED_AT),
-                        SelectResult.property(KEY_TASK_LIST))
-                .from(DataSource.database(database))
-                .where(Expression.property(KEY_TYPE).equalTo(Expression.string(Task.TYPE))
-                        .and(Expression.property(KEY_TASK_LIST + "." + KEY_TASK_LIST_ID)
-                                .equalTo(Expression.string(taskListId))))
-                .orderBy(Ordering.property(KEY_CREATED_AT), Ordering.property(KEY_TASK));
+            .select(
+                SelectResult.expression(Meta.id),
+                SelectResult.property(KEY_TASK),
+                SelectResult.property(KEY_COMPLETE),
+                SelectResult.property(KEY_IMAGE),
+                SelectResult.property(KEY_OWNER),
+                SelectResult.property(KEY_CREATED_AT),
+                SelectResult.property(KEY_TASK_LIST))
+            .from(DataSource.database(database))
+            .where(Expression.property(KEY_TYPE).equalTo(Expression.string(Task.TYPE))
+                .and(Expression.property(KEY_TASK_LIST + "." + KEY_TASK_LIST_ID)
+                    .equalTo(Expression.string(taskListId))))
+            .orderBy(Ordering.property(KEY_CREATED_AT), Ordering.property(KEY_TASK));
 
         List<Task> tasks = new ArrayList<>();
         ResultSet rs = query.execute();
-        for (Result r : rs) {
+        for (Result r: rs) {
             Task task = new Task();
             task.setId(r.getString(0));
             task.setTask(r.getString(1));
@@ -238,9 +254,11 @@ public class Task {
             TaskList taskList = new TaskList();
             taskList.setId(taskListDict.getString(KEY_TASK_LIST_ID));
             taskList.setOwner(taskListDict.getString(KEY_TASK_LIST_OWNER));
-            task.setTaksList(taskList);
+            task.setTaskList(taskList);
 
             tasks.add(task);
+
+            System.out.println("Tasks Query Result to JSON (when get tasks): " + r.toJSON());
         }
         return tasks;
     }
