@@ -2,14 +2,13 @@ package com.couchbase.todo;
 
 import java.io.IOException;
 
-import com.couchbase.todo.controller.ConfigController;
-
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+import com.couchbase.todo.controller.ConfigController;
 import com.couchbase.todo.controller.LoginController;
 import com.couchbase.todo.controller.MainController;
 import com.couchbase.todo.model.Config;
@@ -33,11 +32,12 @@ public class TodoApp extends Application {
 
     public static volatile TodoApp todoApp;
 
-    private Config config = Config.builder().build();
+    public static TodoApp getTodoApp() { return todoApp; }
 
-    public static TodoApp getTodoApp() {
-        return todoApp;
-    }
+    public static void main(String[] args) { launch(args); }
+
+
+    private Config config = Config.builder().build();
 
     public static void goToPage(Stage stage, String fxmlFile) {
         FXMLLoader loader = new FXMLLoader(TodoApp.class.getResource(fxmlFile));
@@ -52,11 +52,12 @@ public class TodoApp extends Application {
                 loader.setController(new ConfigController(stage));
                 break;
         }
+
         Parent root;
         try { root = loader.load(); }
         catch (IOException e) { throw new RuntimeException("IOException when set scene to : " + fxmlFile, e); }
-        Scene scene = new Scene(root);
-        stage.setScene(scene);
+
+        stage.setScene(new Scene(root));
     }
 
     @Override
@@ -74,13 +75,7 @@ public class TodoApp extends Application {
         todoApp = null;
     }
 
-    public Config getConfig() {
-        return config;
-    }
+    public Config getConfig() { return config; }
 
-    public void setConfig(Config newConfig) {
-        config = newConfig;
-    }
-
-    public static void main(String[] args) { launch(args); }
+    public void setConfig(Config newConfig) { config = newConfig; }
 }

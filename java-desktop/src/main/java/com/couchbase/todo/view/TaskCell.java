@@ -1,6 +1,7 @@
 package com.couchbase.todo.view;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -17,15 +18,21 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.couchbase.lite.Blob;
+import com.couchbase.todo.TodoApp;
 import com.couchbase.todo.model.Task;
+
 
 public class TaskCell extends ListCell<Task> {
 
     public interface TaskCellListener {
         void onTaskCellEditNameMenuSelected(@NotNull Task task);
+
         void onTaskCellDeleteMenuSelected(@NotNull Task task);
+
         void onTaskCellEditImageMenuSelected(@NotNull Task task);
+
         void onTaskCellDeleteImageMenuSelected(@NotNull Task task);
+
         void onTaskCellCompleteChanged(@NotNull Task task, boolean newComplete);
     }
 
@@ -63,9 +70,10 @@ public class TaskCell extends ListCell<Task> {
         }
 
         if (loader == null) {
-            loader = new FXMLLoader(getClass().getResource("/scene/TaskCell.fxml"));
+            loader = new FXMLLoader(TodoApp.class.getResource("/scene/TaskCell.fxml"));
             loader.setController(this);
-            try {  loader.load(); } catch (IOException e) { e.printStackTrace(); }
+            try { loader.load(); }
+            catch (IOException e) { e.printStackTrace(); }
             registerEventHandlers();
         }
 
@@ -75,24 +83,22 @@ public class TaskCell extends ListCell<Task> {
         completeCheckbox.setSelected(task.isComplete());
         Blob blob = task.getImage();
         if (blob != null) {
-            imageView.setImage(new Image(blob.getContentStream()));
-        } else {
-            imageView.setImage(new Image(getClass().getResourceAsStream("/image/placeholder.png")));
+            imageView.setImage(new Image(Objects.requireNonNull(blob.getContentStream())));
+        }
+        else {
+            imageView.setImage(new Image(Objects
+                .requireNonNull(getClass().getResourceAsStream("/image/placeholder.png"))));
         }
         setGraphic(pane);
     }
 
-    private void setTask(@Nullable Task task) {
-        this.task = task;
-    }
+    private void setTask(@Nullable Task task) { this.task = task; }
 
-    private @Nullable Task getTask() {
-        return this.task;
-    }
+    private @Nullable Task getTask() { return this.task; }
 
     private void setupContextMenu() {
         ContextMenu menu = getContextMenu();
-        if (menu != null) return;
+        if (menu != null) { return; }
 
         MenuItem editName = new MenuItem("Edit Name");
         editName.setOnAction(event -> {
@@ -139,12 +145,7 @@ public class TaskCell extends ListCell<Task> {
         });
     }
 
-    public TaskCellListener getListener() {
-        return listener;
-    }
+    public TaskCellListener getListener() { return listener; }
 
-    public void setListener(TaskCellListener listener) {
-        this.listener = listener;
-    }
-
+    public void setListener(TaskCellListener listener) { this.listener = listener; }
 }

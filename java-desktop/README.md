@@ -12,7 +12,7 @@ The application can be configured via static variables defined in the TodoApp cl
 * JavaFX
 
 ## Requirement
-* Java 9+ (Tested on Java 12)
+* Java 11
 
 ## How to run
 

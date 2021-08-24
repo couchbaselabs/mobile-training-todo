@@ -4,53 +4,26 @@ import org.jetbrains.annotations.NotNull;
 
 
 public class TaskList {
-    public static class Builder {
-        private String id;
-        private String name;
-        private String owner;
-        private int numIncomplete;
+    @NotNull
+    private final String id;
+    @NotNull
+    private final String name;
+    @NotNull
+    private final String owner;
+    private final int todo;
 
-        public TaskList.Builder id(String id) {
-            this.id = id;
-            return this;
-        }
-
-        public TaskList.Builder name(String name) {
-            this.name = name;
-            return this;
-        }
-
-        public TaskList.Builder owner(String owner) {
-            this.owner = owner;
-            return this;
-        }
-
-        public TaskList.Builder numIncomplete(int numIncomplete) {
-            this.numIncomplete = numIncomplete;
-            return this;
-        }
-
-        public TaskList build() {
-            return new TaskList(this);
-        }
+    public TaskList(@NotNull String id, @NotNull String name, @NotNull String owner) {
+        this.id = id;
+        this.name = name;
+        this.owner = owner;
+        this.todo = 0;
     }
 
-    public static Builder builder() { return new TaskList.Builder(); }
-
-    private @NotNull String id;
-
-    private @NotNull String name;
-
-    private @NotNull String owner;
-
-    private @NotNull int numIncomplete;
-
-
-    private TaskList(TaskList.Builder builder) {
-        this.id = builder.id;
-        this.name = builder.name;
-        this.owner = builder.owner;
-        this.numIncomplete = builder.numIncomplete;
+    public TaskList(TaskList taskList, int todo) {
+        this.id = taskList.id;
+        this.name = taskList.name;
+        this.owner = taskList.owner;
+        this.todo = todo;
     }
 
     @NotNull
@@ -62,6 +35,8 @@ public class TaskList {
     @NotNull
     public String getOwner() { return owner; }
 
-    @NotNull
-    public int getNumIncomplete() { return numIncomplete; }
+    public int getTodo() { return todo; }
+
+    @Override
+    public String toString() { return "TaskList{" + id + ", " + name  + ", " + owner + ", " + todo + "}"; }
 }

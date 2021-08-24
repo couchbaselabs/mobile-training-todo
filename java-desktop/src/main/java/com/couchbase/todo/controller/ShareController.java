@@ -1,7 +1,9 @@
 package com.couchbase.todo.controller;
 
 import java.net.URL;
+import java.util.Objects;
 import java.util.ResourceBundle;
+
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -12,12 +14,19 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import org.jetbrains.annotations.NotNull;
 
-import com.couchbase.lite.*;
+import com.couchbase.lite.Expression;
+import com.couchbase.lite.Meta;
+import com.couchbase.lite.MutableDictionary;
+import com.couchbase.lite.MutableDocument;
+import com.couchbase.lite.Query;
+import com.couchbase.lite.QueryBuilder;
+import com.couchbase.lite.Result;
+import com.couchbase.lite.SelectResult;
 import com.couchbase.todo.model.DB;
-import com.couchbase.todo.model.service.DeleteDocService;
-import com.couchbase.todo.model.service.SaveDocService;
 import com.couchbase.todo.model.TaskList;
 import com.couchbase.todo.model.User;
+import com.couchbase.todo.model.service.DeleteDocService;
+import com.couchbase.todo.model.service.SaveDocService;
 import com.couchbase.todo.view.UserCell;
 
 
@@ -43,12 +52,11 @@ public class ShareController implements Initializable, UserCell.UserCellListener
     @NotNull
     private final TaskList taskList;
 
+    @SuppressWarnings("NotNullFieldNotInitialized")
     @NotNull
     private Query query;
 
-    public ShareController(@NotNull TaskList taskList) {
-        this.taskList = taskList;
-    }
+    public ShareController(@NotNull TaskList taskList) { this.taskList = taskList; }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -80,10 +88,8 @@ public class ShareController implements Initializable, UserCell.UserCellListener
         DB.get().addChangeListener(query, change -> {
             ObservableList<User> users = FXCollections.observableArrayList();
             assert change.getResults() != null;
-            for (Result r : change.getResults()) {
-                User user = new User(
-                    r.getString(0),
-                    r.getString(1));
+            for (Result r: change.getResults()) {
+                User user = new User(Objects.requireNonNull(r.getString(0)), Objects.requireNonNull(r.getString(1)));
                 users.add(user);
             }
 

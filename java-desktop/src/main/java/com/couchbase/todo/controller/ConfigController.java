@@ -18,7 +18,8 @@ import com.couchbase.todo.model.DB;
 
 
 public class ConfigController implements Initializable {
-    private @NotNull final Stage stage;
+    @NotNull
+    private final Stage stage;
 
     @FXML
     private CheckBox loggingCheckbox;
@@ -67,11 +68,11 @@ public class ConfigController implements Initializable {
 
     private void registerButtonEventHandler() {
         // handle events clicking cancel button and save buttons
-        cancelButton.setOnAction(event -> TodoApp.goToPage(this.stage, TodoApp.MAIN_FXML));
+        cancelButton.setOnAction(event -> TodoApp.goToPage(stage, TodoApp.MAIN_FXML));
 
         saveButton.setOnAction(event -> {
             update();
-            TodoApp.goToPage(this.stage, TodoApp.LOGIN_FXML);
+            TodoApp.goToPage(stage, TodoApp.LOGIN_FXML);
         });
     }
 

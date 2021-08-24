@@ -6,9 +6,11 @@ import org.jetbrains.annotations.NotNull;
 
 import com.couchbase.todo.model.DB;
 
+
 public class DeleteDocService extends Service<Void> {
 
-    private @NotNull String docId;
+    @NotNull
+    private final String docId;
 
     public DeleteDocService(@NotNull String docId) {
         this.docId = docId;
@@ -17,7 +19,7 @@ public class DeleteDocService extends Service<Void> {
 
     @Override
     protected Task<Void> createTask() {
-        return new Task<Void>() {
+        return new Task<>() {
             @Override
             protected Void call() throws Exception {
                 DB.get().deleteDocument(docId);

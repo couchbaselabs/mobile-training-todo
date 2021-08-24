@@ -43,3 +43,6 @@ captures/
 
 # DB Files
 db/
+
+# Couchbase
+CouchbaseLiteTemp

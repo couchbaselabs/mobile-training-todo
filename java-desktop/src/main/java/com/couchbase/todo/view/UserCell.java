@@ -14,11 +14,15 @@ import org.jetbrains.annotations.NotNull;
 
 import com.couchbase.todo.model.User;
 
+
 public class UserCell extends ListCell<User> {
 
     public interface UserCellListener {
         void onUserCellDeleteMenuSelected(@NotNull User user);
     }
+
+
+    private final UserCellListener listener;
 
     @FXML
     private AnchorPane pane;
@@ -39,11 +43,7 @@ public class UserCell extends ListCell<User> {
 
     private User user;
 
-    private UserCellListener listener;
-
-    public UserCell(@NotNull UserCellListener listener) {
-        this.listener = listener;
-    }
+    public UserCell(@NotNull UserCellListener listener) { this.listener = listener; }
 
     @Override
     protected void updateItem(User user, boolean empty) {
@@ -64,7 +64,7 @@ public class UserCell extends ListCell<User> {
 
     private void setupContextMenu() {
         ContextMenu menu = getContextMenu();
-        if (menu != null) return;
+        if (menu != null) { return; }
 
         MenuItem delete = new MenuItem("Delete");
         delete.setOnAction(event -> {
@@ -76,5 +76,4 @@ public class UserCell extends ListCell<User> {
         menu = new ContextMenu(delete);
         setContextMenu(menu);
     }
-
 }

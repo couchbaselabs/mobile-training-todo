@@ -7,9 +7,9 @@ import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.todo.model.DB;
 
-public class SaveDocService extends Service<Document> {
 
-    private MutableDocument document;
+public class SaveDocService extends Service<Document> {
+    private final MutableDocument document;
 
     public SaveDocService(MutableDocument document) {
         this.document = document;
@@ -18,12 +18,11 @@ public class SaveDocService extends Service<Document> {
 
     @Override
     protected Task<Document> createTask() {
-        return new Task<Document>() {
+        return new Task<>() {
             @Override
             protected Document call() throws Exception {
                 return DB.get().saveDocument(document);
             }
         };
     }
-
 }

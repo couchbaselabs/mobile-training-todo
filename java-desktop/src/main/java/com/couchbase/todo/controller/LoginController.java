@@ -13,7 +13,6 @@ import javafx.stage.Stage;
 import org.jetbrains.annotations.NotNull;
 
 import com.couchbase.todo.TodoApp;
-import com.couchbase.todo.model.Config;
 import com.couchbase.todo.model.DB;
 
 

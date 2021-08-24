@@ -10,7 +10,7 @@ public final class Config {
         private boolean loginRequired = TodoApp.LOGIN_REQUIRED;
         private String dbName = TodoApp.DB_DIR;
         private String sgwUri = TodoApp.SYNC_URL;
-        private TodoApp.CR_MODE crMode  = TodoApp.SYNC_CR_MODE;
+        private TodoApp.CR_MODE crMode = TodoApp.SYNC_CR_MODE;
         private int attempts;
         private int attemptsWaitTime;
 

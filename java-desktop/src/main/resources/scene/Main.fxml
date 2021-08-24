@@ -1,31 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-
-<AnchorPane prefHeight="768.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1">
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<AnchorPane prefHeight="768.0"
+    prefWidth="1024.0"
+    xmlns="http://javafx.com/javafx/11.0.1"
+    xmlns:fx="http://javafx.com/fxml/1">
     <children>
-        <VBox fillWidth="true" layoutX="129.0" layoutY="8.0" prefHeight="200.0" prefWidth="215.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <VBox fillWidth="true"
+            layoutX="129.0"
+            layoutY="8.0"
+            prefHeight="200.0"
+            prefWidth="215.0"
+            AnchorPane.bottomAnchor="0.0"
+            AnchorPane.leftAnchor="0.0"
+            AnchorPane.rightAnchor="0.0"
+            AnchorPane.topAnchor="0.0">
             <children>
                 <MenuBar>
                     <menus>
                         <Menu text="File">
                             <items>
-                                <MenuItem fx:id="logoutMenuItem" text="Logout"/>
-                                <MenuItem fx:id="configMenuItem" text="Config"/>
+                                <MenuItem fx:id="logoutMenuItem"
+                                    text="Logout" />
+                                <MenuItem fx:id="configMenuItem"
+                                    text="Config" />
                             </items>
                         </Menu>
                     </menus>
                 </MenuBar>
-                <SplitPane dividerPositions="0.3" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="ALWAYS">
+                <SplitPane dividerPositions="0.3"
+                    AnchorPane.bottomAnchor="0.0"
+                    AnchorPane.leftAnchor="0.0"
+                    AnchorPane.rightAnchor="0.0"
+                    AnchorPane.topAnchor="0.0"
+                    VBox.vgrow="ALWAYS">
                     <items>
-                        <fx:include fx:id="taskLists" source="TaskLists.fxml" />
-                        <fx:include fx:id="taskList" source="TaskList.fxml" />
+                        <fx:include fx:id="taskLists"
+                            source="TaskLists.fxml" />
+                        <fx:include fx:id="taskList"
+                            source="TaskList.fxml" />
                     </items>
-               <VBox.margin>
-                  <Insets />
-               </VBox.margin>
+                    <VBox.margin>
+                        <Insets />
+                    </VBox.margin>
                 </SplitPane>
             </children>
         </VBox>

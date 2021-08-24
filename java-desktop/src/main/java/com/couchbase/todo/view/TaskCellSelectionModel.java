@@ -6,6 +6,7 @@ import javafx.scene.control.MultipleSelectionModel;
 
 import com.couchbase.todo.model.Task;
 
+
 public class TaskCellSelectionModel extends MultipleSelectionModel<Task> {
 
     @Override

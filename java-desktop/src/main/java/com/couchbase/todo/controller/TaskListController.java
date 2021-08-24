@@ -6,12 +6,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.print.Doc;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -24,8 +25,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-
-
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.AnchorPane;
@@ -35,19 +34,31 @@ import javafx.stage.Stage;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.couchbase.lite.*;
+import com.couchbase.lite.Blob;
+import com.couchbase.lite.Document;
+import com.couchbase.lite.Expression;
+import com.couchbase.lite.Meta;
+import com.couchbase.lite.MutableDictionary;
+import com.couchbase.lite.MutableDocument;
+import com.couchbase.lite.Ordering;
+import com.couchbase.lite.Query;
+import com.couchbase.lite.QueryBuilder;
+import com.couchbase.lite.Result;
+import com.couchbase.lite.ResultSet;
+import com.couchbase.lite.SelectResult;
+import com.couchbase.todo.TodoApp;
 import com.couchbase.todo.model.DB;
-import com.couchbase.todo.model.service.DeleteDocService;
-import com.couchbase.todo.model.service.SaveDocService;
 import com.couchbase.todo.model.Task;
 import com.couchbase.todo.model.TaskList;
+import com.couchbase.todo.model.service.DeleteDocService;
+import com.couchbase.todo.model.service.SaveDocService;
 import com.couchbase.todo.view.TaskCell;
 import com.couchbase.todo.view.TaskCellSelectionModel;
 
-public class TaskListController implements Initializable, TaskCell.TaskCellListener {
 
-    static final String TYPE = "task";
-    static final String KEY_TYPE = "type";
+public class TaskListController implements Initializable, TaskCell.TaskCellListener {
+    public static final String TYPE = "task";
+    public static final String KEY_TYPE = "type";
     static final String KEY_TASK = "task";
     static final String KEY_COMPLETE = "complete";
     static final String KEY_IMAGE = "image";
@@ -106,7 +117,7 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
 
         shareButton.setOnAction(event -> {
             try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/scene/Share.fxml"));
+                FXMLLoader loader = new FXMLLoader(TodoApp.class.getResource("/scene/Share.fxml"));
                 ShareController controller = new ShareController(this.taskList);
                 loader.setController(controller);
                 Parent root = loader.load();
@@ -116,14 +127,13 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
                 stage.setScene(scene);
                 stage.setOnCloseRequest(event1 -> controller.close());
                 stage.showAndWait();
-            } catch (IOException e) { e.printStackTrace(); }
+            }
+            catch (IOException e) { e.printStackTrace(); }
         });
     }
 
     @Nullable
-    public TaskList getTaskList() {
-        return getTaskList();
-    }
+    public TaskList getTaskList() { return taskList; }
 
     public void setTaskList(@Nullable TaskList taskList) {
         this.taskList = taskList;
@@ -154,25 +164,20 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
                         .equalTo(Expression.string(taskList.getId()))))
                 .orderBy(Ordering.property(KEY_CREATED_AT), Ordering.property(KEY_TASK));
 
-            DB.get().addChangeListener(query, change -> {
-                ObservableList<Task> tasks = FXCollections.observableArrayList();
-                assert change.getResults() != null;
-                for (Result r : change.getResults().allResults()) {
-                    tasks.add(new Task(
-                        r.getString(0),
-                        r.getString(1),
-                        r.getBoolean(2),
-                        r.getBlob(3)));
-                }
-                Platform.runLater(() -> listView.setItems(tasks));
-            });
+            DB.get().addChangeListener(
+                query,
+                change -> {
+                    ResultSet rs = change.getResults();
+                    Platform.runLater(() -> updateTasksList((rs == null) ? Collections.emptyList() : rs.allResults()));
+                });
 
             listNameLabel.setText(taskList.getName());
             listNameLabel.setVisible(true);
             shareButton.setVisible(true);
             taskTextField.setDisable(false);
             createTaskButton.setDisable(false);
-        } else {
+        }
+        else {
             listView.getItems().clear();
             listNameLabel.setText("");
             listNameLabel.setVisible(false);
@@ -180,6 +185,18 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
             taskTextField.setDisable(true);
             createTaskButton.setDisable(true);
         }
+    }
+
+    private void updateTasksList(List<Result> results) {
+        ObservableList<Task> tasks = FXCollections.observableArrayList();
+        for (Result r: results) {
+            tasks.add(new Task(
+                Objects.requireNonNull(r.getString(0)),
+                Objects.requireNonNull(r.getString(1)),
+                r.getBoolean(2),
+                r.getBlob(3)));
+        }
+        listView.setItems(tasks);
     }
 
     private void createTask(@NotNull String name) {
@@ -224,9 +241,7 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
         MutableDocument mDoc = doc.toMutable();
         Blob blob = null;
         if (image != null) {
-            try {
-                blob = new Blob(getContentType(image), new FileInputStream(image));
-            }
+            try { blob = new Blob(getContentType(image), new FileInputStream(image)); }
             catch (FileNotFoundException e) {
                 // TODO: Report Error
                 e.printStackTrace();

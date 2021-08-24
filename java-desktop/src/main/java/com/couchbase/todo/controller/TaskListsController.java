@@ -15,22 +15,22 @@ import org.jetbrains.annotations.NotNull;
 
 import com.couchbase.lite.*;
 import com.couchbase.todo.model.DB;
+import com.couchbase.todo.model.TaskList;
 import com.couchbase.todo.model.service.DeleteDocService;
 import com.couchbase.todo.model.service.SaveDocService;
-import com.couchbase.todo.model.TaskList;
 import com.couchbase.todo.view.TaskListCell;
 
 
 public final class TaskListsController implements Initializable, TaskListCell.TaskListCellListener {
-
     private static final String TYPE = "task-list";
+    private static final String TABLE_TASK_LIST = "tasklist";
+    private static final String TABLE_TASK = "task";
     private static final String KEY_TYPE = "type";
     private static final String KEY_NAME = "name";
     private static final String KEY_OWNER = "owner";
-    private static final String KEY_NUM_UNDONE = "num-undone";
-
-    private final Map<String, Integer> incompleteTaskCounts = new HashMap<>();
-    private final Query incompleteTasksCountQuery = getIncompleteTasksCountQuery();
+    private static final String KEY_COMPLETE = "complete";
+    private static final String KEY_TODO = "todo";
+    private static final String KEY_TASKLIST_ID = "taskList.id";
 
     @FXML
     private ListView<TaskList> listView;
@@ -38,7 +38,12 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
     @FXML
     private Button createListButton;
 
-    private @NotNull TaskListController taskListController;
+    private Query todoQuery;
+
+    // set during program initialization, in MainController.initialize
+    @SuppressWarnings("NotNullFieldNotInitialized")
+    @NotNull
+    private TaskListController taskListController;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -47,33 +52,23 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
         listView.setItems(FXCollections.observableArrayList());
         listView.setCellFactory(listView -> new TaskListCell(this));
 
+        DB db = DB.get();
+
         Query query = QueryBuilder
             .select(
                 SelectResult.expression(Meta.id),
                 SelectResult.property(KEY_NAME),
-                SelectResult.property(KEY_OWNER),
-                SelectResult.property(KEY_NUM_UNDONE))
-            .from(DB.get().getDataSource())
+                SelectResult.property(KEY_OWNER))
+            .from(db.getDataSource())
             .where(Expression.property(KEY_TYPE).equalTo(Expression.string(TYPE)))
             .orderBy(Ordering.property(KEY_NAME));
 
-        DB.get().addChangeListener(query, change -> {
-            ObservableList<TaskList> taskLists = FXCollections.observableArrayList();
-            assert change.getResults() != null;
-            for (Result r: change.getResults()) {
-                TaskList list = TaskList.builder()
-                    .id(r.getString(0))
-                    .name(r.getString(1))
-                    .owner(r.getString(2))
-                    .numIncomplete(r.getInt(3))
-                    .build();
-                taskLists.add(list);
-            }
-
-            Platform.runLater(() -> listView.setItems(taskLists));
-        });
-
-        DB.get().addChangeListener(incompleteTasksCountQuery, this::onIncompleteTasksChanged);
+        db.addChangeListener(
+            query,
+            change -> {
+                ResultSet rs = change.getResults();
+                Platform.runLater(() -> updateTaskList((rs == null) ? Collections.emptyList() : rs.allResults()));
+            });
     }
 
     private void registerEventHandlers() {
@@ -106,12 +101,11 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
             doc.setValue(KEY_TYPE, TYPE);
             doc.setValue(KEY_NAME, name);
             doc.setValue(KEY_OWNER, username);
-            doc.setValue(KEY_NUM_UNDONE,0); // ??? 0 is hardcoded as the default value for num_undone
             new SaveDocService(doc).start();
         });
     }
 
-    private void updateName(TaskList taskList) {
+    private void updateName(@NotNull TaskList taskList) {
         TextInputDialog dialog = new TextInputDialog(taskList.getName());
         dialog.setTitle("New List");
         dialog.setHeaderText("Enter List Name");
@@ -132,9 +126,7 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
 
         TaskList selTaskList = taskListController.getTaskList();
         if (selTaskList != null) {
-            if (taskList.equals(selTaskList.getId())) {
-                taskListController.setTaskList(null);
-            }
+            if (taskList.getId().equals(selTaskList.getId())) { taskListController.setTaskList(null); }
         }
     }
 
@@ -148,21 +140,50 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
         deleteList(taskList);
     }
 
-    public void onIncompleteTasksChanged(@NotNull QueryChange change) {
-        /*
-        TODO
-         */
-        for (Result r: change.getResults()) {
-            incompleteTaskCounts.put(r.getString(0), r.getInt(1));
+    private void updateTaskList(List<Result> results) {
+        ObservableList<TaskList> taskLists = FXCollections.observableArrayList();
+        for (Result r: results) { taskLists.add(new TaskList(r.getString(0), r.getString(1), r.getString(2))); }
+        listView.setItems(taskLists);
+
+        DB db = DB.get();
+
+        if (results.isEmpty()) {
+            if (todoQuery != null) {
+                db.removeChangeListeners(todoQuery);
+                todoQuery = null;
+            }
+            return;
         }
+
+        if (todoQuery != null) { return; }
+
+        todoQuery = QueryBuilder
+            .select(
+                SelectResult.expression(Meta.id.from(TABLE_TASK_LIST)),
+                SelectResult.expression(Function.count(Meta.id.from(TABLE_TASK))).as(KEY_TODO))
+            .from(db.getDataSource().as(TABLE_TASK_LIST))
+            .join(Join.innerJoin(db.getDataSource().as(TABLE_TASK))
+                .on(Expression.property(KEY_TASKLIST_ID).from(TABLE_TASK).equalTo(Meta.id.from(TABLE_TASK_LIST))))
+            .where(Expression.property(KEY_COMPLETE).from(TABLE_TASK).equalTo(Expression.booleanValue(false)))
+            .groupBy(Meta.id.from(TABLE_TASK_LIST));
+
+        db.addChangeListener(
+            todoQuery,
+            change -> {
+                ResultSet rs = change.getResults();
+                Platform.runLater(() -> updateToDoCount((rs == null) ? Collections.emptyList() : rs.allResults()));
+            });
     }
 
-    private Query getIncompleteTasksCountQuery() {
-        return DB.get().createQuery(
-            SelectResult.expression(Expression.property(TaskListController.KEY_TASK_LIST_ID)),
-            SelectResult.expression(Function.count(Expression.all())))
-            .where(Expression.property(KEY_TYPE).equalTo(Expression.string(TaskListController.KEY_TASK))
-                .and(Expression.property(TaskListController.KEY_COMPLETE).equalTo(Expression.booleanValue(false))))
-            .groupBy(Meta.id);
+    private void updateToDoCount(List<Result> results) {
+        Map<String, Integer> toDoCounts = new HashMap<>();
+        for (Result result: results) { toDoCounts.put(result.getString(0), result.getInt(1)); }
+
+        ObservableList<TaskList> taskLists = FXCollections.observableArrayList();
+        for (TaskList taskList: listView.getItems()) {
+            Integer todo = toDoCounts.get(taskList.getId());
+            taskLists.add(new TaskList(taskList, (todo == null) ? 0 : todo));
+        }
+        listView.setItems(taskLists);
     }
 }

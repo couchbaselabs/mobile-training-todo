@@ -5,17 +5,20 @@ import org.jetbrains.annotations.Nullable;
 
 import com.couchbase.lite.Blob;
 
+
 public class Task {
+    @NotNull
+    private final String id;
 
-    private @NotNull String id;
+    @NotNull
+    private final String name;
 
-    private @NotNull String name;
+    private final boolean complete;
 
-    private boolean complete;
+    @Nullable
+    private final Blob image;
 
-    private @Nullable Blob image;
-
-    public Task(String id, String name, boolean complete, Blob image) {
+    public Task(@NotNull String id, @NotNull String name, boolean complete, @Nullable Blob image) {
         this.id = id;
         this.name = name;
         this.image = image;
@@ -23,22 +26,13 @@ public class Task {
     }
 
     @NotNull
-    public String getId() {
-        return id;
-    }
+    public String getId() { return id; }
 
     @NotNull
-    public String getName() {
-        return name;
-    }
+    public String getName() { return name; }
 
-    public boolean isComplete() {
-        return complete;
-    }
+    public boolean isComplete() { return complete; }
 
     @Nullable
-    public Blob getImage() {
-        return image;
-    }
-
+    public Blob getImage() { return image; }
 }

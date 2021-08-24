@@ -14,6 +14,8 @@ import com.couchbase.todo.model.DB;
 
 
 public class MainController implements Initializable {
+    @NotNull
+    private final Stage stage;
 
     @FXML
     private TaskListsController taskListsController;
@@ -27,12 +29,7 @@ public class MainController implements Initializable {
     @FXML
     private MenuItem configMenuItem;
 
-    @NotNull
-    private final Stage stage;
-
-    public MainController(@NotNull Stage stage) {
-        this.stage = stage;
-    }
+    public MainController(@NotNull Stage stage) { this.stage = stage; }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {

@@ -1,44 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <AnchorPane fx:id="pane"
-    prefHeight="120.0"
-    prefWidth="600.0"
-    xmlns="http://javafx.com/javafx/10.0.2-internal"
+    xmlns="http://javafx.com/javafx/16"
     xmlns:fx="http://javafx.com/fxml/1">
     <children>
         <HBox alignment="CENTER_LEFT"
-            prefHeight="100.0"
-            prefWidth="200.0"
+            prefWidth="215.0"
             AnchorPane.bottomAnchor="5.0"
             AnchorPane.leftAnchor="5.0"
             AnchorPane.rightAnchor="5.0"
             AnchorPane.topAnchor="5.0">
             <children>
-                <ImageView fx:id="imageView"
-                    fitHeight="100.0"
-                    fitWidth="100.0"
-                    pickOnBounds="true" />
                 <Label fx:id="nameLabel"
-                    maxHeight="1.7976931348623157E308"
-                    maxWidth="1.7976931348623157E308"
-                    text=""
-                    HBox.hgrow="ALWAYS">
+                    prefWidth="200.0">
                     <HBox.margin>
                         <Insets left="10.0" />
                     </HBox.margin>
                 </Label>
-                <CheckBox fx:id="completeCheckbox"
-                    mnemonicParsing="false">
+                <Label fx:id="todoLabel"
+                    HBox.hgrow="NEVER">
                     <HBox.margin>
-                        <Insets left="10.0" />
+                        <Insets left="10.0"
+                            right="10.0" />
                     </HBox.margin>
-                </CheckBox>
+                </Label>
             </children>
         </HBox>
     </children>
