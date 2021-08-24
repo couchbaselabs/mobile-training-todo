@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+
 public class TaskList {
     private static final String TYPE = "task-list";
     private static final String KEY_TYPE = "type";
@@ -70,6 +71,8 @@ public class TaskList {
         if (doc == null) { throw ResponseException.NOT_FOUND("Task List: " + id); }
 
         db.save(doc.toMutable().setValue("name", list.getName()));
+
+        System.out.println("List Document to JSON (when update list name) : " + doc.toJSON());
     }
 
     public static void delete(UserContext context, String id) throws CouchbaseLiteException {
@@ -83,21 +86,24 @@ public class TaskList {
     public static List<TaskList> getTaskLists(UserContext context) throws CouchbaseLiteException {
         Database database = context.getDatabase();
         Query query = QueryBuilder
-                .select(SelectResult.expression(Meta.id),
-                        SelectResult.property(KEY_NAME),
-                        SelectResult.property(KEY_OWNER))
-                .from(DataSource.database(database))
-                .where(Expression.property(KEY_TYPE).equalTo(Expression.string(TaskList.TYPE)))
-                .orderBy(Ordering.property(KEY_NAME));
+            .select(
+                SelectResult.expression(Meta.id),
+                SelectResult.property(KEY_NAME),
+                SelectResult.property(KEY_OWNER))
+            .from(DataSource.database(database))
+            .where(Expression.property(KEY_TYPE).equalTo(Expression.string(TaskList.TYPE)))
+            .orderBy(Ordering.property(KEY_NAME));
 
         List<TaskList> lists = new ArrayList<>();
         ResultSet rs = query.execute();
-        for (Result r : rs) {
+        for (Result r: rs) {
             TaskList taskList = new TaskList();
             taskList.setId(r.getString(0));
             taskList.setName(r.getString(1));
             taskList.setOwner(r.getString(2));
             lists.add(taskList);
+
+            System.out.println("List query result to JSON (when get list): " + r.toJSON());
         }
         return lists;
     }

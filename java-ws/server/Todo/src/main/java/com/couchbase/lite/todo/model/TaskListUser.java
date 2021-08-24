@@ -8,6 +8,7 @@ import com.couchbase.lite.todo.util.Preconditions;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class TaskListUser {
     private static final String TYPE = "task-list.user";
     private static final String KEY_TYPE = "type";
@@ -53,7 +54,7 @@ public class TaskListUser {
 
         Database db = context.getDatabase();
 
-        Document taskList =  db.getDocument(taskListId);
+        Document taskList = db.getDocument(taskListId);
         if (taskList == null) { throw ResponseException.NOT_FOUND("task list id : " + taskListId); }
 
         String docId = taskListId + "." + user.getName();
@@ -70,6 +71,9 @@ public class TaskListUser {
         taskListInfo.setValue(KEY_TASK_LIST_OWNER, taskList.getValue("owner"));
         doc.setValue(KEY_TASK_LIST, taskListInfo);
         db.save(doc);
+
+        System.out.println("Current List Document to JSON (when add user): " + taskList.toJSON());
+
         return doc.getId();
     }
 
@@ -77,7 +81,7 @@ public class TaskListUser {
         Preconditions.checkArgNotNull(userId, "user id");
 
         Database db = context.getDatabase();
-        Document doc =  db.getDocument(userId);
+        Document doc = db.getDocument(userId);
         if (doc != null) {
             db.delete(doc);
         }
@@ -88,18 +92,19 @@ public class TaskListUser {
 
         Database database = context.getDatabase();
         Query query = QueryBuilder
-                .select(SelectResult.expression(Meta.id),
-                        SelectResult.property(KEY_USERNAME),
-                        SelectResult.property(KEY_TASK_LIST))
-                .from(DataSource.database(database))
-                .where(Expression.property(KEY_TYPE).equalTo(Expression.string(TaskListUser.TYPE))
-                        .and(Expression.property(KEY_TASK_LIST + "." + KEY_TASK_LIST_ID)
-                                .equalTo(Expression.string(taskListId))))
-                .orderBy(Ordering.property(KEY_USERNAME));
+            .select(
+                SelectResult.expression(Meta.id),
+                SelectResult.property(KEY_USERNAME),
+                SelectResult.property(KEY_TASK_LIST))
+            .from(DataSource.database(database))
+            .where(Expression.property(KEY_TYPE).equalTo(Expression.string(TaskListUser.TYPE))
+                .and(Expression.property(KEY_TASK_LIST + "." + KEY_TASK_LIST_ID)
+                    .equalTo(Expression.string(taskListId))))
+            .orderBy(Ordering.property(KEY_USERNAME));
 
         List<TaskListUser> users = new ArrayList<>();
         ResultSet rs = query.execute();
-        for (Result r : rs) {
+        for (Result r: rs) {
             TaskListUser user = new TaskListUser();
             user.setId(r.getString(0));
             user.setName(r.getString(1));
@@ -111,6 +116,8 @@ public class TaskListUser {
             user.setTaksList(taskList);
 
             users.add(user);
+
+            System.out.println("Query result to JSON (when add user to a list) : " + r.toJSON());
         }
         return users;
     }
