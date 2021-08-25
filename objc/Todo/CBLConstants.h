@@ -38,5 +38,6 @@
 #define CCR_TYPE_KEY                        @"settings.ccrType"
 #define MAX_RETRY_KEY                       @"setting.maxRetry"
 #define MAX_RETRY_WAIT_TIME_KEY             @"setting.maxRetryWaitTime"
+#define SYNC_ENDPOINT                       @"setting.syncEndpoint"
 
 #endif /* CBLConstants_h */

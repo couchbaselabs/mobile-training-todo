@@ -47,23 +47,17 @@
 }
 
 - (IBAction) onSave:(id)sender {
-    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-    [defaults setBool: true forKey: HAS_SETTINGS_KEY];
+    CBLConfig.shared.loggingEnabled = self.loggingSwitch.on;
+    CBLConfig.shared.loginFlowEnabled = self.loginFlowSwitch.on;
+    CBLConfig.shared.syncEnabled = self.syncSwitch.on;
+    CBLConfig.shared.pushNotificationEnabled = self.pushNotificationSwitch.on;
+    CBLConfig.shared.ccrEnabled = self.ccrSwitch.on;
+    CBLConfig.shared.ccrType = self.ccrSegmentedControl.selectedSegmentIndex;
+    CBLConfig.shared.maxAttempts = self.maxRetries.text.doubleValue;
+    CBLConfig.shared.maxAttemptWaitTime = self.maxRetryWaitTime.text.doubleValue;
+    CBLConfig.shared.syncEndpoint = self.syncEndpoint.text;
     
-    [defaults setBool: self.loggingSwitch.on forKey: IS_LOGGING_KEY];
-    [defaults setBool: self.loginFlowSwitch.on forKey: IS_LOGIN_FLOW_KEY];
-    [defaults setBool: self.syncSwitch.on forKey: IS_SYNC_KEY];
-    [defaults setBool: self.pushNotificationSwitch.on forKey: IS_PUSH_NOTIFICATION_ENABLED_KEY];
-    [defaults setBool: self.ccrSwitch.on forKey: IS_CCR_ENABLED_KEY];
-    [defaults setInteger: self.ccrSegmentedControl.selectedSegmentIndex forKey: CCR_TYPE_KEY];
-    [defaults setValue: self.maxRetries.text forKey: MAX_RETRY_KEY];
-    [defaults setValue: self.maxRetryWaitTime.text forKey: MAX_RETRY_WAIT_TIME_KEY];
-    
-    NSString* url = self.syncEndpoint.text;
-    if (url) {
-        // save the url to config
-    }
-        
+    [CBLConfig.shared persist];
     
     [self dismissViewControllerAnimated: true completion:^{
         [(AppDelegate *)[UIApplication sharedApplication].delegate logout: CBLLogoutModeCloseDatabase];
@@ -87,17 +81,14 @@
 - (void) loadSavedValues {
     self.syncEndpoint.text = [CBLConfig shared].syncEndpoint;
     
-    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-    assert([defaults boolForKey: HAS_SETTINGS_KEY]);
-    
-    self.loggingSwitch.on = [defaults boolForKey: IS_LOGGING_KEY];
-    self.loginFlowSwitch.on = [defaults boolForKey: IS_LOGIN_FLOW_KEY];
-    self.syncSwitch.on = [defaults boolForKey: IS_SYNC_KEY];
-    self.pushNotificationSwitch.on = [defaults boolForKey: IS_PUSH_NOTIFICATION_ENABLED_KEY];
-    self.ccrSwitch.on = [defaults boolForKey: IS_CCR_ENABLED_KEY];
-    self.ccrSegmentedControl.selectedSegmentIndex = [defaults integerForKey: CCR_TYPE_KEY];
-    self.maxRetries.text = [defaults stringForKey: MAX_RETRY_KEY];
-    self.maxRetryWaitTime.text = [defaults stringForKey: MAX_RETRY_WAIT_TIME_KEY];
+    self.loggingSwitch.on = CBLConfig.shared.loggingEnabled;
+    self.loginFlowSwitch.on = CBLConfig.shared.loginFlowEnabled;
+    self.syncSwitch.on = CBLConfig.shared.syncEnabled;
+    self.pushNotificationSwitch.on = CBLConfig.shared.pushNotificationEnabled;
+    self.ccrSwitch.on = CBLConfig.shared.ccrEnabled;
+    self.ccrSegmentedControl.selectedSegmentIndex = CBLConfig.shared.ccrType;
+    self.maxRetries.text = [NSString stringWithFormat:@"%ld", (long)CBLConfig.shared.maxAttempts];
+    self.maxRetryWaitTime.text = [NSString stringWithFormat:@"%ld", CBLConfig.shared.maxAttemptWaitTime];
 }
 
 @end
