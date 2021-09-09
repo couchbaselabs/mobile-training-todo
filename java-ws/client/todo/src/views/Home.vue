@@ -3,7 +3,7 @@
     <v-app-bar app flat clipped-left color="light-blue lighten-4">
       <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       <v-toolbar-title
-        class="headline text-uppercase light-blue--text text--darken-4"
+          class="headline text-uppercase light-blue--text text--darken-4"
       >
         <span class="font-weight-light">Todo</span>
       </v-toolbar-title>
@@ -13,16 +13,17 @@
       </v-btn>
     </v-app-bar>
     <v-navigation-drawer
-      app
-      clipped
-      floating
-      color="grey lighten-4"
-      v-model="drawer"
+        app
+        clipped
+        floating
+        color="grey lighten-4"
+        v-model="drawer"
     >
-      <Lists />
+      <Lists/>
     </v-navigation-drawer>
     <v-content class="white">
-      <router-view />
+      <span id="refresh"> Refresh browser to get all updates from database </span>
+      <router-view/>
       <v-snackbar v-model="alert" bottom color="blue">
         {{ alertMessage }}
         <v-btn color="white" text @click="alert = false">Close</v-btn>
@@ -52,7 +53,7 @@ export default {
       let error = info.error;
       let message = info.when + ", " + error.message;
       if (error.response && error.response.status === 401) {
-        this.$router.push({ name: "login" });
+        this.$router.push({name: "login"});
       } else {
         this.alertMessage = message;
         this.alert = true;
@@ -60,15 +61,23 @@ export default {
     });
   },
   methods: {
-    logout: function() {
+    logout: function () {
       TodoService.logout()
-        .then(() => {
-          this.$router.push({ name: "login" });
-        })
-        .catch(error => {
-          event.$emit("ws-error", { error, when: "Logout" });
-        });
+          .then(() => {
+            this.$router.push({name: "login"});
+          })
+          .catch(error => {
+            event.$emit("ws-error", {error, when: "Logout"});
+          });
     }
   }
 };
+
 </script>
+
+<style>
+#refresh {
+  margin-left: 10px;
+  margin-top: 10px;
+}
+</style>

@@ -4,7 +4,7 @@
       <v-tab :to="{ name: 'tasks' }">TASKS</v-tab>
       <v-tab :to="{ name: 'users' }">USERS</v-tab>
     </v-tabs>
-    <router-view />
+    <router-view/>
   </div>
 </template>
 
