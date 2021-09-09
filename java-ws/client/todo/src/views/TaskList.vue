@@ -4,7 +4,6 @@
       <v-tab :to="{ name: 'tasks' }">TASKS</v-tab>
       <v-tab :to="{ name: 'users' }">USERS</v-tab>
     </v-tabs>
-    <span> Refresh browser to get all updates from the database </span>
     <router-view/>
   </div>
 </template>
