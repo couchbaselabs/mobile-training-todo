@@ -195,6 +195,7 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
                 Objects.requireNonNull(r.getString(1)),
                 r.getBoolean(2),
                 r.getBlob(3)));
+            System.out.println("Update Task List to JSON " + r.toJSON());
         }
         listView.setItems(tasks);
     }
@@ -219,7 +220,6 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
         // TODO: Execute on non-ui thread
         Document doc = DB.get().getDocument(id);
         if (doc == null) { return; }
-
         MutableDocument mDoc = doc.toMutable();
         mDoc.setValue(KEY_TASK, name);
         new SaveDocService(mDoc).start();
@@ -228,6 +228,7 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
     private void updateTaskComplete(@NotNull String id, boolean completion) {
         Document doc = DB.get().getDocument(id);
         if (doc == null) { return; }
+        System.out.println("Task doc after update complete check box: " + doc.toJSON());
 
         MutableDocument mDoc = doc.toMutable();
         mDoc.setValue(KEY_COMPLETE, completion);
@@ -248,7 +249,6 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
             }
         }
         mDoc.setValue(KEY_IMAGE, blob);
-
         new SaveDocService(mDoc).start();
     }
 
@@ -298,5 +298,4 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
     public void onTaskCellCompleteChanged(@NotNull Task task, boolean newComplete) {
         updateTaskComplete(task.getId(), newComplete);
     }
-
 }
