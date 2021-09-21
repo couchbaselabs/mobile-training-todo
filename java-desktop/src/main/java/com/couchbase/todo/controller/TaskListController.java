@@ -22,11 +22,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
@@ -195,7 +191,10 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
                 Objects.requireNonNull(r.getString(1)),
                 r.getBoolean(2),
                 r.getBlob(3)));
-            System.out.println("Update Task List to JSON " + r.toJSON());
+
+            if (MainController.jsonBoolean.get() == true) {
+                System.out.println("Update Task List to JSON: " + r.toJSON());
+            }
         }
         listView.setItems(tasks);
     }
@@ -220,6 +219,7 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
         // TODO: Execute on non-ui thread
         Document doc = DB.get().getDocument(id);
         if (doc == null) { return; }
+
         MutableDocument mDoc = doc.toMutable();
         mDoc.setValue(KEY_TASK, name);
         new SaveDocService(mDoc).start();
@@ -228,8 +228,9 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
     private void updateTaskComplete(@NotNull String id, boolean completion) {
         Document doc = DB.get().getDocument(id);
         if (doc == null) { return; }
-        System.out.println("Task doc after update complete check box: " + doc.toJSON());
-
+        if (MainController.jsonBoolean.get() == true) {
+            System.out.println("Task doc after update complete check box: " + doc.toJSON());
+        }
         MutableDocument mDoc = doc.toMutable();
         mDoc.setValue(KEY_COMPLETE, completion);
         new SaveDocService(mDoc).start();
