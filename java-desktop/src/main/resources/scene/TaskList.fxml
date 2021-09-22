@@ -29,7 +29,8 @@
                         <Label fx:id="listNameLabel"
                             maxWidth="1.7976931348623157E308"
                             prefHeight="44.0"
-                            text="LIST NAME">
+                            text="LIST NAME"
+                            HBox.hgrow="ALWAYS">
                             <padding>
                                 <Insets left="5.0" />
                             </padding>

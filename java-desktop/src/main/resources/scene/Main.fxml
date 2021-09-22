@@ -7,10 +7,12 @@
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.RadioMenuItem?>
+<?import javafx.scene.control.ToggleGroup?>
 <AnchorPane prefHeight="768.0"
-    prefWidth="1024.0"
-    xmlns="http://javafx.com/javafx/11.0.1"
-    xmlns:fx="http://javafx.com/fxml/1">
+            prefWidth="1024.0"
+            xmlns="http://javafx.com/javafx/11.0.1"
+            xmlns:fx="http://javafx.com/fxml/1">
     <children>
         <VBox fillWidth="true"
             layoutX="129.0"
@@ -21,6 +23,9 @@
             AnchorPane.leftAnchor="0.0"
             AnchorPane.rightAnchor="0.0"
             AnchorPane.topAnchor="0.0">
+            <fx:define>
+                <ToggleGroup fx:id="group" />
+            </fx:define>
             <children>
                 <MenuBar>
                     <menus>
@@ -30,6 +35,20 @@
                                     text="Logout" />
                                 <MenuItem fx:id="configMenuItem"
                                     text="Config" />
+                            </items>
+                        </Menu>
+                        <Menu text="JSON results enabled">
+                            <items>
+                                <RadioMenuItem
+                                    toggleGroup="$group"
+                                    text="On"
+                                    fx:id="onToggle">
+                                </RadioMenuItem>
+                                <RadioMenuItem
+                                    toggleGroup="$group"
+                                    text="Off"
+                                    fx:id="offToggle">
+                                </RadioMenuItem>
                             </items>
                         </Menu>
                     </menus>

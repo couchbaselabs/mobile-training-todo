@@ -22,11 +22,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
@@ -195,6 +191,10 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
                 Objects.requireNonNull(r.getString(1)),
                 r.getBoolean(2),
                 r.getBlob(3)));
+
+            if (MainController.jsonBoolean.get()) {
+                System.out.println("Update Task List to JSON: " + r.toJSON());
+            }
         }
         listView.setItems(tasks);
     }
@@ -228,7 +228,9 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
     private void updateTaskComplete(@NotNull String id, boolean completion) {
         Document doc = DB.get().getDocument(id);
         if (doc == null) { return; }
-
+        if (MainController.jsonBoolean.get()) {
+            System.out.println("Task doc after update complete check box: " + doc.toJSON());
+        }
         MutableDocument mDoc = doc.toMutable();
         mDoc.setValue(KEY_COMPLETE, completion);
         new SaveDocService(mDoc).start();
@@ -248,7 +250,6 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
             }
         }
         mDoc.setValue(KEY_IMAGE, blob);
-
         new SaveDocService(mDoc).start();
     }
 
@@ -298,5 +299,4 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
     public void onTaskCellCompleteChanged(@NotNull Task task, boolean newComplete) {
         updateTaskComplete(task.getId(), newComplete);
     }
-
 }
