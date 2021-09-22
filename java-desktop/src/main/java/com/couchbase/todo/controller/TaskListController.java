@@ -192,7 +192,7 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
                 r.getBoolean(2),
                 r.getBlob(3)));
 
-            if (MainController.jsonBoolean.get() == true) {
+            if (MainController.jsonBoolean.get()) {
                 System.out.println("Update Task List to JSON: " + r.toJSON());
             }
         }
@@ -228,7 +228,7 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
     private void updateTaskComplete(@NotNull String id, boolean completion) {
         Document doc = DB.get().getDocument(id);
         if (doc == null) { return; }
-        if (MainController.jsonBoolean.get() == true) {
+        if (MainController.jsonBoolean.get()) {
             System.out.println("Task doc after update complete check box: " + doc.toJSON());
         }
         MutableDocument mDoc = doc.toMutable();

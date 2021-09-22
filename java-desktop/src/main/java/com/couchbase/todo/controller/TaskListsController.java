@@ -184,7 +184,7 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
         Map<String, Integer> toDoCounts = new HashMap<>();
         for (Result result: results) {
             toDoCounts.put(result.getString(0), result.getInt(1));
-            if (MainController.jsonBoolean.get() == true) {
+            if (MainController.jsonBoolean.get()) {
                 System.out.println("Updated count of list toJson: " + result.toJSON());
             }
         }

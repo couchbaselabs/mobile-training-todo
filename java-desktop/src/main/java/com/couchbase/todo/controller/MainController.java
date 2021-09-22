@@ -61,9 +61,8 @@ public class MainController implements Initializable {
             @Override
             public void changed(
                 ObservableValue<? extends Toggle> observable, Toggle oldValue, Toggle newValue) {
-                Toggle t = group.getSelectedToggle();
-                if (t == onToggle) {jsonBoolean.set(true);}
-                else {jsonBoolean.set(false);}
+                if (group.getSelectedToggle() == onToggle) { jsonBoolean.set(true); }
+                else { jsonBoolean.set(false); }
             }
         });
     }
