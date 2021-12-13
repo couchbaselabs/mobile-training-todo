@@ -2,6 +2,11 @@ apply plugin: 'java'
 apply plugin: 'war'
 apply plugin: 'com.bmuschko.tomcat'
 
+ext {
+    COUCHBASE_LITE_VERSION = "3.0.0-beta02"
+    TOMCAT_VERSION = '9.0.24'
+}
+
 group 'com.couchbase.lite'
 version '1.0-SNAPSHOT'
 
@@ -17,35 +22,43 @@ buildscript {
 }
 
 repositories {
+//    // local maven
+//    mavenLocal()
+//    // internal maven
+//    maven {
+//        url "http://proget.build.couchbase.com/maven2/internalmaven"
+//        allowInsecureProtocol = true
+//    }
+    // public maven
+    maven { url "https://mobile.maven.couchbase.com/maven2/dev" }
+
     mavenCentral()
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-
-    compile fileTree(dir: 'libs', include: '*.jar')
-
-    // OkHTTP:
-    compile 'com.squareup.okhttp3:okhttp:4.1.0'
+    compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
+    compileOnly 'javax.xml.bind:jaxb-api:2.3.1'
+    compileOnly 'javax.activation:activation:1.1.1'
 
     // Jersey:
-    compile 'org.glassfish.jersey.containers:jersey-container-servlet:2.28'
-    compile 'org.glassfish.jersey.inject:jersey-hk2:2.28'
-    compile 'javax.servlet:javax.servlet-api:4.0.1'
-    compile 'javax.xml.bind:jaxb-api:2.3.1'
-    compile('javax.activation:activation:1.1.1')
-    compile('org.glassfish.jaxb:jaxb-runtime:2.3.1')
-    compile('org.glassfish.jersey.bundles:jaxrs-ri:2.29.1')
+    implementation 'org.glassfish.jersey.containers:jersey-container-servlet:2.28'
+    implementation 'org.glassfish.jersey.inject:jersey-hk2:2.28'
+    implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.1'
+    implementation 'org.glassfish.jersey.bundles:jaxrs-ri:2.29.1'
 
     // Jersey-Media:
-    compile 'org.glassfish.jersey.media:jersey-media-multipart:2.29'
-    compile 'org.glassfish.jersey.media:jersey-media-json-jackson:2.29'
+    implementation 'org.glassfish.jersey.media:jersey-media-multipart:2.29'
+    implementation 'org.glassfish.jersey.media:jersey-media-json-jackson:2.29'
+
+    // Couchbase:
+    implementation "com.couchbase.lite:couchbase-lite-java-ee:${COUCHBASE_LITE_VERSION}"
 
     // Tomcat:
-    def tomcatVersion = '9.0.24'
-    tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
+    tomcat "org.apache.tomcat.embed:tomcat-embed-core:${TOMCAT_VERSION}",
             "org.apache.tomcat.embed:tomcat-embed-logging-juli:9.0.0.M6",
-            "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
+            "org.apache.tomcat.embed:tomcat-embed-jasper:${TOMCAT_VERSION}"
+
+    testImplementation 'junit:junit:4.13.2'
 }
 
 tomcat {
