@@ -9,7 +9,7 @@
 import Foundation
 
 // Initial states
-fileprivate let kSyncEndpoint = "ws://localhost:4984/todo"
+fileprivate let kSyncEndpoint = "ws://ec2-3-86-104-213.compute-1.amazonaws.com:4984/todo"
 fileprivate let kLoggingEnabled = true
 fileprivate let kLoginFlowEnabled = true
 fileprivate let kSyncEnabled = true

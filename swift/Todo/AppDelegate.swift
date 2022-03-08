@@ -214,7 +214,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         NSLog(">> Custom Conflict Resolver: Enabled = \(Config.shared.ccrEnabled); Type = \(Config.shared.ccrType)")
         config.maxAttempts = Config.shared.maxAttempts
         config.maxAttemptWaitTime = Config.shared.maxAttemptWaitTime
-        
+        config.networkInterface = "pdp_ip0"
         replicator = Replicator(config: config)
         changeListener = replicator.addChangeListener({ (change) in
             let s = change.status
