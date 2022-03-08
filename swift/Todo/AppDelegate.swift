@@ -9,8 +9,6 @@
 import UIKit
 import UserNotifications
 import CouchbaseLiteSwift
-import Fabric
-import Crashlytics
 
 
 // Custom conflict resolver
@@ -46,8 +44,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions
         launchOptions: [UIApplicationLaunchOptionsKey : Any]? = nil) -> Bool {
-        
-        initCrashlytics()
         
         if Config.shared.loggingEnabled {
             Database.log.console.level = .info
@@ -319,26 +315,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         self.startPushNotificationSync()
         
         completionHandler(.newData)
-    }
-    
-    // MARK: Crashlytics
-    
-    func initCrashlytics() {
-        if !kCrashlyticsEnabled {
-            return
-        }
-        
-        Fabric.with([Crashlytics.self])
-        
-        if let info = Bundle(for: Database.self).infoDictionary {
-            if let version = info["CFBundleShortVersionString"] {
-                Crashlytics.sharedInstance().setObjectValue(version, forKey: "Version")
-            }
-            
-            if let build = info["CFBundleShortVersionString"] {
-                Crashlytics.sharedInstance().setObjectValue(build, forKey: "Build")
-            }
-        }
     }
 }
 
