@@ -12,20 +12,15 @@
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     -->
-
     <!-- camera features -->
-    <uses-feature
-        android:name="android.hardware.camera"
-        android:required="true"
-        />
-
+    <uses-feature android:name="android.hardware.camera" android:required="true"/>
     <!-- read/write permission for storage:  The write permission implicitly allows reading. -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <queries>
         <intent>
-            <action android:name="android.media.action.IMAGE_CAPTURE"/>
+            <action android:name="android.media.action.IMAGE_CAPTURE" />
         </intent>
     </queries>
 
@@ -38,30 +33,31 @@
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning"
         >
-
         <activity
             android:name=".ListsActivity"
             android:exported="true"
             >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".ListDetailActivity"
             />
-
         <activity
             android:name=".LoginActivity"
             android:noHistory="true"
             />
-
+        <activity
+            android:name=".ListenerActivity"
+            android:noHistory="true"
+            />
         <activity
             android:name=".ConfigActivity"
-            android:windowSoftInputMode="adjustResize"
             android:noHistory="true"
+            android:windowSoftInputMode="adjustResize"
             />
 
         <provider

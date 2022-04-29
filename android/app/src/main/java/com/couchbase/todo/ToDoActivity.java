@@ -21,6 +21,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -81,6 +82,11 @@ public abstract class ToDoActivity extends AppCompatActivity {
             return true;
         }
 
+        if (item.getItemId() == R.id.startServer) {
+            ListenerActivity.start(this);
+            return true;
+        }
+
         if (item.getItemId() == R.id.dumpAll) {
             new DbDumper().execute();
             return true;
@@ -128,15 +134,19 @@ public abstract class ToDoActivity extends AppCompatActivity {
         );
     }
 
+    protected int getColorForReplicatorState(ReplicatorActivityLevel state) {
+        final Integer color = colorMap.get(state);
+        return (color != null)
+            ? color
+            : colorMap.get(ReplicatorActivityLevel.OFFLINE);
+    }
+
     final void onDbError(CouchbaseLiteException err) {
         Toast.makeText(this, "DB error: " + err.getMessage(), Toast.LENGTH_LONG).show();
     }
 
     private void updateState(ReplicatorActivityLevel state) {
-        final Integer color = colorMap.get(state);
-        rootWindow.setStatusBarColor((color != null)
-            ? color
-            : colorMap.get(ReplicatorActivityLevel.OFFLINE));
+        rootWindow.setStatusBarColor(getColorForReplicatorState(state));
     }
 
     private boolean verifyLoggedIn() {

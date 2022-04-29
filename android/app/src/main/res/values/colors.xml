@@ -10,4 +10,6 @@
     <color name="failed">#aa0033</color>
 
     <color name="conflict">#bb00ee</color>
+
+    <color name="ltGray">#aaaaaa</color>
 </resources>

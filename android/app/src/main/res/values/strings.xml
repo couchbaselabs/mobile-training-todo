@@ -1,9 +1,6 @@
 <resources>
     <!-- App -->
     <string name="app_name">Todo</string>
-    <string name="logout">Logout</string>
-    <string name="config">Config</string>
-    <string name="delete_db">Logout/Delete</string>
     <string name="tasks">Tasks</string>
     <string name="shares">Shares</string>
 
@@ -26,21 +23,43 @@
     <string name="update">Update</string>
     <string name="warning">Changing any value on this page will force a logout.</string>
     <string name="instructions">Enter a complete SG URL. Empty field turns replication off.</string>
+    <string name="max_retries">Max retries</string>
+    <string name="max_timeout">Max retry wait time</string>
 
-    <!-- ??? -->
-    <string name="one">1</string>
+    <!-- Main Menu -->
+    <string name="logout">Logout</string>
+    <string name="config">Config</string>
+    <string name="delete_db">Logout/Delete</string>
+    <string name="start_server">Start Server</string>
+    <string name="dump_all">Dump All</string>
+
+    <!-- Pop-up Menu -->
     <string name="delete">Delete</string>
     <string name="dump">Dump</string>
-    <string name="dump_all">Dump All</string>
+
+    <!--List View-->
+    <string name="one">1</string>
     <string name="title_dialog_new_list">Create new list</string>
     <string name="title_dialog_new_task">Create new task</string>
     <string name="title_dialog_new_user">Create new user</string>
     <string name="title_dialog_update">Update task</string>
-    <string name="ok">OK</string>
-    <string name="desc_avatar">Avatar</string>
     <string name="add_list">Add List</string>
     <string name="add_task">Add Task</string>
     <string name="add_user">Add User</string>
-    <string name="max_retries">Max retries</string>
-    <string name="max_timeout">Max retry wait time</string>
+
+    <!--Task View-->
+    <string name="desc_avatar">Avatar</string>
+
+    <string name="ok">OK</string>
+    <string name="title_activity_listener">ListenerActivity</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+    <string name="hello_first_fragment">Hello first fragment</string>
+    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="copy_db">Copy Database</string>
+
 </resources>

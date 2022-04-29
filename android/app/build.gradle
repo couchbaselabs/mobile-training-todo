@@ -16,7 +16,9 @@ android {
     buildTypes {
         debug {
             testCoverageEnabled true
+
             minifyEnabled false
+
             buildConfigField "boolean", "LOGGING_ENABLED", "${LOGGING_ENABLED.toString()}"
             buildConfigField "boolean", "LOGIN_REQUIRED", "${LOGIN_REQUIRED.toString()}"
             buildConfigField "boolean", "CCR_REMOTE_WINS", "${CCR_REMOTE_WINS.toString()}"
@@ -25,8 +27,11 @@ android {
             buildConfigField "String", "SG_URI", (SG_URI == null) ? "null" : "\"${SG_URI}\""
         }
         release {
-            testCoverageEnabled true
-            minifyEnabled false
+            testCoverageEnabled false
+
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
             buildConfigField "boolean", "LOGGING_ENABLED", "${LOGGING_ENABLED.toString()}"
             buildConfigField "boolean", "LOGIN_REQUIRED", "${LOGIN_REQUIRED.toString()}"
             buildConfigField "boolean", "CCR_REMOTE_WINS", "${CCR_REMOTE_WINS.toString()}"
@@ -65,7 +70,7 @@ dependencies {
 //    implementation "com.couchbase.lite:couchbase-lite-android-ee:${COUCHBASE_LITE_VERSION}"
 //    implementation "com.couchbase.lite:couchbase-lite-android-ktx:${COUCHBASE_LITE_VERSION}"
 //    implementation "com.couchbase.lite:couchbase-lite-android:${COUCHBASE_LITE_VERSION}"
-    implementation fileTree(dir: "libs", include: ["*.jar", "*.aar"])
+//    implementation fileTree(dir: "libs", include: ["*.jar", "*.aar"])
 
     // Glide for image download: https://github.com/bumptech/glide
     implementation 'com.github.bumptech.glide:glide:3.7.0'

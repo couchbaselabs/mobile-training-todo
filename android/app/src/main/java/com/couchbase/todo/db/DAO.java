@@ -18,8 +18,8 @@ package com.couchbase.todo.db;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.JsonReader;
 import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
@@ -28,7 +28,6 @@ import androidx.annotation.WorkerThread;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,10 +47,8 @@ import com.couchbase.lite.From;
 import com.couchbase.lite.ListenerToken;
 import com.couchbase.lite.Meta;
 import com.couchbase.lite.MutableDocument;
-import com.couchbase.lite.Ordering;
 import com.couchbase.lite.Query;
 import com.couchbase.lite.QueryBuilder;
-import com.couchbase.lite.QueryChange;
 import com.couchbase.lite.QueryChangeListener;
 import com.couchbase.lite.Replicator;
 import com.couchbase.lite.ReplicatorActivityLevel;
@@ -59,8 +56,6 @@ import com.couchbase.lite.ReplicatorChange;
 import com.couchbase.lite.ReplicatorConfiguration;
 import com.couchbase.lite.ReplicatorStatus;
 import com.couchbase.lite.ReplicatorType;
-import com.couchbase.lite.Result;
-import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
 import com.couchbase.lite.URLEndpoint;
 import com.couchbase.todo.config.Config;
@@ -202,6 +197,8 @@ public final class DAO {
         for (Query query: changeListeners.keySet()) { removeChangeListeners(query); }
     }
 
+    public Database getDb() { return database; }
+
     @WorkerThread
     public void login(@NonNull String username, @NonNull char[] password) {
         verifyNotUIThread();
@@ -307,6 +304,7 @@ public final class DAO {
                 .and(Expression.property("taskList.id").equalTo(Expression.string(listID))));
         return DbUtils.getIdsList(query);
     }
+
     // -------------------------
     // Database operations
     // -------------------------

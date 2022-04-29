@@ -20,6 +20,9 @@
         app:showAsAction="never"
         />
     <item
+        android:id="@+id/startServer"
+        android:title="@string/start_server"></item>
+    <item
         android:id="@+id/dumpAll"
         android:title="@string/dump_all"></item>
 
