@@ -15,15 +15,11 @@
 //
 package com.couchbase.todo;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -35,123 +31,64 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-
-import com.couchbase.todo.db.TaskDumper;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
-import com.couchbase.todo.db.DAO;
-import com.couchbase.todo.db.DeleteByIdTask;
-import com.couchbase.todo.db.FetchTask;
-import com.couchbase.todo.db.SaveTask;
-import com.couchbase.todo.pix.AttachImageTask;
+import com.couchbase.todo.service.DatabaseService;
+import com.couchbase.todo.tasks.AttachImageTask;
+import com.couchbase.todo.tasks.CreateTaskTask;
+import com.couchbase.todo.tasks.DeleteDocsByIdTask;
+import com.couchbase.todo.tasks.FetchDocsByIdTask;
+import com.couchbase.todo.tasks.SaveDocTask;
+import com.couchbase.todo.tasks.TaskDumper;
 import com.couchbase.todo.ui.TasksAdapter;
 
 
 public class TasksFragment extends Fragment {
     private static final String TAG = "FRAG_TASKS";
 
-    private static final int REQUEST_TAKE_PHOTO = 1;
-    private static final int REQUEST_CHOOSE_PHOTO = 2;
-
-    private static class CreateTaskTask extends AsyncTask<String, Void, Void> {
-        private final String parentId;
-
-        CreateTaskTask(String parentId) { this.parentId = parentId; }
-
-        @Override
-        protected Void doInBackground(String... args) {
-            final String title = args[0];
-
-            final Document taskList = DAO.get().fetch(parentId);
-
-            final Map<String, Object> taskListInfo = new HashMap<>();
-            taskListInfo.put("id", parentId);
-            taskListInfo.put("owner", taskList.getString("owner"));
-
-            final MutableDocument mDoc = new MutableDocument();
-            mDoc.setString("type", "task");
-            mDoc.setValue("taskList", taskListInfo);
-            mDoc.setDate("createdAt", new Date());
-            mDoc.setString("task", title);
-            mDoc.setBoolean("complete", false);
-
-            DAO.get().save(mDoc);
-
-            return null;
-        }
-    }
-
-    private final DateFormat dateFormatter = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US);
-
+    @Nullable
     private String listId;
+    @Nullable
     private TasksAdapter adapter;
+    @Nullable
+    private ActivityResultLauncher<Uri> camera;
+    @Nullable
+    private String authority;
 
-    private String imageToBeAttachedPath;
+    @Nullable
+    private String imageFilePath;
+    @Nullable
     private String selectedTask;
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        listId = getDetailActivity().getListId();
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if ((resultCode != Activity.RESULT_OK) || (requestCode != REQUEST_TAKE_PHOTO)) { return; }
-        new AttachImageTask().execute(selectedTask, imageToBeAttachedPath);
-    }
 
     // -------------------------
     // Camera/Photo
     // -------------------------
-    public void dispatchTakePhotoIntent(String taskId) {
-        this.selectedTask = taskId;
 
-        final Context ctxt = getContext();
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        listId = ((ListDetailActivity) context).getListId();
 
-        final Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePictureIntent.resolveActivity(ctxt.getPackageManager()) == null) { return; }
+        authority = context.getPackageName() + ".provider";
 
-        final File photoFile;
-        try {
-            photoFile = createImageFile();
-            imageToBeAttachedPath = photoFile.getAbsolutePath();
-        }
-        catch (IOException e) {
-            Log.w(TAG, "Failed creating photo file", e);
-            return;
-        }
-
-        final Uri photoUri = FileProvider.getUriForFile(
-            ctxt,
-            ctxt.getApplicationContext().getPackageName() + ".provider",
-            photoFile);
-
-        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
-
-        startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+        camera = registerForActivityResult(new ActivityResultContracts.TakePicture(), this::onPhoto);
     }
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle state) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle state) {
         final View view = inflater.inflate(R.layout.fragment_tasks, container, false);
-
-        listId = getDetailActivity().getListId();
 
         final FloatingActionButton fab = view.findViewById(R.id.add_task);
         fab.setOnClickListener(v -> displayCreateDialog(inflater, listId));
@@ -165,7 +102,7 @@ public class TasksFragment extends Fragment {
         return view;
     }
 
-    boolean handleLongClick(AdapterView<?> unused, View view, int pos, long id) {
+    boolean handleLongClick(AdapterView<?> unused, @NonNull View view, int pos, long id) {
         final PopupMenu popup = new PopupMenu(getContext(), view);
         popup.inflate(R.menu.menu_task);
         popup.setOnMenuItemClickListener(item -> {
@@ -176,12 +113,27 @@ public class TasksFragment extends Fragment {
         return true;
     }
 
-    void handlePopupAction(MenuItem item, String taskId) {
+    public void takePhoto(String taskId) {
+        final Context context = getActivity();
+        if (context == null) { return; }
+
+        File imageFile = createImageFile(context);
+        if (imageFile == null) { return; }
+
+        try { imageFilePath = imageFile.getCanonicalPath(); }
+        catch (IOException e) { return; }
+
+        selectedTask = taskId;
+
+        camera.launch(FileProvider.getUriForFile(context, authority, imageFile));
+    }
+
+    void handlePopupAction(@NonNull MenuItem item, @NonNull String taskId) {
         if (item.getItemId() == R.id.action_task_update) {
-            new FetchTask(docs -> displayUpdateTaskDialog(docs.get(0))).execute(taskId);
+            new FetchDocsByIdTask(DatabaseService.COLLECTION_TASKS, this::displayUpdateTaskDialog).execute(taskId);
         }
         if (item.getItemId() == R.id.action_task_delete) {
-            new DeleteByIdTask().execute(taskId);
+            new DeleteDocsByIdTask(DatabaseService.COLLECTION_TASKS).execute(taskId);
         }
         if (item.getItemId() == R.id.action_task_dump) {
             new TaskDumper().execute(taskId);
@@ -189,7 +141,7 @@ public class TasksFragment extends Fragment {
     }
 
     // display create task dialog
-    void displayCreateDialog(LayoutInflater inflater, String parentId) {
+    void displayCreateDialog(@NonNull LayoutInflater inflater, @NonNull String listId) {
         final View view = inflater.inflate(R.layout.view_dialog_input, null);
 
         final EditText input = view.findViewById(R.id.text);
@@ -202,7 +154,7 @@ public class TasksFragment extends Fragment {
             (dialog, whichButton) -> {
                 final String title = input.getText().toString();
                 if (TextUtils.isEmpty(title)) { return; }
-                new CreateTaskTask(parentId).execute(title);
+                new CreateTaskTask(listId).execute(title);
             });
         alert.show();
     }
@@ -222,16 +174,38 @@ public class TasksFragment extends Fragment {
             (dialogInterface, i) -> {
                 final MutableDocument mDoc = task.toMutable();
                 mDoc.setString("task", input.getText().toString());
-                new SaveTask(null).execute(mDoc);
+                new SaveDocTask(DatabaseService.COLLECTION_TASKS).execute(mDoc);
             });
         alert.show();
     }
 
-    private File createImageFile() throws IOException {
-        final String imgFileName = "TODO_LITE-" + dateFormatter.format(new Date());
-        final File storageDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        return File.createTempFile(imgFileName, ".jpg", storageDir);
+    private void onPhoto(@NonNull Boolean ok) {
+        final String imgPath = imageFilePath;
+        imageFilePath = null;
+        final String taskId = selectedTask;
+        selectedTask = null;
+
+        if (!ok) {
+            Log.w(TAG, "Failed taking photo");
+            return;
+        }
+
+        new AttachImageTask(imgPath).execute(taskId);
     }
 
-    private ListDetailActivity getDetailActivity() { return (ListDetailActivity) getActivity(); }
+    private File createImageFile(@NonNull Context activity) {
+        try {
+            final File dir = new File(activity.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "pix");
+            if (!dir.exists()) {
+                if (!dir.mkdirs()) { throw new IOException("Cannot create directory: " + dir.getPath()); }
+            }
+
+            final String imgFileName = StringUtils.getUniqueName("TODO_LITE_PHOTO", 8);
+            return File.createTempFile(imgFileName, ".jpg", dir);
+        }
+        catch (IOException e) {
+            Log.w(TAG, "Failed creating photo file", e);
+            return null;
+        }
+    }
 }

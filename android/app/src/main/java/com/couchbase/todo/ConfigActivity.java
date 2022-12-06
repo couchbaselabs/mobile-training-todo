@@ -20,9 +20,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
-import android.util.Log;
 import android.widget.CheckBox;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -30,8 +30,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.textfield.TextInputEditText;
 
 import com.couchbase.lite.internal.core.CBLVersion;
-import com.couchbase.todo.config.Config;
-import com.couchbase.todo.db.DAO;
+import com.couchbase.todo.service.ConfigurationService;
+import com.couchbase.todo.service.DatabaseService;
 
 
 public class ConfigActivity extends AppCompatActivity {
@@ -40,15 +40,16 @@ public class ConfigActivity extends AppCompatActivity {
     public static void start(@NonNull Activity act) { act.startActivity(new Intent(act, ConfigActivity.class)); }
 
 
+    @Nullable
     private CheckBox loggingCheckBox;
-    private CheckBox loginCheckBox;
-    private TextInputEditText dbNameView;
-    private TextInputEditText sgUriView;
-    private CheckBox ccrLocalCheckBox;
-    private CheckBox ccrRemoteCheckBox;
+    @Nullable private CheckBox loginCheckBox;
+    @Nullable private TextInputEditText dbNameView;
+    @Nullable private TextInputEditText sgUriView;
+    @Nullable private CheckBox ccrLocalCheckBox;
+    @Nullable private CheckBox ccrRemoteCheckBox;
 
-    private TextInputEditText retriesView;
-    private TextInputEditText timeoutView;
+    @Nullable private TextInputEditText retriesView;
+    @Nullable private TextInputEditText timeoutView;
 
     // Heresy!!  Ignore the back button.
     @Override
@@ -60,7 +61,7 @@ public class ConfigActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_config);
 
-        TextView version = findViewById(R.id.version);
+        final TextView version = findViewById(R.id.version);
         version.setText(CBLVersion.getVersionInfo());
 
         loggingCheckBox = findViewById(R.id.loggingEnabled);
@@ -84,7 +85,7 @@ public class ConfigActivity extends AppCompatActivity {
     }
 
     private void populateView() {
-        final Config config = Config.get();
+        final ConfigurationService config = ConfigurationService.get();
 
         loggingCheckBox.setChecked(config.isLoggingEnabled());
         loginCheckBox.setChecked(config.isLoginRequired());
@@ -106,35 +107,28 @@ public class ConfigActivity extends AppCompatActivity {
         final String sgUri = (TextUtils.isEmpty(eSgUri)) ? null : eSgUri.toString();
 
         final Editable eRetries = retriesView.getText();
-        final int retries = (TextUtils.isEmpty(eRetries)) ? null : Integer.parseInt(eRetries.toString());
+        final int retries = (TextUtils.isEmpty(eRetries)) ? 0 : Integer.parseInt(eRetries.toString());
 
         final Editable eTimeout = timeoutView.getText();
-        final int timeout = (TextUtils.isEmpty(eTimeout)) ? null : Integer.parseInt(eTimeout.toString());
+        final int timeout = (TextUtils.isEmpty(eTimeout)) ? 0 : Integer.parseInt(eTimeout.toString());
 
-        final boolean updated = Config.get().update(
+        final boolean updated = ConfigurationService.get().update(
             loggingCheckBox.isChecked(),
             loginCheckBox.isChecked(),
-            getCcrState(),
+            ccrLocalCheckBox.isChecked(),
+            ccrRemoteCheckBox.isChecked(),
             dbName,
             sgUri,
             retries,
             timeout);
 
-        if (updated) { DAO.get().logout(); }
+        if (updated) { DatabaseService.get().logout(); }
 
         finish();
     }
 
-    private Config.CcrState getCcrState() {
-        return (ccrRemoteCheckBox.isChecked())
-            ? Config.CcrState.REMOTE
-            : ((ccrLocalCheckBox.isChecked())
-                ? Config.CcrState.LOCAL
-                : Config.CcrState.OFF);
-    }
-
-    private void setCcrState(Config.CcrState state) {
-        ccrLocalCheckBox.setChecked(state == Config.CcrState.LOCAL);
-        ccrRemoteCheckBox.setChecked(state == Config.CcrState.REMOTE);
+    private void setCcrState(ConfigurationService.CcrState state) {
+        ccrLocalCheckBox.setChecked(state == ConfigurationService.CcrState.LOCAL);
+        ccrRemoteCheckBox.setChecked(state == ConfigurationService.CcrState.REMOTE);
     }
 }

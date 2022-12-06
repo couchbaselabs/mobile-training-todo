@@ -29,6 +29,7 @@ import android.widget.ListView;
 import android.widget.PopupMenu;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import java.util.HashMap;
@@ -38,26 +39,30 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
-import com.couchbase.todo.db.DeleteByIdTask;
-import com.couchbase.todo.db.FetchTask;
-import com.couchbase.todo.db.SaveTask;
+import com.couchbase.todo.service.DatabaseService;
+import com.couchbase.todo.tasks.DeleteDocsByIdTask;
+import com.couchbase.todo.tasks.FetchDocsByIdTask;
+import com.couchbase.todo.tasks.SaveDocTask;
 import com.couchbase.todo.ui.UsersAdapter;
 
 
 public class UsersFragment extends Fragment {
     private static final String TAG = "FRAG_USERS";
 
+    @Nullable
     private String listId;
+    @Nullable
     private UsersAdapter adapter;
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        listId = getDetailActivity().getListId();
+        listId = ((ListDetailActivity) context).getListId();
     }
 
+    @NonNull
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle state) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle state) {
         final View view = inflater.inflate(R.layout.fragment_users, container, false);
 
         final FloatingActionButton fab = view.findViewById(R.id.add_user);
@@ -66,13 +71,13 @@ public class UsersFragment extends Fragment {
         final ListView listView = view.findViewById(R.id.users_list);
         listView.setOnItemLongClickListener(this::handleLongClick);
 
-        adapter = new UsersAdapter(getContext(), listId);
+        adapter = new UsersAdapter(view.getContext(), listId);
         listView.setAdapter(adapter);
 
         return view;
     }
 
-    boolean handleLongClick(AdapterView<?> unused, View view, int pos, long id) {
+    boolean handleLongClick(AdapterView<?> unused, @NonNull View view, int pos, long id) {
         final PopupMenu popup = new PopupMenu(getContext(), view);
         popup.inflate(R.menu.menu_user);
         popup.setOnMenuItemClickListener(item -> {
@@ -83,13 +88,13 @@ public class UsersFragment extends Fragment {
         return true;
     }
 
-    void handlePopupAction(MenuItem item, String docId) {
+    void handlePopupAction(@NonNull MenuItem item, @NonNull String docId) {
         if (item.getItemId() == R.id.action_user_delete) {
-            new DeleteByIdTask().execute(docId);
+            new DeleteDocsByIdTask(DatabaseService.COLLECTION_USERS).execute(docId);
         }
     }
 
-    void displayCreateDialog(LayoutInflater inflater, String listId) {
+    void displayCreateDialog(@NonNull LayoutInflater inflater, @NonNull String listId) {
         final View view = inflater.inflate(R.layout.view_dialog_input, null);
 
         final EditText input = view.findViewById(R.id.text);
@@ -102,24 +107,21 @@ public class UsersFragment extends Fragment {
             (dialog, whichButton) -> {
                 final String title = input.getText().toString();
                 if (TextUtils.isEmpty(title)) { return; }
-                new FetchTask(docs -> createUser(title, docs.get(0))).execute(listId);
+                new FetchDocsByIdTask(DatabaseService.COLLECTION_LISTS, doc -> createUser(title, doc)).execute(listId);
             });
         alert.show();
     }
 
     // create task
-    private void createUser(String username, Document taskList) {
+    private void createUser(@NonNull String username, @NonNull Document taskList) {
         final Map<String, Object> taskListInfo = new HashMap<>();
         taskListInfo.put("id", listId);
         taskListInfo.put("owner", taskList.getString("owner"));
 
         final MutableDocument mDoc = new MutableDocument(listId + "." + username);
-        mDoc.setString("type", "task-list.user");
         mDoc.setString("username", username);
         mDoc.setValue("taskList", taskListInfo);
 
-        new SaveTask(null).execute(mDoc);
+        new SaveDocTask(DatabaseService.COLLECTION_USERS).execute(mDoc);
     }
-
-    private ListDetailActivity getDetailActivity() { return (ListDetailActivity) getActivity(); }
 }

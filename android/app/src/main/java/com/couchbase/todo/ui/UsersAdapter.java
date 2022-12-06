@@ -31,10 +31,11 @@ import com.couchbase.lite.Meta;
 import com.couchbase.lite.Query;
 import com.couchbase.lite.QueryChange;
 import com.couchbase.lite.Result;
+import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
 import com.couchbase.todo.R;
-import com.couchbase.todo.db.DAO;
-import com.couchbase.todo.db.FetchTask;
+import com.couchbase.todo.service.DatabaseService;
+import com.couchbase.todo.tasks.FetchDocsByIdTask;
 
 
 /**
@@ -51,7 +52,7 @@ public class UsersAdapter extends ArrayAdapter<String> {
         this.listID = listID;
 
         query = getUsersQuery();
-        DAO.get().addChangeListener(query, this::updateUsers);
+        DatabaseService.get().addQueryListener(query, this::updateUsers);
     }
 
     @NonNull
@@ -61,7 +62,8 @@ public class UsersAdapter extends ArrayAdapter<String> {
             ? convertView
             : LayoutInflater.from(getContext()).inflate(R.layout.view_user, parent, false);
 
-        new FetchTask(docs -> populateView(view, docs.get(0), position)).execute(getItem(position));
+        new FetchDocsByIdTask(DatabaseService.COLLECTION_USERS, doc -> populateView(view, doc, position))
+            .execute(getItem(position));
 
         return view;
     }
@@ -73,13 +75,16 @@ public class UsersAdapter extends ArrayAdapter<String> {
 
     void updateUsers(QueryChange change) {
         clear();
-        for (Result r: change.getResults()) { add(r.getString(0)); }
+        final ResultSet results = change.getResults();
+        if (results == null) { return; }
+        for (Result r: results) { add(r.getString(0)); }
         notifyDataSetChanged();
     }
 
     private Query getUsersQuery() {
-        return DAO.get().createQuery(SelectResult.expression(Meta.id))
-            .where(Expression.property("type").equalTo(Expression.string("task-list.user"))
-                .and(Expression.property("taskList.id").equalTo(Expression.string(listID))));
+        return DatabaseService.get().createQuery(
+                DatabaseService.COLLECTION_USERS,
+                SelectResult.expression(Meta.id))
+            .where(Expression.property("taskList.id").equalTo(Expression.string(listID)));
     }
 }

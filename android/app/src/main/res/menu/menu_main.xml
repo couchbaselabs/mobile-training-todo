@@ -21,9 +21,11 @@
         />
     <item
         android:id="@+id/startServer"
-        android:title="@string/start_server"></item>
+        android:title="@string/start_server"
+        />
     <item
         android:id="@+id/dumpAll"
-        android:title="@string/dump_all"></item>
+        android:title="@string/dump_all"
+        />
 
 </menu>

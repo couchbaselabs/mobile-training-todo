@@ -16,36 +16,114 @@
 package com.couchbase.todo.app;
 
 import android.app.Application;
-import android.content.Context;
+import android.util.Log;
+
+import androidx.annotation.GuardedBy;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 import com.couchbase.lite.CouchbaseLite;
-import com.couchbase.todo.db.DAO;
+import com.couchbase.lite.ReplicatorActivityLevel;
+import com.couchbase.todo.service.DatabaseService;
+import com.couchbase.todo.tasks.Scheduler;
 
 
 public class ToDo extends Application {
     private static final String TAG = "APP";
 
-    private static Context appContext;
+    public interface Listener {
+        void onError(Exception err);
+        void onNewReplicatorState(ReplicatorActivityLevel state);
+    }
 
-    public static Context getAppContext() { return appContext; }
+    private static ToDo todoApp;
 
-    public static void setAppContext(Context context) { appContext = context; }
+    public static ToDo get() { return todoApp; }
+
+    public static void setApp(ToDo app) { todoApp = app; }
+
+
+    @GuardedBy("this")
+    @NonNull
+    private ReplicatorActivityLevel replicatorState = ReplicatorActivityLevel.STOPPED;
+    @GuardedBy("this")
+    @NonNull
+    private List<Exception> appErrors = new ArrayList<>();
+    @Nullable
+    @GuardedBy("this")
+    private Listener appListener;
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        setAppContext(this);
+        setApp(this);
 
         CouchbaseLite.init(this);
 
         // warm up the DAO
-        DAO.get();
+        DatabaseService.get();
     }
 
     @Override
     public void onTerminate() {
-        DAO.get().forceLogout();
+        DatabaseService.get().forceLogout();
         super.onTerminate();
+    }
+
+    public void registerListener(@Nullable Listener listener) {
+        final List<Exception> errors;
+        final ReplicatorActivityLevel state;
+        synchronized (this) {
+            if (Objects.equals(appListener, listener)) { return; }
+
+            appListener = listener;
+            if (appListener == null) { return; }
+
+            errors = appErrors;
+            appErrors = new ArrayList<>();
+
+            state = replicatorState;
+        }
+
+        final Scheduler scheduler = Scheduler.get();
+        for (Exception err: errors) { scheduler.deliverError(listener, err); }
+        scheduler.deliverNewState(listener, state);
+    }
+
+    public void reportError(@NonNull Throwable err) {
+        final Listener listener;
+
+        if (!(err instanceof Exception)) {
+            Scheduler.get().fail(err);
+            return;
+        }
+
+        final Exception e = (Exception) err;
+
+        synchronized (this) {
+            listener = appListener;
+            if (listener == null) {
+                appErrors.add(e);
+                return;
+            }
+        }
+
+        Log.w(TAG, "DB error", err);
+        Scheduler.get().deliverError(listener, e);
+    }
+
+    public void updateReplicatorState(@NonNull ReplicatorActivityLevel state) {
+        final Listener listener;
+        synchronized (this) {
+            listener = appListener;
+            replicatorState = state;
+        }
+
+        if (listener != null) { Scheduler.get().deliverNewState(listener, state); }
     }
 }

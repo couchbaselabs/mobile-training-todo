@@ -15,58 +15,24 @@
 //
 package com.couchbase.todo;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.EditText;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.util.Arrays;
-
-import com.couchbase.todo.config.Config;
-import com.couchbase.todo.db.DAO;
+import com.couchbase.todo.service.ConfigurationService;
+import com.couchbase.todo.service.DatabaseService;
+import com.couchbase.todo.tasks.LoginTask;
 
 
 public class LoginActivity extends AppCompatActivity {
     private static final String TAG = "ACT_LOGIN";
-
-    private static class LoginTask extends AsyncTask<Void, Void, Void> {
-        @NonNull
-        private final String username;
-        @NonNull
-        private final char[] password;
-        @Nullable
-        @SuppressLint("StaticFieldLeak")
-        private LoginActivity ctxt;
-
-        LoginTask(@NonNull LoginActivity ctxt, @NonNull String username, @NonNull char[] password) {
-            this.ctxt = ctxt;
-            this.username = username;
-            this.password = password;
-        }
-
-        // args are username, password
-        @Override
-        protected Void doInBackground(Void... ignore) {
-            DAO.get().login(username, password);
-            return null;
-        }
-
-        @Override
-        protected void onCancelled() { ctxt = null; }
-
-        @Override
-        protected void onPostExecute(Void ignore) {
-            Arrays.fill(password, ' ');
-            if (ctxt != null) { ctxt.onLogin(); }
-        }
-    }
 
     public static void start(@NonNull Activity act) {
         final Intent intent = new Intent(act, LoginActivity.class);
@@ -76,15 +42,18 @@ public class LoginActivity extends AppCompatActivity {
     }
 
 
+    @Nullable
     private EditText nameView;
+    @Nullable
     private EditText pwdView;
+    @Nullable
     private LoginTask loginTask;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (DAO.get().isLoggedIn(null)) { nextPage(); }
+        if (DatabaseService.get().isLoggedIn(null)) { nextPage(); }
 
         setContentView(R.layout.activity_login);
 
@@ -108,12 +77,12 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (DAO.get().isLoggedIn(null)) { nextPage(); }
+        if (DatabaseService.get().isLoggedIn(null)) { nextPage(); }
     }
 
     void login() {
         String username = nameView.getText().toString();
-        if (TextUtils.isEmpty(username)) { username = Config.get().getDbName(); }
+        if (TextUtils.isEmpty(username)) { username = ConfigurationService.get().getDbName(); }
         if (TextUtils.isEmpty(username)) {
             Toast.makeText(this, R.string.err_no_username, Toast.LENGTH_SHORT).show();
             return;
@@ -122,7 +91,7 @@ public class LoginActivity extends AppCompatActivity {
         final char[] password = new char[pwdView.length()];
         pwdView.getText().getChars(0, password.length, password, 0);
 
-        loginTask = new LoginTask(this, username, password);
+        loginTask = new LoginTask(this::onLogin, username, password);
         loginTask.execute();
     }
 

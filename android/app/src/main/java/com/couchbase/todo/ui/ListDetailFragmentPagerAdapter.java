@@ -15,48 +15,34 @@
 //
 package com.couchbase.todo.ui;
 
-import android.content.Context;
 import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.fragment.app.FragmentActivity;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.couchbase.todo.R;
 import com.couchbase.todo.TasksFragment;
 import com.couchbase.todo.UsersFragment;
-import com.couchbase.todo.app.ToDo;
 
-public class ListDetailFragmentPagerAdapter extends FragmentPagerAdapter {
+
+public class ListDetailFragmentPagerAdapter extends FragmentStateAdapter {
     private static final String TAG = "DETAILS";
 
 
     private final int pageCount;
 
-    public ListDetailFragmentPagerAdapter(FragmentManager fm, int pageCount) {
-        super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
+    public ListDetailFragmentPagerAdapter(FragmentActivity activity, int pageCount) {
+        super(activity);
         this.pageCount = pageCount;
     }
 
     @Override
-    public int getCount() { return pageCount; }
-
-    @Override
-    public CharSequence getPageTitle(int i) {
-        Context ctxt = ToDo.getAppContext();
-        switch (i) {
-            case 0:
-                return ctxt.getResources().getString(R.string.tasks);
-            case 1:
-                return ctxt.getResources().getString(R.string.shares);
-            default:
-                throw new IllegalArgumentException("Page index out of bounds: " + i);
-        }
-    }
+    public int getItemCount() { return pageCount; }
 
     @NonNull
     @Override
-    public Fragment getItem(int position) {
+    public Fragment createFragment(int position) {
         if (position == 1) { return new UsersFragment(); }
 
         if (position != 0) { Log.w(TAG, "Unrecognized tab: " + position); }

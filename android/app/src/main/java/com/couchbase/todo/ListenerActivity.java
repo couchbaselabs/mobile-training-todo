@@ -6,11 +6,15 @@ import android.os.Bundle;
 import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import com.couchbase.lite.ReplicatorActivityLevel;
-import com.couchbase.todo.listener.Listener;
+import com.couchbase.lite.ReplicatorChange;
+import com.couchbase.todo.service.ListenerService;
 
 
 public class ListenerActivity extends ToDoActivity {
@@ -18,11 +22,13 @@ public class ListenerActivity extends ToDoActivity {
 
     public static void start(@NonNull Activity act) { act.startActivity(new Intent(act, ListenerActivity.class)); }
 
+    @Nullable
     private View bgView;
+    @Nullable
     private FloatingActionButton startBtn;
 
-    private Listener.DBCopier copier;
-
+    @Nullable
+    private final AtomicReference<ListenerService.DBCopier> copier = new AtomicReference<>();
 
     @Override
     protected void onCreateLoggedIn(Bundle savedInstanceState) {
@@ -35,21 +41,22 @@ public class ListenerActivity extends ToDoActivity {
         startBtn.setEnabled(true);
     }
 
-    private void copyDb(View ignore) {
+    private void copyDb(@NonNull View ignore) {
         startBtn.setEnabled(false);
-        Listener.get().copyDb(this::updateState, this::setCopier);
+        ListenerService.get().copyDb(this::updateState, this::setCopier);
     }
 
-    private void updateState(ReplicatorActivityLevel replState) {
+    private void updateState(@NonNull ReplicatorChange change) {
+        final ReplicatorActivityLevel replState = change.getStatus().getActivityLevel();
         bgView.setBackgroundColor(getColorForReplicatorState(replState));
         if (!((replState == ReplicatorActivityLevel.CONNECTING) || (replState == ReplicatorActivityLevel.BUSY))) {
             setCopier(null);
         }
     }
 
-    private void setCopier(Listener.DBCopier newCopier) {
-        if (copier != null) { copier.close(); }
-        copier = newCopier;
-        startBtn.setEnabled(copier == null);
+    private void setCopier(@Nullable ListenerService.DBCopier newCopier) {
+        final ListenerService.DBCopier oldCopier = copier.getAndSet(newCopier);
+        if (oldCopier != null) { oldCopier.close(); }
+        startBtn.setEnabled(newCopier == null);
     }
 }

@@ -29,20 +29,17 @@ import android.widget.ListView;
 import android.widget.PopupMenu;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
-import java.util.List;
 import java.util.UUID;
-
-import com.couchbase.todo.db.ListDumper;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
-import com.couchbase.todo.db.DAO;
-import com.couchbase.todo.db.DeleteByIdTask;
-import com.couchbase.todo.db.FetchTask;
-import com.couchbase.todo.db.SaveTask;
+import com.couchbase.todo.service.DatabaseService;
+import com.couchbase.todo.tasks.DeleteDocsByIdTask;
+import com.couchbase.todo.tasks.FetchDocsByIdTask;
+import com.couchbase.todo.tasks.ListDumper;
+import com.couchbase.todo.tasks.SaveDocTask;
 import com.couchbase.todo.ui.ListsAdapter;
 
 
@@ -56,29 +53,27 @@ public class ListsActivity extends ToDoActivity {
     }
 
 
-    private ListView listView;
+    @Nullable
     private ListsAdapter adapter;
 
     @Override
-    protected void onCreateLoggedIn(Bundle state) {
+    protected void onCreateLoggedIn(@Nullable Bundle state) {
         setContentView(R.layout.activity_lists);
 
-        final FloatingActionButton fab = findViewById(R.id.add_list);
-        fab.setOnClickListener(view -> displayCreateListDialog());
+        findViewById(R.id.add_list).setOnClickListener(view -> displayCreateListDialog());
 
         adapter = new ListsAdapter(this);
-        listView = findViewById(R.id.lists_list);
+
+        final ListView listView = findViewById(R.id.lists_list);
         listView.setAdapter(adapter);
-        listView.setOnItemClickListener((adapterView, view, i, l) -> new FetchTask(this::showTaskListView)
-            .execute(adapter.getItem(i)));
+        listView.setOnItemClickListener((adapterView, view, i, l) ->
+            new FetchDocsByIdTask(DatabaseService.COLLECTION_LISTS, this::showTaskListView).execute(adapter.getItem(i)));
         listView.setOnItemLongClickListener(this::showPopup);
     }
 
-    private void showTaskListView(List<Document> docs) {
-        ListDetailActivity.start(this, docs.get(0).getId());
-    }
+    void showTaskListView(@NonNull Document doc) { ListDetailActivity.start(this, doc.getId()); }
 
-    private boolean showPopup(AdapterView<?> parent, View view, int pos, long id) {
+    boolean showPopup(@NonNull AdapterView<?> parent, @NonNull View view, int pos, long id) {
         final PopupMenu popup = new PopupMenu(ListsActivity.this, view);
         popup.inflate(R.menu.menu_list);
         popup.setOnMenuItemClickListener(item -> handleListPopupAction(item, adapter.getItem(pos)));
@@ -86,18 +81,19 @@ public class ListsActivity extends ToDoActivity {
         return true;
     }
 
-    private boolean handleListPopupAction(MenuItem item, String docId) {
+    boolean handleListPopupAction(@NonNull MenuItem item, @NonNull String docId) {
         final int itemId = item.getItemId();
 
         if (R.id.action_list_update == itemId) {
-            new FetchTask(this::displayUpdateListDialog).execute(docId);
+            new FetchDocsByIdTask(DatabaseService.COLLECTION_LISTS, this::displayUpdateListDialog).execute(docId);
             return true;
         }
 
         if (R.id.action_list_delete == itemId) {
-            new DeleteByIdTask().execute(docId);
+            new DeleteDocsByIdTask(DatabaseService.COLLECTION_LISTS).execute(docId);
             return true;
         }
+
         if (R.id.action_list_dump == itemId) {
             new ListDumper().execute(docId);
             return true;
@@ -107,7 +103,7 @@ public class ListsActivity extends ToDoActivity {
     }
 
     // display create list dialog
-    private void displayCreateListDialog() {
+    void displayCreateListDialog() {
         final AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setTitle(getResources().getString(R.string.title_dialog_new_list));
         final View view = LayoutInflater.from(ListsActivity.this)
@@ -124,9 +120,7 @@ public class ListsActivity extends ToDoActivity {
     }
 
     // display update list dialog
-    private void displayUpdateListDialog(List<Document> docs) {
-        final Document list = docs.get(0);
-
+    void displayUpdateListDialog(@NonNull Document list) {
         final EditText input = new EditText(this);
         input.setMaxLines(1);
         input.setSingleLine(true);
@@ -148,19 +142,18 @@ public class ListsActivity extends ToDoActivity {
     // -------------------------
 
     // create list
-    private void createList(String title) {
-        final String username = DAO.get().getUsername();
+    void createList(@NonNull String title) {
+        final String username = DatabaseService.get().getUsername();
         final String docId = username + "." + UUID.randomUUID();
         final MutableDocument mDoc = new MutableDocument(docId);
-        mDoc.setString("type", "task-list");
         mDoc.setString("name", title);
         mDoc.setString("owner", username);
-        new SaveTask(null).execute(mDoc);
+        new SaveDocTask(DatabaseService.COLLECTION_LISTS).execute(mDoc);
     }
 
     // update list
-    private void updateList(final MutableDocument list, String title) {
+    void updateList(@NonNull MutableDocument list, @NonNull String title) {
         list.setString("name", title);
-        new SaveTask(null).execute(list);
+        new SaveDocTask(DatabaseService.COLLECTION_LISTS).execute(list);
     }
 }

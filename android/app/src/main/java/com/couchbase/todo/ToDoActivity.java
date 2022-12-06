@@ -29,34 +29,35 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.ReplicatorActivityLevel;
-import com.couchbase.todo.db.DAO;
-import com.couchbase.todo.db.DbDumper;
+import com.couchbase.todo.app.ToDo;
+import com.couchbase.todo.service.DatabaseService;
+import com.couchbase.todo.tasks.DbDumper;
 
 
 public abstract class ToDoActivity extends AppCompatActivity {
     private static final String TAG = "ACT_BASE";
 
+    @Nullable
     private static Map<ReplicatorActivityLevel, Integer> colorMap;
 
-    private static void buildColorMap(Context ctxt) {
-        if (colorMap != null) { return; }
-
+    @NonNull
+    private static Map<ReplicatorActivityLevel, Integer> buildColorMap(@NonNull Context ctxt) {
         final Map<ReplicatorActivityLevel, Integer> cMap = new HashMap<>();
         cMap.put(ReplicatorActivityLevel.CONNECTING, ctxt.getColor(R.color.connecting));
         cMap.put(ReplicatorActivityLevel.IDLE, ctxt.getColor(R.color.idle));
         cMap.put(ReplicatorActivityLevel.BUSY, ctxt.getColor(R.color.busy));
         cMap.put(ReplicatorActivityLevel.STOPPED, ctxt.getColor(R.color.failed));
         cMap.put(ReplicatorActivityLevel.OFFLINE, ctxt.getColor(R.color.failed));
-        colorMap = cMap;
+        return cMap;
     }
 
-    private DAO dao;
-    private Window rootWindow;
+    @Nullable
+    private DatabaseService dao;
+    @Nullable private Window rootWindow;
 
     @Override
-    public final boolean onCreateOptionsMenu(Menu menu) {
+    public final boolean onCreateOptionsMenu(@NonNull Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return super.onCreateOptionsMenu(menu);
     }
@@ -64,7 +65,7 @@ public abstract class ToDoActivity extends AppCompatActivity {
     @Override
     public final boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.logout) {
-            DAO.get().logout();
+            DatabaseService.get().logout();
             LoginActivity.start(this);
             finish();
             return true;
@@ -76,7 +77,7 @@ public abstract class ToDoActivity extends AppCompatActivity {
         }
 
         if (item.getItemId() == R.id.delete) {
-            DAO.get().logout(true);
+            DatabaseService.get().logout(true);
             LoginActivity.start(this);
             finish();
             return true;
@@ -101,9 +102,9 @@ public abstract class ToDoActivity extends AppCompatActivity {
     protected final void onCreate(@Nullable Bundle state) {
         super.onCreate(state);
 
-        buildColorMap(this);
-
         if (!verifyLoggedIn()) { return; }
+
+        if (colorMap == null) { colorMap = buildColorMap(this); }
 
         onCreateLoggedIn(state);
 
@@ -114,7 +115,7 @@ public abstract class ToDoActivity extends AppCompatActivity {
     protected final void onPause() {
         super.onPause();
 
-        DAO.get().registerListener(null);
+        ToDo.get().registerListener(null);
     }
 
     @Override
@@ -123,35 +124,35 @@ public abstract class ToDoActivity extends AppCompatActivity {
 
         verifyLoggedIn();
 
-        DAO.get().registerListener(
-            new DAO.DAOListener() {
+        ToDo.get().registerListener(
+            new ToDo.Listener() {
                 @Override
-                public void onError(CouchbaseLiteException e) { onDbError(e); }
+                public void onError(Exception e) { onAppError(e); }
 
                 @Override
-                public void onNewState(ReplicatorActivityLevel s) { updateState(s); }
+                public void onNewReplicatorState(ReplicatorActivityLevel s) { updateState(s); }
             }
         );
     }
 
-    protected int getColorForReplicatorState(ReplicatorActivityLevel state) {
+    protected int getColorForReplicatorState(@NonNull ReplicatorActivityLevel state) {
         final Integer color = colorMap.get(state);
         return (color != null)
             ? color
             : colorMap.get(ReplicatorActivityLevel.OFFLINE);
     }
 
-    final void onDbError(CouchbaseLiteException err) {
-        Toast.makeText(this, "DB error: " + err.getMessage(), Toast.LENGTH_LONG).show();
+    final void onAppError(@NonNull Exception err) {
+        Toast.makeText(this, "System error: " + err.getMessage(), Toast.LENGTH_LONG).show();
     }
 
-    private void updateState(ReplicatorActivityLevel state) {
+    private void updateState(@NonNull ReplicatorActivityLevel state) {
         rootWindow.setStatusBarColor(getColorForReplicatorState(state));
     }
 
     private boolean verifyLoggedIn() {
-        final DAO oldDao = dao;
-        dao = DAO.get();
+        final DatabaseService oldDao = dao;
+        dao = DatabaseService.get();
         if (dao.isLoggedIn(oldDao)) { return true; }
 
         LoginActivity.start(this);

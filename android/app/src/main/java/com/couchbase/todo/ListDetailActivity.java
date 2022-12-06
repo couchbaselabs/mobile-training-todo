@@ -17,69 +17,73 @@ package com.couchbase.todo;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
-import androidx.viewpager.widget.ViewPager;
+import androidx.annotation.Nullable;
+import androidx.viewpager2.widget.ViewPager2;
 
-import java.util.List;
+import com.google.android.material.tabs.TabLayoutMediator;
 
-import com.google.android.material.tabs.TabLayout;
-
-import com.couchbase.lite.Document;
-import com.couchbase.todo.db.DAO;
-import com.couchbase.todo.db.FetchTask;
+import com.couchbase.todo.tasks.GetListOwnerTask;
 import com.couchbase.todo.ui.ListDetailFragmentPagerAdapter;
 
 
 public class ListDetailActivity extends ToDoActivity {
     private static final String TAG = "ACT_DETAIL";
 
-    private static final String INTENT_LIST_ID = "list_id";
+    private static final String PARAM_LIST_ID = "list_id";
 
     public static void start(Activity ctxt, String docId) {
         if (TextUtils.isEmpty(docId)) { throw new IllegalArgumentException("Doc id cannot be empty"); }
         final Intent intent = new Intent(ctxt, ListDetailActivity.class);
-        intent.putExtra(INTENT_LIST_ID, docId);
+        intent.putExtra(PARAM_LIST_ID, docId);
         ctxt.startActivity(intent);
     }
 
 
-    private ViewPager viewPager;
-    private TabLayout tabLayout;
-
-    @NonNull
-    public String getListId() {
-        final String listId = getIntent().getStringExtra(INTENT_LIST_ID);
-        if (listId == null) { throw new IllegalStateException("List id is null in Detail Activity"); }
-        return listId;
-    }
+    @Nullable
+    private ViewPager2 viewPager;
 
     @Override
     protected void onCreateLoggedIn(Bundle state) {
         setContentView(R.layout.activity_list_detail);
 
         viewPager = findViewById(R.id.viewpager);
-        tabLayout = findViewById(R.id.sliding_tabs);
 
-        new FetchTask(this::populateView).execute(getListId(), "moderator." + DAO.get().getUsername());
+        new GetListOwnerTask(this::populateView).execute(getListId());
     }
 
-    void populateView(List<Document> docs) {
-        final String username = DAO.get().getUsername();
-        final Document taskList = docs.get(0);
-        final Document moderator = docs.get(1);
+    @NonNull
+    public String getListId() {
+        final String listId = getIntent().getStringExtra(PARAM_LIST_ID);
+        if (listId == null) { throw new IllegalStateException("List id is null in Detail Activity"); }
+        return listId;
+    }
 
-        if (taskList == null) { return; }
+    void populateView(@NonNull Boolean isOwner) {
+        viewPager.setAdapter(new ListDetailFragmentPagerAdapter(this, (isOwner) ? 2 : 1));
 
-        final ListDetailFragmentPagerAdapter pageAdapter = new ListDetailFragmentPagerAdapter(
-            getSupportFragmentManager(),
-            (taskList.getString("owner").equals(username) || (moderator != null)) ? 2 : 1);
-
-        viewPager.setAdapter(pageAdapter);
-
-        // Give the TabLayout the ViewPager
-        tabLayout.setupWithViewPager(viewPager);
+        new TabLayoutMediator(
+            findViewById(R.id.sliding_tabs),
+            viewPager,
+            (tab, position) -> {
+                final Resources rez = getResources();
+                final int title;
+                switch (position) {
+                    case 0:
+                        title = R.string.tasks;
+                        break;
+                    case 1:
+                        title = R.string.shares;
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Page index out of bounds: " + position);
+                }
+                tab.setText(title);
+            })
+            .attach();
     }
 }

@@ -36,10 +36,11 @@ import com.couchbase.lite.Ordering;
 import com.couchbase.lite.Query;
 import com.couchbase.lite.QueryChange;
 import com.couchbase.lite.Result;
+import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
 import com.couchbase.todo.R;
-import com.couchbase.todo.db.DAO;
-import com.couchbase.todo.db.FetchTask;
+import com.couchbase.todo.service.DatabaseService;
+import com.couchbase.todo.tasks.FetchDocsByIdTask;
 
 
 public class ListsAdapter extends ArrayAdapter<String> {
@@ -55,10 +56,10 @@ public class ListsAdapter extends ArrayAdapter<String> {
         super(context, 0);
 
         listsQuery = getListsQuery();
-        DAO.get().addChangeListener(listsQuery, this::onListsChanged);
+        DatabaseService.get().addQueryListener(listsQuery, this::onListsChanged);
 
         incompleteTasksCountQuery = getIncompleteTasksCountQuery();
-        DAO.get().addChangeListener(incompleteTasksCountQuery, this::onIncompleteTasksChanged);
+        DatabaseService.get().addQueryListener(incompleteTasksCountQuery, this::onIncompleteTasksChanged);
     }
 
     @NonNull
@@ -68,7 +69,8 @@ public class ListsAdapter extends ArrayAdapter<String> {
             ? convertView
             : LayoutInflater.from(getContext()).inflate(R.layout.view_list, parent, false);
 
-        new FetchTask(docs -> populateView(rootView, docs.get(0))).execute(getItem(position));
+        new FetchDocsByIdTask(DatabaseService.COLLECTION_LISTS, doc -> populateView(rootView, doc))
+            .execute(getItem(position));
 
         return rootView;
     }
@@ -84,31 +86,36 @@ public class ListsAdapter extends ArrayAdapter<String> {
 
     void onListsChanged(@NonNull QueryChange change) {
         clear();
-        for (Result r : change.getResults()) { add(r.getString(0)); }
+        final ResultSet results = change.getResults();
+        if (results == null) { return; }
+        for (Result r: results) { add(r.getString(0)); }
         notifyDataSetChanged();
     }
 
     void onIncompleteTasksChanged(@NonNull QueryChange change) {
         incompleteTaskCounts.clear();
-        for (Result r : change.getResults()) {
+        final ResultSet results = change.getResults();
+        if (results == null) { return; }
+        for (Result r: results) {
             incompleteTaskCounts.put(r.getString(0), r.getInt(1));
         }
         notifyDataSetChanged();
     }
 
     private Query getListsQuery() {
-        return DAO.get().createQuery(SelectResult.expression(Meta.id))
-            .where(Expression.property("type").equalTo(Expression.string("task-list")))
+        return DatabaseService.get().createQuery(
+                DatabaseService.COLLECTION_LISTS,
+                SelectResult.expression(Meta.id))
             .orderBy(Ordering.property("name").ascending());
     }
 
     private Query getIncompleteTasksCountQuery() {
         final Expression exprTaskListId = Expression.property("taskList.id");
-        return DAO.get().createQuery(
-            SelectResult.expression(exprTaskListId),
-            SelectResult.expression(Function.count(Expression.all())))
-            .where(Expression.property("type").equalTo(Expression.string("task"))
-                .and(Expression.property("complete").equalTo(Expression.booleanValue(false))))
+        return DatabaseService.get().createQuery(
+                DatabaseService.COLLECTION_TASKS,
+                SelectResult.expression(exprTaskListId),
+                SelectResult.expression(Function.count(Expression.all())))
+            .where(Expression.property("complete").equalTo(Expression.booleanValue(false)))
             .groupBy(exprTaskListId);
     }
 }
