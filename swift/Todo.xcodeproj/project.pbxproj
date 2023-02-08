@@ -9,10 +9,9 @@
 /* Begin PBXBuildFile section */
 		1A52D218260AEA1E00A9BEBD /* CouchbaseLiteSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A52D216260AEA1700A9BEBD /* CouchbaseLiteSwift.xcframework */; };
 		1A52D219260AEA1E00A9BEBD /* CouchbaseLiteSwift.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 1A52D216260AEA1700A9BEBD /* CouchbaseLiteSwift.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		1A52D21D260B0FCF00A9BEBD /* TaskDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A52D21C260B0FCF00A9BEBD /* TaskDetailViewController.swift */; };
 		1A993709260D927C00D5E911 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A993708260D927C00D5E911 /* SettingsViewController.swift */; };
 		1A99370B260DAF1200D5E911 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A99370A260DAF1200D5E911 /* Config.swift */; };
-		933F1AB81F393EEE00338C6A /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 933F1AB71F393EEE00338C6A /* Constants.swift */; };
+		40EBC28A2991F49E00182F16 /* DB.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40EBC2892991F49E00182F16 /* DB.swift */; };
 		934646BC1C69CF6B002F52C9 /* TasksViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 934646BB1C69CF6B002F52C9 /* TasksViewController.swift */; };
 		934646C31C6AC4CD002F52C9 /* TaskTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 934646C21C6AC4CD002F52C9 /* TaskTableViewCell.swift */; };
 		934646C61C6B218D002F52C9 /* TaskImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 934646C51C6B218D002F52C9 /* TaskImageViewController.swift */; };
@@ -26,13 +25,12 @@
 		93825866216323BF006A75AD /* 3.JPG in Resources */ = {isa = PBXBuildFile; fileRef = 9382585C216323BF006A75AD /* 3.JPG */; };
 		93825867216323BF006A75AD /* 1.JPG in Resources */ = {isa = PBXBuildFile; fileRef = 9382585D216323BF006A75AD /* 1.JPG */; };
 		93825868216323BF006A75AD /* 0.JPG in Resources */ = {isa = PBXBuildFile; fileRef = 9382585E216323BF006A75AD /* 0.JPG */; };
-		9382586B21632B46006A75AD /* QE.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9382586A21632B46006A75AD /* QE.swift */; };
 		939279F81C72E9C8009D9A92 /* Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = 939279F71C72E9C8009D9A92 /* Image.swift */; };
 		93D6508E1EF441DE00EA44F3 /* UsersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D6508D1EF441DE00EA44F3 /* UsersViewController.swift */; };
 		93D999FD1C7FE78300FEFF17 /* TextDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D999FC1C7FE78300FEFF17 /* TextDialog.swift */; };
 		93D9D9AC1EDF8427001355EE /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D9D9AB1EDF8427001355EE /* Session.swift */; };
 		93D9D9AE1EDF8495001355EE /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D9D9AD1EDF8495001355EE /* LoginViewController.swift */; };
-		93DED1972499CDE900595294 /* DogLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93DED1962499CDE900595294 /* DogLogger.swift */; };
+		93DED1972499CDE900595294 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93DED1962499CDE900595294 /* Log.swift */; };
 		93F4B2C31C6940D6005FF4D8 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93F4B2C21C6940D6005FF4D8 /* AppDelegate.swift */; };
 		93F4B2C51C6940D6005FF4D8 /* ListsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93F4B2C41C6940D6005FF4D8 /* ListsViewController.swift */; };
 		93F4B2C81C6940D6005FF4D8 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 93F4B2C61C6940D6005FF4D8 /* Main.storyboard */; };
@@ -57,10 +55,9 @@
 
 /* Begin PBXFileReference section */
 		1A52D216260AEA1700A9BEBD /* CouchbaseLiteSwift.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CouchbaseLiteSwift.xcframework; path = Frameworks/CouchbaseLiteSwift.xcframework; sourceTree = "<group>"; };
-		1A52D21C260B0FCF00A9BEBD /* TaskDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailViewController.swift; sourceTree = "<group>"; };
 		1A993708260D927C00D5E911 /* SettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		1A99370A260DAF1200D5E911 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
-		933F1AB71F393EEE00338C6A /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		40EBC2892991F49E00182F16 /* DB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DB.swift; sourceTree = "<group>"; };
 		934646BB1C69CF6B002F52C9 /* TasksViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TasksViewController.swift; sourceTree = "<group>"; };
 		934646C21C6AC4CD002F52C9 /* TaskTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TaskTableViewCell.swift; sourceTree = "<group>"; };
 		934646C51C6B218D002F52C9 /* TaskImageViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TaskImageViewController.swift; sourceTree = "<group>"; };
@@ -74,14 +71,13 @@
 		9382585C216323BF006A75AD /* 3.JPG */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = 3.JPG; sourceTree = "<group>"; };
 		9382585D216323BF006A75AD /* 1.JPG */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = 1.JPG; sourceTree = "<group>"; };
 		9382585E216323BF006A75AD /* 0.JPG */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = 0.JPG; sourceTree = "<group>"; };
-		9382586A21632B46006A75AD /* QE.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QE.swift; sourceTree = "<group>"; };
 		939279F71C72E9C8009D9A92 /* Image.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Image.swift; sourceTree = "<group>"; };
 		93BF1ECE2162AEED00666736 /* Todo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Todo.entitlements; sourceTree = "<group>"; };
 		93D6508D1EF441DE00EA44F3 /* UsersViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsersViewController.swift; sourceTree = "<group>"; };
 		93D999FC1C7FE78300FEFF17 /* TextDialog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextDialog.swift; sourceTree = "<group>"; };
 		93D9D9AB1EDF8427001355EE /* Session.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
 		93D9D9AD1EDF8495001355EE /* LoginViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
-		93DED1962499CDE900595294 /* DogLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DogLogger.swift; sourceTree = "<group>"; };
+		93DED1962499CDE900595294 /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
 		93F4B2BF1C6940D6005FF4D8 /* Todo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Todo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		93F4B2C21C6940D6005FF4D8 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		93F4B2C41C6940D6005FF4D8 /* ListsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListsViewController.swift; sourceTree = "<group>"; };
@@ -104,6 +100,31 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		40EBC28E299356E900182F16 /* Controller */ = {
+			isa = PBXGroup;
+			children = (
+				93F4B2C21C6940D6005FF4D8 /* AppDelegate.swift */,
+				93F4B2C41C6940D6005FF4D8 /* ListsViewController.swift */,
+				93D9D9AD1EDF8495001355EE /* LoginViewController.swift */,
+				934646BB1C69CF6B002F52C9 /* TasksViewController.swift */,
+				934646C51C6B218D002F52C9 /* TaskImageViewController.swift */,
+				93D6508D1EF441DE00EA44F3 /* UsersViewController.swift */,
+				1A993708260D927C00D5E911 /* SettingsViewController.swift */,
+			);
+			name = Controller;
+			sourceTree = "<group>";
+		};
+		40EBC28F299356FA00182F16 /* Database */ = {
+			isa = PBXGroup;
+			children = (
+				1A99370A260DAF1200D5E911 /* Config.swift */,
+				40EBC2892991F49E00182F16 /* DB.swift */,
+				93DED1962499CDE900595294 /* Log.swift */,
+				93D9D9AB1EDF8427001355EE /* Session.swift */,
+			);
+			name = Database;
+			sourceTree = "<group>";
+		};
 		9322DCCA1F1406A600C4ACF7 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -160,21 +181,10 @@
 		93F4B2C11C6940D6005FF4D8 /* Todo */ = {
 			isa = PBXGroup;
 			children = (
-				93825854216323BF006A75AD /* Photos */,
+				40EBC28F299356FA00182F16 /* Database */,
+				40EBC28E299356E900182F16 /* Controller */,
 				934646C41C6AC4D5002F52C9 /* UI */,
-				93F4B2C21C6940D6005FF4D8 /* AppDelegate.swift */,
-				93F4B2C41C6940D6005FF4D8 /* ListsViewController.swift */,
-				93D9D9AD1EDF8495001355EE /* LoginViewController.swift */,
-				934646BB1C69CF6B002F52C9 /* TasksViewController.swift */,
-				934646C51C6B218D002F52C9 /* TaskImageViewController.swift */,
-				1A52D21C260B0FCF00A9BEBD /* TaskDetailViewController.swift */,
-				93D6508D1EF441DE00EA44F3 /* UsersViewController.swift */,
-				1A993708260D927C00D5E911 /* SettingsViewController.swift */,
-				1A99370A260DAF1200D5E911 /* Config.swift */,
-				933F1AB71F393EEE00338C6A /* Constants.swift */,
-				93D9D9AB1EDF8427001355EE /* Session.swift */,
-				93DED1962499CDE900595294 /* DogLogger.swift */,
-				9382586A21632B46006A75AD /* QE.swift */,
+				93825854216323BF006A75AD /* Photos */,
 				93F4B2C61C6940D6005FF4D8 /* Main.storyboard */,
 				93F4B2C91C6940D6005FF4D8 /* Assets.xcassets */,
 				93F4B2CB1C6940D6005FF4D8 /* LaunchScreen.storyboard */,
@@ -196,7 +206,6 @@
 				93F4B2BD1C6940D6005FF4D8 /* Resources */,
 				932EA5E82065E69A00EDB667 /* Embed Frameworks */,
 				931692802069920D0055E8F0 /* Embed dSYM file */,
-				932EA5D92065D50400EDB667 /* Upload dSYM file to Crashlytics */,
 			);
 			buildRules = (
 			);
@@ -287,21 +296,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [[ -e \"./Frameworks/CouchbaseLiteSwift.framework.dSYM\" ]]; then\n    cp -r \"./Frameworks/CouchbaseLiteSwift.framework.dSYM\" ${BUILT_PRODUCTS_DIR}\nfi";
-		};
-		932EA5D92065D50400EDB667 /* Upload dSYM file to Crashlytics */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Upload dSYM file to Crashlytics";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "./Frameworks/Fabric.framework/run 777ded422d343e33f5361f098e867f07dde3bde8 65529c76389e4f04ec7d937fc11fb8b178174e1e17e074d6e77431b14cd6ecc7\n";
+			shellScript = "if [[ -e \"./Frameworks/CouchbaseLiteSwift.framework.dSYM\" ]]; then\n    cp -r \"./Frameworks/CouchbaseLiteSwift.framework.dSYM\" ${BUILT_PRODUCTS_DIR}\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -312,21 +307,19 @@
 			files = (
 				93F4B2C51C6940D6005FF4D8 /* ListsViewController.swift in Sources */,
 				934646BC1C69CF6B002F52C9 /* TasksViewController.swift in Sources */,
-				93DED1972499CDE900595294 /* DogLogger.swift in Sources */,
+				93DED1972499CDE900595294 /* Log.swift in Sources */,
 				934646C31C6AC4CD002F52C9 /* TaskTableViewCell.swift in Sources */,
 				1A99370B260DAF1200D5E911 /* Config.swift in Sources */,
 				93D6508E1EF441DE00EA44F3 /* UsersViewController.swift in Sources */,
 				93F4B2C31C6940D6005FF4D8 /* AppDelegate.swift in Sources */,
-				9382586B21632B46006A75AD /* QE.swift in Sources */,
 				1A993709260D927C00D5E911 /* SettingsViewController.swift in Sources */,
 				934646C61C6B218D002F52C9 /* TaskImageViewController.swift in Sources */,
 				93F4B2E01C696C78005FF4D8 /* Ui.swift in Sources */,
-				1A52D21D260B0FCF00A9BEBD /* TaskDetailViewController.swift in Sources */,
+				40EBC28A2991F49E00182F16 /* DB.swift in Sources */,
 				939279F81C72E9C8009D9A92 /* Image.swift in Sources */,
 				93D999FD1C7FE78300FEFF17 /* TextDialog.swift in Sources */,
 				93D9D9AE1EDF8495001355EE /* LoginViewController.swift in Sources */,
 				93D9D9AC1EDF8427001355EE /* Session.swift in Sources */,
-				933F1AB81F393EEE00338C6A /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -1,9 +1,19 @@
 //
-//  SettingsViewController.swift
-//  Todo
+// SettingsViewController.swift
 //
-//  Created by Jayahari Vavachan on 3/25/21.
-//  Copyright © 2021 Couchbase. All rights reserved.
+// Copyright (c) 2023 Couchbase, Inc All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 
 import UIKit
@@ -12,14 +22,12 @@ class SettingsViewController: UIViewController {
     
     @IBOutlet weak var syncEndpoint: UITextField!
     @IBOutlet weak var loggingSwitch: UISwitch!
-    @IBOutlet weak var loginFlowSwitch: UISwitch!
     @IBOutlet weak var syncSwitch: UISwitch!
     @IBOutlet weak var pushNotificationSwitch: UISwitch!
     @IBOutlet weak var ccrSwitch: UISwitch!
     @IBOutlet weak var ccrSegmentControl: UISegmentedControl!
-    @IBOutlet weak var maxRetries: UITextField!
-    @IBOutlet weak var maxRetryWaitTime: UITextField!
-    
+    @IBOutlet weak var maxAttempts: UITextField!
+    @IBOutlet weak var maxAttemptsWaitTime: UITextField!
     @IBOutlet weak var syncBackground: UIStackView!
     @IBOutlet weak var ccrBackground: UIStackView!
     @IBOutlet weak var maxRetryBackground: UIStackView!
@@ -75,16 +83,15 @@ class SettingsViewController: UIViewController {
         let defaults = UserDefaults.standard
         
         defaults.set(true, forKey: HAS_SETTINGS_KEY)
-        
         defaults.set(loggingSwitch.isOn, forKey: IS_LOGGING_KEY)
-        defaults.set(loginFlowSwitch.isOn, forKey: IS_LOGIN_FLOW_KEY)
         defaults.set(syncSwitch.isOn, forKey: IS_SYNC_KEY)
         defaults.set(pushNotificationSwitch.isOn, forKey: IS_PUSH_NOTIFICATION_ENABLED_KEY)
         defaults.set(ccrSwitch.isOn, forKey: IS_CCR_ENABLED_KEY)
         defaults.set(ccrSegmentControl.selectedSegmentIndex, forKey: CCR_TYPE_KEY)
-        defaults.set(maxRetries.text, forKey: MAX_RETRY_KEY)
-        defaults.set(maxRetryWaitTime.text, forKey: MAX_RETRY_WAIT_TIME_KEY)
+        defaults.set(maxAttempts.text, forKey: MAX_ATTEMPTS_KEY)
+        defaults.set(maxAttemptsWaitTime.text, forKey: MAX_ATTEMPTS_WAIT_TIME_KEY)
         
+        // Not saved in user defaults
         if let url = syncEndpoint.text {
             Config.shared.syncURL = url
         }
@@ -113,15 +120,14 @@ class SettingsViewController: UIViewController {
         let defaults = UserDefaults.standard
         if (defaults.bool(forKey: HAS_SETTINGS_KEY)) {
             loggingSwitch.isOn = defaults.bool(forKey: IS_LOGGING_KEY)
-            loginFlowSwitch.isOn = defaults.bool(forKey: IS_LOGIN_FLOW_KEY)
             syncSwitch.isOn = defaults.bool(forKey: IS_SYNC_KEY)
             pushNotificationSwitch.isOn = defaults.bool(forKey: IS_PUSH_NOTIFICATION_ENABLED_KEY)
             ccrSwitch.isOn = defaults.bool(forKey: IS_CCR_ENABLED_KEY)
             ccrSegmentControl.selectedSegmentIndex = defaults.integer(forKey: CCR_TYPE_KEY)
-            maxRetries.text = defaults.string(forKey: MAX_RETRY_KEY)
-            maxRetryWaitTime.text = defaults.string(forKey: MAX_RETRY_WAIT_TIME_KEY)
+            maxAttempts.text = defaults.string(forKey: MAX_ATTEMPTS_KEY)
+            maxAttemptsWaitTime.text = defaults.string(forKey: MAX_ATTEMPTS_WAIT_TIME_KEY)
             
-            // not saved in user defaults
+            // Not saved in user defaults
             syncEndpoint.text = Config.shared.syncURL
         } else {
             fatalError("failed to load default settings")

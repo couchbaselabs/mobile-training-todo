@@ -1,9 +1,19 @@
 //
-//  TasksViewController.swift
-//  Todo
+// TasksViewController.swift
 //
-//  Created by Pasin Suriyentrakorn on 2/8/16.
-//  Copyright © 2016 Couchbase. All rights reserved.
+// Copyright (c) 2023 Couchbase, Inc All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 
 import UIKit
@@ -16,7 +26,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
     
     var username: String!
     var database: Database!
-    var taskList: Document!
+    var taskList: Document?
     
     var taskQuery: Query!
     var taskRows : [Result]?
@@ -25,8 +35,8 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
     var inSearch = false;
     var searchRows : [Result]?
     
-    var taskIDForImage: String?
-    var dbChangeListener: ListenerToken?
+    var selectedImageTaskID: String?
+    var selectedImage: Blob?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -38,9 +48,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
         searchController.searchBar.delegate = self
         self.tableView.tableHeaderView = searchController.searchBar
         
-        // Get database and username:
-        let app = UIApplication.shared.delegate as! AppDelegate
-        database = app.database
+        // Get current username:
         username = Session.username
         
         // Load data:
@@ -53,6 +61,8 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
+        guard let taskList = self.taskList else { return }
+        
         // Setup navigation bar:
         self.tabBarController?.title = taskList.string(forKey: "name")
         self.tabBarController?.navigationItem.rightBarButtonItem =
@@ -62,13 +72,10 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
     // MARK: - Database
     
     func reload() {
+        guard let taskList = self.taskList else { return }
+        
         if taskQuery == nil {
-            taskQuery = QueryBuilder
-                .select(S_ID, S_TASK, S_COMPLETE, S_IMAGE)
-                .from(DataSource.database(database))
-                .where(TYPE.equalTo(Expression.string("task")).and(TASK_LIST_ID.equalTo(Expression.string(taskList.id))))
-                .orderBy(Ordering.expression(CREATED_AT), Ordering.expression(TASK))
-            
+            taskQuery = try! DB.shared.getTasksQuery(taskListID: taskList.id)
             taskQuery.addChangeListener({ (change) in
                 if let error = change.error {
                     NSLog("Error quering tasks: %@", error.localizedDescription)
@@ -80,101 +87,64 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
     }
     
     func createTask(task: String) {
-        let doc = MutableDocument()
-        doc.setValue("task", forKey: "type")
-        
-        let taskListInfo = ["id": taskList.id, "owner": taskList.string(forKey: "owner")]
-        doc.setValue(taskListInfo, forKey: "taskList")
-        doc.setValue(Date(), forKey: "createdAt")
-        doc.setValue(task, forKey: "task")
-        doc.setValue(false, forKey: "complete")
-        
         do {
-            try database.saveDocument(doc)
+            guard let taskList = self.taskList else { return }
+            try DB.shared.createTask(taskList: taskList, task: task)
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't save task", error: error)
         }
     }
     
-    func createTaskWithDeltaSync(task: String) {
-        let doc = MutableDocument()
-        doc.setValue("task", forKey: "type")
-        
-        let taskListInfo = ["id": taskList.id, "owner": taskList.string(forKey: "owner")]
-        doc.setValue(taskListInfo, forKey: "taskList")
-        doc.setValue(Date(), forKey: "createdAt")
-        doc.setValue(task, forKey: "task")
-        doc.setValue(false, forKey: "complete")
-        
-        var value = "12345678901234567890123456789012345678901234567890" // 50B
-        for _ in 0..<10000 {
-            value.append("12345678901234567890123456789012345678901234567890")
-        }
-        doc.setValue(value, forKey: "delta-sync-payload")
+    func createTaskForTestingDeltaSync(task: String) {
         do {
-            try database.saveDocument(doc)
+            guard let taskList = self.taskList else { return }
+            var extra = "12345678901234567890123456789012345678901234567890" // 50B
+            for _ in 0..<10000 {
+                extra.append("12345678901234567890123456789012345678901234567890")
+            }
+            try DB.shared.createTask(taskList: taskList, task: task, extra: extra)
         } catch let error as NSError {
-            Ui.showError(on: self, message: "Couldn't save task", error: error)
+            Ui.showError(on: self, message: "Couldn't save task for testing delta sync", error: error)
         }
     }
     
-    func updateTask(taskID: String, withTitle title: String) {
+    func updateTask(taskID: String, task: String) {
         do {
-            let task = database.document(withID: taskID)!.toMutable()
-            task.setValue(title, forKey: "task")
-            try database.saveDocument(task)
+            try DB.shared.updateTask(taskID: taskID, task: task)
         } catch let error as NSError {
-            Ui.showError(on: self, message: "Couldn't update task", error: error)
+            Ui.showError(on: self, message: "Couldn't update task with task", error: error)
         }
     }
     
-    func updateTask(taskID: String, withComplete complete: Bool) {
+    func updateTask(taskID: String, complete: Bool) {
         do {
-            let task = database.document(withID: taskID)!.toMutable()
-            task.setValue(complete, forKey: "complete")
-            try database.saveDocument(task)
+            try DB.shared.updateTask(taskID: taskID, complete: complete)
         } catch let error as NSError {
-            Ui.showError(on: self, message: "Couldn't update task", error: error)
+            Ui.showError(on: self, message: "Couldn't update task with complete", error: error)
         }
     }
     
-    func updateTask(taskID: String, withImage image: UIImage) {
-        guard let imageData = UIImageJPEGRepresentation(image, 0.5) else {
-            Ui.showError(on: self, message: "Invalid image format")
-            return
-        }
-        
+    func updateTask(taskID: String, image: UIImage) {
         do {
-            let task = database.document(withID: taskID)!.toMutable()
-            let blob = Blob(contentType: "image/jpeg", data: imageData)
-            task.setValue(blob, forKey: "image")
-            try database.saveDocument(task)
+            try DB.shared.updateTask(taskID: taskID, image: image)
         } catch let error as NSError {
-            Ui.showError(on: self, message: "Couldn't update task", error: error)
+            Ui.showError(on: self, message: "Couldn't update task with image", error: error)
         }
     }
     
     func deleteTask(taskID: String) {
         do {
-            let task = database.document(withID: taskID)!
-            try database.deleteDocument(task)
+            try DB.shared.deleteTask(taskID: taskID)
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't delete task", error: error)
         }
     }
     
     func searchTask(task: String) {
-        searchQuery = QueryBuilder
-            .select(S_ID, S_TASK, S_COMPLETE, S_IMAGE)
-            .from(DataSource.database(database))
-            .where(TYPE.equalTo(Expression.string("task"))
-                .and(TASK_LIST_ID.equalTo(Expression.string(taskList.id)))
-                .and(TASK.like(Expression.string("%\(task)%"))))
-            .orderBy(Ordering.expression(CREATED_AT), Ordering.expression(TASK))
-        
         do {
-            let rows = try searchQuery.execute()
-            searchRows = Array(rows)
+            guard let taskList = self.taskList else { return }
+            let rs = try DB.shared.getTasksByTask(taskListID: taskList.id, task: task)
+            searchRows = Array(rs)
             tableView.reloadData()
         } catch let error as NSError {
             NSLog("Error searching tasks: %@", error)
@@ -184,26 +154,8 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
     // MARK: Users
     
     func displayOrHideUsers() {
-        var display = false
-        let moderatorDocId = "moderator." + username
-        if username == taskList.string(forKey: "owner") {
-            display = true
-        } else {
-            display = database.document(withID: moderatorDocId) != nil
-        }
+        let display = (username == taskList?.string(forKey: "owner"))
         Ui.displayOrHideTabbar(on: self, display: display)
-        
-        if dbChangeListener == nil {
-            dbChangeListener = database.addChangeListener({ [weak self] (change) in
-                guard let strongSelf = self else { return }
-                for docId in change.documentIDs {
-                    if docId == moderatorDocId {
-                        strongSelf.displayOrHideUsers()
-                        break
-                    }
-                }
-            })
-        }
     }
     
     // MARK: - Action
@@ -230,7 +182,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
             text.placeholder = "Task"
             text.autocapitalizationType = .sentences
         }, onOk: { task in
-            self.createTaskWithDeltaSync(task: task)
+            self.createTaskForTestingDeltaSync(task: task)
         })
     }
     
@@ -246,11 +198,19 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
         })
         
         actions.addAction(UIAlertAction(title: "Generate Tasks", style: .default) { _ in
-            QE.generateTasks(database: self.database, taskList: self.taskList, numbers: 50, includesPhoto: true)
+            do {
+                try DB.shared.generateTasks(taskList: self.taskList!, numbers: 50, includesPhoto: true)
+            } catch let error as NSError {
+                NSLog("Error generating tasks: %@", error)
+            }
         })
         
         actions.addAction(UIAlertAction(title: "Generate No Photo Tasks", style: .default) { _ in
-            QE.generateTasks(database: self.database, taskList: self.taskList, numbers: 50, includesPhoto: false)
+            do {
+                try DB.shared.generateTasks(taskList: self.taskList!, numbers: 50, includesPhoto: false)
+            } catch let error as NSError {
+                NSLog("Error generating tasks: %@", error)
+            }
         })
         
         actions.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in })
@@ -271,17 +231,19 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TaskCell") as! TaskTableViewCell
         
-        let result = self.data![indexPath.row]
-        let docID = result.string(forKey: "id")!
-        cell.taskLabel.text = result.string(forKey: "task")
+        let row = self.data![indexPath.row]
+        let id = row.string(forKey: "id")!
+        let task = row.string(forKey: "task")
+        let complete = row.boolean(forKey: "complete")
+        let image = row.blob(forKey: "image")
         
-        let complete: Bool = result.boolean(forKey: "complete")
+        cell.taskLabel.text = task
         cell.accessoryType = complete ? .checkmark : .none
         
-        if let imageBlob = result.blob(forKey: "image") {
-            let digest = imageBlob.digest!
-            let image = UIImage(data: imageBlob.content!, scale: UIScreen.main.scale)
-            let thumbnail = Image.square(image: image,
+        if let blob = image {
+            let digest = blob.digest!
+            let imageObj = UIImage(data: blob.content!, scale: UIScreen.main.scale)
+            let thumbnail = Image.square(image: imageObj,
                                          withSize: 44.0,
                                          withCacheName: digest,
                                          onComplete: { (thumbnail) -> Void in
@@ -289,13 +251,14 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
             })
             cell.taskImage = thumbnail
             cell.taskImageAction = {
-                self.taskIDForImage = docID
+                self.selectedImageTaskID = id
+                self.selectedImage = image
                 self.performSegue(withIdentifier: "showTaskImage", sender: self)
             }
         } else {
             cell.taskImage = nil
             cell.taskImageAction = {
-                self.taskIDForImage = docID
+                self.selectedImageTaskID = id
                 Ui.showImageActionSheet(on: self, imagePickerDelegate: self)
             }
         }
@@ -304,27 +267,21 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
     }
     
     func updateImage(image: UIImage?, withDigest digest: String, atIndexPath indexPath: IndexPath) {
-        guard let rows = self.taskRows, rows.count > indexPath.row else {
-            return
-        }
-        
+        guard let rows = self.taskRows, rows.count > indexPath.row else { return }
         let row = self.data![indexPath.row]
-        let docID = row.string(at: 0)!
-        let doc = database.document(withID: docID)!
-        
-        if let imageBlob = doc.blob(forKey: "image"), let d = imageBlob.digest, d == digest {
-            let cell = tableView.cellForRow(at: indexPath) as! TaskTableViewCell
-            cell.taskImage = image
+        if let blob = row.blob(forKey: "image") {
+            if digest == blob.digest {
+                let cell = tableView.cellForRow(at: indexPath) as! TaskTableViewCell
+                cell.taskImage = image
+            }
         }
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let row = self.data![indexPath.row]
-        let docID = row.string(at: 0)!
-        let doc = database.document(withID: docID)!
-        
-        let complete: Bool = !doc.boolean(forKey: "complete")
-        updateTask(taskID: docID, withComplete: complete)
+        let id = row.string(forKey: "id")!
+        let complete = !row.boolean(forKey: "complete")
+        updateTask(taskID: id, complete: complete)
         
         // Optimistically update the UI:
         let cell = tableView.cellForRow(at: indexPath) as! TaskTableViewCell
@@ -333,14 +290,15 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
     
     override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
         let row = self.data![indexPath.row]
-        let docID = row.string(at: 0)!
+        let id = row.string(forKey: "id")!
+        let task = row.string(forKey: "task")
         
         let delete = UITableViewRowAction(style: .normal, title: "Delete") {
             (action, indexPath) -> Void in
             // Dismiss row actions:
             tableView.setEditing(false, animated: true)
             // Delete list document:
-            self.deleteTask(taskID: docID)
+            self.deleteTask(taskID: id)
         }
         delete.backgroundColor = UIColor(red: 1.0, green: 0.23, blue: 0.19, alpha: 1.0)
         
@@ -350,12 +308,11 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
             tableView.setEditing(false, animated: true)
             // Display update list dialog:
             Ui.showTextInput(on: self, title: "Edit Task", message:  nil, textFieldConfig: { text in
-                let doc = self.database.document(withID: docID)!
                 text.placeholder = "Task"
-                text.text = doc.string(forKey: "task")
+                text.text = task
                 text.autocapitalizationType = .sentences
-            }, onOk: { task in
-                self.updateTask(taskID: docID, withTitle: task)
+            }, onOk: { newTask in
+                self.updateTask(taskID: id, task: newTask)
             })
         }
         update.backgroundColor = UIColor(red: 0.0, green: 0.48, blue: 1.0, alpha: 1.0)
@@ -365,21 +322,11 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
             // Dismiss row actions:
             tableView.setEditing(false, animated: true)
             // Get doc:
-            let doc = self.database.document(withID: docID)!
-            logTask(doc: doc)
+            // let doc = self.database.document(withID: docID)!
+            // logTask(doc: doc)
         }
         
-        let detail = UITableViewRowAction(style: .normal, title: "Detail") {
-            (action, indexPath) -> Void in
-            // Dismiss row actions:
-            tableView.setEditing(false, animated: true)
-            
-            self.taskIDForImage = row.string(at: 0)!
-            self.performSegue(withIdentifier: "showTaskDetail", sender: self)
-        }
-        detail.backgroundColor = UIColor(red: 0.0, green: 1.0, blue: 0.0, alpha: 1.0)
-        
-        return [delete, update, log, detail]
+        return [delete, update, log]
     }
     
     // MARK: - UISearchController
@@ -402,9 +349,9 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
     // MARK: - UIImagePickerControllerDelegate
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        if let taskID = taskIDForImage {
-            updateTask(taskID: taskID, withImage: info["UIImagePickerControllerOriginalImage"] as! UIImage)
-            self.taskIDForImage = nil
+        if let id = selectedImageTaskID {
+            updateTask(taskID: id, image: info["UIImagePickerControllerOriginalImage"] as! UIImage)
+            self.selectedImageTaskID = nil
         }
         picker.presentingViewController?.dismiss(animated: true, completion: nil)
     }
@@ -415,13 +362,9 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
         if segue.identifier == "showTaskImage" {
             let navController = segue.destination as! UINavigationController
             let controller = navController.topViewController as! TaskImageViewController
-            controller.taskID = taskIDForImage
-            taskIDForImage = nil
-        } else if segue.identifier == "showTaskDetail" {
-            let navController = segue.destination as! UINavigationController
-            let controller = navController.topViewController as! TaskDetailViewController
-            controller.taskID = taskIDForImage
-            taskIDForImage = nil
+            controller.taskID = selectedImageTaskID
+            controller.imageBlob = selectedImage
+            selectedImageTaskID = nil
         }
     }
     
@@ -430,8 +373,5 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
     deinit {
         // Fix "... load the view of a view controller while it is deallocating" warning.
         searchController?.view.removeFromSuperview()
-        // Remove change listener:
-        database.removeChangeListener(withToken: dbChangeListener!)
     }
 }
-

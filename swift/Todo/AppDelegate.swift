@@ -1,33 +1,27 @@
 //
-//  AppDelegate.swift
-//  Todo
+// AppDelegate.swift
 //
-//  Created by Pasin Suriyentrakorn on 2/8/16.
-//  Copyright © 2016 Couchbase. All rights reserved.
+// Copyright (c) 2023 Couchbase, Inc All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 
 import UIKit
 import UserNotifications
 import CouchbaseLiteSwift
 
-
-// Custom conflict resolver
-enum CCRType: Int {
-    case local = 0, remote, delete;
-}
-
-// Database Encryption:
-// Note: changing this value requires to delete the app before rerun:
-let kDatabaseEncryptionKey: String? = nil
-
 // QE:
 let kQEFeaturesEnabled = true
-
-// Crashlytics:
-let kCrashlyticsEnabled = true
-
-// Constants:
-let kActivities = ["Stopped", "Offline", "Connecting", "Idle", "Busy"]
 
 // Logout Method
 enum LogoutMethod {
@@ -38,99 +32,56 @@ enum LogoutMethod {
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, LoginViewControllerDelegate {
     var window: UIWindow?
     
-    var database: Database!
-    var replicator: Replicator!
-    var changeListener: ListenerToken?
-    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions
         launchOptions: [UIApplicationLaunchOptionsKey : Any]? = nil) -> Bool {
-        
         if Config.shared.loggingEnabled {
             Database.log.console.level = .info
         }
-        
-        if Config.shared.loginFlowEnabled {
-            login(username: nil)
-        } else {
-            do {
-                try startSession(username: "todo")
-            } catch let error as NSError {
-                NSLog("Cannot start a session: %@", error)
-                return false
-            }
-        }
+        showLogin(username: nil)
         return true
     }
     
     // MARK: - Session
     
-    func startSession(username:String, withPassword password:String? = nil) throws {
-        try openDatabase(username: username)
+    func startSession(username: String, withPassword password: String) throws {
         Session.username = username
         Session.password = password
         
-        var resolver: ConflictResolverProtocol?
-        if Config.shared.ccrEnabled {
-            resolver = TestConflictResolver() { (conflict) -> Document? in
-                switch Config.shared.ccrType {
-                case .local:
-                    return conflict.localDocument
-                case .remote:
-                    return conflict.remoteDocument
-                case .delete:
-                    return nil;
-                }
+        try DB.shared.open()
+        
+        DB.shared.startReplicator { change in
+            let s = change.status
+            self.updateReplicatorStatus(s.activity)
+            
+            let e = change.status.error as NSError?
+            if let code = e?.code, code == 401 {
+                Ui.showMessage(on: self.window!.rootViewController!,
+                               title: "Authentication Error",
+                               message: "Your username or password is not correct",
+                               error: nil,
+                               onClose: {
+                                self.logout(method: .closeDatabase)
+                })
             }
         }
         
-        startReplication(withUsername: username, password: password, resolver: resolver)
+        registerPushNotification()
+        
         showApp()
-        registerRemoteNotification()
     }
     
-    func openDatabase(username:String) throws {
-        var config = DatabaseConfiguration()
-        if let password = kDatabaseEncryptionKey {
-            config.encryptionKey = EncryptionKey.password(password)
-        }
-        database = try Database(name: username, config: config)
-        createDatabaseIndex()
-    }
-
-    func closeDatabase() throws {
-        try database.close()
-    }
-    
-    func deleteDatabase() throws {
-        try database.delete()
-    }
-    
-    func createDatabaseIndex() {
-        // For task list query:
-        let type = ValueIndexItem.expression(Expression.property("type"))
-        let name = ValueIndexItem.expression(Expression.property("name"))
-        let taskListId = ValueIndexItem.expression(Expression.property("taskList.id"))
-        let task = ValueIndexItem.expression(Expression.property("task"))
-        
-        do {
-            let index = IndexBuilder.valueIndex(items: type, name)
-            try database.createIndex(index, withName: "task-list")
-        } catch let error as NSError {
-            NSLog("Couldn't create index (type, name): %@", error);
+    func showApp() {
+        guard let root = window?.rootViewController, let storyboard = root.storyboard else {
+            return
         }
         
-        // For tasks query:
-        do {
-            let index = IndexBuilder.valueIndex(items: type, taskListId, task)
-            try database.createIndex(index, withName: "tasks")
-        } catch let error as NSError {
-            NSLog("Couldn't create index (type, taskList.id, task): %@", error);
-        }
+        let controller = storyboard.instantiateInitialViewController()
+        window!.rootViewController = controller
     }
     
     // MARK: - Login
     
-    func login(username: String? = nil) {
+    func showLogin(username: String? = nil) {
         let storyboard =  window!.rootViewController!.storyboard
         let navigation = storyboard!.instantiateViewController(
             withIdentifier: "LoginNavigationController") as! UINavigationController
@@ -144,46 +95,32 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         let startTime = Date().timeIntervalSinceReferenceDate
         if method == .closeDatabase {
             do {
-                try closeDatabase()
+                try DB.shared.close()
             } catch let error as NSError {
                 NSLog("Cannot close database: %@", error)
                 return
             }
         } else if method == .deleteDatabase {
             do {
-                try deleteDatabase()
+                try DB.shared.delete()
             } catch let error as NSError {
                 NSLog("Cannot delete database: %@", error)
                 return
             }
         }
+        
         let endTime = Date().timeIntervalSinceReferenceDate
         NSLog("Logout took in \(endTime - startTime) seconds")
         
         let oldUsername = Session.username
         Session.username = nil
         Session.password = nil
-        login(username: oldUsername)
-    }
-    
-    func showApp() {
-        guard let root = window?.rootViewController, let storyboard = root.storyboard else {
-            return
-        }
-        
-        let controller = storyboard.instantiateInitialViewController()
-        window!.rootViewController = controller
+        showLogin(username: oldUsername)
     }
     
     // MARK: - LoginViewControllerDelegate
     
-    func login(controller: UIViewController, withUsername username: String,
-               andPassword password: String) {
-        processLogin(controller: controller, withUsername: username, withPassword: password)
-    }
-    
-    func processLogin(controller: UIViewController, withUsername username: String,
-                      withPassword password: String) {
+    func login(controller: UIViewController, username: String, password: String) {
         do {
             try startSession(username: username, withPassword: password)
         } catch let error as NSError {
@@ -194,102 +131,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
     }
     
-    // MARK: - Replication
-    
-    func startReplication(withUsername username:String, password:String? = "", resolver: ConflictResolverProtocol?) {
-        guard Config.shared.syncEnabled else {
-            return
-        }
-        
-        let auth = Config.shared.loginFlowEnabled ? BasicAuthenticator(username: username, password: password!) : nil
-        let target = URLEndpoint(url: URL(string: Config.shared.syncURL)!)
-        var config = ReplicatorConfiguration(database: database, target: target)
-        config.continuous = true
-        config.authenticator = auth
-        config.conflictResolver = resolver
-        NSLog(">> Custom Conflict Resolver: Enabled = \(Config.shared.ccrEnabled); Type = \(Config.shared.ccrType)")
-        config.maxAttempts = Config.shared.maxAttempts
-        config.maxAttemptWaitTime = Config.shared.maxAttemptWaitTime
-        
-        replicator = Replicator(config: config)
-        changeListener = replicator.addChangeListener({ (change) in
-            let s = change.status
-            let activity = kActivities[Int(s.activity.rawValue)]
-            let e = change.status.error as NSError?
-            let error = e != nil ? ", error: \(e!.description)" : ""
-            NSLog("[Todo] Replicator: \(activity), \(s.progress.completed)/\(s.progress.total)\(error)")
-            UIApplication.shared.isNetworkActivityIndicatorVisible = (s.activity == .busy)
-            if let code = e?.code {
-                if code == 401 {
-                    Ui.showMessage(on: self.window!.rootViewController!,
-                                   title: "Authentication Error",
-                                   message: "Your username or password is not correct",
-                                   error: nil,
-                                   onClose: {
-                                    self.logout(method: .closeDatabase)
-                    })
-                }
-            }
-            
-            // update the title color to reflect the status
-            self.updateReplicatorStatus(s.activity)
-        })
-        replicator.start()
-    }
+    // MARK: - Replication Status
     
     func updateReplicatorStatus(_ level: Replicator.ActivityLevel) {
+        UIApplication.shared.isNetworkActivityIndicatorVisible = (level == .busy)
         if let vc = (window?.rootViewController as? UINavigationController)?.topViewController as? ListsViewController {
             vc.updateReplicatorStatus(level)
         }
     }
     
-    func stopReplication() {
-        guard Config.shared.syncEnabled else {
-            return
-        }
-        
-        replicator.stop()
-        replicator.removeChangeListener(withToken: changeListener!)
-        changeListener = nil
-    }
-    
     // MARK: Push Notification Sync
     
-    func registerRemoteNotification() {
-        guard Config.shared.pushNotificationEnabled else {
-            return
-        }
+    func registerPushNotification() {
+        guard Config.shared.pushNotificationEnabled else { return }
         UIApplication.shared.registerForRemoteNotifications()
-    }
-    
-    func startPushNotificationSync() {
-        guard Config.shared.pushNotificationEnabled else {
-            return
-        }
-        
-        NSLog("[Todo] Start Push Notification ...")
-        
-        let target = URLEndpoint(url: URL(string: Config.shared.syncURL)!)
-        var config = ReplicatorConfiguration(database: database, target: target)
-        if Config.shared.loginFlowEnabled, let u = Session.username, let p = Session.password {
-            config.authenticator = BasicAuthenticator(username: u, password: p)
-        }
-        
-        let repl = Replicator(config: config)
-        changeListener = repl.addChangeListener({ (change) in
-            let s = change.status
-            let activity = kActivities[Int(s.activity.rawValue)]
-            let e = change.status.error as NSError?
-            let error = e != nil ? ", error: \(e!.description)" : ""
-            NSLog("[Todo] Push-Notification-Replicator: \(activity), \(s.progress.completed)/\(s.progress.total)\(error)")
-            UIApplication.shared.isNetworkActivityIndicatorVisible = (s.activity == .busy)
-            if let code = e?.code {
-                if code == 401 {
-                    NSLog("ERROR: Authentication Error, username or password is not correct");
-                }
-            }
-        })
-        repl.start()
     }
     
     // MARK: UNUserNotificationCenterDelegate
@@ -310,22 +165,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         NSLog("WARNING: Failed to register for the remote notification: \(error)")
     }
     
-    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any],
+                     fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
         // Start single shot replicator:
-        self.startPushNotificationSync()
-        
+        DB.shared.startPushNotificationReplicator()
         completionHandler(.newData)
-    }
-}
-
-class TestConflictResolver: ConflictResolverProtocol {
-    let _resolver: (Conflict) -> Document?
-    
-    init(_ resolver: @escaping (Conflict) -> Document?) {
-        _resolver = resolver
-    }
-    
-    func resolve(conflict: Conflict) -> Document? {
-        return _resolver(conflict)
     }
 }
