@@ -1,9 +1,19 @@
 //
-//  TaskImageViewController.swift
-//  Todo
+// TaskImageViewController.swift
 //
-//  Created by Pasin Suriyentrakorn on 2/9/16.
-//  Copyright © 2016 Couchbase. All rights reserved.
+// Copyright (c) 2023 Couchbase, Inc All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 
 import UIKit
@@ -13,16 +23,12 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
     UINavigationControllerDelegate {
     @IBOutlet weak var imageView: UIImageView!
     
-    var database: Database!
     var taskID: String!
+    var imageBlob: Blob?
+    var image: UIImage?
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        // Get database:
-        let app = UIApplication.shared.delegate as! AppDelegate
-        database = app.database
-        
         reload()
     }
 
@@ -52,24 +58,20 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
     // MARK: - Database
     
     func reload() {
-        let task = database.document(withID: taskID)!
-        if let blob = task.blob(forKey: "image"), let content = blob.content {
-            imageView.image = UIImage(data: content)
+        if let image = self.image {
+            imageView.image = image
+        } else if let data = imageBlob?.content {
+            imageView.image = UIImage(data: data)
         } else {
             imageView.image = nil
         }
     }
     
     func updateImage(image: UIImage) {
-        guard let imageData = UIImageJPEGRepresentation(image, 0.5) else {
-            Ui.showMessage(on: self, title: "Error", message: "Invalid image format")
-            return
-        }
-        
         do {
-            let task = database.document(withID: taskID)!.toMutable()
-            task.setValue(Blob(contentType: "image/jpg", data: imageData), forKey: "image")
-            try database.saveDocument(task)
+            try DB.shared.updateTask(taskID: taskID, image: image)
+            self.image = image
+            self.imageBlob = nil
             reload()
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't update image", error: error)
@@ -78,9 +80,9 @@ class TaskImageViewController: UIViewController, UIImagePickerControllerDelegate
     
     func deleteImage() {
         do {
-            let task = database.document(withID: taskID)!.toMutable()
-            task.setValue(nil, forKey: "image")
-            try database.saveDocument(task)
+            try DB.shared.updateTask(taskID: taskID, image: nil)
+            self.image = nil
+            self.imageBlob = nil
             reload()
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't delete image", error: error)

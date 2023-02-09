@@ -1,9 +1,19 @@
 //
-//  UsersViewController.swift
-//  Todo
+// UsersViewController.swift
 //
-//  Created by Pasin Suriyentrakorn on 6/16/17.
-//  Copyright © 2017 Couchbase. All rights reserved.
+// Copyright (c) 2023 Couchbase, Inc All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 
 import UIKit
@@ -13,8 +23,7 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating, UISea
     var searchController: UISearchController!
     
     var username: String!
-    var database: Database!
-    var taskList: Document!
+    var taskList: Document?
     
     var usersQuery: Query!
     var userRows : [Result]?
@@ -34,9 +43,7 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating, UISea
         searchController.searchBar.delegate = self
         self.tableView.tableHeaderView = searchController.searchBar
         
-        // Get username and database:
-        let app = UIApplication.shared.delegate as! AppDelegate
-        database = app.database
+        // Get current username
         username = Session.username
         
         // Load data:
@@ -46,21 +53,20 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating, UISea
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        // Setup navigation bar:
+        guard let taskList = self.taskList else { return }
+        
         self.tabBarController?.title = taskList.string(forKey: "name")
         self.tabBarController?.navigationItem.rightBarButtonItem =
-            UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addAction(sender:)))
+        UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addAction(sender:)))
     }
     
     // MARK: - Database
     
     func reload() {
+        guard let taskList = self.taskList else { return }
+        
         if usersQuery == nil {
-            usersQuery = QueryBuilder
-                .select(S_ID, S_USERNAME)
-                .from(DataSource.database(database))
-                .where(TYPE.equalTo(Expression.string("task-list.user")).and(TASK_LIST_ID.equalTo(Expression.string(taskList.id))))
-            
+            usersQuery = try! DB.shared.getSharedUsersQuery(taskList: taskList)
             usersQuery.addChangeListener({ (change) in
                 if let error = change.error {
                     NSLog("Error querying users: %@", error.localizedDescription)
@@ -72,46 +78,25 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating, UISea
     }
     
     func addUser(username: String) {
-        let docId = taskList.id + "." + username
-        if database.document(withID: docId) != nil {
-            return
-        }
-        
-        let doc = MutableDocument(id: docId)
-        doc.setValue("task-list.user", forKey: "type")
-        doc.setValue(username, forKey: "username")
-        
-        let taskListInfo = MutableDictionaryObject()
-        taskListInfo.setValue(taskList.id, forKey: "id")
-        taskListInfo.setValue(taskList.string(forKey: "owner"), forKey: "owner")
-        doc.setValue(taskListInfo, forKey: "taskList")
-        
         do {
-            try database.saveDocument(doc)
+            try DB.shared.addSharedUser(taskList: taskList!, username: username)
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't add user", error: error)
         }
     }
     
-    func deleteUser(user: Document) {
+    func deleteUser(userID: String) {
         do {
-            try database.deleteDocument(user)
+            try DB.shared.deleteSharedUser(userID: userID)
         } catch let error as NSError {
             Ui.showError(on: self, message: "Couldn't delete user", error: error)
         }
     }
     
     func searchUser(username: String) {
-        searchQuery = QueryBuilder
-            .select(S_ID, S_USERNAME)
-            .from(DataSource.database(database))
-            .where(TYPE.equalTo(Expression.string("task-list.user"))
-                .and(TASK_LIST_ID.equalTo(Expression.string(taskList.id)))
-                .and(USERNAME.like(Expression.string("%" + username + "%"))))
-        
         do {
-            let rows = try searchQuery.execute()
-            searchRows = Array(rows)
+            let rs = try DB.shared.getSharedUsersByUsername(taskList: taskList!, username: username)
+            searchRows = Array(rs)
             tableView.reloadData()
         } catch let error as NSError {
             NSLog("Error search users: %@", error)
@@ -137,15 +122,14 @@ class UsersViewController: UITableViewController, UISearchResultsUpdating, UISea
     
     override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
         let row = self.data![indexPath.row]
-        let docID = row.string(at: 0)!
-        let doc = database.document(withID: docID)!
+        let id = row.string(at: 0)!
         
         let delete = UITableViewRowAction(style: .normal, title: "Delete") {
             (action, indexPath) -> Void in
             // Dismiss row actions:
             tableView.setEditing(false, animated: true)
             // Delete list document:
-            self.deleteUser(user: doc)
+            self.deleteUser(userID: id)
         }
         delete.backgroundColor = UIColor(red: 1.0, green: 0.23, blue: 0.19, alpha: 1.0)
         return [delete]
