@@ -1,148 +1,97 @@
 //
-//  AppDelegate.m
-//  Todo
+// AppDelegate.m
 //
-//  Created by Pasin Suriyentrakorn on 1/26/17.
-//  Copyright © 2017 Pasin Suriyentrakorn. All rights reserved.
+// Copyright (c) 2023 Couchbase, Inc All rights reserved.
 //
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 #import "AppDelegate.h"
-#import "CBLLoginViewController.h"
-#import "CBLSession.h"
-#import "CBLUi.h"
 #import <UserNotifications/UserNotifications.h>
 #import "CBLConfig.h"
+#import "CBLDB.h"
+#import "CBLSession.h"
+#import "CBLUi.h"
 #import "CBLListsViewController.h"
-
-# pragma mark - Custom conflict resolver
-
-@interface TestConflictResolver: NSObject<CBLConflictResolver>
-- (instancetype) init NS_UNAVAILABLE;
-- (instancetype) initWithResolver: (CBLDocument* (^)(CBLConflict*))resolver;
-@end
+#import "CBLLoginViewController.h"
 
 #pragma mark - AppDelegate
 
-@interface AppDelegate () <CBLLoginViewControllerDelegate, UNUserNotificationCenterDelegate> {
-    CBLReplicator *_replicator;
-}
+@interface AppDelegate () <CBLLoginViewControllerDelegate, UNUserNotificationCenterDelegate> { }
 
 @end
 
 @implementation AppDelegate
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+- (BOOL) application: (UIApplication*)application didFinishLaunchingWithOptions: (NSDictionary*)launchOptions {
     if ([CBLConfig shared].loggingEnabled) {
         CBLDatabase.log.console.level = kCBLLogLevelVerbose;
     }
-    
-    if ([CBLConfig shared].loginFlowEnabled) {
-        [self loginWithUsername: nil];
-    } else {
-        NSError *error;
-        if (![self startSession: @"todo" password: nil error:&error]) {
-            NSLog(@"Cannot start a session: %@", error);
-            return NO;
-        }
-    }
+    [self showLoginWithUsername: nil];
     return YES;
 }
 
-- (BOOL)startSession: (NSString *)username password: (NSString *)password error: (NSError **)error {
-    if ([self openDatabase:username error: error]) {
-        CBLSession.sharedInstance.username = username;
-        CBLSession.sharedInstance.password = password;
-        
-        id<CBLConflictResolver> resolver = nil;
-        if ([CBLConfig shared].ccrEnabled) {
-            resolver = [[TestConflictResolver alloc] initWithResolver: ^CBLDocument* (CBLConflict* con) {
-                switch ([CBLConfig shared].ccrType) {
-                    case CCRTypeLocal:
-                        return con.localDocument;
-                    case CCRTypeRemote:
-                        return con.remoteDocument;
-                    case CCRTypeDelete:
-                        return nil;
-                }
-                return con.remoteDocument;
-            }];
+- (BOOL) startSession: (NSString *)username password: (NSString *)password error: (NSError **)error {
+    CBLSession.sharedInstance.username = username;
+    CBLSession.sharedInstance.password = password;
+    
+    if (![CBLDB.shared open: error]) {
+        return false;
+    }
+    
+    __weak typeof(self) wSelf = self;
+    [CBLDB.shared startReplicator:^(CBLReplicatorChange* change) {
+        CBLReplicatorStatus* s = change.status;
+        [wSelf updateReplicatorStatus: s.activity];
+        if (s.error.code == 401) {
+            [CBLUi showMessageOn: wSelf.window.rootViewController
+                           title: @"Authentication Error"
+                         message: @"Your username or passpword is not correct."
+                           error: nil
+                         onClose: ^{ [wSelf logout: CBLLogoutModeCloseDatabase]; }
+             ];
         }
-        
-        [self startReplicator:username password:password resolver: resolver];
-        [self showApp];
-        [self registerRemoteNotification];
-        return YES;
-    }
-    return NO;
-}
-
-- (BOOL)openDatabase: (NSString*)username error: (NSError**)error {
-    // TRAINING: Create a database
-    NSString *dbName = username;
-    _database = [[CBLDatabase alloc] initWithName:dbName error:error];
-    if (_database) {
-        [self createDatabaseIndex];
-        return YES;
-    }
-    return NO;
-}
-
-- (BOOL)closeDatabase: (NSError**)error {
-    return [_database close: error];
-}
-
-- (BOOL)deleteDatabase: (NSError**)error {
-    return [_database delete: error];
-}
-
-- (void)createDatabaseIndex {
-    NSError *error;
+    }];
     
-    CBLValueIndexItem *type = [CBLValueIndexItem property:@"type"];
-    CBLValueIndexItem *name = [CBLValueIndexItem property:@"name"];
-    CBLValueIndexItem *taskListId = [CBLValueIndexItem property:@"taskList.id"];
-    CBLValueIndexItem *task = [CBLValueIndexItem property:@"task"];
+    [self registerRemoteNotification];
+    [self showApp];
     
-    // For task list query:
-    id index1 = [CBLIndexBuilder valueIndexWithItems:@[type, name]];
-    if (![_database createIndex: index1 withName:@"task-list" error:&error]) {
-        NSLog(@"Couldn't create index (type, name): %@", error);
-    }
-    
-    // For tasks query:
-    id index2 = [CBLIndexBuilder valueIndexWithItems:@[type, taskListId, task]];
-    if (!![_database createIndex: index2 withName:@"tasks" error:&error]) {
-        NSLog(@"Cannot create index (type, taskList.id, task): %@", error);
-    }
+    return true;
 }
-
-// TODO handleAccessChange
 
 #pragma mark - Login
 
-- (void)loginWithUsername:(NSString *)username {
+- (void) showLoginWithUsername: (NSString *)username {
     UIStoryboard* storyboard = self.window.rootViewController.storyboard;
-    UINavigationController *navigation =
+    UINavigationController* navigation =
         [storyboard instantiateViewControllerWithIdentifier: @"LoginNavigationController"];
-    CBLLoginViewController *loginController = (CBLLoginViewController *)navigation.topViewController;
+    CBLLoginViewController* loginController = (CBLLoginViewController*)navigation.topViewController;
     loginController.delegate = self;
     loginController.username = username;
     self.window.rootViewController = navigation;
 }
 
-- (void)logout: (CBLLogoutMethod)method {
-    if (![CBLConfig shared].loginFlowEnabled)
-        return;
-    
+- (void) logout: (CBLLogoutMethod)method {
     NSTimeInterval startTime = [NSDate timeIntervalSinceReferenceDate];
     if (method == CBLLogoutModeCloseDatabase) {
-        NSError *error;
-        if (![self closeDatabase: &error]) {
+        NSError* error;
+        if (![CBLDB.shared close: &error]) {
             NSLog(@"Cannot close database: %@", error);
             return;
         }
     } else if (method == CBLLogoutModeDeleteDatabase) {
-        NSError *error;
-        if (![self deleteDatabase: &error]) {
+        NSError* error;
+        if (![CBLDB.shared delete: &error]) {
             NSLog(@"Cannot delete database: %@", error);
             return;
         }
@@ -153,10 +102,10 @@
     NSString *oldUsername = [CBLSession sharedInstance].username;
     CBLSession.sharedInstance.username = nil;
     CBLSession.sharedInstance.password = nil;
-    [self loginWithUsername:oldUsername];
+    [self showLoginWithUsername: oldUsername];
 }
 
-- (void)showApp {
+- (void) showApp {
     UIStoryboard* storyboard = self.window.rootViewController.storyboard;
     UIViewController* controller = [storyboard instantiateInitialViewController];
     self.window.rootViewController = controller;
@@ -164,134 +113,35 @@
 
 #pragma mark - CBLLoginViewControllerDelegate
 
-- (void)login:(CBLLoginViewController *)controller
- withUsername:(NSString *)username
-     password:(NSString *)password
-{
-    [self processLogin:controller withUsername:username password:password];
-}
-
-- (void)processLogin:(CBLLoginViewController*)controller
-        withUsername:(NSString *)username
-            password:(NSString *)password
-{
-    NSError *error;
-    if (![self startSession:username password:password error: &error]) {
-        [CBLUi showMessageOn:controller
-                       title:@"Error"
-                     message:@"Login has an error occurred."
-                       error:error onClose:nil];
+- (void) login: (CBLLoginViewController*)controller username: (NSString*)username password: (NSString*)password {
+    NSError* error;
+    if (![self startSession: username password:password error: &error]) {
+        [CBLUi showMessageOn: controller
+                       title: @"Error"
+                     message: @"Login has an error occurred."
+                       error: error
+                     onClose: nil];
+        NSLog(@"Cannot start session: %@", error);
     }
 }
 
 #pragma mark - Replication
 
-- (void)startReplicator:(NSString *)username
-               password:(NSString *)password
-               resolver:(id<CBLConflictResolver>)resolver {
-    if (![CBLConfig shared].syncEnabled)
-        return;
-    
-    CBLURLEndpoint *target = [[CBLURLEndpoint alloc] initWithURL:[NSURL URLWithString: [CBLConfig shared].syncEndpoint]];
-    CBLReplicatorConfiguration *config = [[CBLReplicatorConfiguration alloc] initWithDatabase:_database target:target];
-    config.continuous = YES;
-    if (CBLConfig.shared.loginFlowEnabled)
-        config.authenticator = [[CBLBasicAuthenticator alloc] initWithUsername:username password:password];
-    
-    config.conflictResolver = resolver;
-    NSLog(@">> Custom Conflict Resolver: Enabled = %d; Type = %ld", [CBLConfig shared].ccrEnabled, (long)[CBLConfig shared].ccrType);
-    config.maxAttempts = CBLConfig.shared.maxAttempts;
-    config.maxAttemptWaitTime = CBLConfig.shared.maxAttemptWaitTime;
-    
-    _replicator = [[CBLReplicator alloc] initWithConfig:config];
-    __weak typeof(self) wSelf = self;
-    [_replicator addChangeListener:^(CBLReplicatorChange *change) {
-        CBLReplicatorStatus *s =  change.status;
-        NSError *e = s.error;
-        NSLog(@"[Todo] Replicator: %@ %llu/%llu, error: %@",
-              [wSelf ativityLevel: s.activity], s.progress.completed, s.progress.total, e);
-        [UIApplication.sharedApplication setNetworkActivityIndicatorVisible: s.activity == kCBLReplicatorBusy];
-        if (e.code == 401) {
-            [CBLUi showMessageOn:wSelf.window.rootViewController
-                           title:@"Authentication Error"
-                         message:@"Your username or passpword is not correct."
-                           error:nil
-                         onClose:^{ [wSelf logout: CBLLogoutModeCloseDatabase]; }
-             ];
-        }
-        
-        // update the title color to reflect the status
-        [wSelf updateReplicatorStatus: s.activity];
-
-    }];
-    [_replicator start];
-}
-
 - (void) updateReplicatorStatus: (CBLReplicatorActivityLevel)level {
+    [UIApplication.sharedApplication setNetworkActivityIndicatorVisible: level == kCBLReplicatorBusy];
     id vc = ((UINavigationController*)self.window.rootViewController).topViewController;
-    if ([vc isKindOfClass: [CBLListsViewController class]])
-         [vc updateReplicatorStatus: level];
-}
-
-- (void)stopReplicator {
-    if (![CBLConfig shared].syncEnabled)
-        return;
-
-    [_replicator stop];
-}
-
-- (NSString *)ativityLevel:(CBLReplicatorActivityLevel)level {
-    switch (level) {
-        case kCBLReplicatorStopped:
-            return @"STOPPED";
-        case kCBLReplicatorOffline:
-            return @"OFFLINE";
-        case kCBLReplicatorConnecting:
-            return @"CONNECTING";
-        case kCBLReplicatorIdle:
-            return @"IDLE";
-        case kCBLReplicatorBusy:
-            return @"BUSY";
-        default:
-            return @"UNKNOWN";
+    if ([vc isKindOfClass: [CBLListsViewController class]]) {
+        [vc updateReplicatorStatus: level];
     }
 }
 
 #pragma mark - Push Notification Sync
     
 - (void)registerRemoteNotification {
-    if (![CBLConfig shared].pushNotificationEnabled)
+    if (![CBLConfig shared].pushNotificationEnabled) {
         return;
-    
-    [[UIApplication sharedApplication] registerForRemoteNotifications];
-}
-    
-- (void)startPushNotificationSync {
-    if (![CBLConfig shared].pushNotificationEnabled)
-        return;
-    
-    NSLog(@"[Todo] Start Push Notification ...");
-    
-    CBLURLEndpoint *target = [[CBLURLEndpoint alloc] initWithURL:[NSURL URLWithString: [CBLConfig shared].syncEndpoint]];
-    CBLReplicatorConfiguration *config = [[CBLReplicatorConfiguration alloc] initWithDatabase:_database target:target];
-    CBLSession *session = CBLSession.sharedInstance;
-    if ([CBLConfig shared].loginFlowEnabled && session.username && session.password) {
-        config.authenticator = [[CBLBasicAuthenticator alloc] initWithUsername:session.username password:session.password];
     }
-    
-    CBLReplicator *repl = [[CBLReplicator alloc] initWithConfig:config];
-    __weak typeof(self) wSelf = self;
-    [repl addChangeListener:^(CBLReplicatorChange *change) {
-        CBLReplicatorStatus *s =  change.status;
-        NSError *e = s.error;
-        NSLog(@"[Todo] Push-Notification-Replicator: %@ %llu/%llu, error: %@",
-              [wSelf ativityLevel: s.activity], s.progress.completed, s.progress.total, e);
-        [UIApplication.sharedApplication setNetworkActivityIndicatorVisible: s.activity == kCBLReplicatorBusy];
-        if (e.code == 401) {
-            NSLog(@"ERROR: Authentication Error, username or password is not correct");
-        }
-    }];
-    [repl start];
+    [[UIApplication sharedApplication] registerForRemoteNotifications];
 }
 
 #pragma mark - UNUserNotificationCenterDelegate
@@ -311,28 +161,8 @@
 }
     
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
-    [self startPushNotificationSync];
+    [CBLDB.shared startPushNotificationReplicator];
     completionHandler(UIBackgroundFetchResultNewData);
-}
-
-@end
-
-#pragma mark - CCR Helper class
-
-@implementation TestConflictResolver {
-    CBLDocument* (^_resolver)(CBLConflict*);
-}
-
-- (instancetype) initWithResolver: (CBLDocument* (^)(CBLConflict*))resolver {
-    self = [super init];
-    if (self) {
-        _resolver = resolver;
-    }
-    return self;
-}
-
-- (CBLDocument *) resolve:(CBLConflict *)conflict {
-    return _resolver(conflict);
 }
 
 @end

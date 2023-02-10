@@ -1,19 +1,29 @@
 //
-//  CBLTasksViewController.m
-//  Todo
+// CBLTasksViewController.m
 //
-//  Created by Pasin Suriyentrakorn on 1/26/17.
-//  Copyright © 2017 Pasin Suriyentrakorn. All rights reserved.
+// Copyright (c) 2023 Couchbase, Inc All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 
 #import "CBLTasksViewController.h"
+#import "CBLTaskImageViewController.h"
+#import "CBLTaskTableViewCell.h"
+
 #import "AppDelegate.h"
-#import "CBLConstants.h"
+#import "CBLDB.h"
 #import "CBLUi.h"
 #import "CBLImage.h"
-#import "CBLTaskTableViewCell.h"
-#import "CBLTaskImageViewController.h"
-#import "CBLTaskDetailViewController.h"
 #import "CBLSession.h"
 #import "CBLDocLogger.h"
 
@@ -22,20 +32,19 @@
                                       UIImagePickerControllerDelegate,
                                       UINavigationControllerDelegate>
 {
-    UISearchController *_searchController;
+    UISearchController* _searchController;
     
-    NSString *_username;
-    CBLDatabase *_database;
+    NSString* _username;
     
-    CBLQuery *_taskQuery;
-    NSArray <CBLQueryResult*> *_taskRows;
+    CBLQuery* _taskQuery;
+    NSArray <CBLQueryResult*>* _taskRows;
     
-    CBLQuery *_searchQuery;
+    CBLQuery* _searchQuery;
     BOOL _inSearch;
-    NSArray <CBLQueryResult*> *_searchRows;
+    NSArray <CBLQueryResult*>* _searchRows;
     
-    NSString *_taskIDForImage;
-    id _dbChangeListener;
+    NSString* _selectedTaskIDForImage;
+    CBLBlob* _selectedImage;
 }
 
 @end
@@ -55,9 +64,6 @@
     _searchController.searchBar.delegate = self;
     self.tableView.tableHeaderView = _searchController.searchBar;
     
-    // Get database and username:
-    AppDelegate *app = (AppDelegate *)[UIApplication sharedApplication].delegate;
-    _database = app.database;
     _username = CBLSession.sharedInstance.username;
     
     // Load data:
@@ -77,97 +83,71 @@
                                                       target:self action:@selector(addAction:)];
 }
 
-- (void) dealloc {
-    // Remove change listener:
-    [_database removeChangeListenerWithToken:_dbChangeListener];
-}
-
 #pragma mark - Database
 
 - (void)reload {
+    assert(_taskList);
+    
     if (!_taskQuery) {
-        _taskQuery = [CBLQueryBuilder select:@[S_ID, S_TASK, S_COMPLETE, S_IMAGE]
-                                        from:[CBLQueryDataSource database:_database]
-                                       where:[[TYPE equalTo:[CBLQueryExpression string:@"task"]]
-                                              andExpression: [TASK_LIST_ID equalTo:[CBLQueryExpression string:self.taskList.id]]]
-                                     orderBy:@[[CBLQueryOrdering expression:CREATED_AT],
-                                               [CBLQueryOrdering expression:TASK]]];
+        NSError* error;
+        _taskQuery = [CBLDB.shared getTasksQueryForTaskListID: _taskList.id error: &error];
+        if (!_taskQuery) {
+            NSLog(@"Error creating tasks query: %@", error);
+            return;
+        }
+        
         __weak typeof (self) wSelf = self;
-        [_taskQuery addChangeListener:^(CBLQueryChange *change) {
-            if (!change.results)
+        [_taskQuery addChangeListener: ^(CBLQueryChange *change) {
+            if (!change.results) {
                 NSLog(@"Error querying tasks: %@", change.error);
+            }
             _taskRows = [change.results allObjects];
             [wSelf.tableView reloadData];
         }];
     }
 }
 
-- (void)createTask:(NSString *)task {
-    CBLMutableDocument *doc = [[CBLMutableDocument alloc] init];
-    [doc setValue:@"task" forKey:@"type"];
-    NSDictionary *taskList = @{@"id": _taskList.id,
-                               @"owner": [_taskList stringForKey: @"owner"]};
-    [doc setValue:taskList forKey:@"taskList"];
-    [doc setValue:[NSDate date] forKey:@"createdAt"];
-    [doc setValue:task forKey:@"task"];
-    [doc setValue:@NO forKey:@"complete"];
-    
-    NSError *error;
-    if (![_database saveDocument:doc error:&error])
-        [CBLUi showErrorOn:self message:@"Couldn't save task" error:error];
+- (void) createTask: (NSString*)task {
+    NSError* error;
+    if (![CBLDB.shared createTaskForTaskList: _taskList task: task extra: nil error: &error]) {
+        [CBLUi showErrorOn: self message: @"Couldn't save task" error: error];
+    }
 }
 
-- (void)updateTask:(NSString *)taskID withTitle:(NSString *)title {
-    CBLMutableDocument *task = [[_database documentWithID: taskID] toMutable];
-    [task setValue:title forKey:@"task"];
-    
-    NSError *error;
-    if (![_database saveDocument:task error:&error])
-        [CBLUi showErrorOn:self message:@"Couldn't update task" error:error];
+- (void) updateTask: (NSString*)taskID withTitle: (NSString*)title {
+    NSError* error;
+    if (![CBLDB.shared updateTaskWithID: taskID task: title error: &error]) {
+        [CBLUi showErrorOn: self message: @"Couldn't update task" error: error];
+    }
 }
 
-- (void)updateTask:(NSString *)taskID withComplete:(BOOL)complete {
-    CBLMutableDocument *task = [[_database documentWithID: taskID] toMutable];
-    [task setBoolean:complete forKey:@"complete"];
-    NSError *error;
-    if (![_database saveDocument:task error:&error])
-        [CBLUi showErrorOn:self message:@"Couldn't update complete status" error:error];
+- (void) updateTask: (NSString*)taskID withComplete: (BOOL)complete {
+    NSError* error;
+    if (![CBLDB.shared updateTaskWithID: taskID complete: complete error: &error]) {
+        [CBLUi showErrorOn: self message: @"Couldn't update complete status" error: error];
+    }
 }
 
-- (void)updateTask:(NSString *)taskID withImage:(UIImage *)image {
-    NSError *error;
-    NSData *imageData = UIImageJPEGRepresentation(image, 0.5);
-    if (!imageData)
-        return;
-    
-    CBLMutableDocument *task = [[_database documentWithID: taskID] toMutable];
-    CBLBlob *blob = [[CBLBlob alloc] initWithContentType:@"image/jpg" data:imageData];
-    [task setValue:blob forKey:@"image"];
-    if (![_database saveDocument:task error:&error])
-        [CBLUi showErrorOn:self message:@"Couldn't update task" error:error];
+- (void) updateTask: (NSString*)taskID withImage: (UIImage*)image {
+    NSError* error;
+    if (![CBLDB.shared updateTaskWithID: taskID image: image error: &error]) {
+        [CBLUi showErrorOn: self message: @"Couldn't update task image" error: error];
+    }
 }
 
-- (void)deleteTask:(NSString *)taskID {
-    CBLDocument *task = [_database documentWithID: taskID];
-    NSError *error;
-    if (![_database deleteDocument:task error:&error])
-        [CBLUi showErrorOn:self message:@"Couldn't delete task" error:error];
+- (void) deleteTask: (NSString*)taskID {
+    NSError* error;
+    if (![CBLDB.shared deleteTaskWithID: taskID error: &error]) {
+        [CBLUi showErrorOn: self message: @"Couldn't delete task" error: error];
+    }
 }
 
-- (void)searchTask: (NSString*)name {
-    CBLQueryExpression *exp1 = [TYPE equalTo:[CBLQueryExpression string:@"task"]];
-    CBLQueryExpression *exp2 = [TASK_LIST_ID equalTo:[CBLQueryExpression string:self.taskList.id]];
-    CBLQueryExpression *exp3 = [TASK like:[CBLQueryExpression string:[NSString stringWithFormat:@"%%%@%%", name]]];
-    _searchQuery = [CBLQueryBuilder select:@[S_ID, S_TASK, S_COMPLETE, S_IMAGE]
-                                      from:[CBLQueryDataSource database:_database]
-                                     where:[[exp1 andExpression: exp2] andExpression:exp3]
-                                   orderBy:@[[CBLQueryOrdering expression:CREATED_AT],
-                                             [CBLQueryOrdering expression:TASK]]];
-    NSError *error;
-    NSEnumerator *rows = [_searchQuery execute: &error];
-    if (!rows)
+- (void) searchTask: (NSString*)name {
+    NSError* error;
+    CBLQueryResultSet* rows = [CBLDB.shared getTasksForTaskListID: _taskList.id error: &error];
+    if (!rows) {
         NSLog(@"Error searching tasks: %@", error);
-    
+    }
     _searchRows = [rows allObjects];
     [self.tableView reloadData];
 }
@@ -175,193 +155,162 @@
 #pragma mark - Users
 
 - (void) displayOrHideUsers {
-    BOOL display = NO;
-    NSString *moderatorDocId = [NSString stringWithFormat:@"moderator.%@", _username];
-    if ([_username isEqualToString: [_taskList stringForKey:@"owner"]])
-        display = YES;
-    else
-        display = [_database documentWithID:moderatorDocId] != nil;
-    [CBLUi displayOrHideTabbar:self display:display];
-    
-    if (!_dbChangeListener) {
-        __weak typeof(self) wSelf = self;
-        _dbChangeListener = [_database addChangeListener:^(CBLDatabaseChange *change) {
-            for (NSString *docId in change.documentIDs) {
-                if ([docId isEqualToString: moderatorDocId]) {
-                    [wSelf displayOrHideUsers];
-                    break;
-                }
-            }
-        }];
-    }
+    BOOL display = [_username isEqualToString: [_taskList stringForKey: @"owner"]];
+    [CBLUi displayOrHideTabbar: self display: display];
 }
 
 #pragma mark - Actions
 
-- (IBAction)addAction:(id)sender {
-    [CBLUi showTextInputOn:self title:@"New Task" message:nil textField:^(UITextField *text) {
+- (IBAction) addAction:(id)sender {
+    [CBLUi showTextInputOn: self title: @"New Task" message: nil textField: ^(UITextField* text) {
         text.placeholder = @"Task";
         text.autocapitalizationType = UITextAutocapitalizationTypeSentences;
-    } onOk:^(NSString *name) {
-        [self createTask:name];
+    } onOk: ^(NSString* name) {
+        [self createTask: name];
     }];
 }
 
 #pragma mark - Table view data source
 
-- (NSArray<CBLQueryResult*>*)data {
+- (NSArray<CBLQueryResult*>*) data {
     return _inSearch ? _searchRows : _taskRows;
 }
 
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+- (NSInteger) numberOfSectionsInTableView: (UITableView*)tableView {
     return 1;
 }
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+- (NSInteger) tableView: (UITableView*)tableView numberOfRowsInSection: (NSInteger)section {
     return self.data.count;
 }
 
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    CBLTaskTableViewCell *cell =
-        (CBLTaskTableViewCell *)[tableView dequeueReusableCellWithIdentifier:@"TaskCell"
-                                                                forIndexPath:indexPath];
+- (UITableViewCell*) tableView: (UITableView*)tableView cellForRowAtIndexPath: (NSIndexPath*)indexPath {
+    CBLTaskTableViewCell* cell =
+        (CBLTaskTableViewCell*)[tableView dequeueReusableCellWithIdentifier: @"TaskCell" forIndexPath: indexPath];
     
     CBLQueryResult* result = self.data[indexPath.row];
-    NSString* docID = [result stringAtIndex:0];
+    NSString* taskID = [result stringForKey: @"id"];
+    NSString* task = [result stringForKey: @"task"];
+    BOOL complete = [result booleanForKey: @"complete"];
+    CBLBlob* imageBlob = [result blobForKey: @"image"];
     
-    cell.taskLabel.text = [result stringAtIndex: 1];
-    
-    BOOL complete = [result booleanAtIndex: 2];
+    cell.taskLabel.text = task;
     cell.accessoryType = complete ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
     
-    CBLBlob *imageBlob = [result blobAtIndex: 3];
     if (imageBlob) {
-        UIImage *image = [UIImage imageWithData:imageBlob.content scale:[UIScreen mainScreen].scale];
-        NSString *digest = imageBlob.digest;
-        UIImage *thumbnail = [CBLImage square:image
-                                     withSize:44.0
-                                withCacheName:digest
-                                   onComplete:^(UIImage *result) {
-            [self updateImage:result withDigest:digest atIndexPath:indexPath];
+        UIImage* image = [UIImage imageWithData: imageBlob.content scale: [UIScreen mainScreen].scale];
+        NSString* digest = imageBlob.digest;
+        UIImage* thumbnail = [CBLImage square: image
+                                     withSize: 44.0
+                                withCacheName: digest
+                                   onComplete: ^(UIImage* result) {
+            [self updateImage: result withDigest: digest atIndexPath: indexPath];
         }];
         cell.taskImage = thumbnail;
         cell.taskImageAction = ^() {
-            _taskIDForImage = docID;
-            [self performSegueWithIdentifier:@"showTaskImage" sender:self];
+            _selectedTaskIDForImage = taskID;
+            _selectedImage = imageBlob;
+            [self performSegueWithIdentifier: @"showTaskImage" sender: self];
         };
     } else {
         cell.taskImage = nil;
         cell.taskImageAction = ^() {
-            _taskIDForImage = docID;
-            [CBLUi showImageActionSheet:self imagePickerDelegate:self onDelete:nil];
+            _selectedTaskIDForImage = taskID;
+            [CBLUi showImageActionSheet: self imagePickerDelegate: self onDelete: nil];
         };
     }
-    
-    NSLog(@"[Task#%ld] %@ : %@", (long)indexPath.row, docID, [result stringAtIndex: 1]);
-    
     return cell;
 }
 
-- (void)updateImage:(UIImage *)image withDigest:(NSString *)digest atIndexPath:(NSIndexPath *)indexPath {
-    if (self.data.count <= indexPath.row)
+- (void) updateImage: (UIImage*)image withDigest: (NSString*)digest atIndexPath: (NSIndexPath*)indexPath {
+    if (self.data.count <= indexPath.row) {
         return;
+    }
     
-    NSString* docID = [self.data[indexPath.row] stringAtIndex:0];
-    CBLDocument *doc = [_database documentWithID:docID];
-    CBLBlob *imageBlob = [doc blobForKey: @"image"];
-    if ([imageBlob.digest isEqualToString:digest]) {
+    CBLQueryResult* row = self.data[indexPath.row];
+    CBLBlob *imageBlob = [row blobForKey: @"image"];
+    if ([imageBlob.digest isEqualToString: digest]) {
         CBLTaskTableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
         cell.taskImage = image;
     }
 }
 
-- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    NSString* docID = [self.data[indexPath.row] stringAtIndex:0];
-    CBLDocument *doc = [_database documentWithID:docID];
-    BOOL complete = ![doc booleanForKey:@"complete"];
-    [self updateTask:docID withComplete:complete];
+- (void) tableView: (UITableView*)tableView didSelectRowAtIndexPath: (NSIndexPath*)indexPath {
+    CBLQueryResult* row = self.data[indexPath.row];
+    NSString* taskID = [row stringForKey: @"id"];
+    BOOL complete = ![row booleanForKey: @"complete"];
+    [self updateTask: taskID withComplete: complete];
     
     // Optimistically update the UI:
-    CBLTaskTableViewCell *cell = (CBLTaskTableViewCell *)[self.tableView cellForRowAtIndexPath:indexPath];
+    CBLTaskTableViewCell* cell = (CBLTaskTableViewCell*)[self.tableView cellForRowAtIndexPath: indexPath];
     cell.accessoryType = complete ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
 }
 
-- (NSArray<UITableViewRowAction *> *)tableView:(UITableView *)tableView
-                  editActionsForRowAtIndexPath:(NSIndexPath *)indexPath
+- (NSArray<UITableViewRowAction *> *) tableView: (UITableView*)tableView
+                   editActionsForRowAtIndexPath: (NSIndexPath*)indexPath
 {
-    NSString* docID = [self.data[indexPath.row] stringAtIndex:0];
+    CBLQueryResult* row = self.data[indexPath.row];
+    NSString* taskID = [row stringForKey: @"id"];
+    NSString* task = [row stringForKey: @"task"];
     
-    UITableViewRowAction *delete =
-        [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleNormal
-                                           title:@"Delete"
-                                         handler:^(UITableViewRowAction *action, NSIndexPath *indexPath)
+    UITableViewRowAction* delete =
+        [UITableViewRowAction rowActionWithStyle: UITableViewRowActionStyleNormal
+                                           title: @"Delete"
+                                         handler: ^(UITableViewRowAction* action, NSIndexPath* indexPath)
     {
         // Dismiss row actions:
         [tableView setEditing:NO animated:YES];
         // Delete task document:
-        [self deleteTask:docID];
+        [self deleteTask: taskID];
     }];
-    delete.backgroundColor = [UIColor colorWithRed:1.0 green:0.23 blue:0.19 alpha:1.0];
+    delete.backgroundColor = [UIColor colorWithRed: 1.0 green: 0.23 blue: 0.19 alpha: 1.0];
     
-    UITableViewRowAction *update =
-        [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleNormal
-                                           title:@"Edit"
-                                         handler:^(UITableViewRowAction *action, NSIndexPath *indexPath)
+    UITableViewRowAction* update =
+        [UITableViewRowAction rowActionWithStyle: UITableViewRowActionStyleNormal
+                                           title: @"Edit"
+                                         handler: ^(UITableViewRowAction* action, NSIndexPath* indexPath)
     {
         // Dismiss row actions:
-        [tableView setEditing:NO animated:YES];
+        [tableView setEditing: NO animated: YES];
         
         // Display update list dialog:
-        [CBLUi showTextInputOn:self title:@"Edit Task" message:nil textField:^(UITextField *text) {
-            CBLDocument *doc = [_database documentWithID:docID];
+        [CBLUi showTextInputOn: self title: @"Edit Task" message: nil textField: ^(UITextField* text) {
             text.placeholder = @"Task";
-            text.text = [doc stringForKey:@"task"];
-            text.autocorrectionType = UITextAutocapitalizationTypeSentences;
-        } onOk:^(NSString * name) {
-            [self updateTask:docID withTitle:name];
+            text.text = task;
+            text.autocapitalizationType = UITextAutocapitalizationTypeSentences;
+        } onOk: ^(NSString* name) {
+            [self updateTask: task withTitle: task];
         }];
     }];
-    update.backgroundColor = [UIColor colorWithRed:0.0 green:0.48 blue:1.0 alpha:1.0];
+    update.backgroundColor = [UIColor colorWithRed: 0.0 green: 0.48 blue: 1.0 alpha: 1.0];
     
     // Log action:
-    UITableViewRowAction *log = [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleNormal
-                                                                   title:@"Log"
+    UITableViewRowAction* log = [UITableViewRowAction rowActionWithStyle: UITableViewRowActionStyleNormal
+                                                                   title: @"Log"
                                                                  handler:
-     ^(UITableViewRowAction *action, NSIndexPath *indexPath) {
+     ^(UITableViewRowAction* action, NSIndexPath* indexPath) {
         // Dismiss row actions:
         [tableView setEditing:NO animated:YES];
-        CBLDocument *doc = [_database documentWithID:docID];
-        [CBLDocLogger logTask:doc];
+        // Log:
+        [CBLDocLogger logTask: taskID];
     }];
     
-    // Details
-    UITableViewRowAction *details = [UITableViewRowAction rowActionWithStyle:UITableViewRowActionStyleNormal
-                                                                   title:@"Details"
-                                                                 handler:
-     ^(UITableViewRowAction *action, NSIndexPath *indexPath) {
-        // Dismiss row actions:
-        [tableView setEditing:NO animated:YES];
-        _taskIDForImage = docID;
-        [self performSegueWithIdentifier: @"showTaskDetail" sender: self];
-    }];
-    details.backgroundColor = [UIColor colorWithRed:0.0 green: 1.00 blue: 0.0 alpha: 1.0];
-    
-    return @[delete, update, log, details];
+    return @[delete, update, log];
 }
 
 #pragma mark - UISearchController
 
-- (void)updateSearchResultsForSearchController:(UISearchController *)searchController {
+- (void) updateSearchResultsForSearchController: (UISearchController*)searchController {
     NSString *text = searchController.searchBar.text ?: @"";
     if ([text length] > 0) {
         _inSearch = YES;
-        [self searchTask:text];
+        [self searchTask: text];
     } else {
         [self searchBarCancelButtonClicked: searchController.searchBar];
     }
 }
 
-- (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
+- (void) searchBarCancelButtonClicked: (UISearchBar*)searchBar {
     _inSearch = NO;
     _searchRows = nil;
     [self.tableView reloadData];
@@ -369,29 +318,24 @@
 
 #pragma mark - UIImagePickerControllerDelegate
 
--(void)imagePickerController:(UIImagePickerController *)picker
-didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info
-{
-    if (_taskIDForImage) {
-        [self updateTask:_taskIDForImage withImage:info[@"UIImagePickerControllerOriginalImage"]];
-        _taskIDForImage = nil;
+-(void) imagePickerController: (UIImagePickerController*)picker didFinishPickingMediaWithInfo: (NSDictionary<NSString*,id>*)info {
+    if (_selectedTaskIDForImage) {
+        [self updateTask: _selectedTaskIDForImage withImage: info[@"UIImagePickerControllerOriginalImage"]];
+        _selectedTaskIDForImage = nil;
     }
-    [picker.presentingViewController dismissViewControllerAnimated:YES completion:nil];
+    [picker.presentingViewController dismissViewControllerAnimated: YES completion: nil];
 }
 
 #pragma mark - Navigation
 
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+- (void) prepareForSegue: (UIStoryboardSegue*)segue sender: (id)sender {
     if ([segue.identifier isEqualToString:@"showTaskImage"]) {
-        UINavigationController *navController = segue.destinationViewController;
-        CBLTaskImageViewController *controller = (CBLTaskImageViewController*)navController.topViewController;
-        controller.taskID = _taskIDForImage;
-        _taskIDForImage = nil;
-    } else if ([segue.identifier isEqualToString: @"showTaskDetail"]) {
-        UINavigationController *navController = segue.destinationViewController;
-        CBLTaskDetailViewController* controller = (CBLTaskDetailViewController*)navController.topViewController;
-        controller.taskID = _taskIDForImage;
-        _taskIDForImage = nil;
+        UINavigationController* navController = segue.destinationViewController;
+        CBLTaskImageViewController* controller = (CBLTaskImageViewController*)navController.topViewController;
+        controller.taskID = _selectedTaskIDForImage;
+        controller.imageBlob = _selectedImage;
+        _selectedTaskIDForImage = nil;
+        _selectedImage = nil;
     }
 }
 

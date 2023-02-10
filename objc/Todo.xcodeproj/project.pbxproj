@@ -9,9 +9,9 @@
 /* Begin PBXBuildFile section */
 		1A793FFB2612AA62001B577C /* CouchbaseLite.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A793FF92612AA5F001B577C /* CouchbaseLite.xcframework */; };
 		1A793FFC2612AA62001B577C /* CouchbaseLite.xcframework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1A793FF92612AA5F001B577C /* CouchbaseLite.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		1A793FFF2612B01E001B577C /* CBLTaskDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A793FFE2612B01E001B577C /* CBLTaskDetailViewController.m */; };
 		1A7940022612CD7B001B577C /* CBLSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A7940012612CD7B001B577C /* CBLSettingsViewController.m */; };
 		1A7940052612F883001B577C /* CBLConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A7940042612F883001B577C /* CBLConfig.m */; };
+		4041465129947F5C00D14966 /* CBLDB.m in Sources */ = {isa = PBXBuildFile; fileRef = 4041465029947F5C00D14966 /* CBLDB.m */; };
 		9336350C1EDE1DA500349E9A /* CBLLoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9336350B1EDE1DA500349E9A /* CBLLoginViewController.m */; };
 		933635121EDE2A7C00349E9A /* CBLSession.m in Sources */ = {isa = PBXBuildFile; fileRef = 933635111EDE2A7C00349E9A /* CBLSession.m */; };
 		937EAC0B1E3AB72200133693 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 937EAC0A1E3AB72200133693 /* main.m */; };
@@ -45,17 +45,16 @@
 
 /* Begin PBXFileReference section */
 		1A793FF92612AA5F001B577C /* CouchbaseLite.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CouchbaseLite.xcframework; path = Frameworks/CouchbaseLite.xcframework; sourceTree = "<group>"; };
-		1A793FFD2612B01E001B577C /* CBLTaskDetailViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CBLTaskDetailViewController.h; sourceTree = "<group>"; };
-		1A793FFE2612B01E001B577C /* CBLTaskDetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CBLTaskDetailViewController.m; sourceTree = "<group>"; };
 		1A7940002612CD7B001B577C /* CBLSettingsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CBLSettingsViewController.h; sourceTree = "<group>"; };
 		1A7940012612CD7B001B577C /* CBLSettingsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CBLSettingsViewController.m; sourceTree = "<group>"; };
 		1A7940032612F883001B577C /* CBLConfig.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CBLConfig.h; sourceTree = "<group>"; };
 		1A7940042612F883001B577C /* CBLConfig.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CBLConfig.m; sourceTree = "<group>"; };
+		4041464F29947F5C00D14966 /* CBLDB.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CBLDB.h; sourceTree = "<group>"; };
+		4041465029947F5C00D14966 /* CBLDB.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CBLDB.m; sourceTree = "<group>"; };
 		9336350A1EDE1DA500349E9A /* CBLLoginViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBLLoginViewController.h; sourceTree = "<group>"; };
 		9336350B1EDE1DA500349E9A /* CBLLoginViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CBLLoginViewController.m; sourceTree = "<group>"; };
 		933635101EDE2A7C00349E9A /* CBLSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBLSession.h; sourceTree = "<group>"; };
 		933635111EDE2A7C00349E9A /* CBLSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CBLSession.m; sourceTree = "<group>"; };
-		933F1AB91F39431100338C6A /* CBLConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CBLConstants.h; sourceTree = "<group>"; };
 		937EAC061E3AB72200133693 /* Todo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Todo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		937EAC0A1E3AB72200133693 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		937EAC0C1E3AB72200133693 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -97,6 +96,42 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4041464D29947EF000D14966 /* Controller */ = {
+			isa = PBXGroup;
+			children = (
+				937EAC0C1E3AB72200133693 /* AppDelegate.h */,
+				937EAC0D1E3AB72200133693 /* AppDelegate.m */,
+				9336350A1EDE1DA500349E9A /* CBLLoginViewController.h */,
+				9336350B1EDE1DA500349E9A /* CBLLoginViewController.m */,
+				937EAC3C1E3ABF4C00133693 /* CBLListsViewController.h */,
+				937EAC3D1E3ABF4C00133693 /* CBLListsViewController.m */,
+				93A8432B1E3B13E100B4AF2D /* CBLTasksViewController.h */,
+				93A8432C1E3B13E100B4AF2D /* CBLTasksViewController.m */,
+				93A843381E3B420B00B4AF2D /* CBLTaskImageViewController.h */,
+				93A843391E3B420B00B4AF2D /* CBLTaskImageViewController.m */,
+				93A019D71EF305470097D427 /* CBLUsersViewController.h */,
+				93A019D81EF305470097D427 /* CBLUsersViewController.m */,
+				1A7940002612CD7B001B577C /* CBLSettingsViewController.h */,
+				1A7940012612CD7B001B577C /* CBLSettingsViewController.m */,
+			);
+			name = Controller;
+			sourceTree = "<group>";
+		};
+		4041464E29947F0400D14966 /* Database */ = {
+			isa = PBXGroup;
+			children = (
+				933635101EDE2A7C00349E9A /* CBLSession.h */,
+				933635111EDE2A7C00349E9A /* CBLSession.m */,
+				93DED1932499C45400595294 /* CBLDocLogger.h */,
+				93DED1942499C45400595294 /* CBLDocLogger.m */,
+				1A7940032612F883001B577C /* CBLConfig.h */,
+				1A7940042612F883001B577C /* CBLConfig.m */,
+				4041464F29947F5C00D14966 /* CBLDB.h */,
+				4041465029947F5C00D14966 /* CBLDB.m */,
+			);
+			name = Database;
+			sourceTree = "<group>";
+		};
 		9322DCC21F13FC7C00C4ACF7 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -125,30 +160,9 @@
 		937EAC081E3AB72200133693 /* Todo */ = {
 			isa = PBXGroup;
 			children = (
+				4041464E29947F0400D14966 /* Database */,
+				4041464D29947EF000D14966 /* Controller */,
 				937EAC4A1E3AF64500133693 /* UI */,
-				937EAC0C1E3AB72200133693 /* AppDelegate.h */,
-				937EAC0D1E3AB72200133693 /* AppDelegate.m */,
-				9336350A1EDE1DA500349E9A /* CBLLoginViewController.h */,
-				9336350B1EDE1DA500349E9A /* CBLLoginViewController.m */,
-				937EAC3C1E3ABF4C00133693 /* CBLListsViewController.h */,
-				937EAC3D1E3ABF4C00133693 /* CBLListsViewController.m */,
-				93A8432B1E3B13E100B4AF2D /* CBLTasksViewController.h */,
-				93A8432C1E3B13E100B4AF2D /* CBLTasksViewController.m */,
-				93A843381E3B420B00B4AF2D /* CBLTaskImageViewController.h */,
-				93A843391E3B420B00B4AF2D /* CBLTaskImageViewController.m */,
-				1A793FFD2612B01E001B577C /* CBLTaskDetailViewController.h */,
-				1A793FFE2612B01E001B577C /* CBLTaskDetailViewController.m */,
-				93A019D71EF305470097D427 /* CBLUsersViewController.h */,
-				93A019D81EF305470097D427 /* CBLUsersViewController.m */,
-				1A7940002612CD7B001B577C /* CBLSettingsViewController.h */,
-				1A7940012612CD7B001B577C /* CBLSettingsViewController.m */,
-				933635101EDE2A7C00349E9A /* CBLSession.h */,
-				933635111EDE2A7C00349E9A /* CBLSession.m */,
-				93DED1932499C45400595294 /* CBLDocLogger.h */,
-				93DED1942499C45400595294 /* CBLDocLogger.m */,
-				933F1AB91F39431100338C6A /* CBLConstants.h */,
-				1A7940032612F883001B577C /* CBLConfig.h */,
-				1A7940042612F883001B577C /* CBLConfig.m */,
 				937EAC121E3AB72200133693 /* Main.storyboard */,
 				937EAC151E3AB72200133693 /* Assets.xcassets */,
 				937EAC171E3AB72200133693 /* LaunchScreen.storyboard */,
@@ -266,7 +280,6 @@
 			files = (
 				933635121EDE2A7C00349E9A /* CBLSession.m in Sources */,
 				937EAC0E1E3AB72200133693 /* AppDelegate.m in Sources */,
-				1A793FFF2612B01E001B577C /* CBLTaskDetailViewController.m in Sources */,
 				1A7940022612CD7B001B577C /* CBLSettingsViewController.m in Sources */,
 				93A843371E3B307D00B4AF2D /* CBLImage.m in Sources */,
 				93A8433A1E3B420B00B4AF2D /* CBLTaskImageViewController.m in Sources */,
@@ -275,6 +288,7 @@
 				937EAC0B1E3AB72200133693 /* main.m in Sources */,
 				937EAC3E1E3ABF4C00133693 /* CBLListsViewController.m in Sources */,
 				93DED1952499C45500595294 /* CBLDocLogger.m in Sources */,
+				4041465129947F5C00D14966 /* CBLDB.m in Sources */,
 				937EAC491E3AE0ED00133693 /* CBLTextDialog.m in Sources */,
 				93A019D91EF305470097D427 /* CBLUsersViewController.m in Sources */,
 				1A7940052612F883001B577C /* CBLConfig.m in Sources */,
