@@ -1,41 +1,45 @@
 //
-//  CBLDocLogger.m
-//  Todo
+// CBLDocLogger.m
 //
-//  Created by Pasin Suriyentrakorn on 6/16/20.
-//  Copyright © 2020 Pasin Suriyentrakorn. All rights reserved.
+// Copyright (c) 2023 Couchbase, Inc All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 
 #import "CBLDocLogger.h"
-#import "AppDelegate.h"
-#import "CBLConstants.h"
+#import "CBLDB.h"
 
 @implementation CBLDocLogger
 
-+ (void)logTaskList:(CBLDocument*)doc inDatabase: (CBLDatabase*)database {
-    CBLQuery *q = [CBLQueryBuilder select:@[S_ID]
-                                     from:[CBLQueryDataSource database:database]
-                                    where:[[TYPE equalTo:[CBLQueryExpression string:@"task"]]
-                                           andExpression: [TASK_LIST_ID equalTo:[CBLQueryExpression string: doc.id]]]
-                                  orderBy:@[[CBLQueryOrdering expression:CREATED_AT],
-                                            [CBLQueryOrdering expression:TASK]]];
-    NSError* error;
-    NSArray<CBLQueryResult*>* tasks = [[q execute:&error] allResults];
++ (void) logTaskList: (NSString*)listID {
+    CBLDocument* taskList = [CBLDB.shared getTaskListByID: listID error: nil];
+    if (!taskList) {
+        NSLog(@"No Task List ID: %@", listID);
+        return;
+    }
     
-    q = [CBLQueryBuilder select:@[S_ID]
-     from:[CBLQueryDataSource database:database]
-    where:[[TYPE equalTo:[CBLQueryExpression string: @"task-list.user"]]
-           andExpression:[TASK_LIST_ID equalTo:[CBLQueryExpression string: doc.id]]]];
-    NSArray<CBLQueryResult*>* users = [[q execute:&error] allResults];
+    NSArray<CBLQueryResult*>* tasks = [[CBLDB.shared getTasksForTaskListID: listID error: nil] allResults];
+    NSArray<CBLQueryResult*>* users = [[CBLDB.shared getSharedUsersForTaskListID: listID error: nil] allResults];
     
     NSLog(@">>>>>>>> TASK LIST LOG START <<<<<<<<");
-    NSLog(@"Task List Doc: %@", [self taskListBody:doc]);
+    NSLog(@"Task List Doc: %@", [self taskListBody: taskList]);
     NSLog(@"Number of Tasks: %lu", (unsigned long)tasks.count);
     int i = 0;
-    for (CBLQueryResult *task in tasks) {
+    for (CBLQueryResult* task in tasks) {
         @autoreleasepool {
             ++i;
-            CBLDocument* taskDoc = [database documentWithID:[task stringAtIndex:0]];
+            NSString* taskID = [task stringAtIndex:0];
+            CBLDocument* taskDoc = [CBLDB.shared getTaskByID: taskID error: nil];
             if (!taskDoc) {
                 NSLog(@"Task Doc #%d : << N/A >>", i);
             } else {
@@ -45,10 +49,11 @@
     }
     NSLog(@"Number of Users: %lu", (unsigned long)users.count);
     i = 0;
-    for (CBLQueryResult *user in users) {
+    for (CBLQueryResult* user in users) {
         @autoreleasepool {
             ++i;
-            CBLDocument* userDoc = [database documentWithID:[user stringAtIndex:0]];
+            NSString* userID = [user stringAtIndex:0];
+            CBLDocument* userDoc = [CBLDB.shared getSharedUserByID: userID error: nil];
             if (!userDoc) {
                 NSLog(@"User Doc #%d : << N/A >>", i);
             } else {
@@ -59,20 +64,25 @@
     NSLog(@">>>>>>>> TASK LIST LOG END <<<<<<<<");
 }
 
-+ (void)logTask:(CBLDocument*)doc {
++ (void) logTask: (NSString*)taskID {
+    CBLDocument* doc = [CBLDB.shared getTaskByID: taskID error: nil];
+    if (doc) {
+        NSLog(@"No Task ID: %@", taskID);
+        return;
+    }
     NSLog(@">>>>>>>> TASK LOG START <<<<<<<<");
-    NSLog(@"Task Doc: %@", [self taskBody:doc]);
+    NSLog(@"Task Doc: %@", [self taskBody: doc]);
     NSLog(@">>>>>>>> TASK LOG END <<<<<<<<");
 }
 
-+ (NSDictionary*)taskListBody:(CBLDocument*)taskListDoc {
-    NSMutableDictionary* body = [NSMutableDictionary dictionaryWithDictionary:[taskListDoc toDictionary]];
++ (NSDictionary*) taskListBody: (CBLDocument*)taskListDoc {
+    NSMutableDictionary* body = [NSMutableDictionary dictionaryWithDictionary: [taskListDoc toDictionary]];
     body[@"_id"] = taskListDoc.id;
     return body;
 }
 
-+ (NSDictionary*)taskBody:(CBLDocument*)taskDoc {
-    NSMutableDictionary* body = [NSMutableDictionary dictionaryWithDictionary:[taskDoc toDictionary]];
++ (NSDictionary*) taskBody: (CBLDocument*)taskDoc {
+    NSMutableDictionary* body = [NSMutableDictionary dictionaryWithDictionary: [taskDoc toDictionary]];
     body[@"_id"] = taskDoc.id;
     CBLBlob *blob = (CBLBlob *)body[@"image"];
     if (blob)
@@ -80,8 +90,8 @@
     return body;
 }
 
-+ (NSDictionary*)userBody:(CBLDocument*)userDoc {
-    NSMutableDictionary* body = [NSMutableDictionary dictionaryWithDictionary:[userDoc toDictionary]];
++ (NSDictionary*) userBody: (CBLDocument*)userDoc {
+    NSMutableDictionary* body = [NSMutableDictionary dictionaryWithDictionary: [userDoc toDictionary]];
     body[@"_id"] = userDoc.id;
     return body;
 }
