@@ -62,7 +62,12 @@ func logTaskList(id: String) throws {
     }
 }
 
-func logTask(doc: Document) {
+func logTask(id: String) throws {
+    guard let doc = try DB.shared.getTaskByID(id: id) else {
+        print("No Task ID \(id)")
+        return
+    }
+    
     print(">>>>>>>> TASK LOG START <<<<<<<<");
     print("")
     print("> Task Doc: \(taskBody(doc: doc))");

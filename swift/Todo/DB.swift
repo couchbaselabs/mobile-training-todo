@@ -50,8 +50,8 @@ public class DB {
         database = try Database(name: currentUser());
         
         // Create Indexes:
-        try taskLists.createIndex(withName: "task-list", config: ValueIndexConfiguration(["name"]))
-        try tasks.createIndex(withName: "task", config: ValueIndexConfiguration(["taskList.id", "task"]))
+        try taskLists.createIndex(withName: "lists", config: ValueIndexConfiguration(["name"]))
+        try tasks.createIndex(withName: "tasks", config: ValueIndexConfiguration(["taskList.id", "task"]))
     }
     
     public func close() throws {
@@ -64,7 +64,7 @@ public class DB {
         reset()
     }
     
-    public func createQuery(query: String) throws -> Query {
+    private func createQuery(query: String) throws -> Query {
         return try openedDB().createQuery(query)
     }
     
@@ -79,6 +79,11 @@ public class DB {
         database = nil
         replicator = nil
         replicatorChangeListener = nil
+        pushNotificationReplicatorChangeListener = nil
+        
+        _taskLists = nil
+        _tasks = nil
+        _users = nil
     }
     
     // MARK: User
@@ -96,21 +101,21 @@ public class DB {
     private var _tasks: Collection?
     private var _users: Collection?
     
-    public var taskLists: Collection {
+    private var taskLists: Collection {
         if (_taskLists == nil) {
             _taskLists = getCollection("lists")
         }
         return _taskLists!;
     }
     
-    public var tasks: Collection {
+    private var tasks: Collection {
         if (_tasks == nil) {
             _tasks = getCollection("tasks")
         }
         return _tasks!;
     }
     
-    public var users: Collection {
+    private var users: Collection {
         if (_users == nil) {
             _users = getCollection("users")
         }
@@ -145,7 +150,6 @@ public class DB {
         guard Config.shared.pushNotificationEnabled else { return }
         
         NSLog("[Todo] Start Background Replication ...")
-        
         if database == nil {
             // Note : If the app is re-launched in the backgroud, there is no active user logged in.
             // We may implement auto-login in the future but right now this is not supported.
@@ -154,7 +158,6 @@ public class DB {
         }
         
         var config = replicatorConfiguration(continuous: false)
-        config.continuous = false
         let repl = Replicator(config: config)
         pushNotificationReplicatorChangeListener = repl.addChangeListener({ (change) in
             let s = change.status
@@ -173,12 +176,20 @@ public class DB {
     }
     
     private func replicatorConfiguration(continuous: Bool) -> ReplicatorConfiguration {
+        let target = URLEndpoint(url: URL(string: Config.shared.syncURL)!)
+        var config = ReplicatorConfiguration(target: target)
+        config.continuous = continuous
+        
         var auth: Authenticator? = nil
         if let username = Session.username, let password = Session.password {
             auth = BasicAuthenticator(username: username, password: password)
         } else {
             NSLog("[TODO] No user credentails found to setup the authenticator for replication")
         }
+        config.authenticator = auth
+        
+        config.maxAttempts = Config.shared.maxAttempts
+        config.maxAttemptWaitTime = Config.shared.maxAttemptWaitTime
         
         var conflictResolver: ConflictResolverProtocol?
         if Config.shared.ccrEnabled {
@@ -193,16 +204,7 @@ public class DB {
                 }
             }
         }
-        
         NSLog("[TODO] Custom Conflict Resolver: Enabled = \(Config.shared.ccrEnabled); Type = \(Config.shared.ccrType)")
-        
-        let target = URLEndpoint(url: URL(string: Config.shared.syncURL)!)
-        
-        var config = ReplicatorConfiguration(target: target)
-        config.continuous = continuous
-        config.authenticator = auth
-        config.maxAttempts = Config.shared.maxAttempts
-        config.maxAttemptWaitTime = Config.shared.maxAttemptWaitTime
         
         var collConfig = CollectionConfiguration()
         collConfig.conflictResolver = conflictResolver
@@ -214,8 +216,8 @@ public class DB {
     // MARK: Lists
     
     public func createTaskList(name: String) throws {
-        let docId = currentUser() + "." + NSUUID().uuidString
-        let doc = MutableDocument(id: docId)
+        let docID = currentUser() + "." + NSUUID().uuidString
+        let doc = MutableDocument(id: docID)
         doc.setValue(name, forKey: "name")
         doc.setValue(currentUser(), forKey: "owner")
         try taskLists.save(document: doc);
@@ -308,16 +310,16 @@ public class DB {
     }
     
     public func updateTask(taskID: String, image: UIImage?) throws {
+        guard let doc = try tasks.document(id: taskID)?.toMutable() else {
+            throw DBError.notFound
+        }
+        
         var blob: Blob? = nil
         if let image = image {
             guard let imageData = UIImageJPEGRepresentation(image, 0.5) else {
                 throw DBError.invalidImage
             }
             blob = Blob(contentType: "image/jpeg", data: imageData)
-        }
-        
-        guard let doc = try tasks.document(id: taskID)?.toMutable() else {
-            throw DBError.notFound
         }
         doc.setValue(blob, forKey: "image")
         try tasks.save(document: doc)

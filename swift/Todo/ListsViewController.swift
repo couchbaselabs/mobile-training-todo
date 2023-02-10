@@ -33,7 +33,6 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating, UISea
     
     var incompTasksCountsQuery: Query!
     var incompTasksCounts: [String:Int] = [:]
-    var shouldUpdateIncompTasksCount = true
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -93,7 +92,7 @@ class ListsViewController: UITableViewController, UISearchResultsUpdating, UISea
                 if change.error == nil {
                     self.updateIncompleteTasksCounts(change.results!)
                 } else {
-                    NSLog("Error querying task list: %@", change.error!.localizedDescription)
+                    NSLog("Error querying incomplete task counts: %@", change.error!.localizedDescription)
                 }
             })
         }

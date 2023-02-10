@@ -291,7 +291,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
     override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
         let row = self.data![indexPath.row]
         let id = row.string(forKey: "id")!
-        let task = row.string(forKey: "task")
+        let task = row.string(forKey: "task")!
         
         let delete = UITableViewRowAction(style: .normal, title: "Delete") {
             (action, indexPath) -> Void in
@@ -321,9 +321,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
             (action, indexPath) -> Void in
             // Dismiss row actions:
             tableView.setEditing(false, animated: true)
-            // Get doc:
-            // let doc = self.database.document(withID: docID)!
-            // logTask(doc: doc)
+            try! logTask(id: id)
         }
         
         return [delete, update, log]
@@ -365,6 +363,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UISea
             controller.taskID = selectedImageTaskID
             controller.imageBlob = selectedImage
             selectedImageTaskID = nil
+            selectedImage = nil
         }
     }
     

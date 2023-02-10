@@ -141,7 +141,6 @@
                     <simulatedTabBarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
                         <segue destination="FxE-I0-R1m" kind="modal" identifier="showTaskImage" id="zlz-mt-6US"/>
-                        <segue destination="JCk-TT-EFQ" kind="modal" identifier="showTaskDetail" id="zIY-fA-2s9"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="8AM-cn-lzV" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -368,22 +367,6 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="1BN-U9-bVT" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="2222" y="1440"/>
-        </scene>
-        <!--Navigation Controller-->
-        <scene sceneID="jzi-uh-DwU">
-            <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="JCk-TT-EFQ" sceneMemberID="viewController">
-                    <toolbarItems/>
-                    <navigationItem key="navigationItem" id="pvA-2D-y1I"/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="bKc-X9-tUL">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="56"/>
-                        <autoresizingMask key="autoresizingMask"/>
-                    </navigationBar>
-                    <nil name="viewControllers"/>
-                </navigationController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="F5D-nj-4MS" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="3857" y="1439"/>
         </scene>
         <!--Settings-->
         <scene sceneID="M6L-lr-F8f">
