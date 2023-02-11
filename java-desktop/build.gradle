@@ -1,27 +1,32 @@
 plugins {
     id 'java'
     id 'application'
-    id 'org.openjfx.javafxplugin' version '0.0.10'
+    id "org.openjfx.javafxplugin" version "0.0.13"
 }
 
-ext { COUCHBASE_LITE_VERSION = "3.1.0-232"" }
+ext { CBL_VERSION = "3.1.0-SNAPSHOT" }
+
+// Set true to use mavenLocal instead of Proget
+def USE_LOCAL_MAVEN = project.hasProperty("useLocalMaven")
 
 group 'com.couchbase'
 version '1.0'
 
-sourceCompatibility = 11
-targetCompatibility = 11
+java {
+    targetCompatibility JavaVersion.VERSION_11
+    sourceCompatibility JavaVersion.VERSION_11
+
+    application { mainClassName = 'com.couchbase.todo.TodoApp' }
+}
 
 repositories {
-//    // public maven
-//    maven { url "https://mobile.maven.couchbase.com/maven2/dev" }
-//    // internal maven
-//    maven {
-//        url "http://proget.build.couchbase.com/maven2/internalmaven"
-//        allowInsecureProtocol = true
-//    }
-//    // local maven
-//    mavenLocal()
+    if (USE_LOCAL_MAVEN) { mavenLocal() }
+    else {
+        maven {
+            url "https://proget.sc.couchbase.com/maven2/internalmaven/"
+            allowInsecureProtocol = true
+        }
+    }
 
     mavenCentral()
 }
@@ -29,11 +34,7 @@ repositories {
 dependencies {
     implementation 'org.jetbrains:annotations:22.0.0'
 
-    implementation "com.couchbase.lite:couchbase-lite-java:${COUCHBASE_LITE_VERSION}"
-
-//    implementation fileTree(dir: "libs", include: ["*.jar", "*.aar"])
-
-    testCompile 'junit:junit:4.13.2'
+    implementation "com.couchbase.lite:couchbase-lite-java-ee-macos:${CBL_VERSION}"
 }
 
 javafx {
@@ -41,4 +42,3 @@ javafx {
     modules = [ 'javafx.controls', 'javafx.fxml' ]
 }
 
-mainClassName = 'com.couchbase.todo.TodoApp'

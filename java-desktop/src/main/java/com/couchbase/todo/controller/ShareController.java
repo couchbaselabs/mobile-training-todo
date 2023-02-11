@@ -18,6 +18,7 @@ import com.couchbase.lite.Expression;
 import com.couchbase.lite.Meta;
 import com.couchbase.lite.MutableDictionary;
 import com.couchbase.lite.MutableDocument;
+import com.couchbase.lite.Ordering;
 import com.couchbase.lite.Query;
 import com.couchbase.lite.QueryBuilder;
 import com.couchbase.lite.Result;
@@ -31,14 +32,6 @@ import com.couchbase.todo.view.UserCell;
 
 
 public class ShareController implements Initializable, UserCell.UserCellListener {
-
-    static final String TYPE = "task-list.user";
-    static final String KEY_TYPE = "type";
-    static final String KEY_USERNAME = "username";
-    static final String KEY_TASK_LIST = "taskList";
-    static final String KEY_ID = "id";
-    static final String KEY_OWNER = "owner";
-    static final String KEY_TASK_LIST_ID = "taskList.id";
 
     @FXML
     private TextField userNameTextField;
@@ -79,46 +72,50 @@ public class ShareController implements Initializable, UserCell.UserCellListener
 
     private void getUserList() {
         query = QueryBuilder.select(
-            SelectResult.expression(Meta.id),
-            SelectResult.property(KEY_USERNAME))
-            .from(DB.get().getDataSource())
-            .where(Expression.property(KEY_TYPE).equalTo(Expression.string(TYPE)).and(
-                Expression.property(KEY_TASK_LIST_ID).equalTo(Expression.string(taskList.getId()))));
+                SelectResult.expression(Meta.id),
+                SelectResult.property(DB.KEY_USERNAME))
+            .from(DB.get().getDataSource(DB.COLLECTION_USERS))
+            .where(Expression.property(DB.KEY_PARENT_LIST_ID).equalTo(Expression.string(taskList.getId())))
+            .orderBy(Ordering.property(DB.KEY_USERNAME));
 
-        DB.get().addChangeListener(query, change -> {
-            ObservableList<User> users = FXCollections.observableArrayList();
-            assert change.getResults() != null;
-            for (Result r: change.getResults()) {
-                User user = new User(Objects.requireNonNull(r.getString(0)), Objects.requireNonNull(r.getString(1)));
-                users.add(user);
-            }
+        DB.get().addChangeListener(
+            query,
+            change -> {
+                ObservableList<User> users = FXCollections.observableArrayList();
+                assert change.getResults() != null;
+                for (Result r: change.getResults()) {
+                    User user = new User(
+                        Objects.requireNonNull(r.getString(0)),
+                        Objects.requireNonNull(r.getString(1)));
+                    users.add(user);
+                }
 
-            Platform.runLater(() -> listView.setItems(users));
-        });
+                Platform.runLater(() -> listView.setItems(users));
+            });
     }
 
     private void addUser(@NotNull String username) {
-        MutableDocument doc = new MutableDocument(taskList.getId() + "." + username);
-        doc.setValue(KEY_TYPE, TYPE);
-        doc.setValue(KEY_USERNAME, username);
+        String listId = taskList.getId();
+
+        MutableDocument doc = new MutableDocument(listId + "." + username);
+        doc.setValue(DB.KEY_USERNAME, username);
 
         MutableDictionary taskListInfo = new MutableDictionary();
-        taskListInfo.setValue(KEY_ID, taskList.getId());
-        taskListInfo.setValue(KEY_OWNER, taskList.getOwner());
-        doc.setValue(KEY_TASK_LIST, taskListInfo);
+        taskListInfo.setValue(DB.KEY_ID, listId);
+        taskListInfo.setValue(DB.KEY_OWNER, taskList.getOwner());
+        doc.setValue(DB.KEY_TASK_LIST, taskListInfo);
 
-        new SaveDocService(doc).start();
+        System.out.println("###### NEW USER: " + username + " for list " + listId);
+
+        new SaveDocService(DB.COLLECTION_USERS, doc).start();
     }
 
     private void deleteUser(@NotNull User user) {
-        new DeleteDocService(user.getId()).start();
+        new DeleteDocService(DB.COLLECTION_USERS, user.getId()).start();
     }
 
     // UserCellListener
 
     @Override
-    public void onUserCellDeleteMenuSelected(@NotNull User user) {
-        deleteUser(user);
-    }
-
+    public void onUserCellDeleteMenuSelected(@NotNull User user) { deleteUser(user); }
 }

@@ -40,7 +40,7 @@ import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
 import com.couchbase.todo.R;
 import com.couchbase.todo.service.DatabaseService;
-import com.couchbase.todo.tasks.FetchDocsByIdTask;
+import com.couchbase.todo.tasks.FetchDocByIdTask;
 
 
 public class ListsAdapter extends ArrayAdapter<String> {
@@ -69,7 +69,7 @@ public class ListsAdapter extends ArrayAdapter<String> {
             ? convertView
             : LayoutInflater.from(getContext()).inflate(R.layout.view_list, parent, false);
 
-        new FetchDocsByIdTask(DatabaseService.COLLECTION_LISTS, doc -> populateView(rootView, doc))
+        new FetchDocByIdTask(DatabaseService.COLLECTION_LISTS, doc -> populateView(rootView, doc))
             .execute(getItem(position));
 
         return rootView;

@@ -22,7 +22,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
@@ -53,17 +57,6 @@ import com.couchbase.todo.view.TaskCellSelectionModel;
 
 
 public class TaskListController implements Initializable, TaskCell.TaskCellListener {
-    public static final String TYPE = "task";
-    public static final String KEY_TYPE = "type";
-    static final String KEY_TASK = "task";
-    static final String KEY_COMPLETE = "complete";
-    static final String KEY_IMAGE = "image";
-    static final String KEY_CREATED_AT = "createdAt";
-    static final String KEY_OWNER = "owner";
-    static final String KEY_TASK_LIST = "taskList";
-    static final String KEY_TASK_LIST_ID = "id";
-    static final String KEY_TASK_LIST_OWNER = "owner";
-
     @FXML
     private AnchorPane pane;
 
@@ -148,17 +141,15 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
             query = QueryBuilder
                 .select(
                     SelectResult.expression(Meta.id),
-                    SelectResult.property(KEY_TASK),
-                    SelectResult.property(KEY_COMPLETE),
-                    SelectResult.property(KEY_IMAGE),
-                    SelectResult.property(KEY_OWNER),
-                    SelectResult.property(KEY_CREATED_AT),
-                    SelectResult.property(KEY_TASK_LIST))
-                .from(DB.get().getDataSource())
-                .where(Expression.property(KEY_TYPE).equalTo(Expression.string(TYPE))
-                    .and(Expression.property(KEY_TASK_LIST + "." + KEY_TASK_LIST_ID)
-                        .equalTo(Expression.string(taskList.getId()))))
-                .orderBy(Ordering.property(KEY_CREATED_AT), Ordering.property(KEY_TASK));
+                    SelectResult.property(DB.KEY_TASK),
+                    SelectResult.property(DB.KEY_COMPLETE),
+                    SelectResult.property(DB.KEY_IMAGE),
+                    SelectResult.property(DB.KEY_OWNER),
+                    SelectResult.property(DB.KEY_CREATED_AT),
+                    SelectResult.property(DB.KEY_TASK_LIST))
+                .from(DB.get().getDataSource(DB.COLLECTION_TASKS))
+                .where(Expression.property(DB.KEY_PARENT_LIST_ID).equalTo(Expression.string(taskList.getId())))
+                .orderBy(Ordering.property(DB.KEY_CREATED_AT), Ordering.property(DB.KEY_TASK));
 
             DB.get().addChangeListener(
                 query,
@@ -199,45 +190,41 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
         listView.setItems(tasks);
     }
 
-    private void createTask(@NotNull String name) {
-        // TODO: Execute on non-ui thread
+    private void createTask(@NotNull String title) {
         MutableDocument doc = new MutableDocument();
-        doc.setValue(KEY_TYPE, TYPE);
-        doc.setValue(KEY_TASK, name);
-        doc.setValue(KEY_COMPLETE, false);
-        doc.setValue(KEY_OWNER, DB.get().getLoggedInUsername());
-        doc.setValue(KEY_CREATED_AT, new Date());
+        doc.setValue(DB.KEY_CREATED_AT, new Date());
+        doc.setValue(DB.KEY_TASK, title);
+        doc.setValue(DB.KEY_COMPLETE, false);
 
         MutableDictionary taskListInfo = new MutableDictionary();
-        taskListInfo.setValue(KEY_TASK_LIST_ID, taskList.getId());
-        taskListInfo.setValue(KEY_TASK_LIST_OWNER, taskList.getOwner());
-        doc.setValue(KEY_TASK_LIST, taskListInfo);
-        new SaveDocService(doc).start();
+        taskListInfo.setValue(DB.KEY_TASK_LIST_ID, taskList.getId());
+        taskListInfo.setValue(DB.KEY_TASK_LIST_OWNER, taskList.getOwner());
+        doc.setValue(DB.KEY_TASK_LIST, taskListInfo);
+       new SaveDocService(DB.COLLECTION_TASKS, doc).start();
     }
 
     private void updateTaskName(@NotNull String id, @NotNull String name) {
-        // TODO: Execute on non-ui thread
-        Document doc = DB.get().getDocument(id);
+        Document doc = DB.get().getDocument(DB.COLLECTION_TASKS, id);
         if (doc == null) { return; }
 
         MutableDocument mDoc = doc.toMutable();
-        mDoc.setValue(KEY_TASK, name);
-        new SaveDocService(mDoc).start();
+        mDoc.setValue(DB.KEY_TASK, name);
+        new SaveDocService(DB.COLLECTION_TASKS, mDoc).start();
     }
 
     private void updateTaskComplete(@NotNull String id, boolean completion) {
-        Document doc = DB.get().getDocument(id);
+        Document doc = DB.get().getDocument(DB.COLLECTION_TASKS, id);
         if (doc == null) { return; }
         if (MainController.jsonBoolean.get()) {
             System.out.println("Task doc after update complete check box: " + doc.toJSON());
         }
         MutableDocument mDoc = doc.toMutable();
-        mDoc.setValue(KEY_COMPLETE, completion);
-        new SaveDocService(mDoc).start();
+        mDoc.setValue(DB.KEY_COMPLETE, completion);
+        new SaveDocService(DB.COLLECTION_TASKS, mDoc).start();
     }
 
     private void updateTaskImage(@NotNull String id, @Nullable File image) {
-        Document doc = DB.get().getDocument(id);
+        Document doc = DB.get().getDocument(DB.COLLECTION_TASKS, id);
         if (doc == null) { return; }
 
         MutableDocument mDoc = doc.toMutable();
@@ -249,13 +236,11 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
                 e.printStackTrace();
             }
         }
-        mDoc.setValue(KEY_IMAGE, blob);
-        new SaveDocService(mDoc).start();
+        mDoc.setValue(DB.KEY_IMAGE, blob);
+        new SaveDocService(DB.COLLECTION_TASKS, mDoc).start();
     }
 
-    private void deleteTask(String id) {
-        new DeleteDocService(id).start();
-    }
+    private void deleteTask(String id) { new DeleteDocService(DB.COLLECTION_TASKS, id).start(); }
 
     private String getContentType(File file) {
         return URLConnection.guessContentTypeFromName(file.getName());

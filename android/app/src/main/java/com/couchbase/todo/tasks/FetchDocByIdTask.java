@@ -8,11 +8,11 @@ import com.couchbase.lite.Document;
 import com.couchbase.todo.service.DatabaseService;
 
 
-public final class FetchDocsByIdTask extends Scheduler.BackgroundTask<String, Document> {
+public final class FetchDocByIdTask extends Scheduler.BackgroundTask<String, Document> {
     private final String collectionName;
     private final Consumer<Document> receiver;
 
-    public FetchDocsByIdTask(String collectionName, Consumer<Document> receiver) {
+    public FetchDocByIdTask(String collectionName, Consumer<Document> receiver) {
         this.collectionName = collectionName;
         this.receiver = receiver;
     }

@@ -49,7 +49,7 @@ import com.couchbase.todo.service.DatabaseService;
 import com.couchbase.todo.tasks.AttachImageTask;
 import com.couchbase.todo.tasks.CreateTaskTask;
 import com.couchbase.todo.tasks.DeleteDocsByIdTask;
-import com.couchbase.todo.tasks.FetchDocsByIdTask;
+import com.couchbase.todo.tasks.FetchDocByIdTask;
 import com.couchbase.todo.tasks.SaveDocTask;
 import com.couchbase.todo.tasks.TaskDumper;
 import com.couchbase.todo.ui.TasksAdapter;
@@ -130,7 +130,7 @@ public class TasksFragment extends Fragment {
 
     void handlePopupAction(@NonNull MenuItem item, @NonNull String taskId) {
         if (item.getItemId() == R.id.action_task_update) {
-            new FetchDocsByIdTask(DatabaseService.COLLECTION_TASKS, this::displayUpdateTaskDialog).execute(taskId);
+            new FetchDocByIdTask(DatabaseService.COLLECTION_TASKS, this::displayUpdateTaskDialog).execute(taskId);
         }
         if (item.getItemId() == R.id.action_task_delete) {
             new DeleteDocsByIdTask(DatabaseService.COLLECTION_TASKS).execute(taskId);

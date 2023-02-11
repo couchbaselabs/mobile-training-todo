@@ -8,12 +8,14 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.couchbase.lite.BasicAuthenticator;
 import com.couchbase.lite.CBLError;
+import com.couchbase.lite.Collection;
 import com.couchbase.lite.ConsoleLogger;
 import com.couchbase.lite.CouchbaseLite;
 import com.couchbase.lite.CouchbaseLiteException;
@@ -38,13 +40,32 @@ import com.couchbase.todo.TodoApp;
 
 
 public class DB {
-    private static volatile DB instance;
+    public static final String COLLECTION_LISTS = "lists";
+    public static final String COLLECTION_TASKS = "tasks";
+    public static final String COLLECTION_USERS = "users";
 
-    private static synchronized void newInstance() { instance = new DB(); }
 
-    public static synchronized DB get() {
-        if (instance == null) { newInstance(); }
-        return instance;
+    public static final String KEY_USERNAME = "username";
+    public static final String KEY_TASK_LIST = "taskList";
+    public static final String KEY_ID = "id";
+    public static final String KEY_NAME = "name";
+    public static final String KEY_OWNER = "owner";
+    public static final String KEY_PARENT_LIST_ID = "taskList.id";
+
+    public static final String KEY_COMPLETE = "complete";
+    public static final String KEY_IMAGE = "image";
+    public static final String KEY_TASK = "task";
+    public static final String KEY_CREATED_AT = "createdAt";
+    public static final String KEY_TASK_LIST_ID = "id";
+    public static final String KEY_TASK_LIST_OWNER = "owner";
+
+    private static final AtomicReference<DB> INSTANCE = new AtomicReference<>();
+
+    public static DB get() {
+        final DB instance = INSTANCE.get();
+        if (instance != null) { return instance; }
+        INSTANCE.compareAndSet(null, new DB());
+        return INSTANCE.get();
     }
 
 
@@ -63,11 +84,9 @@ public class DB {
     private DB() {
         CouchbaseLite.init();
 
-        // if (TodoApp.LOG_ENABLED) {
         ConsoleLogger log = Database.log.getConsole();
         log.setLevel(LogLevel.DEBUG);
         log.setDomains(LogDomain.ALL_DOMAINS);
-        // }
     }
 
     public ExecutorService getExecutor() { return executor; }
@@ -113,22 +132,26 @@ public class DB {
     // -------------------------
 
     @NotNull
-    public DataSource.As getDataSource() {
-        final Database db = getAndVerifyDb();
-        return DataSource.database(db);
+    public DataSource.As getDataSource(String collectionName) {
+        return DataSource.collection(getAndVerifyCollection(collectionName));
     }
 
     @Nullable
-    public Document getDocument(@NotNull String id) {
-        return getAndVerifyDb().getDocument(id);
+    public Document getDocument(@NotNull String collectionName, @NotNull String id) {
+        try { return getAndVerifyCollection(collectionName).getDocument(id); }
+        catch (CouchbaseLiteException e) {
+            reportError(e);
+            throw new RuntimeException(e);
+        }
     }
 
     @Nullable
-    public Document saveDocument(@NotNull MutableDocument doc) throws CouchbaseLiteException {
-        final Database db = getAndVerifyDb();
+    public Document saveDocument(@NotNull String collectionName, @NotNull MutableDocument doc)
+        throws CouchbaseLiteException {
+        final Collection collection = getAndVerifyCollection(collectionName);
         try {
-            db.save(doc);
-            return db.getDocument(doc.getId());
+            collection.save(doc);
+            return collection.getDocument(doc.getId());
         }
         catch (CouchbaseLiteException e) {
             reportError(e);
@@ -136,12 +159,13 @@ public class DB {
         }
     }
 
-    public void deleteDocument(@NotNull String docId) throws CouchbaseLiteException {
-        final Database db = getAndVerifyDb();
+    public void deleteDocument(@NotNull String collectionName, @NotNull String docId)
+        throws CouchbaseLiteException {
+        final Collection collection = getAndVerifyCollection(collectionName);
         try {
-            Document doc = db.getDocument(docId);
+            Document doc = collection.getDocument(docId);
             if (doc == null) { return; }
-            db.delete(doc);
+            collection.delete(doc);
         }
         catch (CouchbaseLiteException e) {
             reportError(e);
@@ -290,6 +314,19 @@ public class DB {
             throw new IllegalStateException("Attempt to use the DB before logging in.");
         }
         return db;
+    }
+
+    private Collection getAndVerifyCollection(String collectionName) {
+        final Database db = getAndVerifyDb();
+        try {
+            final Collection collection = db.getCollection(collectionName);
+            return (collection != null)
+                ? collection
+                : db.createCollection(collectionName);
+        }
+        catch (CouchbaseLiteException e) {
+            throw new IllegalStateException("Cannot create collection: " + collectionName);
+        }
     }
 
     private void reportError(@NotNull CouchbaseLiteException err) {

@@ -22,16 +22,6 @@ import com.couchbase.todo.view.TaskListCell;
 
 
 public final class TaskListsController implements Initializable, TaskListCell.TaskListCellListener {
-    private static final String TYPE = "task-list";
-    private static final String TABLE_TASK_LIST = "tasklist";
-    private static final String TABLE_TASK = "task";
-    private static final String KEY_TYPE = "type";
-    private static final String KEY_NAME = "name";
-    private static final String KEY_OWNER = "owner";
-    private static final String KEY_COMPLETE = "complete";
-    private static final String KEY_TODO = "todo";
-    private static final String KEY_TASKLIST_ID = "taskList.id";
-
     @FXML
     private ListView<TaskList> listView;
 
@@ -57,11 +47,10 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
         Query query = QueryBuilder
             .select(
                 SelectResult.expression(Meta.id),
-                SelectResult.property(KEY_NAME),
-                SelectResult.property(KEY_OWNER))
-            .from(db.getDataSource())
-            .where(Expression.property(KEY_TYPE).equalTo(Expression.string(TYPE)))
-            .orderBy(Ordering.property(KEY_NAME));
+                SelectResult.property(DB.KEY_NAME),
+                SelectResult.property(DB.KEY_OWNER))
+            .from(db.getDataSource(DB.COLLECTION_LISTS))
+            .orderBy(Ordering.property(DB.KEY_NAME));
 
         db.addChangeListener(
             query,
@@ -98,10 +87,9 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
             String username = DB.get().getLoggedInUsername();
             String docId = username + "." + UUID.randomUUID();
             MutableDocument doc = new MutableDocument(docId);
-            doc.setValue(KEY_TYPE, TYPE);
-            doc.setValue(KEY_NAME, name);
-            doc.setValue(KEY_OWNER, username);
-            new SaveDocService(doc).start();
+            doc.setValue(DB.KEY_NAME, name);
+            doc.setValue(DB.KEY_OWNER, username);
+            new SaveDocService(DB.COLLECTION_LISTS, doc).start();
         });
     }
 
@@ -112,17 +100,17 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
         dialog.setContentText("List Name");
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(name -> {
-            Document doc = DB.get().getDocument(taskList.getId());
+            Document doc = DB.get().getDocument(DB.COLLECTION_LISTS, taskList.getId());
             if (doc != null) {
                 MutableDocument mDoc = doc.toMutable();
-                mDoc.setValue(KEY_NAME, name);
-                new SaveDocService(mDoc).start();
+                mDoc.setValue(DB.KEY_NAME, name);
+                new SaveDocService(DB.COLLECTION_LISTS, mDoc).start();
             }
         });
     }
 
     private void deleteList(TaskList taskList) {
-        new DeleteDocService(taskList.getId()).start();
+        new DeleteDocService(DB.COLLECTION_LISTS, taskList.getId()).start();
 
         TaskList selTaskList = taskListController.getTaskList();
         if (selTaskList != null) {
@@ -164,13 +152,13 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
 
         todoQuery = QueryBuilder
             .select(
-                SelectResult.expression(Meta.id.from(TABLE_TASK_LIST)),
-                SelectResult.expression(Function.count(Meta.id.from(TABLE_TASK))).as(KEY_TODO))
-            .from(db.getDataSource().as(TABLE_TASK_LIST))
-            .join(Join.innerJoin(db.getDataSource().as(TABLE_TASK))
-                .on(Expression.property(KEY_TASKLIST_ID).from(TABLE_TASK).equalTo(Meta.id.from(TABLE_TASK_LIST))))
-            .where(Expression.property(KEY_COMPLETE).from(TABLE_TASK).equalTo(Expression.booleanValue(false)))
-            .groupBy(Meta.id.from(TABLE_TASK_LIST));
+                SelectResult.expression(Meta.id.from("lists")),
+                SelectResult.expression(Function.count(Meta.id.from("tasks"))).as("unfinished"))
+            .from(db.getDataSource(DB.COLLECTION_LISTS).as("lists"))
+            .join(Join.innerJoin(db.getDataSource(DB.COLLECTION_TASKS).as("tasks"))
+                .on(Expression.property(DB.KEY_PARENT_LIST_ID).from("tasks").equalTo(Meta.id.from("lists"))))
+            .where(Expression.property(DB.KEY_COMPLETE).from("tasks").equalTo(Expression.booleanValue(false)))
+            .groupBy(Meta.id.from("lists"));
 
         db.addChangeListener(
             todoQuery,

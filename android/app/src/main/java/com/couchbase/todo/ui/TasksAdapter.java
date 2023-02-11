@@ -42,7 +42,7 @@ import com.couchbase.todo.R;
 import com.couchbase.todo.TasksFragment;
 import com.couchbase.todo.service.ConfigurableConflictResolver;
 import com.couchbase.todo.service.DatabaseService;
-import com.couchbase.todo.tasks.FetchDocsByIdTask;
+import com.couchbase.todo.tasks.FetchDocByIdTask;
 import com.couchbase.todo.tasks.UpdateTaskCompletedTask;
 
 
@@ -72,7 +72,7 @@ public class TasksAdapter extends ArrayAdapter<String> {
             : LayoutInflater.from(getContext()).inflate(R.layout.view_task, parent, false);
 
         final String docID = getItem(position);
-        new FetchDocsByIdTask(DatabaseService.COLLECTION_TASKS, doc -> populateView(rootView, doc))
+        new FetchDocByIdTask(DatabaseService.COLLECTION_TASKS, doc -> populateView(rootView, doc))
             .execute(docID);
 
         final ImageView imageView = rootView.findViewById(R.id.task_photo);

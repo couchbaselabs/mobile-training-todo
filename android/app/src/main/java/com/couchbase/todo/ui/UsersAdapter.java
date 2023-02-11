@@ -35,7 +35,7 @@ import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
 import com.couchbase.todo.R;
 import com.couchbase.todo.service.DatabaseService;
-import com.couchbase.todo.tasks.FetchDocsByIdTask;
+import com.couchbase.todo.tasks.FetchDocByIdTask;
 
 
 /**
@@ -62,7 +62,7 @@ public class UsersAdapter extends ArrayAdapter<String> {
             ? convertView
             : LayoutInflater.from(getContext()).inflate(R.layout.view_user, parent, false);
 
-        new FetchDocsByIdTask(DatabaseService.COLLECTION_USERS, doc -> populateView(view, doc, position))
+        new FetchDocByIdTask(DatabaseService.COLLECTION_USERS, doc -> populateView(view, doc, position))
             .execute(getItem(position));
 
         return view;

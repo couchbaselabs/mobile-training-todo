@@ -47,15 +47,16 @@ public class CreateTaskTask extends Scheduler.BackgroundTask<String, Void> {
             owner = "?";
         }
 
+        final MutableDocument mDoc = new MutableDocument();
+        mDoc.setDate("createdAt", new Date());
+        mDoc.setString("task", title);
+        mDoc.setValue("owner", DatabaseService.get().getUsername());
+        mDoc.setBoolean("complete", false);
+
         final Map<String, Object> taskListInfo = new HashMap<>();
         taskListInfo.put("id", listId);
         taskListInfo.put("owner", owner);
-
-        final MutableDocument mDoc = new MutableDocument();
         mDoc.setValue("taskList", taskListInfo);
-        mDoc.setDate("createdAt", new Date());
-        mDoc.setString("task", title);
-        mDoc.setBoolean("complete", false);
 
         DatabaseService.get().saveDoc(DatabaseService.COLLECTION_TASKS, mDoc);
 

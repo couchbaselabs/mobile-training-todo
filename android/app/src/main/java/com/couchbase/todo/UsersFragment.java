@@ -41,7 +41,7 @@ import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.todo.service.DatabaseService;
 import com.couchbase.todo.tasks.DeleteDocsByIdTask;
-import com.couchbase.todo.tasks.FetchDocsByIdTask;
+import com.couchbase.todo.tasks.FetchDocByIdTask;
 import com.couchbase.todo.tasks.SaveDocTask;
 import com.couchbase.todo.ui.UsersAdapter;
 
@@ -107,19 +107,19 @@ public class UsersFragment extends Fragment {
             (dialog, whichButton) -> {
                 final String title = input.getText().toString();
                 if (TextUtils.isEmpty(title)) { return; }
-                new FetchDocsByIdTask(DatabaseService.COLLECTION_LISTS, doc -> createUser(title, doc)).execute(listId);
+                new FetchDocByIdTask(DatabaseService.COLLECTION_LISTS, doc -> createUser(title, doc)).execute(listId);
             });
         alert.show();
     }
 
     // create task
     private void createUser(@NonNull String username, @NonNull Document taskList) {
+        final MutableDocument mDoc = new MutableDocument(listId + "." + username);
+        mDoc.setString("username", username);
+
         final Map<String, Object> taskListInfo = new HashMap<>();
         taskListInfo.put("id", listId);
         taskListInfo.put("owner", taskList.getString("owner"));
-
-        final MutableDocument mDoc = new MutableDocument(listId + "." + username);
-        mDoc.setString("username", username);
         mDoc.setValue("taskList", taskListInfo);
 
         new SaveDocTask(DatabaseService.COLLECTION_USERS).execute(mDoc);

@@ -37,7 +37,7 @@ import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.todo.service.DatabaseService;
 import com.couchbase.todo.tasks.DeleteDocsByIdTask;
-import com.couchbase.todo.tasks.FetchDocsByIdTask;
+import com.couchbase.todo.tasks.FetchDocByIdTask;
 import com.couchbase.todo.tasks.ListDumper;
 import com.couchbase.todo.tasks.SaveDocTask;
 import com.couchbase.todo.ui.ListsAdapter;
@@ -67,7 +67,7 @@ public class ListsActivity extends ToDoActivity {
         final ListView listView = findViewById(R.id.lists_list);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener((adapterView, view, i, l) ->
-            new FetchDocsByIdTask(DatabaseService.COLLECTION_LISTS, this::showTaskListView).execute(adapter.getItem(i)));
+            new FetchDocByIdTask(DatabaseService.COLLECTION_LISTS, this::showTaskListView).execute(adapter.getItem(i)));
         listView.setOnItemLongClickListener(this::showPopup);
     }
 
@@ -85,7 +85,7 @@ public class ListsActivity extends ToDoActivity {
         final int itemId = item.getItemId();
 
         if (R.id.action_list_update == itemId) {
-            new FetchDocsByIdTask(DatabaseService.COLLECTION_LISTS, this::displayUpdateListDialog).execute(docId);
+            new FetchDocByIdTask(DatabaseService.COLLECTION_LISTS, this::displayUpdateListDialog).execute(docId);
             return true;
         }
 
