@@ -23,9 +23,6 @@ local.properties
 # Log Files
 *.log
 
-# Android Studio Navigation editor temp files
-.navigation/
-
 # Android Studio captures folder
 captures/
 
@@ -33,13 +30,15 @@ captures/
 *.iml
 .idea
 
-# Eclipse
-.project
-.classpath
-.settings
-
 # Keystore files
 *.jks
 
 # OSX
 .DS_Store
+
+# Node.js stuff
+package-lock.json
+node_modules
+
+# Couchbase stuff
+Couchbase*

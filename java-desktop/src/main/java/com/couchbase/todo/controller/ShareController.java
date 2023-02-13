@@ -105,8 +105,6 @@ public class ShareController implements Initializable, UserCell.UserCellListener
         taskListInfo.setValue(DB.KEY_OWNER, taskList.getOwner());
         doc.setValue(DB.KEY_TASK_LIST, taskListInfo);
 
-        System.out.println("###### NEW USER: " + username + " for list " + listId);
-
         new SaveDocService(DB.COLLECTION_USERS, doc).start();
     }
 

@@ -1,78 +1,65 @@
 package com.couchbase.lite.todo.model;
 
-import com.couchbase.lite.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.couchbase.lite.Collection;
+import com.couchbase.lite.CouchbaseLiteException;
+import com.couchbase.lite.DataSource;
+import com.couchbase.lite.Document;
+import com.couchbase.lite.Expression;
+import com.couchbase.lite.Meta;
+import com.couchbase.lite.MutableDictionary;
+import com.couchbase.lite.MutableDocument;
+import com.couchbase.lite.Ordering;
+import com.couchbase.lite.Query;
+import com.couchbase.lite.QueryBuilder;
+import com.couchbase.lite.Result;
+import com.couchbase.lite.ResultSet;
+import com.couchbase.lite.SelectResult;
 import com.couchbase.lite.todo.support.ResponseException;
 import com.couchbase.lite.todo.support.UserContext;
 import com.couchbase.lite.todo.util.Preconditions;
 
-import java.util.ArrayList;
-import java.util.List;
-
 
 public class TaskListUser {
-    private static final String TYPE = "task-list.user";
-    private static final String KEY_TYPE = "type";
+    public static final String COLLECTION_USERS = "users";
+
     private static final String KEY_USERNAME = "username";
+    private static final String KEY_NAME = "name";
     private static final String KEY_TASK_LIST = "taskList";
     private static final String KEY_TASK_LIST_ID = "id";
     private static final String KEY_TASK_LIST_OWNER = "owner";
-
-    private String id;
-
-    private String name;
-
-    private TaskList taksList;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public TaskList getTaksList() {
-        return taksList;
-    }
-
-    public void setTaksList(TaskList taksList) {
-        this.taksList = taksList;
-    }
+    public static final String KEY_PARENT_LIST_ID = "taskList.id";
 
     public static String add(UserContext context, String taskListId, TaskListUser user) throws CouchbaseLiteException {
         Preconditions.checkArgNotNull(taskListId, "taskListId");
         Preconditions.checkArgNotNull(user, "user");
         Preconditions.checkArgNotNull(user.getName(), "username");
 
-        Database db = context.getDatabase();
+        Collection collection = context.getDataSource(TaskList.COLLECTION_LISTS);
 
-        Document taskList = db.getDocument(taskListId);
-        if (taskList == null) { throw ResponseException.NOT_FOUND("task list id : " + taskListId); }
+        Document taskList = collection.getDocument(taskListId);
+        if (taskList == null) { throw ResponseException.notFound("Task list: " + taskListId); }
 
-        String docId = taskListId + "." + user.getName();
-        if (db.getDocument(docId) != null) {
-            throw ResponseException.BAD_REQUEST("User " + user.getName() + " has been added.");
-        }
+        String username = user.getName();
+        String listName = taskList.getString(KEY_NAME);
+
+        String docId = taskListId + "." + username;
+        if (collection.getDocument(docId) != null) { return docId; }
 
         MutableDocument doc = new MutableDocument(docId);
-        doc.setValue(KEY_TYPE, TYPE);
         doc.setValue(KEY_USERNAME, user.getName());
 
         MutableDictionary taskListInfo = new MutableDictionary();
         taskListInfo.setValue(KEY_TASK_LIST_ID, taskList.getId());
-        taskListInfo.setValue(KEY_TASK_LIST_OWNER, taskList.getValue("owner"));
-        doc.setValue(KEY_TASK_LIST, taskListInfo);
-        db.save(doc);
+        taskListInfo.setValue(KEY_TASK_LIST_OWNER, taskList.getValue(KEY_TASK_LIST_OWNER));
 
-        System.out.println("Current List Document to JSON (when add user): " + taskList.toJSON());
+        doc.setValue(KEY_TASK_LIST, taskListInfo);
+
+        collection = context.getDataSource(COLLECTION_USERS);
+        collection.save(doc);
+        System.out.println("USER: Added user for list " + taskListId + ": " + collection.getDocument(docId).toJSON());
 
         return doc.getId();
     }
@@ -80,45 +67,63 @@ public class TaskListUser {
     public static void delete(UserContext context, String userId) throws CouchbaseLiteException {
         Preconditions.checkArgNotNull(userId, "user id");
 
-        Database db = context.getDatabase();
-        Document doc = db.getDocument(userId);
-        if (doc != null) {
-            db.delete(doc);
-        }
+        Collection collection = context.getDataSource(COLLECTION_USERS);
+        Document doc = collection.getDocument(userId);
+        if (doc != null) { collection.delete(doc); }
+        System.out.println("USER: Deleted user: " + doc.toJSON());
     }
 
     public static List<TaskListUser> getUsers(UserContext context, String taskListId) throws CouchbaseLiteException {
         Preconditions.checkArgNotNull(taskListId, "taskListId");
 
-        Database database = context.getDatabase();
         Query query = QueryBuilder
             .select(
                 SelectResult.expression(Meta.id),
                 SelectResult.property(KEY_USERNAME),
                 SelectResult.property(KEY_TASK_LIST))
-            .from(DataSource.database(database))
-            .where(Expression.property(KEY_TYPE).equalTo(Expression.string(TaskListUser.TYPE))
-                .and(Expression.property(KEY_TASK_LIST + "." + KEY_TASK_LIST_ID)
-                    .equalTo(Expression.string(taskListId))))
+            .from(DataSource.collection(context.getDataSource(COLLECTION_USERS)))
+            .where(Expression.property(KEY_PARENT_LIST_ID).equalTo(Expression.string(taskListId)))
             .orderBy(Ordering.property(KEY_USERNAME));
 
         List<TaskListUser> users = new ArrayList<>();
-        ResultSet rs = query.execute();
-        for (Result r: rs) {
-            TaskListUser user = new TaskListUser();
-            user.setId(r.getString(0));
-            user.setName(r.getString(1));
+        try (ResultSet rs = query.execute()) {
+            List<Result> results = rs.allResults();
+            System.out.println("###### GET USERS: " + results.size());
+            for (Result r: results) {
+                TaskListUser user = new TaskListUser();
+                user.setId(r.getString(0));
+                user.setName(r.getString(1));
 
-            Dictionary taskListDict = r.getDictionary(2);
-            TaskList taskList = new TaskList();
-            taskList.setId(taskListDict.getString(KEY_TASK_LIST_ID));
-            taskList.setOwner(taskListDict.getString(KEY_TASK_LIST_OWNER));
-            user.setTaksList(taskList);
+                TaskList taskList = new TaskList();
+                taskList.setId(r.getString(0));
+                taskList.setOwner(r.getString(1));
+                user.setTaskList(taskList);
 
-            users.add(user);
+                users.add(user);
 
-            System.out.println("Query result to JSON (when add user to a list) : " + r.toJSON());
+                System.out.println("USER: found: " + user);
+            }
         }
+
         return users;
     }
+
+
+    private String id;
+    private String name;
+    private TaskList taskList;
+
+    public String getId() { return id; }
+
+    public void setId(String id) { this.id = id; }
+
+    public String getName() { return name; }
+
+    public void setName(String name) { this.name = name; }
+
+    public TaskList getTaskList() { return taskList; }
+
+    public void setTaskList(TaskList taskList) { this.taskList = taskList; }
+
+    public String toString() { return "USER@" + id + "{" + name + ", " + taskList.getName() + "}"; }
 }

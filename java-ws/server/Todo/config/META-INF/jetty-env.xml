@@ -1,0 +1,48 @@
+<?xml version="1.0"  encoding="ISO-8859-1"?>
+<!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure//EN" "http://www.eclipse.org/jetty/configure.dtd">
+
+<Configure class="org.eclipse.jetty.webapp.WebAppContext">
+    <New class="org.eclipse.jetty.plus.jndi.EnvEntry">
+        <Arg/>
+        <Arg>loggingEnabled</Arg>
+        <Arg type="java.lang.Boolean">true</Arg>
+        <Arg type="boolean">false</Arg>
+    </New>
+    <New class="org.eclipse.jetty.plus.jndi.EnvEntry">
+        <Arg/>
+        <Arg>databaseDirectory</Arg>
+        <Arg type="java.lang.String">CouchbaseLiteDb</Arg>
+        <Arg type="boolean">false</Arg>
+    </New>
+    <New class="org.eclipse.jetty.plus.jndi.EnvEntry">
+        <Arg/>
+        <Arg>loginRequired</Arg>
+        <Arg type="java.lang.Boolean">true</Arg>
+        <Arg type="boolean">false</Arg>
+    </New>
+    <New class="org.eclipse.jetty.plus.jndi.EnvEntry">
+        <Arg/>
+        <Arg>syncGatewayUrl</Arg>
+        <!-- Arg type="java.lang.String">ws://localhost:4984/todo</Arg -->
+        <Arg type="java.lang.String"/>
+        <Arg type="boolean">false</Arg>
+    </New>
+    <New class="org.eclipse.jetty.plus.jndi.EnvEntry">
+        <Arg/>
+        <Arg>customConflictResolution</Arg>
+        <Arg type="java.lang.String">default</Arg>
+        <Arg type="boolean">false</Arg>
+    </New>
+    <New class="org.eclipse.jetty.plus.jndi.EnvEntry">
+        <Arg/>
+        <Arg>maxRetries</Arg>
+        <Arg type="java.lang.Integer">0</Arg>
+        <Arg type="boolean">false</Arg>
+    </New>
+    <New class="org.eclipse.jetty.plus.jndi.EnvEntry">
+        <Arg/>
+        <Arg>waitTime</Arg>
+        <Arg type="java.lang.Integer">0</Arg>
+        <Arg type="boolean">false</Arg>
+    </New>
+</Configure>

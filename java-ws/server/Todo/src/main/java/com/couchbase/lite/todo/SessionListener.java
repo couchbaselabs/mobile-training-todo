@@ -1,10 +1,10 @@
 package com.couchbase.lite.todo;
 
-import com.couchbase.lite.todo.support.SessionManager;
+import jakarta.servlet.annotation.WebListener;
+import jakarta.servlet.http.HttpSessionEvent;
+import jakarta.servlet.http.HttpSessionListener;
 
-import javax.servlet.annotation.WebListener;
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSessionListener;
+import com.couchbase.lite.todo.support.SessionManager;
 
 @WebListener
 public class SessionListener implements HttpSessionListener {

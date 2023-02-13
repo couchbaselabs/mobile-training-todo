@@ -6,6 +6,6 @@ public class Preconditions {
     private Preconditions() {}
 
     public static void checkArgNotNull(Object obj, String name) {
-        if (obj == null) { throw ResponseException.BAD_REQUEST(name + " cannot be null"); }
+        if (obj == null) { throw ResponseException.badRequest(name + " cannot be null"); }
     }
 }

@@ -1,76 +1,66 @@
 apply plugin: 'java'
 apply plugin: 'war'
-apply plugin: 'com.bmuschko.tomcat'
+apply plugin: 'org.gretty'
 
-ext {
-    COUCHBASE_LITE_VERSION = "3.0.0-beta02"
-    TOMCAT_VERSION = '9.0.24'
-}
+ext { CBL_VERSION = '3.1.0-SNAPSHOT' }
 
-group 'com.couchbase.lite'
-version '1.0-SNAPSHOT'
-
-sourceCompatibility = 1.8
+def USE_LOCAL_MAVEN = project.hasProperty("useLocalMaven")
 
 buildscript {
     repositories {
-        jcenter()
+        maven { url "https://plugins.gradle.org/m2/" }
+        mavenCentral()
     }
-    dependencies {
-        classpath 'com.bmuschko:gradle-tomcat-plugin:2.5'
-    }
+    dependencies { classpath 'org.gretty:gretty:4.0.3' }
+}
+
+group 'com.couchbase.lite'
+version '3.1.0'
+
+java {
+    targetCompatibility JavaVersion.VERSION_1_8
+    sourceCompatibility JavaVersion.VERSION_1_8
 }
 
 repositories {
-//    // local maven
-//    mavenLocal()
-//    // internal maven
-//    maven {
-//        url "http://proget.build.couchbase.com/maven2/internalmaven"
-//        allowInsecureProtocol = true
-//    }
-    // public maven
-    maven { url "https://mobile.maven.couchbase.com/maven2/dev" }
+    if (USE_LOCAL_MAVEN) { mavenLocal() }
+    else {
+        maven {
+            url "https://proget.sc.couchbase.com/maven2/internalmaven/"
+            allowInsecureProtocol = true
+        }
+    }
 
     mavenCentral()
+    google()
 }
 
 dependencies {
-    compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
-    compileOnly 'javax.xml.bind:jaxb-api:2.3.1'
+    compileOnly 'jakarta.servlet:jakarta.servlet-api:4.0.4'
     compileOnly 'javax.activation:activation:1.1.1'
 
+    compileOnly 'javax.xml.bind:jaxb-api:2.3.1'
+    implementation 'org.glassfish.jaxb:jaxb-runtime:4.0.2'
+
     // Jersey:
-    implementation 'org.glassfish.jersey.containers:jersey-container-servlet:2.28'
-    implementation 'org.glassfish.jersey.inject:jersey-hk2:2.28'
-    implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.1'
-    implementation 'org.glassfish.jersey.bundles:jaxrs-ri:2.29.1'
+    implementation 'org.glassfish.jersey.containers:jersey-container-servlet:3.1.1'
+    implementation 'org.glassfish.jersey.inject:jersey-hk2:3.1.1'
+    implementation 'org.glassfish.jersey.bundles:jaxrs-ri:3.1.1'
 
     // Jersey-Media:
-    implementation 'org.glassfish.jersey.media:jersey-media-multipart:2.29'
-    implementation 'org.glassfish.jersey.media:jersey-media-json-jackson:2.29'
+    implementation 'org.glassfish.jersey.media:jersey-media-json-jackson:3.1.1'
+    implementation 'org.glassfish.jersey.media:jersey-media-multipart:3.1.1'
 
     // Couchbase:
-    implementation "com.couchbase.lite:couchbase-lite-java-ee:${COUCHBASE_LITE_VERSION}"
-
-    // Tomcat:
-    tomcat "org.apache.tomcat.embed:tomcat-embed-core:${TOMCAT_VERSION}",
-            "org.apache.tomcat.embed:tomcat-embed-logging-juli:9.0.0.M6",
-            "org.apache.tomcat.embed:tomcat-embed-jasper:${TOMCAT_VERSION}"
-
-    testImplementation 'junit:junit:4.13.2'
+    implementation "com.couchbase.lite:couchbase-lite-java-ee-macos:${CBL_VERSION}"
 }
 
-tomcat {
-    httpPort = 8080
-    httpProtocol = 'org.apache.coyote.http11.Http11Nio2Protocol'
-    ajpProtocol  = 'org.apache.coyote.ajp.AjpNio2Protocol'
+gretty {
     contextPath = '/'
+    loggingLevel = 'ALL'
+    enableNaming = true
+    consoleLogEnabled = true
+    fileLogEnabled = false
+    contextConfigFile = file('config/META-INF/jetty-env.xml')
 }
 
-[tomcatRun, tomcatRunWar].each { task ->
-    fileTree("libs").visit { FileVisitDetails details ->
-        task.additionalRuntimeResources << file(details.file.path)
-    }
-    task.configFile = file('config/META-INF/context.xml')
-}

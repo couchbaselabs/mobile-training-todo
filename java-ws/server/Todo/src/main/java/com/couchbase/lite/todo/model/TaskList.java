@@ -1,63 +1,45 @@
 package com.couchbase.lite.todo.model;
 
-import com.couchbase.lite.*;
-import com.couchbase.lite.todo.support.ResponseException;
-import com.couchbase.lite.todo.support.UserContext;
-import com.couchbase.lite.todo.util.Preconditions;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.couchbase.lite.Collection;
+import com.couchbase.lite.CouchbaseLiteException;
+import com.couchbase.lite.DataSource;
+import com.couchbase.lite.Document;
+import com.couchbase.lite.Meta;
+import com.couchbase.lite.MutableDocument;
+import com.couchbase.lite.Ordering;
+import com.couchbase.lite.Query;
+import com.couchbase.lite.QueryBuilder;
+import com.couchbase.lite.Result;
+import com.couchbase.lite.ResultSet;
+import com.couchbase.lite.SelectResult;
+import com.couchbase.lite.todo.support.ResponseException;
+import com.couchbase.lite.todo.support.UserContext;
+import com.couchbase.lite.todo.util.Preconditions;
+
 
 public class TaskList {
-    private static final String TYPE = "task-list";
-    private static final String KEY_TYPE = "type";
+    public static final String COLLECTION_LISTS = "lists";
+
     private static final String KEY_NAME = "name";
     private static final String KEY_OWNER = "owner";
-
-    private String id;
-
-    private String name;
-
-    private String owner;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setOwner(String owner) {
-        this.owner = owner;
-    }
-
-    public String getOwner() {
-        return owner;
-    }
 
     public static String create(UserContext context, TaskList list) throws CouchbaseLiteException {
         Preconditions.checkArgNotNull(list.getName(), "name");
 
-        Database db = context.getDatabase();
         String username = context.getUsername();
-
         String docId = username + "." + UUID.randomUUID();
         MutableDocument doc = new MutableDocument(docId);
-        doc.setValue(KEY_TYPE, TaskList.TYPE);
         doc.setValue(KEY_NAME, list.getName());
         doc.setValue(KEY_OWNER, username);
-        db.save(doc);
+
+        Collection collection = context.getDataSource(COLLECTION_LISTS);
+        collection.save(doc);
+        System.out.println("LIST: Created list: " + collection.getDocument(docId).toJSON());
+
         return doc.getId();
     }
 
@@ -65,46 +47,66 @@ public class TaskList {
         Preconditions.checkArgNotNull(id, "id");
         Preconditions.checkArgNotNull(list.getName(), "name");
 
-        Database db = context.getDatabase();
+        Collection collection = context.getDataSource(COLLECTION_LISTS);
 
-        Document doc = db.getDocument(id);
-        if (doc == null) { throw ResponseException.NOT_FOUND("Task List: " + id); }
+        Document doc = collection.getDocument(id);
+        if (doc == null) { throw ResponseException.notFound("Task List: " + id); }
 
-        db.save(doc.toMutable().setValue("name", list.getName()));
+        collection.save(doc.toMutable().setValue("name", list.getName()));
 
-        System.out.println("List Document to JSON (when update list name) : " + doc.toJSON());
+        System.out.println("LIST: Updated list: " + collection.getDocument(id).toJSON());
     }
 
     public static void delete(UserContext context, String id) throws CouchbaseLiteException {
         Preconditions.checkArgNotNull(id, "id");
 
-        Database db = context.getDatabase();
-        Document doc = db.getDocument(id);
-        if (doc != null) { db.delete(doc); }
+        Collection collection = context.getDataSource(COLLECTION_LISTS);
+        Document doc = collection.getDocument(id);
+        if (doc != null) { collection.delete(doc); }
+        System.out.println("LIST: Deleted list: " + doc.toJSON());
     }
 
     public static List<TaskList> getTaskLists(UserContext context) throws CouchbaseLiteException {
-        Database database = context.getDatabase();
         Query query = QueryBuilder
             .select(
                 SelectResult.expression(Meta.id),
                 SelectResult.property(KEY_NAME),
                 SelectResult.property(KEY_OWNER))
-            .from(DataSource.database(database))
-            .where(Expression.property(KEY_TYPE).equalTo(Expression.string(TaskList.TYPE)))
+            .from(DataSource.collection(context.getDataSource(COLLECTION_LISTS)))
             .orderBy(Ordering.property(KEY_NAME));
 
         List<TaskList> lists = new ArrayList<>();
-        ResultSet rs = query.execute();
-        for (Result r: rs) {
-            TaskList taskList = new TaskList();
-            taskList.setId(r.getString(0));
-            taskList.setName(r.getString(1));
-            taskList.setOwner(r.getString(2));
-            lists.add(taskList);
+        try (ResultSet rs = query.execute()) {
+            for (Result r: rs) {
+                TaskList taskList = new TaskList();
+                taskList.setId(r.getString(0));
+                taskList.setName(r.getString(1));
+                taskList.setOwner(r.getString(2));
+                lists.add(taskList);
 
-            System.out.println("List query result to JSON (when get list): " + r.toJSON());
+                System.out.println("LIST: found: " + taskList);
+            }
         }
+
         return lists;
     }
+
+
+    private String id;
+    private String name;
+    private String owner;
+
+    public String getId() { return id; }
+
+    public void setId(String id) { this.id = id; }
+
+    public String getName() { return name; }
+
+    public void setName(String name) { this.name = name; }
+
+    public void setOwner(String owner) { this.owner = owner; }
+
+    public String getOwner() { return owner; }
+
+    public String toString() { return "LIST@" + id + "{" + name + ", " + owner + "}"; }
 }

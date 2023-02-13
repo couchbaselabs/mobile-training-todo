@@ -1,11 +1,5 @@
 package com.couchbase.lite.todo.support;
 
-import com.couchbase.lite.*;
-import com.couchbase.lite.todo.Application;
-import com.couchbase.lite.todo.model.User;
-
-import javax.servlet.http.HttpSession;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -13,15 +7,31 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.servlet.http.HttpSession;
+
+import com.couchbase.lite.CollectionConfiguration;
+import com.couchbase.lite.CouchbaseLiteException;
+import com.couchbase.lite.Database;
+import com.couchbase.lite.DatabaseConfiguration;
+import com.couchbase.lite.Document;
+import com.couchbase.lite.Replicator;
+import com.couchbase.lite.ReplicatorActivityLevel;
+import com.couchbase.lite.ReplicatorConfiguration;
+import com.couchbase.lite.ReplicatorStatus;
+import com.couchbase.lite.SessionAuthenticator;
+import com.couchbase.lite.URLEndpoint;
+import com.couchbase.lite.todo.Application;
+import com.couchbase.lite.todo.model.User;
+
 
 public class SessionManager {
     public static final String HTTP_SESSION_USER_KEY = "user";
-    public static final String HTTP_SESSION_SYNC_GATEWAY_SESSION_KEY = "syncGatewaySession";
     public static final String HTTP_SESSION_USER_CONTEXT_KEY = "userContext";
+    public static final String HTTP_SESSION_SYNC_GATEWAY_SESSION_KEY = "syncGatewaySession";
 
-    private Map<String, UserContext> contexts = new HashMap<>();
+    private final Map<String, UserContext> contexts = new HashMap<>();
 
-    private Map<String, List<HttpSession>> sessions = new HashMap<>();
+    private final Map<String, List<HttpSession>> sessions = new HashMap<>();
 
     private static SessionManager instance;
 
@@ -54,20 +64,19 @@ public class SessionManager {
         if (replicator != null) { replicator.stop(); }
 
         // Start a new replicator with the new sync gateway session:
-        replicator = startReplication(username, context.getDatabase(), syncGatewaySession);
-        context.setReplicator(replicator);
+        if (syncGatewaySession != null) {
+            replicator = startReplication(context, syncGatewaySession);
+            if (replicator == null) { return false; }
+            context.setReplicator(replicator);
+            session.setAttribute(HTTP_SESSION_SYNC_GATEWAY_SESSION_KEY, syncGatewaySession);
+        }
 
         // Set session's attributes:
         session.setAttribute(HTTP_SESSION_USER_KEY, user);
-        session.setAttribute(HTTP_SESSION_SYNC_GATEWAY_SESSION_KEY, syncGatewaySession);
         session.setAttribute(HTTP_SESSION_USER_CONTEXT_KEY, context);
 
         // Save the session into the user's session lists:
-        List<HttpSession> userSessions = sessions.get(username);
-        if (userSessions == null) {
-            userSessions = new ArrayList<>();
-            sessions.put(username, userSessions);
-        }
+        List<HttpSession> userSessions = sessions.computeIfAbsent(username, k -> new ArrayList<>());
         userSessions.add(session);
 
         return true;
@@ -80,7 +89,7 @@ public class SessionManager {
         String username = user.getName();
 
         // Get the user's session list:
-        List userSessions = sessions.get(username);
+        List<HttpSession> userSessions = sessions.get(username);
         if (userSessions == null) { return; }
 
         // Remove the given session from the user's session list:
@@ -91,22 +100,19 @@ public class SessionManager {
             // Remove the user's context:
             UserContext context = contexts.remove(username);
             // Stop the replicator:
-            context.getReplicator().stop();
+            Replicator repl = context.getReplicator();
+            if (repl != null) { repl.stop(); }
         }
     }
 
     public synchronized void unregisterAll() {
-        for (String username: sessions.keySet()) {
-            unregisterAll(username);
-        }
+        for (String username: sessions.keySet()) { unregisterAll(username); }
     }
 
     public synchronized void unregisterAll(String username) {
         List<HttpSession> userSessions = sessions.get(username);
         if (userSessions == null) { return; }
-        for (int i = userSessions.size() - 1; i >= 0; i--) {
-            unregister(userSessions.get(i));
-        }
+        for (int i = userSessions.size() - 1; i >= 0; i--) { unregister(userSessions.get(i)); }
     }
 
     public synchronized boolean isRegistered(HttpSession session) {
@@ -114,35 +120,34 @@ public class SessionManager {
         if (user == null) { return false; }
 
         String username = user.getName();
-        List userSessions = sessions.get(username);
+        List<HttpSession> userSessions = sessions.get(username);
         return userSessions != null && userSessions.contains(session);
     }
 
     private Database getDatabase(String username) {
         DatabaseConfiguration config = new DatabaseConfiguration();
         config.setDirectory(Application.getDatabaseDirectory());
-        try {
-            return new Database(username, config);
-        }
+        try { return new Database(username, config); }
         catch (CouchbaseLiteException e) {
+            System.out.println("Failed opening database: " + username);
             e.printStackTrace();
         }
         return null;
     }
 
-    private Replicator startReplication(String username, Database database, String syncGatewaySession) {
-        URLEndpoint endpoint = null;
-        try { endpoint = new URLEndpoint(new URI(Application.getSyncGatewayUrl())); } catch (URISyntaxException e) { }
-
-        ReplicatorConfiguration config = new ReplicatorConfiguration(database, endpoint)
-            .setContinuous(true)
-            .setMaxAttempts(Application.getMaxRetries())
-            .setMaxAttemptWaitTime(Application.getWaitTime());
-
+    private Replicator startReplication(UserContext context, String syncGatewaySession) {
+        String url = Application.getSyncGatewayUrl();
+        URI sgwUri;
+        try { sgwUri = new URI(url); }
+        catch (URISyntaxException e) {
+            System.out.println("Failed parsing URL: " + url);
+            e.printStackTrace();
+            return null;
+        }
+        final CollectionConfiguration collConfig = new CollectionConfiguration();
         String mode = Application.getCustomConflictResolution();
-        if (mode == "default") { config.setConflictResolver(null); }
-        else {
-            config.setConflictResolver(conflict -> {
+        if (!"default".equals(mode)) {
+            collConfig.setConflictResolver(conflict -> {
                 Document local = conflict.getLocalDocument();
                 Document remote = conflict.getRemoteDocument();
                 if (local == null || remote == null) { return null; }
@@ -152,15 +157,24 @@ public class SessionManager {
             });
         }
 
+        ReplicatorConfiguration config
+            = new ReplicatorConfiguration(new URLEndpoint(sgwUri))
+            .addCollections(context.getCollections(), collConfig)
+            .setContinuous(true)
+            .setMaxAttempts(Application.getMaxRetries())
+            .setMaxAttemptWaitTime(Application.getWaitTime());
+
         config.setAuthenticator(new SessionAuthenticator(syncGatewaySession));
         final Replicator replicator = new Replicator(config);
         replicator.addChangeListener(change -> {
             ReplicatorStatus status = change.getStatus();
             if (status.getActivityLevel() == ReplicatorActivityLevel.STOPPED && status.getError() != null) {
-                unregisterAll(username);
+                unregisterAll(context.getUsername());
             }
         });
+
         replicator.start();
+
         return replicator;
     }
 }
