@@ -18,8 +18,19 @@
 
 import Foundation
 
-enum CCRType: Int {
+enum CCRType: Int, CaseIterable {
     case local = 0, remote, delete;
+    
+    func description() -> String {
+        switch self {
+        case .local:
+            return "Local"
+        case .remote:
+            return "Remote"
+        case .delete:
+            return "Delete"
+        }
+    }
 }
 
 // Constants:

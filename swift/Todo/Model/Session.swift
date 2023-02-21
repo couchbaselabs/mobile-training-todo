@@ -1,5 +1,5 @@
 //
-// TaskTableViewCell.swift
+// Session.swift
 //
 // Copyright (c) 2023 Couchbase, Inc All rights reserved.
 //
@@ -16,23 +16,23 @@
 // limitations under the License.
 //
 
-import UIKit
+import Foundation
 
-class TaskTableViewCell: UITableViewCell {
-    @IBOutlet weak var imageButton: UIButton!
-    @IBOutlet weak var taskLabel: UILabel!
-    
-    var taskImage: UIImage? {
-        didSet {
-            imageButton.setImage(taskImage, for: .normal)
-        }
+class Session : ObservableObject {
+    private(set) var username: String = ""
+    private(set) var password: String = ""
+    var isLoggedIn: Bool {
+        return !(username.isEmpty || password.isEmpty)
     }
-    
-    var taskImageAction: (() -> ())?
-    
-    @IBAction func imageButtonAction(sender: AnyObject) {
-        if let action = taskImageAction {
-            action()
-        }
+    func start(_ username: String, _ password: String) {
+        self.username = username
+        self.password = password
+        objectWillChange.send()
     }
+    func end() {
+        self.username = ""
+        self.password = ""
+        objectWillChange.send()
+    }
+    private(set) static var shared: Session = Session()
 }
