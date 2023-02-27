@@ -16,8 +16,7 @@
 // limitations under the License.
 //
 
-import Foundation
-import UIKit
+import SwiftUI
 import CouchbaseLiteSwift
 
 public enum DBError: Error {
