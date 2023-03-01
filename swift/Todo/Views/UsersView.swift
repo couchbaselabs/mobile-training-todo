@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-struct UsersView: View, TaskControllerDelegate {
+struct UsersView: View, TodoControllerDelegate {
     private let taskListID: String
     @ObservedObject private var usersQuery: ObservableQuery
     @State private var searchText: String = ""
@@ -39,7 +39,7 @@ struct UsersView: View, TaskControllerDelegate {
                 Text(result.wrappedResult.string(at: 1)!)
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         Button("Delete", role: .destructive) {
-                            TodoController.deleteSharedUser(userID: result.docID, delegate: self)
+                            TodoController.deleteSharedUser(userID: result.id, delegate: self)
                         }
                     }
             }
@@ -79,9 +79,9 @@ struct UsersView: View, TaskControllerDelegate {
     
 // - MARK: TaskControllerDelegate
     
-    public func presentError(_ err: Error, message: String) {
+    public func presentError(message: String, _ err: Error?) {
+        errorAlertDescription = err != nil ? err!.localizedDescription : ""
         errorAlertMessage = message
-        errorAlertDescription = err.localizedDescription
         AppController.logger.log("\(errorAlertDescription)")
         presentErrorAlert = true
     }

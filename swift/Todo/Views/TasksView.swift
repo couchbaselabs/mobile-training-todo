@@ -9,10 +9,15 @@
 import SwiftUI
 import CouchbaseLiteSwift
 
-struct TasksView: View, TaskControllerDelegate {
+struct TasksView: View, TodoControllerDelegate {
     private let taskListID: String
-    private var taskListDoc: Document {
-        return TodoController.getTaskListDoc(fromID: self.taskListID)
+    private var taskListDoc: Document? {
+        guard let doc = TodoController.getTaskListDoc(fromID: self.taskListID)
+        else {
+            self.presentError(message: "Couldn't fetch task list doc", nil)
+            return nil
+        }
+        return doc
     }
     @ObservedObject private var tasksQuery: ObservableQuery
     @State private var presentQEActions: Bool = false
@@ -60,15 +65,15 @@ struct TasksView: View, TaskControllerDelegate {
                 TaskListRow(result)
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                     Button("Log") {
-                        try? logTask(id: result.docID)
+                        try? logTask(id: result.id)
                     }
                     .tint(.gray)
                     Button("Edit") {
-                        popupEditTask(taskID: result.docID)
+                        popupEditTask(taskID: result.id)
                     }
                     .tint(.blue)
                     Button("Delete", role: .destructive) {
-                        TodoController.deleteTask(taskID: result.docID, delegate: self)
+                        TodoController.deleteTask(taskID: result.id, delegate: self)
                     }
                 }
             }
@@ -105,7 +110,7 @@ struct TasksView: View, TaskControllerDelegate {
                     TodoController.createTask(withName: newTaskName, inTaskList: self.taskListID, delegate: self)
                 }
             }
-            .navigationBarTitle(self.taskListDoc.string(forKey: "name")!)
+            .navigationBarTitle(self.taskListDoc?.string(forKey: "name") ?? "")
         }
         .toolbar {
             // Add button which presents QE Actions dialog
@@ -162,18 +167,18 @@ struct TasksView: View, TaskControllerDelegate {
     
     private func TaskListRow(_ result: ObservableQuery.IResult) -> some View {
         HStack {
-            if let image = TaskImage.create(taskID: result.docID, size: 50) {
+            if let image = TaskImage.create(taskID: result.id) {
                 image.resizable()
                     .frame(width: 50, height: 50)
                     .aspectRatio(contentMode: .fill)
                     .onTapGesture {
-                        presentImageView(taskID: result.docID)
+                        presentImageView(taskID: result.id)
                     }
             } else {
                 Color(.gray)
                     .frame(width: 50, height: 50)
                     .onTapGesture {
-                        promptEditPhoto(taskID: result.docID)
+                        promptEditPhoto(taskID: result.id)
                     }
             }
             HStack {
@@ -185,7 +190,7 @@ struct TasksView: View, TaskControllerDelegate {
             }
             .contentShape(Rectangle()) // ensure the tappable area covers the whole row
             .onTapGesture {
-                TodoController.toggleTaskComplete(taskID: result.docID, delegate: self)
+                TodoController.toggleTaskComplete(taskID: result.id, delegate: self)
             }
         }
     }
@@ -213,9 +218,9 @@ struct TasksView: View, TaskControllerDelegate {
     
 // - MARK: TaskControllerDelegate
     
-    public func presentError(_ error: Error, message: String) {
+    public func presentError(message: String, _ error: Error?) {
+        errorAlertDescription = error != nil ? error!.localizedDescription : ""
         errorAlertMessage = message
-        errorAlertDescription = error.localizedDescription
         AppController.logger.log("\(errorAlertDescription)")
         presentErrorAlert = true
     }

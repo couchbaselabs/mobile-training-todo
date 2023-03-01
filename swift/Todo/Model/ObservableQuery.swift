@@ -18,7 +18,7 @@ class ObservableQuery : ObservableObject {
     init(_ query: Query) {
         self.query = query
         self.queryResults = []
-        self.query.addChangeListener({ (change) in
+        self.query.addChangeListener({ change in
             if let error = change.error {
                 AppController.logger.log("Error during query \(query.description): \(error.localizedDescription)")
             }
@@ -32,11 +32,8 @@ class ObservableQuery : ObservableObject {
     
     // Wrapper around Result that conforms to identifiable so we can use it in a SwiftUI List
     struct IResult : Identifiable {
-        public let id: UUID
+        public let id: String
         public let wrappedResult: CouchbaseLiteSwift.Result
-        public var docID: String { // computed docID
-            self.id.uuidString
-        }
         
         init(_ cblResult: CouchbaseLiteSwift.Result) {
             self.wrappedResult = cblResult
@@ -44,11 +41,7 @@ class ObservableQuery : ObservableObject {
             else {
                 fatalError("Could not get docID from Query result")
             }
-            guard let uuidFromStr = UUID(uuidString: docID)
-            else {
-                fatalError("UUID could not be constructed from string: \(docID)")
-            }
-            self.id = uuidFromStr
+            self.id = docID
         }
     }
 }

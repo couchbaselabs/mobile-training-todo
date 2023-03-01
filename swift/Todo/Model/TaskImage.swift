@@ -13,10 +13,10 @@ struct TaskImage {
     // Images are cached to prevent slowdown from Images being loaded and unloaded
     static let cache = NSCache<AnyObject, AnyObject>()
     
-    static func create(taskID: String, size: CGFloat? = nil) -> Image? {
+    static func create(taskID: String) -> Image? {
         guard let taskDoc = try? DB.shared.getTaskByID(id: taskID)
         else {
-            fatalError("Couldn't load task with ID: \(taskID)")
+            return nil
         }
         guard let blob = taskDoc?.blob(forKey: "image"),
               let content = blob.content

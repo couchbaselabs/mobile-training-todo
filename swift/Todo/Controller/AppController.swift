@@ -32,6 +32,7 @@ class AppController {
             if let err = change.status.error as NSError?,
                err.code == 401 { // 401 Unauthorized
                 success = false
+                logger.log("Authentication error when starting session: \(err.localizedDescription)")
             }
         }
         
@@ -74,18 +75,5 @@ class AppController {
                 logger.log("Failed to register push notifications: \(err.localizedDescription)")
             }
         }
-    }
-}
-
-// MARK: - Custom Environment Variables
-
-private struct ReplActivityEnvironmentKey: EnvironmentKey {
-    static let defaultValue: Replicator.ActivityLevel = .stopped
-}
-
-extension EnvironmentValues {
-    var replicatorStatus: Replicator.ActivityLevel {
-        get { self[ReplActivityEnvironmentKey.self] }
-        set { self[ReplActivityEnvironmentKey.self] = newValue }
     }
 }

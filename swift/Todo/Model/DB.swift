@@ -214,7 +214,7 @@ public class DB {
     // MARK: Lists
     
     public func createTaskList(name: String) throws {
-        let docID = UUID().uuidString
+        let docID = currentUser() + "." + UUID().uuidString
         let doc = MutableDocument(id: docID)
         doc.setValue(name, forKey: "name")
         doc.setValue(currentUser(), forKey: "owner")
@@ -258,7 +258,7 @@ public class DB {
     // MARK: Tasks
     
     public func createTask(taskList: Document, task: String, extra: String? = nil) throws {
-        let doc = MutableDocument(id: UUID().uuidString)
+        let doc = MutableDocument()
         let owner = taskList.string(forKey: "owner")!
         let taskListInfo = ["id": taskList.id, "owner": owner]
         doc.setValue(taskListInfo, forKey: "taskList")
@@ -274,7 +274,7 @@ public class DB {
     public func generateTasks(taskList: Document, numbers: Int, includesPhoto: Bool) throws {
         for i in 1...numbers {
             try autoreleasepool {
-                let doc = MutableDocument(id: UUID().uuidString)
+                let doc = MutableDocument()
                 doc.setValue("task", forKey: "type")
                 let taskListInfo = ["id": taskList.id, "owner": taskList.string(forKey: "owner")]
                 doc.setValue(taskListInfo, forKey: "taskList")
@@ -350,7 +350,7 @@ public class DB {
     // MARK: Users
     
     public func addSharedUser(taskList: Document, username: String) throws {
-        let doc = MutableDocument(id: UUID().uuidString)
+        let doc = MutableDocument(id: taskList.id + "." + username)
         doc.setValue(username, forKey: "username")
         
         let taskListInfo = MutableDictionaryObject()
@@ -371,8 +371,8 @@ public class DB {
         return try users.document(id: id)
     }
     
-    public func getSharedUsersQuery(taskList: Document) throws -> Query {
-        let query = "SELECT meta().id, username FROM \(users.name) WHERE taskList.id == '\(taskList.id)' ORDER BY username"
+    public func getSharedUsersQuery(taskListID: String) throws -> Query {
+        let query = "SELECT meta().id, username FROM \(users.name) WHERE taskList.id == '\(taskListID)' ORDER BY username"
         return try createQuery(query: query)
     }
     

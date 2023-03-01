@@ -17,8 +17,8 @@ private enum Filters {
 struct TasksViewRoot: View {
     @State fileprivate var selectedFilter: Filters = .tasks
     private let taskListID: String
-    private var taskListDoc: Document {
-        TodoController.getTaskListDoc(fromID: self.taskListID)
+    private var taskListDoc: Document? {
+        return TodoController.getTaskListDoc(fromID: self.taskListID)
     }
     
     init(taskListID: String) {
@@ -37,7 +37,7 @@ struct TasksViewRoot: View {
             // Tasks or User display filter
             ToolbarItemGroup(placement: .bottomBar) {
                 FilterToolbar(selectedFilter: $selectedFilter,
-                              thisUserOwns: Session.shared.username == taskListDoc.string(forKey: "owner")!)
+                              thisUserOwns: Session.shared.username == taskListDoc?.string(forKey: "owner") ?? "")
             }
         }
     }

@@ -9,7 +9,7 @@
 import SwiftUI
 import CouchbaseLiteSwift
 
-struct TaskListsView: View, TaskControllerDelegate {
+struct TaskListsView: View, TodoControllerDelegate {
     @ObservedObject private var taskListsQuery: ObservableQuery
         = ObservableQuery(try! DB.shared.getTaskListsQuery())
     @State private var presentNewListAlert: Bool = false
@@ -33,18 +33,18 @@ struct TaskListsView: View, TaskControllerDelegate {
         NavigationStack {
             List(filteredResults) { result in
                 // Each row is a NavigationLink to that taskList
-                NavigationLink(destination: TasksViewRoot(taskListID: result.docID)) {
+                NavigationLink(destination: TasksViewRoot(taskListID: result.id)) {
                     Text(result.wrappedResult.string(at: 1) ?? "Error")
                 }
                 .swipeActions(edge: .leading) {
                     Button("Edit") {
-                        popupEditTaskList(withID: result.docID)
+                        popupEditTaskList(withID: result.id)
                     }
                     .tint(.orange)
                 }
                 .swipeActions(edge: .trailing) {
                     Button("Delete", role: .destructive) {
-                        TodoController.deleteTaskList(withID: result.docID, delegate: self)
+                        TodoController.deleteTaskList(withID: result.id, delegate: self)
                     }
                 }
             }
@@ -111,8 +111,8 @@ struct TaskListsView: View, TaskControllerDelegate {
     
 // - MARK: TaskControllerDelegate
     
-    public func presentError(_ error: Error, message: String) {
-        errorAlertDescription = error.localizedDescription
+    public func presentError(message: String, _ error: Error?) {
+        errorAlertDescription = error != nil ? error!.localizedDescription : ""
         errorAlertMessage = message
         AppController.logger.log("\(errorAlertDescription)")
         presentErrorAlert = true

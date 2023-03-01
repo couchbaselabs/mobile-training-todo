@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-struct TaskImageView: View, TaskControllerDelegate {
+struct TaskImageView: View, TodoControllerDelegate {
     @Environment(\.dismiss) var dismiss
     let taskID: String
     let image: Image?
@@ -18,16 +18,14 @@ struct TaskImageView: View, TaskControllerDelegate {
     @State private var selectedImage: UIImage? = nil
     
     init(taskID: String?) {
-        if let taskID = taskID {
+        if let taskID = taskID,
+           let image = TaskImage.create(taskID: taskID) {
             self.taskID = taskID
-            guard let image = TaskImage.create(taskID: taskID)
-            else {
-                fatalError("Couldn't load image for task with ID: \(taskID)")
-            }
             self.image = image
         } else {
             self.taskID = ""
             self.image = nil
+            self.presentError(message: "Couldn't load image for task", nil)
         }
     }
     
@@ -63,8 +61,10 @@ struct TaskImageView: View, TaskControllerDelegate {
                 presentPhotoLibraryPicker = true
             }
             Button("Delete Photo", role: .destructive) {
-                Task {
-                    TodoController.deleteImage(taskID: self.taskID)
+                guard TodoController.deleteImage(taskID: self.taskID)
+                else {
+                    self.presentError(message: "Error deleting image", nil)
+                    return
                 }
                 self.dismiss()
             }
@@ -83,8 +83,9 @@ struct TaskImageView: View, TaskControllerDelegate {
         }
     }
     
-    public func presentError(_ error: Error, message: String) {
-        AppController.logger.log("\(message), \(error.localizedDescription)")
+    public func presentError(message: String, _ error: Error?) {
+        let errDesc = error != nil ? error!.localizedDescription : ""
+        AppController.logger.log("\(message), \(errDesc)")
         self.dismiss()
     }
 }

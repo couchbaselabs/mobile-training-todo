@@ -17,166 +17,178 @@ class TodoController {
 // - MARK: Queries
     
     public static func taskListsQuery() -> ObservableQuery {
-        guard let query = try? DB.shared.getTaskListsQuery()
-        else {
-            fatalError("Could not get task lists query")
+        do {
+            let query = try DB.shared.getTaskListsQuery()
+            return ObservableQuery(query)
+        } catch {
+            fatalError("Couldn't get task lists query: \(error.localizedDescription)")
         }
-        return ObservableQuery(query)
     }
     
     public static func tasksQuery(forList taskListID: String) -> ObservableQuery {
-        guard let query = try? DB.shared.getTasksQuery(taskListID: taskListID)
-        else {
-            fatalError("Could not get tasks query for task list ID: \(taskListID)")
+        do {
+            let query = try DB.shared.getTasksQuery(taskListID: taskListID)
+            return ObservableQuery(query)
+        } catch {
+            fatalError("Couldn't get tasks query: \(error.localizedDescription)")
         }
-        return ObservableQuery(query)
     }
     
     public static func usersQuery(forList taskListID: String) -> ObservableQuery {
-        guard let query = try? DB.shared.getSharedUsersQuery(taskList: getTaskListDoc(fromID: taskListID))
-        else {
-            fatalError("Could not get shared users for task list with ID: \(taskListID)")
+        do {
+            let query = try DB.shared.getSharedUsersQuery(taskListID: taskListID)
+            return ObservableQuery(query)
+        } catch {
+            fatalError("Couldn't get shared users query: \(error.localizedDescription)")
         }
-        return ObservableQuery(query)
     }
     
 // - MARK: Fetch documents by ID
     
-    public static func getTaskListDoc(fromID taskListID: String) -> Document {
-        do {
-            guard let taskListDoc = try DB.shared.getTaskListByID(id: taskListID)
-            else {
-                fatalError("Couldn't fetch task list with ID: \(taskListID)")
-            }
+    public static func getTaskListDoc(fromID taskListID: String) -> Document? {
+        if let taskListDoc = try? DB.shared.getTaskListByID(id: taskListID) {
             return taskListDoc
-        } catch {
-            fatalError("Error fetching task list: \(error.localizedDescription)")
         }
+        return nil
     }
     
-    public static func getTaskDoc(fromID taskID: String) -> Document {
-        do {
-            guard let taskDoc = try DB.shared.getTaskByID(id: taskID)
-            else {
-                fatalError("Couldn't fetch task with ID: \(taskID)")
-            }
-            return taskDoc
-        } catch {
-            fatalError("Error fetching task: \(error.localizedDescription)")
+    public static func getTaskDoc(fromID taskID: String) -> Document? {
+        if let taskListDoc = try? DB.shared.getTaskByID(id: taskID) {
+            return taskListDoc
         }
+        return nil
     }
     
 // - MARK: Common Task functions
     
-    public static func generateTasks(taskListID: String, withPhoto: Bool, delegate: TaskControllerDelegate) {
+    public static func generateTasks(taskListID: String, withPhoto: Bool, delegate: TodoControllerDelegate) {
         do {
-            let taskListDoc = getTaskListDoc(fromID: taskListID)
+            guard let taskListDoc = getTaskListDoc(fromID: taskListID)
+            else {
+                delegate.presentError(message: "Couldn't fetch task list doc", nil)
+                return
+            }
             try DB.shared.generateTasks(taskList: taskListDoc, numbers: 50, includesPhoto: withPhoto)
         } catch {
-            delegate.presentError(error, message: "Error generating tasks, with photo: \(withPhoto)")
+            delegate.presentError(message: "Error generating tasks, with photo: \(withPhoto)", error)
         }
     }
     
-    public static func createTask(withName name: String, inTaskList taskListID: String, delegate: TaskControllerDelegate) {
+    public static func createTask(withName name: String, inTaskList taskListID: String, delegate: TodoControllerDelegate) {
         do {
-            let taskListDoc = getTaskListDoc(fromID: taskListID)
+            guard let taskListDoc = getTaskListDoc(fromID: taskListID)
+            else {
+                delegate.presentError(message: "Couldn't fetch task list doc", nil)
+                return
+            }
             try DB.shared.createTask(taskList: taskListDoc, task: name)
         } catch {
-            delegate.presentError(error, message: "Couldn't create task")
+            delegate.presentError(message: "Couldn't create task", error)
         }
     }
     
-    public static func deleteTask(taskID: String, delegate: TaskControllerDelegate) {
+    public static func deleteTask(taskID: String, delegate: TodoControllerDelegate) {
         do {
             try DB.shared.deleteTask(taskID: taskID)
         } catch {
-            delegate.presentError(error, message: "Couldn't delete task")
+            delegate.presentError(message: "Couldn't delete task", error)
         }
     }
     
-    public static func updateTask(taskID: String, name: String, delegate: TaskControllerDelegate) {
+    public static func updateTask(taskID: String, name: String, delegate: TodoControllerDelegate) {
         do {
             try DB.shared.updateTask(taskID: taskID, task: name)
         } catch {
-            delegate.presentError(error, message: "Couldn't update task name")
+            delegate.presentError(message: "Couldn't update task name", error)
         }
     }
     
-    public static func updateTask(taskID: String, complete: Bool, delegate: TaskControllerDelegate) {
+    public static func updateTask(taskID: String, complete: Bool, delegate: TodoControllerDelegate) {
         do {
             try DB.shared.updateTask(taskID: taskID, complete: complete)
         } catch {
-            delegate.presentError(error, message: "Couldn't update task completion")
+            delegate.presentError(message: "Couldn't update task completion", error)
         }
     }
     
-    public static func updateTask(taskID: String, image: UIImage, delegate: TaskControllerDelegate) {
+    public static func updateTask(taskID: String, image: UIImage, delegate: TodoControllerDelegate) {
         do {
             try DB.shared.updateTask(taskID: taskID, image: image)
         } catch {
-            delegate.presentError(error, message: "Couldn't update task image")
+            delegate.presentError(message: "Couldn't update task image", error)
         }
     }
     
-    public static func toggleTaskComplete(taskID: String, delegate: TaskControllerDelegate) {
-        let taskDoc = getTaskDoc(fromID: taskID)
+    public static func toggleTaskComplete(taskID: String, delegate: TodoControllerDelegate) {
+        guard let taskDoc = getTaskDoc(fromID: taskID)
+        else {
+            delegate.presentError(message: "Couldn't fetch task doc", nil)
+            return
+        }
         let complete = taskDoc.boolean(forKey: "complete")
         TodoController.updateTask(taskID: taskID, complete: !complete, delegate: delegate)
     }
     
-    public static func deleteImage(taskID: String) {
+    public static func deleteImage(taskID: String) -> Bool {
         do {
             try DB.shared.updateTask(taskID: taskID, image: nil)
         } catch {
             AppController.logger.log("Error deleting image: \(error.localizedDescription)")
+            return false
         }
+        return true
     }
     
 // - MARK: Common Task List functions
     
-    public static func createTaskList(withName name: String, delegate: TaskControllerDelegate) {
+    public static func createTaskList(withName name: String, delegate: TodoControllerDelegate) {
         do {
             try DB.shared.createTaskList(name: name.capitalized)
         } catch {
-            delegate.presentError(error, message: "Couldn't save task list")
+            delegate.presentError(message: "Couldn't save task list", error)
         }
     }
     
-    public static func updateTaskList(withID docID: String, name: String, delegate: TaskControllerDelegate) {
+    public static func updateTaskList(withID docID: String, name: String, delegate: TodoControllerDelegate) {
         do {
             try DB.shared.updateTaskList(listID: docID, name: name.capitalized)
         } catch {
-            delegate.presentError(error, message: "Couldn't update task list")
+            delegate.presentError(message: "Couldn't update task list", error)
         }
     }
     
-    public static func deleteTaskList(withID docID: String, delegate: TaskControllerDelegate) {
+    public static func deleteTaskList(withID docID: String, delegate: TodoControllerDelegate) {
         do {
             try DB.shared.deleteTaskList(listID: docID)
         } catch {
-            delegate.presentError(error, message: "Couldn't delete task list")
+            delegate.presentError(message: "Couldn't delete task list", error)
         }
     }
     
 // - MARK: Common User Functions
     
-    public static func addUser(toTaskList taskListID: String, username: String, delegate: TaskControllerDelegate) {
+    public static func addUser(toTaskList taskListID: String, username: String, delegate: TodoControllerDelegate) {
         do {
-            try DB.shared.addSharedUser(taskList: getTaskListDoc(fromID: taskListID), username: username)
+            guard let taskListDoc = getTaskListDoc(fromID: taskListID)
+            else {
+                delegate.presentError(message: "Couldn't fetch task list doc", nil)
+                return
+            }
+            try DB.shared.addSharedUser(taskList: taskListDoc, username: username)
         } catch {
-            delegate.presentError(error, message: "Couldn't add user to task list")
+            delegate.presentError(message: "Couldn't add user to task list", error)
         }
     }
     
-    public static func deleteSharedUser(userID: String, delegate: TaskControllerDelegate) {
+    public static func deleteSharedUser(userID: String, delegate: TodoControllerDelegate) {
         do {
             try DB.shared.deleteSharedUser(userID: userID)
         } catch {
-            delegate.presentError(error, message: "Couldn't delete user")
+            delegate.presentError(message: "Couldn't delete user", error)
         }
     }
 }
 
-protocol TaskControllerDelegate {
-    func presentError(_ err: Error, message: String)
+protocol TodoControllerDelegate {
+    func presentError(message: String, _ err: Error?)
 }
