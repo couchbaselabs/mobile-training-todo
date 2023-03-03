@@ -16,8 +16,7 @@
 // limitations under the License.
 //
 
-import Foundation
-import UIKit
+import SwiftUI
 import CouchbaseLiteSwift
 
 public enum DBError: Error {
@@ -89,10 +88,10 @@ public class DB {
     // MARK: User
     
     private func currentUser() -> String {
-        guard let user = Session.username else {
-            fatalError("No current user")
+        if Session.shared.isLoggedIn {
+            return Session.shared.username
         }
-        return user
+        fatalError("No current user")
     }
     
     // MARK: Collection
@@ -140,7 +139,7 @@ public class DB {
             let activity = DB.kActivities[Int(s.activity.rawValue)]
             let e = change.status.error as NSError?
             let error = e != nil ? ", error: \(e!.description)" : ""
-            NSLog("[Todo] Replicator: \(activity), \(s.progress.completed)/\(s.progress.total)\(error)")
+            AppController.logger.log("[Todo] Replicator: \(activity), \(s.progress.completed)/\(s.progress.total)\(error)")
             listener(change)
         })
         replicator!.start()
@@ -149,26 +148,25 @@ public class DB {
     public func startPushNotificationReplicator() {
         guard Config.shared.pushNotificationEnabled else { return }
         
-        NSLog("[Todo] Start Background Replication ...")
+        AppController.logger.log("[Todo] Start Background Replication ...")
         if database == nil {
             // Note : If the app is re-launched in the backgroud, there is no active user logged in.
             // We may implement auto-login in the future but right now this is not supported.
-            NSLog("[Todo] Skipped Backgrund Replication as No Active Database Opened ...")
+            AppController.logger.log("[Todo] Skipped Backgrund Replication as No Active Database Opened ...")
             return
         }
         
-        var config = replicatorConfiguration(continuous: false)
+        let config = replicatorConfiguration(continuous: false)
         let repl = Replicator(config: config)
         pushNotificationReplicatorChangeListener = repl.addChangeListener({ (change) in
             let s = change.status
             let activity = DB.kActivities[Int(s.activity.rawValue)]
             let e = change.status.error as NSError?
             let error = e != nil ? ", error: \(e!.description)" : ""
-            NSLog("[Todo] Push-Notification-Replicator: \(activity), \(s.progress.completed)/\(s.progress.total)\(error)")
-            UIApplication.shared.isNetworkActivityIndicatorVisible = (s.activity == .busy)
+            AppController.logger.log("[Todo] Push-Notification-Replicator: \(activity), \(s.progress.completed)/\(s.progress.total)\(error)")
             if let code = e?.code {
                 if code == 401 {
-                    NSLog("ERROR: Authentication Error, username or password is not correct");
+                    AppController.logger.log("ERROR: Authentication Error, username or password is not correct");
                 }
             }
         })
@@ -181,10 +179,10 @@ public class DB {
         config.continuous = continuous
         
         var auth: Authenticator? = nil
-        if let username = Session.username, let password = Session.password {
-            auth = BasicAuthenticator(username: username, password: password)
+        if Session.shared.isLoggedIn {
+            auth = BasicAuthenticator(username: Session.shared.username, password: Session.shared.password)
         } else {
-            NSLog("[TODO] No user credentails found to setup the authenticator for replication")
+            AppController.logger.log("[TODO] No user credentails found to setup the authenticator for replication")
         }
         config.authenticator = auth
         
@@ -204,7 +202,7 @@ public class DB {
                 }
             }
         }
-        NSLog("[TODO] Custom Conflict Resolver: Enabled = \(Config.shared.ccrEnabled); Type = \(Config.shared.ccrType)")
+        AppController.logger.log("[TODO] Custom Conflict Resolver: Enabled = \(Config.shared.ccrEnabled); Type = \(Config.shared.ccrType.description())")
         
         var collConfig = CollectionConfiguration()
         collConfig.conflictResolver = conflictResolver
@@ -216,7 +214,7 @@ public class DB {
     // MARK: Lists
     
     public func createTaskList(name: String) throws {
-        let docID = currentUser() + "." + NSUUID().uuidString
+        let docID = currentUser() + "." + UUID().uuidString
         let doc = MutableDocument(id: docID)
         doc.setValue(name, forKey: "name")
         doc.setValue(currentUser(), forKey: "owner")
@@ -365,7 +363,7 @@ public class DB {
     
     public func deleteSharedUser(userID: String) throws {
         if let doc = try users.document(id: userID) {
-            try tasks.delete(document: doc)
+            try users.delete(document: doc)
         }
     }
     
@@ -373,8 +371,8 @@ public class DB {
         return try users.document(id: id)
     }
     
-    public func getSharedUsersQuery(taskList: Document) throws -> Query {
-        let query = "SELECT meta().id, username FROM \(users.name) WHERE taskList.id == '\(taskList.id)' ORDER BY username"
+    public func getSharedUsersQuery(taskListID: String) throws -> Query {
+        let query = "SELECT meta().id, username FROM \(users.name) WHERE taskList.id == '\(taskListID)' ORDER BY username"
         return try createQuery(query: query)
     }
     
