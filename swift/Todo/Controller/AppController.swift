@@ -10,9 +10,6 @@ import os
 import SwiftUI
 import CouchbaseLiteSwift
 
-// QE:
-let kQEFeaturesEnabled = true
-
 // Logout Method
 enum LogoutMethod {
     case closeDatabase, deleteDatabase;
@@ -21,24 +18,21 @@ enum LogoutMethod {
 class AppController {
     public static let logger = Logger()
     
-    public static func startSession(_ username: String, _ password: String) throws -> Bool {
+    /// This function doesn't do the real authentication with SG. If the authentication fails, the
+    /// app can still be using but there will be no replication.
+    public static func login(_ username: String, _ password: String) throws {
         Session.shared.start(username, password)
         
         try DB.shared.open()
         
-        var success: Bool = true
-        
         DB.shared.startReplicator { change in           
             if let err = change.status.error as NSError?,
                err.code == 401 { // 401 Unauthorized
-                success = false
                 logger.log("Authentication error when starting session: \(err.localizedDescription)")
             }
         }
         
         registerPushNotification()
-        
-        return success
     }
     
     public static func logout(method: LogoutMethod) {

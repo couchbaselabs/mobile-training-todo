@@ -128,7 +128,7 @@ public class DB {
     // MARK: Replicator
     
     public func startReplicator(listener: @escaping (ReplicatorChange) -> Void) {
-        guard !Config.shared.syncEnabled else {
+        guard Config.shared.syncEnabled else {
             return
         }
         

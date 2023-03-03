@@ -13,6 +13,7 @@ struct LoginView: View {
     @State var username: String = ""
     @State var password: String = ""
     @State var presentUnauthorized: Bool = false
+    
     var loginDisabled: Bool {
         username.isEmpty || password.isEmpty
     }
@@ -46,13 +47,8 @@ struct LoginView: View {
                 
                 Spacer()
             }
-            .padding(50)
+            .padding(20)
             .navigationTitle("Login")
-            .alert("Authentication Error", isPresented: $presentUnauthorized) {
-                Button("OK", role: .cancel) {
-                    try! DB.shared.close()
-                }
-            }
         }
     }
     
@@ -60,17 +56,10 @@ struct LoginView: View {
         username = username.trimmingCharacters(in: .whitespaces)
         password = password.trimmingCharacters(in: .whitespaces)
         do {
-            guard try AppController.startSession(username, password)
-            else { self.loginFailed(); return }
+            try AppController.login(username, password)
         } catch {
             AppController.logger.log("\(error.localizedDescription)")
         }
-    }
-    
-    private func loginFailed() {
-        AppController.logout(method: .closeDatabase)
-        presentUnauthorized = true
-        self.password = ""
     }
 }
 

@@ -3,11 +3,13 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		1A99370B260DAF1200D5E911 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A99370A260DAF1200D5E911 /* Config.swift */; };
+		40E1091729B2793B00970ECB /* CouchbaseLiteSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 40E1091629B2793B00970ECB /* CouchbaseLiteSwift.xcframework */; };
+		40E1091829B2793B00970ECB /* CouchbaseLiteSwift.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 40E1091629B2793B00970ECB /* CouchbaseLiteSwift.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		40EBC28A2991F49E00182F16 /* DB.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40EBC2892991F49E00182F16 /* DB.swift */; };
 		9382585F216323BF006A75AD /* 8.JPG in Resources */ = {isa = PBXBuildFile; fileRef = 93825855216323BF006A75AD /* 8.JPG */; };
 		93825860216323BF006A75AD /* 9.JPG in Resources */ = {isa = PBXBuildFile; fileRef = 93825856216323BF006A75AD /* 9.JPG */; };
@@ -33,7 +35,6 @@
 		EA456487299D0F830031F6FA /* AppController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA456486299D0F830031F6FA /* AppController.swift */; };
 		EA456489299D36620031F6FA /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA456488299D36620031F6FA /* RootView.swift */; };
 		EA482F71299FE20B00806989 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA482F70299FE20B00806989 /* ImagePicker.swift */; };
-		EA7CE60D299AACB600359396 /* CouchbaseLiteSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EA7CE60C299AACB600359396 /* CouchbaseLiteSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EA7CE60F299AAF6100359396 /* TodoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA7CE60E299AAF6100359396 /* TodoApp.swift */; };
 		EA7CE613299AB03000359396 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA7CE612299AB03000359396 /* LoginView.swift */; };
 		EA7CE615299AB42C00359396 /* TaskListsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA7CE614299AB42C00359396 /* TaskListsView.swift */; };
@@ -46,7 +47,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				EA7CE60D299AACB600359396 /* CouchbaseLiteSwift.framework in Embed Frameworks */,
+				40E1091829B2793B00970ECB /* CouchbaseLiteSwift.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -55,6 +56,7 @@
 
 /* Begin PBXFileReference section */
 		1A99370A260DAF1200D5E911 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
+		40E1091629B2793B00970ECB /* CouchbaseLiteSwift.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CouchbaseLiteSwift.xcframework; path = Frameworks/CouchbaseLiteSwift.xcframework; sourceTree = "<group>"; };
 		40EBC2892991F49E00182F16 /* DB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DB.swift; sourceTree = "<group>"; };
 		93825855216323BF006A75AD /* 8.JPG */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = 8.JPG; sourceTree = "<group>"; };
 		93825856216323BF006A75AD /* 9.JPG */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = 9.JPG; sourceTree = "<group>"; };
@@ -83,7 +85,6 @@
 		EA456486299D0F830031F6FA /* AppController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppController.swift; sourceTree = "<group>"; };
 		EA456488299D36620031F6FA /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		EA482F70299FE20B00806989 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
-		EA7CE60C299AACB600359396 /* CouchbaseLiteSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CouchbaseLiteSwift.framework; path = Frameworks/CouchbaseLiteSwift.framework; sourceTree = "<group>"; };
 		EA7CE60E299AAF6100359396 /* TodoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoApp.swift; sourceTree = "<group>"; };
 		EA7CE612299AB03000359396 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		EA7CE614299AB42C00359396 /* TaskListsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskListsView.swift; sourceTree = "<group>"; };
@@ -94,6 +95,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				40E1091729B2793B00970ECB /* CouchbaseLiteSwift.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -103,7 +105,7 @@
 		9322DCCA1F1406A600C4ACF7 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				EA7CE60C299AACB600359396 /* CouchbaseLiteSwift.framework */,
+				40E1091629B2793B00970ECB /* CouchbaseLiteSwift.xcframework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -422,7 +424,8 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 3.0;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -445,7 +448,10 @@
 				);
 				INFOPLIST_FILE = Todo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -477,7 +483,10 @@
 				);
 				INFOPLIST_FILE = Todo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",

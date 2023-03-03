@@ -10,14 +10,14 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(\.dismiss) var dismiss
-    @State var loggingEnabled: Bool = UserDefaults.standard.bool(forKey: IS_LOGGING_KEY)
-    @State var syncEnabled: Bool = UserDefaults.standard.bool(forKey: IS_SYNC_KEY)
-    @State var syncEndpoint: String = Config.shared.syncURL
-    @State var pushNotificationEnabled: Bool = UserDefaults.standard.bool(forKey: IS_PUSH_NOTIFICATION_ENABLED_KEY)
-    @State var ccrEnabled: Bool = UserDefaults.standard.bool(forKey: IS_CCR_ENABLED_KEY)
-    @State var ccrType: CCRType = CCRType(rawValue: UserDefaults.standard.integer(forKey: CCR_TYPE_KEY))!
-    @State var maxAttempts: Int = UserDefaults.standard.integer(forKey: MAX_ATTEMPTS_KEY)
-    @State var maxWaitTime: Int = UserDefaults.standard.integer(forKey: MAX_ATTEMPTS_WAIT_TIME_KEY)
+    @State var loggingEnabled = Config.shared.loggingEnabled
+    @State var syncEnabled = Config.shared.syncEnabled
+    @State var syncURL = Config.shared.syncURL
+    @State var pushNotificationEnabled = Config.shared.pushNotificationEnabled
+    @State var ccrEnabled = Config.shared.ccrEnabled
+    @State var ccrType = Config.shared.ccrType
+    @State var maxAttempts = Config.shared.maxAttempts
+    @State var maxAttemptWaitTime = Config.shared.maxAttemptWaitTime
     
     init() {
         guard UserDefaults.standard.bool(forKey: HAS_SETTINGS_KEY)
@@ -32,7 +32,7 @@ struct SettingsView: View {
                 Toggle("Logging:", isOn: $loggingEnabled)
                 Section {
                     Toggle("Sync:", isOn: $syncEnabled)
-                    TextField("Sync Endpoint", text: $syncEndpoint)
+                    TextField("Sync Endpoint", text: $syncURL)
                         .textFieldStyle(.roundedBorder)
                 }
                 Toggle("Push notification:", isOn: $pushNotificationEnabled)
@@ -50,7 +50,7 @@ struct SettingsView: View {
                         .textFieldStyle(.roundedBorder)
                 }
                 LabeledContent("Max Wait Time:") {
-                    TextField("Max attempt wait time", value: $maxWaitTime, formatter: NumberFormatter())
+                    TextField("Max attempt wait time", value: $maxAttemptWaitTime, formatter: NumberFormatter())
                         .textFieldStyle(.roundedBorder)
                 }
             }
@@ -73,18 +73,16 @@ struct SettingsView: View {
     }
     
     private func saveSettings() {
-        let defaults = UserDefaults.standard
-        defaults.set(true, forKey: HAS_SETTINGS_KEY)
-        defaults.set(loggingEnabled, forKey: IS_LOGGING_KEY)
-        defaults.set(syncEnabled, forKey: IS_SYNC_KEY)
-        defaults.set(pushNotificationEnabled, forKey: IS_PUSH_NOTIFICATION_ENABLED_KEY)
-        defaults.set(ccrEnabled, forKey: IS_CCR_ENABLED_KEY)
-        defaults.set(ccrType.rawValue, forKey: CCR_TYPE_KEY)
-        defaults.set(maxAttempts, forKey: MAX_ATTEMPTS_KEY)
-        defaults.set(maxWaitTime, forKey: MAX_ATTEMPTS_WAIT_TIME_KEY)
-        
-        Config.shared.syncURL = syncEndpoint
-        
+        let config = Config.shared
+        config.loggingEnabled = loggingEnabled
+        config.syncEnabled = syncEnabled
+        config.syncURL = syncURL
+        config.pushNotificationEnabled = pushNotificationEnabled
+        config.ccrEnabled = ccrEnabled
+        config.ccrType = ccrType
+        config.maxAttempts = maxAttempts
+        config.maxAttemptWaitTime = maxAttemptWaitTime
+        config.save()
         AppController.logout(method: .closeDatabase)
         dismiss()
     }
