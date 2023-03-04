@@ -1,37 +1,37 @@
 //
-//  TasksView.swift
-//  Todo
+// TasksView.swift
 //
-//  Created by Callum Birks on 16/02/2023.
-//  Copyright © 2023 Couchbase. All rights reserved.
+// Copyright (c) 2023 Couchbase, Inc All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 
 import SwiftUI
-import CouchbaseLiteSwift
 
 struct TasksView: View, TodoControllerDelegate {
-    private let taskListID: String
-    private var taskListDoc: Document? {
-        guard let doc = TodoController.getTaskListDoc(fromID: self.taskListID)
-        else {
-            self.presentError(message: "Couldn't fetch task list doc", nil)
-            return nil
-        }
-        return doc
-    }
-    @ObservedObject private var tasksQuery: ObservableQuery
+    @ObservedObject private var tasksQuery: LiveQueryObject
+    
     @State private var presentQEActions: Bool = false
     @State private var newTaskDeltaSync: Bool = false
     
     @State private var presentNewTaskAlert: Bool = false
     @State private var newTaskName: String = ""
     @State private var presentEditTaskAlert: Bool = false
-    @State private var editingTaskID: String? = nil
+    @State private var editingTask: Task? = nil
     
     @State private var presentErrorAlert: Bool = false
     @State private var errorAlertMessage: String = ""
     @State private var errorAlertDescription: String = ""
-    
     
     @State private var searchText: String = ""
     
@@ -41,19 +41,21 @@ struct TasksView: View, TodoControllerDelegate {
     @State private var selectedImage: UIImage? = nil
     
     @State private var presentTaskImageView: Bool = false
-    @State private var selectedImageTaskID: String? = nil
+    @State private var selectedImageTask: Task? = nil
     
-    private var filteredResults: [ObservableQuery.IResult] {
+    private let taskList: TaskList
+    
+    private var filteredResults: [any QueryResultProtocol] {
         if !searchText.isEmpty {
-            return tasksQuery.queryResults.filter { $0.wrappedResult.string(forKey: "task")!.contains(searchText) }
+            return tasksQuery.change.results.filter { $0.string(forKey: "task")!.contains(searchText) }
         } else {
-            return tasksQuery.queryResults
+            return tasksQuery.change.results
         }
     }
     
-    init(taskListID: String) {
-        self.taskListID = taskListID
-        self._tasksQuery = ObservedObject(wrappedValue: TodoController.tasksQuery(forList: self.taskListID))
+    init(taskList: TaskList) {
+        self.taskList = taskList
+        self.tasksQuery = TodoController.tasksQuery(for: taskList)
     }
     
     var body: some View {
@@ -61,39 +63,39 @@ struct TasksView: View, TodoControllerDelegate {
             // A list of tasks in the task view, displaying image, name, and a tick for completion
             // The NavigationLink covers the area of the image, and will navigate to a larger view of the image
             // Tapping the row (outside of image area) will toggle task completion
-            List(filteredResults) { result in
-                TaskListRow(result)
+            List(filteredResults, id: \.id) { result in
+                let task = Task.init(result: result)
+                TaskRow(task)
                 .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                     Button("Log") {
-                        try? logTask(id: result.id)
+                        TodoController.logTask(task)
                     }
                     .tint(.gray)
                     Button("Edit") {
-                        popupEditTask(taskID: result.id)
+                        popupEditTask(task)
                     }
                     .tint(.blue)
                     Button("Delete", role: .destructive) {
-                        TodoController.deleteTask(taskID: result.id, delegate: self)
+                        TodoController.deleteTask(task, delegate: self)
                     }
                 }
             }
             .searchable(text: $searchText)
             .onChange(of: selectedImage) { image in
-                if let image = image,
-                   let editingTaskID = editingTaskID {
-                    TodoController.updateTask(taskID: editingTaskID, image: image, delegate: self)
-                    self.editingTaskID = nil
+                if let image = image, let editingTask = editingTask {
+                    TodoController.updateTask(editingTask, image: image, delegate: self)
+                    self.editingTask = nil
                     selectedImage = nil
                 }
             }
-            .onChange(of: selectedImageTaskID) { taskID in
-                if taskID != nil {
+            .onChange(of: selectedImageTask) { task in
+                if task != nil {
                     presentTaskImageView = true
                 }
             }
             .sheet(isPresented: $presentTaskImageView) {
                 NavigationStack {
-                    TaskImageView(taskID: selectedImageTaskID)
+                    TaskImageView(task: selectedImageTask)
                 }
             }
             .sheet(isPresented: $presentPhotoLibraryPicker) {
@@ -107,10 +109,10 @@ struct TasksView: View, TodoControllerDelegate {
                 TextField("Task name", text: $newTaskName)
                 Button("Cancel", role: .cancel, action: {})
                 Button("Create") {
-                    TodoController.createTask(withName: newTaskName, inTaskList: self.taskListID, delegate: self)
+                    TodoController.createTask(name: newTaskName, for: taskList, delegate: self)
                 }
             }
-            .navigationBarTitle(self.taskListDoc?.string(forKey: "name") ?? "")
+            .navigationBarTitle(taskList.name)
         }
         .toolbar {
             // Add button which presents QE Actions dialog
@@ -129,10 +131,10 @@ struct TasksView: View, TodoControllerDelegate {
                 popupAddTask(withDeltaSync: true)
             }
             Button("Generate Tasks") {
-                TodoController.generateTasks(taskListID: self.taskListID, withPhoto: true, delegate: self)
+                TodoController.generateTasks(for: taskList, withPhoto: true, numbers: 50, delegate: self)
             }
             Button("Generate No Photo Tasks") {
-                TodoController.generateTasks(taskListID: self.taskListID, withPhoto: false, delegate: self)
+                TodoController.generateTasks(for: taskList, withPhoto: false, numbers: 50, delegate: self)
             }
             Button("Cancel", role: .cancel, action: {})
         }
@@ -149,11 +151,11 @@ struct TasksView: View, TodoControllerDelegate {
             TextField("Task name", text: $newTaskName)
             Button("Cancel", role: .cancel, action: {})
             Button("Update") {
-                guard let editingTaskID = editingTaskID
-                else {
-                    fatalError("Internal error: Editing task without ID set")
+                guard var editingTask = editingTask else {
+                    fatalError("Internal error: Editing task without selecting task")
                 }
-                TodoController.updateTask(taskID: editingTaskID, name: newTaskName, delegate: self)
+                editingTask.task = newTaskName
+                TodoController.updateTask(editingTask, delegate: self)
             }
         }
         // Error alert
@@ -165,32 +167,34 @@ struct TasksView: View, TodoControllerDelegate {
         }
     }
     
-    private func TaskListRow(_ result: ObservableQuery.IResult) -> some View {
+    private func TaskRow(_ task: Task) -> some View {
         HStack {
-            if let image = TaskImage.create(taskID: result.id) {
+            if let image = TaskImage.create(task: task) {
                 image.resizable()
                     .frame(width: 50, height: 50)
                     .aspectRatio(contentMode: .fill)
                     .onTapGesture {
-                        presentImageView(taskID: result.id)
+                        presentImageView(task: task)
                     }
             } else {
                 Color(.gray)
                     .frame(width: 50, height: 50)
                     .onTapGesture {
-                        promptEditPhoto(taskID: result.id)
+                        promptEditPhoto(task: task)
                     }
             }
             HStack {
-                Text(result.wrappedResult.string(forKey: "task")!)
+                Text(task.task)
                 Spacer()
-                if result.wrappedResult.boolean(forKey: "complete") {
+                if task.complete {
                     Image(systemName: "checkmark")
                 }
             }
             .contentShape(Rectangle()) // ensure the tappable area covers the whole row
             .onTapGesture {
-                TodoController.toggleTaskComplete(taskID: result.id, delegate: self)
+                var updated = task
+                updated.complete = !task.complete
+                TodoController.updateTask(updated, delegate: self)
             }
         }
     }
@@ -201,22 +205,22 @@ struct TasksView: View, TodoControllerDelegate {
         presentNewTaskAlert = true
     }
     
-    private func presentImageView(taskID: String) {
-        self.selectedImageTaskID = taskID
+    private func presentImageView(task: Task) {
+        self.selectedImageTask = task
     }
     
-    private func popupEditTask(taskID: String) {
-        self.editingTaskID = taskID
+    private func popupEditTask(_ task: Task) {
+        self.editingTask = task
         newTaskName = ""
         presentEditTaskAlert = true
     }
     
-    private func promptEditPhoto(taskID: String) {
-        editingTaskID = taskID
+    private func promptEditPhoto(task: Task) {
+        editingTask = task
         presentEditPhotoDialog = true
     }
     
-// - MARK: TaskControllerDelegate
+    // - MARK: TaskControllerDelegate
     
     public func presentError(message: String, _ error: Error?) {
         errorAlertDescription = error != nil ? error!.localizedDescription : ""

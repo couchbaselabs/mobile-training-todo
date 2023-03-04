@@ -1,9 +1,19 @@
 //
-//  TaskImage.swift
-//  Todo
+// TaskImage.swift
 //
-//  Created by Callum Birks on 20/02/2023.
-//  Copyright © 2023 Couchbase. All rights reserved.
+// Copyright (c) 2023 Couchbase, Inc All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 
 import SwiftUI
@@ -13,31 +23,26 @@ struct TaskImage {
     // Images are cached to prevent slowdown from Images being loaded and unloaded
     static let cache = NSCache<AnyObject, AnyObject>()
     
-    static func create(taskID: String) -> Image? {
-        guard let taskDoc = try? DB.shared.getTaskByID(id: taskID)
-        else {
+    static func create(task: Task) -> Image? {
+        guard let blob = task.image else {
             return nil
         }
-        guard let blob = taskDoc?.blob(forKey: "image"),
-              let content = blob.content
-        else {
-            return nil
-        }
+        
         // Try and get image from cache
-        if let key = blob.digest, !key.isEmpty,
-           let cachedImage = cache.object(forKey: key as AnyObject) as? UIImage {
+        if let cachedImage = cache.object(forKey: blob.digest() as AnyObject) as? UIImage {
             return Image(uiImage: cachedImage)
         }
+        
         // If image was not in cache, load it from blob
-        guard let uiImage = UIImage(data: content)
-        else {
+        guard let uiImage = UIImage(data: blob.content()) else {
             return nil
         }
+        
+        // Cache image
         DispatchQueue.global().async {
-            if let key = blob.digest, !key.isEmpty {
-                cache.setObject(uiImage, forKey: key as AnyObject)
-            }
+            cache.setObject(uiImage, forKey: blob.digest() as AnyObject)
         }
+        
         return Image(uiImage: uiImage)
     }
 }
