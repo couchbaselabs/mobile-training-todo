@@ -8,9 +8,44 @@
 
 /* Begin PBXBuildFile section */
 		1A99370B260DAF1200D5E911 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A99370A260DAF1200D5E911 /* Config.swift */; };
+		40350DD629B92EBB00D53464 /* AppLogic-C.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40D1853329B441F70061AA85 /* AppLogic-C.swift */; };
+		40350DD729B92EBE00D53464 /* AppLogic-C-Support.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40350DD029B92DE000D53464 /* AppLogic-C-Support.swift */; };
+		40D1850829B3C8220061AA85 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A99370A260DAF1200D5E911 /* Config.swift */; };
+		40D1850929B3C8220061AA85 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA7CE612299AB03000359396 /* LoginView.swift */; };
+		40D1850A29B3C8220061AA85 /* TodoController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA0967C029A397F900AC9914 /* TodoController.swift */; };
+		40D1850B29B3C8220061AA85 /* TasksViewRoot.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA0967C229A3BDB500AC9914 /* TasksViewRoot.swift */; };
+		40D1850C29B3C8220061AA85 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA482F70299FE20B00806989 /* ImagePicker.swift */; };
+		40D1850E29B3C8220061AA85 /* TasksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA3651BF299E65470081F90E /* TasksView.swift */; };
+		40D1851029B3C8220061AA85 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA3651BD299E65180081F90E /* SettingsView.swift */; };
+		40D1851129B3C8220061AA85 /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D9D9AB1EDF8427001355EE /* Session.swift */; };
+		40D1851229B3C8220061AA85 /* TaskImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA3651C1299E96930081F90E /* TaskImageView.swift */; };
+		40D1851329B3C8220061AA85 /* TaskListsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA7CE614299AB42C00359396 /* TaskListsView.swift */; };
+		40D1851429B3C8220061AA85 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA456488299D36620031F6FA /* RootView.swift */; };
+		40D1851529B3C8220061AA85 /* UsersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA0967C429A3BEEC00AC9914 /* UsersView.swift */; };
+		40D1851629B3C8220061AA85 /* TodoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA7CE60E299AAF6100359396 /* TodoApp.swift */; };
+		40D1851729B3C8220061AA85 /* TaskImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA0967BE29A3857900AC9914 /* TaskImage.swift */; };
+		40D1851829B3C8220061AA85 /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40E1091B29B2F58700970ECB /* Model.swift */; };
+		40D1851929B3C8220061AA85 /* AppController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA456486299D0F830031F6FA /* AppController.swift */; };
+		40D1851B29B3C8220061AA85 /* CouchbaseLiteSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 40E1091629B2793B00970ECB /* CouchbaseLiteSwift.xcframework */; };
+		40D1851D29B3C8220061AA85 /* 3.JPG in Resources */ = {isa = PBXBuildFile; fileRef = 9382585C216323BF006A75AD /* 3.JPG */; };
+		40D1851E29B3C8220061AA85 /* 2.JPG in Resources */ = {isa = PBXBuildFile; fileRef = 9382585B216323BF006A75AD /* 2.JPG */; };
+		40D1851F29B3C8220061AA85 /* 5.JPG in Resources */ = {isa = PBXBuildFile; fileRef = 93825858216323BF006A75AD /* 5.JPG */; };
+		40D1852029B3C8220061AA85 /* 4.JPG in Resources */ = {isa = PBXBuildFile; fileRef = 93825857216323BF006A75AD /* 4.JPG */; };
+		40D1852129B3C8220061AA85 /* 8.JPG in Resources */ = {isa = PBXBuildFile; fileRef = 93825855216323BF006A75AD /* 8.JPG */; };
+		40D1852229B3C8220061AA85 /* 7.JPG in Resources */ = {isa = PBXBuildFile; fileRef = 93825859216323BF006A75AD /* 7.JPG */; };
+		40D1852329B3C8220061AA85 /* 9.JPG in Resources */ = {isa = PBXBuildFile; fileRef = 93825856216323BF006A75AD /* 9.JPG */; };
+		40D1852429B3C8220061AA85 /* 6.JPG in Resources */ = {isa = PBXBuildFile; fileRef = 9382585A216323BF006A75AD /* 6.JPG */; };
+		40D1852529B3C8220061AA85 /* 1.JPG in Resources */ = {isa = PBXBuildFile; fileRef = 9382585D216323BF006A75AD /* 1.JPG */; };
+		40D1852629B3C8220061AA85 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 93F4B2C91C6940D6005FF4D8 /* Assets.xcassets */; };
+		40D1852729B3C8220061AA85 /* 0.JPG in Resources */ = {isa = PBXBuildFile; fileRef = 9382585E216323BF006A75AD /* 0.JPG */; };
+		40D1852929B3C8220061AA85 /* CouchbaseLiteSwift.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 40E1091629B2793B00970ECB /* CouchbaseLiteSwift.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		40D1853A29B4465C0061AA85 /* CouchbaseLite.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 40D1853929B4465C0061AA85 /* CouchbaseLite.xcframework */; };
+		40D1866629B7FD3B0061AA85 /* AppLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40EBC2892991F49E00182F16 /* AppLogic.swift */; };
 		40E1091729B2793B00970ECB /* CouchbaseLiteSwift.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 40E1091629B2793B00970ECB /* CouchbaseLiteSwift.xcframework */; };
 		40E1091829B2793B00970ECB /* CouchbaseLiteSwift.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 40E1091629B2793B00970ECB /* CouchbaseLiteSwift.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		40EBC28A2991F49E00182F16 /* DB.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40EBC2892991F49E00182F16 /* DB.swift */; };
+		40E1091C29B2F58700970ECB /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40E1091B29B2F58700970ECB /* Model.swift */; };
+		40E1091E29B3008800970ECB /* AppLogic-Swift.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40E1091D29B3008800970ECB /* AppLogic-Swift.swift */; };
+		40EBC28A2991F49E00182F16 /* AppLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40EBC2892991F49E00182F16 /* AppLogic.swift */; };
 		9382585F216323BF006A75AD /* 8.JPG in Resources */ = {isa = PBXBuildFile; fileRef = 93825855216323BF006A75AD /* 8.JPG */; };
 		93825860216323BF006A75AD /* 9.JPG in Resources */ = {isa = PBXBuildFile; fileRef = 93825856216323BF006A75AD /* 9.JPG */; };
 		93825861216323BF006A75AD /* 4.JPG in Resources */ = {isa = PBXBuildFile; fileRef = 93825857216323BF006A75AD /* 4.JPG */; };
@@ -22,7 +57,6 @@
 		93825867216323BF006A75AD /* 1.JPG in Resources */ = {isa = PBXBuildFile; fileRef = 9382585D216323BF006A75AD /* 1.JPG */; };
 		93825868216323BF006A75AD /* 0.JPG in Resources */ = {isa = PBXBuildFile; fileRef = 9382585E216323BF006A75AD /* 0.JPG */; };
 		93D9D9AC1EDF8427001355EE /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93D9D9AB1EDF8427001355EE /* Session.swift */; };
-		93DED1972499CDE900595294 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93DED1962499CDE900595294 /* Log.swift */; };
 		93F4B2CA1C6940D6005FF4D8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 93F4B2C91C6940D6005FF4D8 /* Assets.xcassets */; };
 		EA0967BF29A3857900AC9914 /* TaskImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA0967BE29A3857900AC9914 /* TaskImage.swift */; };
 		EA0967C129A397F900AC9914 /* TodoController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA0967C029A397F900AC9914 /* TodoController.swift */; };
@@ -31,7 +65,6 @@
 		EA3651BE299E65180081F90E /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA3651BD299E65180081F90E /* SettingsView.swift */; };
 		EA3651C0299E65470081F90E /* TasksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA3651BF299E65470081F90E /* TasksView.swift */; };
 		EA3651C2299E96930081F90E /* TaskImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA3651C1299E96930081F90E /* TaskImageView.swift */; };
-		EA456481299CF1CB0031F6FA /* ObservableQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA456480299CF1CB0031F6FA /* ObservableQuery.swift */; };
 		EA456487299D0F830031F6FA /* AppController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA456486299D0F830031F6FA /* AppController.swift */; };
 		EA456489299D36620031F6FA /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA456488299D36620031F6FA /* RootView.swift */; };
 		EA482F71299FE20B00806989 /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA482F70299FE20B00806989 /* ImagePicker.swift */; };
@@ -41,6 +74,17 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		40D1852829B3C8220061AA85 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				40D1852929B3C8220061AA85 /* CouchbaseLiteSwift.xcframework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		932EA5E82065E69A00EDB667 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -56,8 +100,14 @@
 
 /* Begin PBXFileReference section */
 		1A99370A260DAF1200D5E911 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
+		40350DD029B92DE000D53464 /* AppLogic-C-Support.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppLogic-C-Support.swift"; sourceTree = "<group>"; };
+		40D1852E29B3C8220061AA85 /* Todo-C.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Todo-C.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		40D1853329B441F70061AA85 /* AppLogic-C.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppLogic-C.swift"; sourceTree = "<group>"; };
+		40D1853929B4465C0061AA85 /* CouchbaseLite.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CouchbaseLite.xcframework; path = Frameworks/CouchbaseLite.xcframework; sourceTree = "<group>"; };
 		40E1091629B2793B00970ECB /* CouchbaseLiteSwift.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CouchbaseLiteSwift.xcframework; path = Frameworks/CouchbaseLiteSwift.xcframework; sourceTree = "<group>"; };
-		40EBC2892991F49E00182F16 /* DB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DB.swift; sourceTree = "<group>"; };
+		40E1091B29B2F58700970ECB /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
+		40E1091D29B3008800970ECB /* AppLogic-Swift.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppLogic-Swift.swift"; sourceTree = "<group>"; };
+		40EBC2892991F49E00182F16 /* AppLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLogic.swift; sourceTree = "<group>"; };
 		93825855216323BF006A75AD /* 8.JPG */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = 8.JPG; sourceTree = "<group>"; };
 		93825856216323BF006A75AD /* 9.JPG */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = 9.JPG; sourceTree = "<group>"; };
 		93825857216323BF006A75AD /* 4.JPG */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = 4.JPG; sourceTree = "<group>"; };
@@ -70,7 +120,6 @@
 		9382585E216323BF006A75AD /* 0.JPG */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = 0.JPG; sourceTree = "<group>"; };
 		93BF1ECE2162AEED00666736 /* Todo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Todo.entitlements; sourceTree = "<group>"; };
 		93D9D9AB1EDF8427001355EE /* Session.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
-		93DED1962499CDE900595294 /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
 		93F4B2BF1C6940D6005FF4D8 /* Todo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Todo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		93F4B2C91C6940D6005FF4D8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		93F4B2CE1C6940D6005FF4D8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -81,7 +130,6 @@
 		EA3651BD299E65180081F90E /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		EA3651BF299E65470081F90E /* TasksView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasksView.swift; sourceTree = "<group>"; };
 		EA3651C1299E96930081F90E /* TaskImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskImageView.swift; sourceTree = "<group>"; };
-		EA456480299CF1CB0031F6FA /* ObservableQuery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservableQuery.swift; sourceTree = "<group>"; };
 		EA456486299D0F830031F6FA /* AppController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppController.swift; sourceTree = "<group>"; };
 		EA456488299D36620031F6FA /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		EA482F70299FE20B00806989 /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
@@ -91,6 +139,15 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		40D1851A29B3C8220061AA85 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				40D1851B29B3C8220061AA85 /* CouchbaseLiteSwift.xcframework in Frameworks */,
+				40D1853A29B4465C0061AA85 /* CouchbaseLite.xcframework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		93F4B2BC1C6940D6005FF4D8 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -102,9 +159,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		40350DD329B92E7600D53464 /* Platforms */ = {
+			isa = PBXGroup;
+			children = (
+				40E1091D29B3008800970ECB /* AppLogic-Swift.swift */,
+				40D1853329B441F70061AA85 /* AppLogic-C.swift */,
+				40350DD029B92DE000D53464 /* AppLogic-C-Support.swift */,
+			);
+			name = Platforms;
+			sourceTree = "<group>";
+		};
 		9322DCCA1F1406A600C4ACF7 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				40D1853929B4465C0061AA85 /* CouchbaseLite.xcframework */,
 				40E1091629B2793B00970ECB /* CouchbaseLiteSwift.xcframework */,
 			);
 			name = Frameworks;
@@ -140,6 +208,7 @@
 			isa = PBXGroup;
 			children = (
 				93F4B2BF1C6940D6005FF4D8 /* Todo.app */,
+				40D1852E29B3C8220061AA85 /* Todo-C.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -162,11 +231,11 @@
 		EA456483299D0EE90031F6FA /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				40350DD329B92E7600D53464 /* Platforms */,
+				40EBC2892991F49E00182F16 /* AppLogic.swift */,
 				1A99370A260DAF1200D5E911 /* Config.swift */,
-				40EBC2892991F49E00182F16 /* DB.swift */,
-				93DED1962499CDE900595294 /* Log.swift */,
+				40E1091B29B2F58700970ECB /* Model.swift */,
 				93D9D9AB1EDF8427001355EE /* Session.swift */,
-				EA456480299CF1CB0031F6FA /* ObservableQuery.swift */,
 				EA0967BE29A3857900AC9914 /* TaskImage.swift */,
 			);
 			path = Model;
@@ -186,9 +255,9 @@
 			isa = PBXGroup;
 			children = (
 				EA7CE612299AB03000359396 /* LoginView.swift */,
-				EA7CE614299AB42C00359396 /* TaskListsView.swift */,
 				EA456488299D36620031F6FA /* RootView.swift */,
 				EA3651BD299E65180081F90E /* SettingsView.swift */,
+				EA7CE614299AB42C00359396 /* TaskListsView.swift */,
 				EA3651BF299E65470081F90E /* TasksView.swift */,
 				EA3651C1299E96930081F90E /* TaskImageView.swift */,
 				EA0967C229A3BDB500AC9914 /* TasksViewRoot.swift */,
@@ -200,6 +269,25 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		40D1850629B3C8220061AA85 /* Todo-C */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 40D1852B29B3C8220061AA85 /* Build configuration list for PBXNativeTarget "Todo-C" */;
+			buildPhases = (
+				40D1850729B3C8220061AA85 /* Sources */,
+				40D1851A29B3C8220061AA85 /* Frameworks */,
+				40D1851C29B3C8220061AA85 /* Resources */,
+				40D1852829B3C8220061AA85 /* Embed Frameworks */,
+				40D1852A29B3C8220061AA85 /* Embed dSYM file */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Todo-C";
+			productName = Todo;
+			productReference = 40D1852E29B3C8220061AA85 /* Todo-C.app */;
+			productType = "com.apple.product-type.application";
+		};
 		93F4B2BE1C6940D6005FF4D8 /* Todo */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 93F4B2D11C6940D6005FF4D8 /* Build configuration list for PBXNativeTarget "Todo" */;
@@ -259,11 +347,30 @@
 			projectRoot = "";
 			targets = (
 				93F4B2BE1C6940D6005FF4D8 /* Todo */,
+				40D1850629B3C8220061AA85 /* Todo-C */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		40D1851C29B3C8220061AA85 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				40D1851D29B3C8220061AA85 /* 3.JPG in Resources */,
+				40D1851E29B3C8220061AA85 /* 2.JPG in Resources */,
+				40D1851F29B3C8220061AA85 /* 5.JPG in Resources */,
+				40D1852029B3C8220061AA85 /* 4.JPG in Resources */,
+				40D1852129B3C8220061AA85 /* 8.JPG in Resources */,
+				40D1852229B3C8220061AA85 /* 7.JPG in Resources */,
+				40D1852329B3C8220061AA85 /* 9.JPG in Resources */,
+				40D1852429B3C8220061AA85 /* 6.JPG in Resources */,
+				40D1852529B3C8220061AA85 /* 1.JPG in Resources */,
+				40D1852629B3C8220061AA85 /* Assets.xcassets in Resources */,
+				40D1852729B3C8220061AA85 /* 0.JPG in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		93F4B2BD1C6940D6005FF4D8 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -285,6 +392,20 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		40D1852A29B3C8220061AA85 /* Embed dSYM file */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 12;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Embed dSYM file";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [[ -e \"./Frameworks/CouchbaseLiteSwift.framework.dSYM\" ]]; then\n    cp -r \"./Frameworks/CouchbaseLiteSwift.framework.dSYM\" ${BUILT_PRODUCTS_DIR}\nfi\n";
+		};
 		931692802069920D0055E8F0 /* Embed dSYM file */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 12;
@@ -302,18 +423,44 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		40D1850729B3C8220061AA85 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				40D1850829B3C8220061AA85 /* Config.swift in Sources */,
+				40D1866629B7FD3B0061AA85 /* AppLogic.swift in Sources */,
+				40D1850929B3C8220061AA85 /* LoginView.swift in Sources */,
+				40D1850A29B3C8220061AA85 /* TodoController.swift in Sources */,
+				40350DD629B92EBB00D53464 /* AppLogic-C.swift in Sources */,
+				40D1850B29B3C8220061AA85 /* TasksViewRoot.swift in Sources */,
+				40D1850C29B3C8220061AA85 /* ImagePicker.swift in Sources */,
+				40D1850E29B3C8220061AA85 /* TasksView.swift in Sources */,
+				40D1851029B3C8220061AA85 /* SettingsView.swift in Sources */,
+				40D1851129B3C8220061AA85 /* Session.swift in Sources */,
+				40D1851229B3C8220061AA85 /* TaskImageView.swift in Sources */,
+				40350DD729B92EBE00D53464 /* AppLogic-C-Support.swift in Sources */,
+				40D1851329B3C8220061AA85 /* TaskListsView.swift in Sources */,
+				40D1851429B3C8220061AA85 /* RootView.swift in Sources */,
+				40D1851529B3C8220061AA85 /* UsersView.swift in Sources */,
+				40D1851629B3C8220061AA85 /* TodoApp.swift in Sources */,
+				40D1851729B3C8220061AA85 /* TaskImage.swift in Sources */,
+				40D1851829B3C8220061AA85 /* Model.swift in Sources */,
+				40D1851929B3C8220061AA85 /* AppController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		93F4B2BB1C6940D6005FF4D8 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				93DED1972499CDE900595294 /* Log.swift in Sources */,
 				1A99370B260DAF1200D5E911 /* Config.swift in Sources */,
 				EA7CE613299AB03000359396 /* LoginView.swift in Sources */,
 				EA0967C129A397F900AC9914 /* TodoController.swift in Sources */,
 				EA0967C329A3BDB500AC9914 /* TasksViewRoot.swift in Sources */,
 				EA482F71299FE20B00806989 /* ImagePicker.swift in Sources */,
+				40E1091E29B3008800970ECB /* AppLogic-Swift.swift in Sources */,
 				EA3651C0299E65470081F90E /* TasksView.swift in Sources */,
-				40EBC28A2991F49E00182F16 /* DB.swift in Sources */,
+				40EBC28A2991F49E00182F16 /* AppLogic.swift in Sources */,
 				EA3651BE299E65180081F90E /* SettingsView.swift in Sources */,
 				93D9D9AC1EDF8427001355EE /* Session.swift in Sources */,
 				EA3651C2299E96930081F90E /* TaskImageView.swift in Sources */,
@@ -322,7 +469,7 @@
 				EA0967C529A3BEEC00AC9914 /* UsersView.swift in Sources */,
 				EA7CE60F299AAF6100359396 /* TodoApp.swift in Sources */,
 				EA0967BF29A3857900AC9914 /* TaskImage.swift in Sources */,
-				EA456481299CF1CB0031F6FA /* ObservableQuery.swift in Sources */,
+				40E1091C29B2F58700970ECB /* Model.swift in Sources */,
 				EA456487299D0F830031F6FA /* AppController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -330,6 +477,75 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		40D1852C29B3C8220061AA85 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Todo/Todo.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+					"$(PROJECT_DIR)/Frameworks",
+					"$(PROJECT_DIR)",
+				);
+				INFOPLIST_FILE = Todo/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.couchbase.MobileTrainingTodo;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		40D1852D29B3C8220061AA85 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = Todo/Todo.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+					"$(PROJECT_DIR)/Frameworks",
+					"$(PROJECT_DIR)",
+				);
+				INFOPLIST_FILE = Todo/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.couchbase.MobileTrainingTodo;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_SWIFT3_OBJC_INFERENCE = On;
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		93F4B2CF1C6940D6005FF4D8 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -503,6 +719,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		40D1852B29B3C8220061AA85 /* Build configuration list for PBXNativeTarget "Todo-C" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				40D1852C29B3C8220061AA85 /* Debug */,
+				40D1852D29B3C8220061AA85 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		93F4B2BA1C6940D6005FF4D8 /* Build configuration list for PBXProject "Todo" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

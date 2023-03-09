@@ -1,29 +1,41 @@
 //
-//  TaskImageView.swift
-//  Todo
+// TaskImageView.swift
 //
-//  Created by Callum Birks on 16/02/2023.
-//  Copyright © 2023 Couchbase. All rights reserved.
+// Copyright (c) 2023 Couchbase, Inc All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 
 import SwiftUI
 
 struct TaskImageView: View, TodoControllerDelegate {
     @Environment(\.dismiss) var dismiss
-    let taskID: String
-    let image: Image?
+    
     @State private var presentEditPhotoDialog: Bool = false
     @State private var presentPhotoLibraryPicker: Bool = false
     @State private var presentPhotoCameraPicker: Bool = false
     @State private var selectedImage: UIImage? = nil
     
-    init(taskID: String?) {
-        if let taskID = taskID,
-           let image = TaskImage.create(taskID: taskID) {
-            self.taskID = taskID
+    let task: Task?
+    let image: Image?
+    
+    init(task: Task?) {
+        if let task = task,
+           let image = TaskImage.create(task: task) {
+            self.task = task
             self.image = image
         } else {
-            self.taskID = ""
+            self.task = nil
             self.image = nil
             self.presentError(message: "Couldn't load image for task", nil)
         }
@@ -61,11 +73,7 @@ struct TaskImageView: View, TodoControllerDelegate {
                 presentPhotoLibraryPicker = true
             }
             Button("Delete Photo", role: .destructive) {
-                guard TodoController.deleteImage(taskID: self.taskID)
-                else {
-                    self.presentError(message: "Error deleting image", nil)
-                    return
-                }
+                TodoController.updateTask(task!, image: nil, delegate: self)
                 self.dismiss()
             }
         }
@@ -77,7 +85,7 @@ struct TaskImageView: View, TodoControllerDelegate {
         }
         .onChange(of: selectedImage) { image in
             if let image = image {
-                TodoController.updateTask(taskID: self.taskID, image: image, delegate: self)
+                TodoController.updateTask(task!, image: image, delegate: self)
                 selectedImage = nil
             }
         }

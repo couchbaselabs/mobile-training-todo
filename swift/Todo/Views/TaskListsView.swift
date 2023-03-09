@@ -1,52 +1,70 @@
 //
-//  ListsView.swift
-//  Todo
+// ListsView.swift
 //
-//  Created by Callum Birks on 13/02/2023.
-//  Copyright © 2023 Couchbase. All rights reserved.
+// Copyright (c) 2023 Couchbase, Inc All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 
 import SwiftUI
-import CouchbaseLiteSwift
 
 struct TaskListsView: View, TodoControllerDelegate {
-    @ObservedObject private var taskListsQuery: ObservableQuery
-        = ObservableQuery(try! DB.shared.getTaskListsQuery())
+    @ObservedObject private var taskListsQuery = TodoController.taskListsQuery()
+        
     @State private var presentNewListAlert: Bool = false
     @State private var newListName: String = ""
     @State private var presentErrorAlert: Bool = false
     @State private var errorAlertMessage: String = ""
     @State private var errorAlertDescription: String = ""
     @State private var presentEditListAlert: Bool = false
-    @State var editingTaskListID: String? = nil
-    
+    @State var editingTaskList: TaskList? = nil
     @State var searchText: String = ""
-    private var filteredResults: [ObservableQuery.IResult] {
+    
+    private var filteredResults: [any QueryResultProtocol] {
         if !searchText.isEmpty {
-            return taskListsQuery.queryResults.filter { $0.wrappedResult.string(at: 1)!.contains(searchText) }
+            return taskListsQuery.change.results.filter { $0.string(forKey: "name")!.contains(searchText) }
         } else {
-            return taskListsQuery.queryResults
+            return taskListsQuery.change.results
         }
     }
     
     var body: some View {
         NavigationStack {
-            List(filteredResults) { result in
+            List(filteredResults, id: \.id) { result in
+                let taskList = TaskList.init(result: result)
                 // Each row is a NavigationLink to that taskList
-                NavigationLink(destination: TasksViewRoot(taskListID: result.id)) {
-                    Text(result.wrappedResult.string(at: 1) ?? "Error")
+                NavigationLink(destination: TasksViewRoot(taskList: taskList)) {
+                    Text(taskList.name)
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button("Log") {
+                                TodoController.logTaskList(taskList)
+                            }
+                            .tint(.gray)
+                            Button("Edit") {
+                                popupEditTaskList(taskList)
+                            }
+                            .tint(.blue)
+                            Button("Delete", role: .destructive) {
+                                TodoController.deleteTaskList(taskList, delegate: self)
+                            }
+                        }
                 }
-                .swipeActions(edge: .leading) {
-                    Button("Edit") {
-                        popupEditTaskList(withID: result.id)
-                    }
-                    .tint(.orange)
-                }
-                .swipeActions(edge: .trailing) {
-                    Button("Delete", role: .destructive) {
-                        TodoController.deleteTaskList(withID: result.id, delegate: self)
-                    }
-                }
+            }
+            .onAppear {
+                print("")
+            }
+            .onDisappear {
+                print("")
             }
             .searchable(text: $searchText)
             .navigationBarBackButtonHidden()
@@ -74,7 +92,7 @@ struct TaskListsView: View, TodoControllerDelegate {
                 TextField("List name", text: $newListName)
                 Button("Cancel", role: .cancel, action: {})
                 Button("Create") {
-                    TodoController.createTaskList(withName: newListName, delegate: self)
+                    TodoController.createTaskList(name: newListName, delegate: self)
                 }
             }
             .alert("Error", isPresented: $presentErrorAlert) {
@@ -87,12 +105,12 @@ struct TaskListsView: View, TodoControllerDelegate {
                 TextField("List name", text: $newListName)
                 Button("Cancel", role: .cancel, action: {})
                 Button("Update") {
-                    guard let editingTaskListID = editingTaskListID
-                    else {
-                        fatalError("Internal error: Editing task list without ID set")
+                    guard var editingTaskList = editingTaskList else {
+                        fatalError("Internal error: Editing task list without selecting a task list")
                     }
-                    TodoController.updateTaskList(withID: editingTaskListID, name: newListName, delegate: self)
-                    self.editingTaskListID = nil
+                    editingTaskList.name = newListName
+                    TodoController.updateTaskList(editingTaskList, delegate: self)
+                    self.editingTaskList = nil
                 }
             }
         }
@@ -103,13 +121,13 @@ struct TaskListsView: View, TodoControllerDelegate {
         presentNewListAlert = true
     }
     
-    private func popupEditTaskList(withID docID: String) {
+    private func popupEditTaskList(_ taskList: TaskList) {
         newListName = ""
-        self.editingTaskListID = docID
+        self.editingTaskList = taskList
         presentEditListAlert = true
     }
     
-// - MARK: TaskControllerDelegate
+    // - MARK: TaskControllerDelegate
     
     public func presentError(message: String, _ error: Error?) {
         errorAlertDescription = error != nil ? error!.localizedDescription : ""

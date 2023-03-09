@@ -1,16 +1,26 @@
 //
-//  UsersView.swift
-//  Todo
+// UsersView.swift
 //
-//  Created by Callum Birks on 20/02/2023.
-//  Copyright © 2023 Couchbase. All rights reserved.
+// Copyright (c) 2023 Couchbase, Inc All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 
 import SwiftUI
 
 struct UsersView: View, TodoControllerDelegate {
-    private let taskListID: String
-    @ObservedObject private var usersQuery: ObservableQuery
+    @ObservedObject private var usersQuery: LiveQueryObject
+    
     @State private var searchText: String = ""
     
     @State private var presentAddUserAlert: Bool = false
@@ -20,26 +30,29 @@ struct UsersView: View, TodoControllerDelegate {
     @State private var errorAlertMessage: String = ""
     @State private var errorAlertDescription: String = ""
     
-    private var filteredResults: [ObservableQuery.IResult] {
+    private let taskList: TaskList
+    
+    private var filteredResults: [any QueryResultProtocol] {
         if !searchText.isEmpty {
-            return usersQuery.queryResults.filter { $0.wrappedResult.string(at: 1)!.contains(searchText) }
+            return usersQuery.change.results.filter { $0.string(forKey: "username")!.contains(searchText) }
         } else {
-            return usersQuery.queryResults
+            return usersQuery.change.results
         }
     }
     
-    init(taskListID: String) {
-        self.taskListID = taskListID
-        self._usersQuery = ObservedObject(wrappedValue: TodoController.usersQuery(forList: self.taskListID))
+    init(taskList: TaskList) {
+        self.taskList = taskList
+        self.usersQuery = TodoController.usersQuery(for: taskList)
     }
     
     var body: some View {
         NavigationStack {
-            List(filteredResults) { result in
-                Text(result.wrappedResult.string(at: 1)!)
+            List(filteredResults, id: \.id) { result in
+                let user = User.init(result: result)
+                Text(user.username)
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         Button("Delete", role: .destructive) {
-                            TodoController.deleteSharedUser(userID: result.id, delegate: self)
+                            TodoController.deleteUser(user, delegate: self)
                         }
                     }
             }
@@ -59,7 +72,7 @@ struct UsersView: View, TodoControllerDelegate {
             Button("Cancel", role: .cancel, action: {})
             Button("Add") {
                 if !newUsername.isEmpty {
-                    TodoController.addUser(toTaskList: self.taskListID, username: newUsername, delegate: self)
+                    TodoController.addUser(newUsername, for: taskList, delegate: self)
                 }
             }
         }
@@ -77,7 +90,7 @@ struct UsersView: View, TodoControllerDelegate {
         presentAddUserAlert = true
     }
     
-// - MARK: TaskControllerDelegate
+    // - MARK: TaskControllerDelegate
     
     public func presentError(message: String, _ err: Error?) {
         errorAlertDescription = err != nil ? err!.localizedDescription : ""
