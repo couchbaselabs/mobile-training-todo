@@ -86,13 +86,6 @@ extension FLSlice {
         return NSString(bytes: buf, length: self.size, encoding: NSUTF8StringEncoding)! as String
     }
     
-    // For some reason, Swift converts any const FLString such as kCBLDefaultScopeName to NSString!.
-    // Use this function to convert those to String.
-    func constString() -> String {
-        guard let buf = self.buf else { fatalError("Invalid string") }
-        return Unmanaged<NSString>.fromOpaque(buf).takeUnretainedValue() as String
-    }
-    
     func asData() -> Data? {
         guard let buf = self.buf else { return nil }
         return Data.init(bytes: buf, count: self.size)
