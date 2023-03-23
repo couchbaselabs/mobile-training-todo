@@ -1,4 +1,5 @@
 ﻿using System;
+using Training.Data;
 using Training.Models;
 using Training.Services;
 using Xamarin.Forms;
@@ -28,7 +29,7 @@ namespace Training.ViewModels
                     IsEditing = true;
                     _taskListItem = DataStore.GetItemAsync(ListItemId).Result;
                     TaskListName = _taskListItem.Name;
-                    using (var doc = CoreApp.Database.GetDocument(ListItemId))
+                    using (var doc = CoreApp.Database.GetCollection(TodoDataStore.TaskListCollection).GetDocument(ListItemId))
                     {
                         ToJSONString = doc.ToJSON();
                     }

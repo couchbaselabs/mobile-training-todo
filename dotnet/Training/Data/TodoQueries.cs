@@ -25,69 +25,44 @@ namespace Training.Data
 
         internal TodoQueries()
         {
-            QueryDictionary.Add(QueryType.FilteredQuery, QueryBuilder.Select(SelectResult.Expression(Meta.ID),
-                    SelectResult.Expression(Expression.Property("name")))
-                    .From(DataSource.Database(_db))
-                    .Where(Expression.Property("name")
-                        .Like(Expression.Parameter("searchText"))
-                        .And(Expression.Property("type").EqualTo(Expression.String("task-list"))))
-                    .OrderBy(Ordering.Property("name")));
+            QueryDictionary.Add(QueryType.FilteredQuery, 
+                _db.CreateQuery($"SELECT meta().id, name FROM {TodoDataStore.TaskListCollection} WHERE name LIKE $searchText ORDER BY name"));
 
-            QueryDictionary.Add(QueryType.FullQuery, QueryBuilder.Select(SelectResult.Expression(Meta.ID),
-                    SelectResult.Expression(Expression.Property("name")))
-                .From(DataSource.Database(_db))
-                .Where(Expression.Property("name")
-                    .IsValued()
-                    .And(Expression.Property("type").EqualTo(Expression.String("task-list"))))
-                .OrderBy(Ordering.Property("name")));
+            QueryDictionary.Add(QueryType.FullQuery,
+                _db.CreateQuery($"SELECT meta().id, name FROM {TodoDataStore.TaskListCollection} WHERE name IS VALUED ORDER BY name"));
 
             QueryDictionary.Add(QueryType.IncompleteQuery, QueryBuilder.Select(SelectResult.Expression(Expression.Property("taskList.id")),
                     SelectResult.Expression(Function.Count(Expression.All())))
-                .From(DataSource.Database(_db))
-                .Where(Expression.Property("type").EqualTo(Expression.String("task"))
-                       .And(Expression.Property("complete").EqualTo(Expression.Boolean(false))))
+                .From(DataSource.Collection(_db.GetCollection(TasksData.TaskCollection)))
+                .Where(Expression.Property("complete").EqualTo(Expression.Boolean(false)))
                 .GroupBy(Expression.Property("taskList.id")));
 
-            QueryDictionary.Add(QueryType.TasksFilteredQuery, QueryBuilder.Select(SelectResult.Expression(Meta.ID))
-                .From(DataSource.Database(_db))
-                .Where(Expression.Property("type").EqualTo(Expression.String("task"))
-                    .And(Expression.Property("taskList.id").EqualTo(Expression.Parameter("taskListId")))
-                    .And(Expression.Property("task").Like(Expression.Parameter("searchString"))))
-                .OrderBy(Ordering.Property("createdAt")));
+            QueryDictionary.Add(QueryType.TasksFilteredQuery,
+                _db.CreateQuery($"SELECT meta().id FROM {TasksData.TaskCollection} WHERE taskList.id = $taskListId AND task LIKE $searchString ORDER BY createdAt"));
 
-            QueryDictionary.Add(QueryType.TasksFullQuery, QueryBuilder
-                .Select(SelectResult.Expression(Meta.ID), 
-                        SelectResult.Expression(Expression.Property("task")), 
-                        SelectResult.Expression(Expression.Property("complete")), 
-                        SelectResult.Property("image"))
-                .From(DataSource.Database(_db))
-                .Where(Expression.Property("type").EqualTo(Expression.String("task"))
-                    .And(Expression.Property("taskList.id").EqualTo(Expression.Parameter("taskListId"))))
-                .OrderBy(Ordering.Property("createdAt"), Ordering.Property("task"))
-                .Limit(Expression.Parameter("limit"), Expression.Parameter("offset"))
-                );
+            QueryDictionary.Add(QueryType.TasksFullQuery,
+                _db.CreateQuery($"SELECT meta().id, task, complete, image FROM {TasksData.TaskCollection} WHERE taskList.id = $taskListId ORDER BY createdAt"));
 
             var username = Expression.Property("username");
-            var exp1 = Expression.Property("type").EqualTo(Expression.String("task-list.user"));
-            var exp2 = Expression.Property("taskList.id").EqualTo(Expression.Parameter("taskListId"));
+            var exp1 = Expression.Property("taskList.id").EqualTo(Expression.Parameter("taskListId"));
 
             QueryDictionary.Add(QueryType.UsersFilteredQuery, QueryBuilder.Select(SelectResult.Expression(username))
-                .From(DataSource.Database(_db))
+                .From(DataSource.Collection(_db.GetCollection(UsersData.UserCollection)))
                 .Where(username
                     .Like(Expression.Parameter("searchText"))
-                    .And((exp1).And(exp2)))
+                    .And(exp1))
                 .OrderBy(Ordering.Property("username")));
 
             QueryDictionary.Add(QueryType.UsersFullQuery, QueryBuilder.Select(SelectResult.Expression(username))
-                .From(DataSource.Database(_db))
+                .From(DataSource.Collection(_db.GetCollection(UsersData.UserCollection)))
                 .Where(username
                     .IsValued()
-                    .And((exp1).And(exp2)))
+                    .And(exp1))
                 .OrderBy(Ordering.Property("username")));
 
             QueryDictionary.Add(QueryType.UsersLiveQuery, QueryBuilder.Select(SelectResult.Expression(username))
-                .From(DataSource.Database(_db))
-                .Where((exp1).And(exp2)).OrderBy(Ordering.Property("username")));
+                .From(DataSource.Collection(_db.GetCollection(UsersData.UserCollection)))
+                .Where(exp1).OrderBy(Ordering.Property("username")));
         }
     }
 }

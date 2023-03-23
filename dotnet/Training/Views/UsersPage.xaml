@@ -28,12 +28,6 @@
         </Style>
     </ContentPage.Resources>
 
-    <Shell.SearchHandler>
-        <controls:UserSearchHandler Placeholder="Enter search term"
-                                      ShowsResults="true"
-                                      ItemTemplate="{StaticResource UserSearchTemplate}"/>
-    </Shell.SearchHandler>
-
     <!--RefreshView Command="{Binding LoadItemsCommand}" IsRefreshing="{Binding IsBusy, Mode=TwoWay}"-->
         <CollectionView Margin="20"
                         ItemsSource="{Binding UsersDataStore.Data.Values}"

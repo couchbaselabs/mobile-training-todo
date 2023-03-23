@@ -16,13 +16,16 @@ namespace Training.Data
         #region Constants
 
         internal const string TaskType = "task";
+        public static readonly string TaskCollection = "tasks";
 
         #endregion
 
-        private Database _db = CoreApp.Database;
+        private Collection _tasksCollection = CoreApp.Database.GetCollection(TaskCollection);
+        private Collection _taskListsCollection = CoreApp.Database.GetCollection(TodoDataStore.TaskListCollection);
         private string _taskListId;
         private IQuery _tasksFilteredQuery;
         private IQuery _tasksFullQuery;
+        private ListenerToken? _currentListener;
 
         public ObservableConcurrentDictionary<string, TaskItem> Data { get; private set; }
 
@@ -31,7 +34,11 @@ namespace Training.Data
             Data = new ObservableConcurrentDictionary<string, TaskItem>();
             _tasksFilteredQuery = CoreApp.QueryDictionary[QueryType.TasksFilteredQuery];
             _tasksFullQuery = CoreApp.QueryDictionary[QueryType.TasksFullQuery];
-            StartListener();
+        }
+
+        public static void Prepare(Database db)
+        {
+            db.CreateCollection(TaskCollection);
         }
 
         public async Task<bool> LoadItemsAsync(string listId = null)
@@ -40,6 +47,7 @@ namespace Training.Data
             {
                 _taskListId = listId;
                 SetupQuery(listId);
+                StartListener();
                 var results = _tasksFullQuery.Execute();
                 Debug.WriteLine("_tasksFullQuery processed from LoadItemsAsync!");
                 await ProcessQueryResults(results.AllResults());
@@ -51,7 +59,7 @@ namespace Training.Data
         public async Task<string> AddItemAsync(TaskItem item)
         {
             Dictionary<string, object> properties;
-            using (var doc = _db.GetDocument(_taskListId))
+            using (var doc = _taskListsCollection.GetDocument(_taskListId))
             {
                 var taskListInfo = new Dictionary<string, object>
                 {
@@ -83,7 +91,7 @@ namespace Training.Data
                         doc.Remove("image");
                     }
 
-                    _db.Save(doc);
+                    _tasksCollection.Save(doc);
                     //item.DocumentID = doc.Id;
                     //Data.Add(doc.Id, item);
                 }
@@ -105,7 +113,7 @@ namespace Training.Data
 
             try
             {
-                using (var doc = _db.GetDocument(item.DocumentID))
+                using (var doc = _tasksCollection.GetDocument(item.DocumentID))
                 using (var mdoc = doc.ToMutable())
                 {
                     mdoc.SetString(TaskType, item.Name);
@@ -120,7 +128,7 @@ namespace Training.Data
                         mdoc.Remove("image");
                     }
 
-                    _db.Save(mdoc);
+                    _tasksCollection.Save(mdoc);
                 }
 
                 //Data.Remove(item.DocumentID);
@@ -144,9 +152,9 @@ namespace Training.Data
 
             try
             {
-                using (var doc = _db.GetDocument(item.DocumentID))
+                using (var doc = _tasksCollection.GetDocument(item.DocumentID))
                 {
-                    _db.Delete(doc);
+                    _tasksCollection.Delete(doc);
                 }
 
                 //Data.TryRemove(id, out var tl);
@@ -176,13 +184,12 @@ namespace Training.Data
         /// <param name="searchString">The search string to filter on.</param>
         public void Filter(string searchString)
         {
-            var query = default(IQuery);
             if (!String.IsNullOrEmpty(searchString))
             {
-                query = _tasksFilteredQuery;
+                var query = _tasksFilteredQuery;
                 query.Parameters.SetString("searchString", $"%{searchString}%");
                 var results = query.Execute();
-                ProcessQueryResults(results.AllResults());
+                var _ = ProcessQueryResults(results.AllResults());
             }
         }
 
@@ -190,13 +197,12 @@ namespace Training.Data
         {
             _tasksFilteredQuery.Parameters.SetString("taskListId", listId);
             _tasksFullQuery.Parameters.SetString("taskListId", listId);
-            _tasksFullQuery.Parameters.SetInt("limit", 20);
-            _tasksFullQuery.Parameters.SetInt("offset", 0);
         }
 
         private void StartListener()
         {
-            _tasksFullQuery.AddChangeListener(async (sender, args) =>
+            _currentListener?.Remove();
+            _currentListener = _tasksFullQuery.AddChangeListener(async (sender, args) =>
             {
                 await ProcessQueryResults(args.Results.AllResults());
             });

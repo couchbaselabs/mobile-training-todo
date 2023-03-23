@@ -134,7 +134,6 @@ namespace Training
         public static void OpenDatabase(string dbName, string key, string newKey)
         {
             // TRAINING: Create a database
-            Database = new Database(dbName);
             if (newKey != null)
             {
                 var config = new DatabaseConfiguration
@@ -154,9 +153,13 @@ namespace Training
                 Database.ChangeEncryptionKey(new EncryptionKey(newKey));
             }
 
+            TodoDataStore.Prepare(Database);
+            TasksData.Prepare(Database);
+            UsersData.Prepare(Database);
+
             if (Hint.IsDatabaseChangeMonitoring)
             {
-                Database.AddChangeListener((sender, args) =>
+                Database.GetCollection(UsersData.UserCollection).AddChangeListener((sender, args) =>
                 {
                     foreach (var id in args.DocumentIDs)
                     {
@@ -188,11 +191,23 @@ namespace Training
         /// <param name="password">The password to use for replication auth (optional)</param>
         public static void StartReplication(string username, string password, IConflictResolver resolver = null)
         {
-            var config = new ReplicatorConfiguration(Database, new URLEndpoint(SyncGatewayUrl))
+            var config = new ReplicatorConfiguration(new URLEndpoint(SyncGatewayUrl))
             {
                 ReplicatorType = ReplicatorType.PushAndPull,
                 Continuous = true
             };
+
+            var collectionConfig = new CollectionConfiguration()
+            {
+                ConflictResolver = resolver
+            };
+
+            config.AddCollections(new[]
+            {
+                Database.GetCollection(TodoDataStore.TaskListCollection),
+                Database.GetCollection(TasksData.TaskCollection),
+                Database.GetCollection(UsersData.UserCollection)
+            }, collectionConfig);
 
             if (Hint.Heartbeat != null)
             {
@@ -212,11 +227,6 @@ namespace Training
             if (username != null && password != null)
             {
                 config.Authenticator = new BasicAuthenticator(username, password);
-            }
-
-            if (resolver != null)
-            {
-                config.ConflictResolver = resolver;
             }
 
             _replication = new Replicator(config);
@@ -243,7 +253,7 @@ namespace Training
 
         private static void MonitorIfNeeded(string docID, string user)
         {
-            var userAccessDoc = Database.GetDocument(docID);
+            var userAccessDoc = Database.GetCollection(UsersData.UserCollection).GetDocument(docID);
             if (userAccessDoc == null || !userAccessDoc.Contains("type"))
             {
                 return;

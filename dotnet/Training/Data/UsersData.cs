@@ -17,15 +17,18 @@ namespace Training.Data
         #region Constants
 
         private const string UserType = "task-list.user";
+        public static readonly string UserCollection = "users";
 
         #endregion
 
-        private Database _db = CoreApp.Database;
+        private Collection _usersCollection = CoreApp.Database.GetCollection(UserCollection);
+        private Collection _taskListsCollection = CoreApp.Database.GetCollection(TodoDataStore.TaskListCollection);
         private IQuery _filteredQuery;
         private IQuery _fullQuery;
         private IQuery _usersLiveQuery;
         private string _searchUserName;
         private string _taskListId;
+        private ListenerToken? _currentListener;
 
         public ObservableConcurrentDictionary<string, User> Data { get; private set; }
 
@@ -35,7 +38,11 @@ namespace Training.Data
             _filteredQuery = CoreApp.QueryDictionary[QueryType.UsersFilteredQuery]; 
             _fullQuery = CoreApp.QueryDictionary[QueryType.UsersFullQuery]; 
             _usersLiveQuery = CoreApp.QueryDictionary[QueryType.UsersLiveQuery];
-            StartListener();
+        }
+
+        public static void Prepare(Database db)
+        {
+            db.CreateCollection(UserCollection);
         }
 
         public async Task<bool> LoadItemsAsync(string listId)
@@ -44,6 +51,7 @@ namespace Training.Data
             {
                 _taskListId = listId;
                 SetupQuery(listId);
+                StartListener();
                 QueryRun(_usersLiveQuery);
             }
 
@@ -53,7 +61,7 @@ namespace Training.Data
         public async Task<string> AddItemAsync(User user)
         {
             string owner;
-            using (var doc = _db.GetDocument(_taskListId))
+            using (var doc = _taskListsCollection.GetDocument(_taskListId))
             {
                 owner = doc.GetString("owner");
             }
@@ -76,7 +84,7 @@ namespace Training.Data
             {
                 using (var doc = new MutableDocument(docId, properties))
                 {
-                    _db.Save(doc);
+                    _usersCollection.Save(doc);
                     //user.DocumentID = docId;
                     //Data.Add(doc.Id, user);
                 }
@@ -101,9 +109,9 @@ namespace Training.Data
 
             try
             {
-                using (var doc = _db.GetDocument(user.DocumentID))
+                using (var doc = _usersCollection.GetDocument(user.DocumentID))
                 {
-                    _db.Delete(doc);
+                    _usersCollection.Delete(doc);
                 }
 
                 Data.TryRemove(id, out var u);
@@ -131,11 +139,11 @@ namespace Training.Data
         {
             try
             {
-                using (var doc = _db.GetDocument(user.DocumentID))
+                using (var doc = _usersCollection.GetDocument(user.DocumentID))
                 using (var mdoc = doc.ToMutable())
                 {
                     mdoc.SetString("username", user.Name);
-                    _db.Save(mdoc);
+                    _usersCollection.Save(mdoc);
                 }
 
                 //Data.Remove(user.DocumentID);
@@ -179,7 +187,8 @@ namespace Training.Data
 
         private void StartListener()
         {
-            _usersLiveQuery.AddChangeListener((sender, args) =>
+            _currentListener?.Remove();
+            _currentListener = _usersLiveQuery.AddChangeListener((sender, args) =>
             {
                 QueryRun(_usersLiveQuery);
             });
@@ -199,7 +208,7 @@ namespace Training.Data
             {
                 var name = result.GetString("username");
                 var idKey = $"{_taskListId}.{name}";
-                using (var document = _db.GetDocument(idKey))
+                using (var document = _usersCollection.GetDocument(idKey))
                 {
                     if (!idKey.Equals(document.Id))
                         return;

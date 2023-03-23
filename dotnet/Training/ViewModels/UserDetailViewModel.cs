@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Training.Models;
+using Training.Data;
 using Xamarin.Forms;
 
 namespace Training.ViewModels
@@ -51,7 +52,7 @@ namespace Training.ViewModels
                     IsEditing = true;
                     User = UsersDataStore.GetItemAsync(_id).Result;
                     UserName = User.Name;
-                    using (var d = _db.GetDocument(_id))
+                    using (var d = _db.GetCollection(UsersData.UserCollection).GetDocument(_id))
                     {
                         ToJSONString = d.ToJSON();
                     }

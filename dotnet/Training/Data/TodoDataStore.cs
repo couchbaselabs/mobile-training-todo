@@ -15,10 +15,11 @@ namespace Training.Data
         #region Constants
 
         internal const string TaskType = "task-list";
+        public static readonly string TaskListCollection = "lists";
 
         #endregion
 
-        Database _db = CoreApp.Database;
+        private Collection _collection = CoreApp.Database.GetCollection(TaskListCollection);
         private IQuery _fullQuery;
         private IQuery _incompleteQuery;
         private readonly ConcurrentDictionary<string, int> _incompleteCount = new ConcurrentDictionary<string, int>();
@@ -27,7 +28,7 @@ namespace Training.Data
         /// <summary>
         /// Gets the username of the user using the app
         /// </summary>
-        public string Username => _db?.Name;
+        public string Username => CoreApp.Database?.Name;
 
         public ObservableConcurrentDictionary<string, TaskListItem> Data { get; private set; } = new ObservableConcurrentDictionary<string, TaskListItem>();
 
@@ -35,6 +36,11 @@ namespace Training.Data
         {
             SetupQuery();
             StartListeners();
+        }
+
+        public static void Prepare(Database db)
+        {
+            db.CreateCollection(TaskListCollection);
         }
 
         public async Task<bool> LoadItemsAsync(string id = null)
@@ -53,7 +59,7 @@ namespace Training.Data
                     doc.SetString("type", TaskType);
                     doc.SetString("name", item.Name);
                     doc.SetString("owner", Username);
-                    _db.Save(doc);
+                    _collection.Save(doc);
                 }
 
                 //item.DocumentID = docId;
@@ -79,13 +85,13 @@ namespace Training.Data
 
             try
             {
-                using (var doc = _db.GetDocument(item.DocumentID))
+                using (var doc = _collection.GetDocument(item.DocumentID))
                 using (var mdoc = doc.ToMutable())
                 {
                     mdoc.SetString("type", TaskType);
                     mdoc.SetString("name", item.Name);
                     mdoc.SetString("owner", Username);
-                    _db.Save(mdoc);
+                    _collection.Save(mdoc);
                 }
 
                 //Data.Remove(item.DocumentID);
@@ -108,9 +114,9 @@ namespace Training.Data
 
             try
             {
-                using (var doc = _db.GetDocument(id))
+                using (var doc = _collection.GetDocument(id))
                 {
-                    _db.Delete(doc);
+                    _collection.Delete(doc);
                 }
 
                 //Data.TryRemove(id, out var tl);
@@ -148,7 +154,7 @@ namespace Training.Data
                 query.Parameters.SetString("searchText", $"%{searchText}%");
 
                 var results = query.Execute();
-                ProcessQueryResults(results.AllResults());
+                var _ = ProcessQueryResults(results.AllResults());
             }
         }
 
@@ -156,7 +162,7 @@ namespace Training.Data
 
         private void SetupQuery()
         {
-            _db.CreateIndex("byName", IndexBuilder.ValueIndex(ValueIndexItem.Expression(Expression.Property("name"))));
+            _collection.CreateIndex("byName", IndexBuilder.ValueIndex(ValueIndexItem.Expression(Expression.Property("name"))));
             _fullQuery = CoreApp.QueryDictionary[QueryType.FullQuery];
             _incompleteQuery = CoreApp.QueryDictionary[QueryType.IncompleteQuery];
         }

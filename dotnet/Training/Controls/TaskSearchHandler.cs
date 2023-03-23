@@ -1,18 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 using Training.Models;
+using Training.Services;
+using Training.ViewModels;
 using Training.Views;
-using System.Collections.ObjectModel;
 
 namespace Training.Controls
 {
     public class TaskSearchHandler : SearchHandler
     {
-        public ObservableCollection<TaskItem> Tasks { get; set; }
-        public Type SelectedItemNavigationTarget { get; set; }
+        private readonly IDataStore<TaskItem> _tasks = DependencyService.Get<IDataStore<TaskItem>>();
 
         protected override void OnQueryChanged(string oldValue, string newValue)
         {
@@ -24,27 +23,21 @@ namespace Training.Controls
             }
             else
             {
-                ItemsSource = Tasks
-                    .Where(task => task.Name.ToLower().Contains(newValue.ToLower()))
-                    .ToList<TaskItem>();
+                ItemsSource = _tasks.Data.Values
+                    .Where(task => task.Name.ToLower().Contains(newValue.ToLower()));
             }
         }
 
         protected override async void OnItemSelected(object item)
         {
             base.OnItemSelected(item);
+            if(!(item is TaskItem task)) {
+                return;
+            }
 
             // Let the animation complete
             await Task.Delay(1000);
-
-            ShellNavigationState state = (App.Current.MainPage as Shell).CurrentState;
-            // The following route works because route names are unique in this application.
-            await Shell.Current.GoToAsync($"{GetNavigationTarget()}?name={((TaskItem)item).Name}");
-        }
-
-        string GetNavigationTarget()
-        {
-            return (Shell.Current as AppShell).Routes.FirstOrDefault(route => route.Value.Equals(SelectedItemNavigationTarget)).Key;
+            await Shell.Current.GoToAsync($"{nameof(TaskDetailPage)}?{nameof(TaskDetailViewModel.TaskId)}={task.DocumentID}");
         }
     }
 }

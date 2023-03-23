@@ -1,4 +1,5 @@
 ﻿using Training.ViewModels;
+using Training.Data;
 
 namespace Training.Models
 {
@@ -42,14 +43,15 @@ namespace Training.Models
                 if (_isChecked != value)
                 {
                     SetProperty(ref _isChecked, value);
-                    using (var doc = CoreApp.Database.GetDocument(DocumentID))
+                    using var collection = CoreApp.Database.GetCollection(TasksData.TaskCollection);
+                    using (var doc = collection.GetDocument(DocumentID))
                     {
                         if (doc.GetBoolean("complete") != _isChecked)
                         {
                             using (var mdoc = doc.ToMutable())
                             {
                                 mdoc.SetBoolean("complete", _isChecked);
-                                CoreApp.Database.Save(mdoc);
+                                collection.Save(mdoc);
                             }
                         }
                     }
@@ -64,6 +66,11 @@ namespace Training.Models
         {
             get { return _image; }
             set { SetProperty(ref _image, value); }
+        }
+
+        public override string ToString()
+        {
+            return Name;
         }
     }
 }

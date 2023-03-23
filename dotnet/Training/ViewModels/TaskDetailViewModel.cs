@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Training.Models;
 using Training.Services;
+using Training.Data;
 using Xamarin.Forms;
 
 namespace Training.ViewModels
@@ -38,7 +39,7 @@ namespace Training.ViewModels
                     IsEditing = true;
                     TaskItem = TasksDataStore.GetItemAsync(_id).Result;
                     TaskItemName = TaskItem.Name;
-                    using (var d = _db.GetDocument(_id))
+                    using (var d = _db.GetCollection(TasksData.TaskCollection).GetDocument(_id))
                     {
                         ToJSONString = d.ToJSON();
                     }
