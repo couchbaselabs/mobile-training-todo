@@ -1,0 +1,32 @@
+version: "3.9"
+services:
+  cb-server:
+    build:
+      context: ./server
+      args:
+        - COUCHBASE_VERSION=${COUCHBASE_VERSION:-7.1.4}
+    ports:
+      - "8091:8091"
+      - "8092:8092"
+      - "8093:8093"
+      - "8094:8094"
+      - "11207:11207"
+      - "11210:11210"
+      - "18091:18091"
+  sg:
+    build:
+      context: ./sg
+      args:
+        - SG_DEB=${SG_DEB}
+    ports:
+      - "4984:4984"
+      - "4985:4985"
+    volumes:
+      - "./sg/logs:/opt/todo/logs"
+    depends_on: 
+      - "cb-server"
+  sg-setup:
+    build:
+      context: ./sg-setup
+    depends_on: 
+      - "sg"
