@@ -1,0 +1,85 @@
+{
+    "disable_persistent_config": true,
+    "logging": {
+      "console": {
+        "log_keys": ["*"]
+      }
+    },
+    "databases": {
+        "todo": {
+            "server": "walrus:",
+            "users": {
+                "user1": {
+                    "password": "pass", 
+                    "collection_access": {
+                        "_default": {
+                            "lists": {"admin_channels": [] },
+                            "tasks": {"admin_channels": []},
+                            "users": {"admin_channels": []} 
+                        }
+                    }
+                },
+                "user2": {
+                    "password": "pass", 
+                    "collection_access": {
+                        "_default": {
+                            "lists": {"admin_channels": [ ]},
+                            "tasks": {"admin_channels": [ ]},
+                            "users": {"admin_channels": [ ]} 
+                        }
+                    }
+                }
+            },
+            "scopes": {
+                "_default": {
+                    "collections": {
+                        "lists": { 
+                            "sync": 
+`
+function(doc, oldDoc) {
+    var owner = doc._deleted ? oldDoc.owner : doc.owner;
+    requireUser(owner);
+
+    var listChannel = "task-list." + doc._id;
+    access(owner, listChannel);
+    channel(listChannel);
+}
+`
+                        },
+                        "tasks": { 
+                            "sync": 
+`
+function(doc, oldDoc) {
+    var owner = doc._deleted ? oldDoc.taskList.owner : doc.taskList.owner;
+    requireUser(owner);
+
+    var listId = doc._deleted ? oldDoc.taskList.id : doc.taskList.id;
+    var listChannel = "task-list." + listId;
+    var tasksChannel = listChannel + ".tasks";
+    access(owner, tasksChannel);
+    channel(tasksChannel);
+}
+`
+                        },
+                        "users": { 
+                            "sync": 
+`
+function(doc, oldDoc) {
+    var owner = doc._deleted ? oldDoc.taskList.owner : doc.taskList.owner;
+    requireUser(owner);
+
+    var listId = doc._deleted ? oldDoc.taskList.id : doc.taskList.id;
+    var listChannel = "task-list." + listId;
+    var usersChannel = listChannel + ".users";
+    access(owner, usersChannel);
+    channel(usersChannel);
+}
+`
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+  

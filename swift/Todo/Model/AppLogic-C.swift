@@ -29,6 +29,8 @@ public class AppLogicDelegate : AppLogicDelegateProtocol {
     private var tasksColl: OpaquePointer!
     private var usersColl: OpaquePointer!
     
+    private var replicator: OpaquePointer?
+    private var replicatorChangeListener: OpaquePointer?
     
     public required init(username: String, password: String) {
         self.username = username
@@ -85,7 +87,66 @@ public class AppLogicDelegate : AppLogicDelegateProtocol {
     }
     
     public func startReplicator() throws {
+        var err = CBLError()
+        let endpoint = CBLEndpoint_CreateWithURL(FLS(Config.shared.syncURL).sl(), nil)!
+        let auth = CBLAuth_CreatePassword(FLS(username).sl(), FLS(password).sl())
         
+        var config = replicatorConfiguration(endpoint: endpoint, auth: auth)
+        replicator = CBLReplicator_Create(&config, &err)
+        replicatorChangeListener = CBLReplicator_AddChangeListener(replicator!, { context, repl, status in
+            let kActivities = ["Stopped", "Offline", "Connecting", "Idle", "Busy"]
+            let s = status.pointee
+            let activity = kActivities[Int(s.activity.rawValue)]
+            var e = s.error
+            var errMesg = ""
+            if e.code != 0 {
+                errMesg = ", error code = \(s.error.code), message = \(CBLError_Message(&e).stringVal())"
+            }
+            AppController.logger.log("[Todo] Replicator: \(activity), \(s.progress.complete)\(errMesg)")
+        }, nil)
+        CBLReplicator_Start(replicator!, false)
+        
+        CBLEndpoint_Free(endpoint)
+        CBLAuth_Free(auth)
+    }
+    
+    private func replicatorConfiguration(endpoint: OpaquePointer, auth: OpaquePointer) -> CBLReplicatorConfiguration {
+        // TODO : Setup conflict resolver based on the Config.shared.ccrEnabled and Config.shared.ccrType
+        var collections = [
+            CBLReplicationCollection(collection: taskListsColl, conflictResolver: nil, pushFilter: nil, pullFilter: nil, channels: nil, documentIDs: nil),
+            CBLReplicationCollection(collection: tasksColl, conflictResolver: nil, pushFilter: nil, pullFilter: nil, channels: nil, documentIDs: nil),
+            CBLReplicationCollection(collection: usersColl, conflictResolver: nil, pushFilter: nil, pullFilter: nil, channels: nil, documentIDs: nil)
+        ]
+        let collectionsPtr = UnsafeMutablePointer<CBLReplicationCollection>.allocate(capacity: collections.count)
+        collectionsPtr.initialize(from: &collections, count: collections.count)
+        
+        return CBLReplicatorConfiguration.init(
+            database: nil,
+            endpoint: endpoint,
+            replicatorType: CBLReplicatorType.pushAndPull,
+            continuous: true,
+            disableAutoPurge: false,
+            maxAttempts: UInt32(Config.shared.maxAttempts),
+            maxAttemptWaitTime: UInt32(Config.shared.maxAttemptWaitTime),
+            heartbeat: 0,
+            authenticator: auth,
+            proxy: nil,
+            headers: nil,
+            pinnedServerCertificate: FLSlice(buf: nil, size: 0),
+            trustedRootCertificates: FLSlice(buf: nil, size: 0),
+            channels: nil,
+            documentIDs: nil,
+            pushFilter: nil,
+            pullFilter: nil,
+            conflictResolver: nil,
+            context: nil,
+            propertyEncryptor: nil,
+            propertyDecryptor: nil,
+            documentPropertyEncryptor: nil,
+            documentPropertyDecryptor: nil,
+            collections: collectionsPtr,
+            collectionCount: collections.count,
+            acceptParentDomainCookies: false)
     }
     
     public func createTaskList(name: String) throws {
@@ -303,8 +364,7 @@ public class AppLogicDelegate : AppLogicDelegateProtocol {
     private func createCollection(_ name: String) throws -> OpaquePointer {
         return try name.withSlice { nameSlice in
             try withDatabase { db, err in
-                let scopeName = kCBLDefaultScopeName.constString()
-                return CBLDatabase_CreateCollection(db, nameSlice, FLS(scopeName).sl(), err)
+                return CBLDatabase_CreateCollection(db, nameSlice, FLS("_default").sl(), err)
             }
         }
     }
