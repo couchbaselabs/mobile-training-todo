@@ -225,7 +225,7 @@ struct TasksView: View, TodoControllerDelegate {
     public func presentError(message: String, _ error: Error?) {
         errorAlertDescription = error != nil ? error!.localizedDescription : ""
         errorAlertMessage = message
-        AppController.logger.log("\(errorAlertDescription)")
+        AppController.logger.log("[Todo] Tasks Error: \(errorAlertDescription)")
         presentErrorAlert = true
     }
 }

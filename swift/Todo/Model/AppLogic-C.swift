@@ -149,9 +149,13 @@ public class AppLogicDelegate : AppLogicDelegateProtocol {
             acceptParentDomainCookies: false)
     }
     
-    public func createTaskList(name: String) throws {
+    public func createTaskList(name: String) async throws {
+        let docID = username + "." + UUID().uuidString
+        
+        let role = "lists." + docID + ".contributor"
+        try await SGAdmin.shared.createRole(role)
+        
         try withCollection(taskListsColl, block: { coll, err in
-            let docID = username + "." + UUID().uuidString
             let doc = CBLDocument_CreateWithID(FLS(docID).sl())
             defer { CBLDocument_Release(doc) }
             let props = CBLDocument_MutableProperties(doc)
@@ -164,7 +168,7 @@ public class AppLogicDelegate : AppLogicDelegateProtocol {
     public func updateTaskList(_ taskList: TaskList) throws {
         try withCollection(taskListsColl, block: { coll, err in
             guard let doc = CBLCollection_GetMutableDocument(coll, FLS(taskList.id).sl(), err) else {
-                throw DBError.notFound
+                throw AppLogicError.notFound
             }
             let props = CBLDocument_MutableProperties(doc)
             FLMutableDict_SetString(props, FLS("name").sl(), FLS(taskList.name).sl())
@@ -246,7 +250,7 @@ public class AppLogicDelegate : AppLogicDelegateProtocol {
     public func updateTask(_ task: Task) throws {
         try withCollection(tasksColl, block: { coll, err in
             guard let doc = CBLCollection_GetMutableDocument(coll, FLS(task.id!).sl(), err) else {
-                throw DBError.notFound
+                throw AppLogicError.notFound
             }
             
             let props = CBLDocument_MutableProperties(doc)

@@ -68,7 +68,7 @@ struct UsersView: View, TodoControllerDelegate {
             }
         }
         .alert("Add User", isPresented: $presentAddUserAlert) {
-            TextField("Username", text: $newUsername)
+            TextField("Username", text: $newUsername).textInputAutocapitalization(.never)
             Button("Cancel", role: .cancel, action: {})
             Button("Add") {
                 if !newUsername.isEmpty {
@@ -95,7 +95,7 @@ struct UsersView: View, TodoControllerDelegate {
     public func presentError(message: String, _ err: Error?) {
         errorAlertDescription = err != nil ? err!.localizedDescription : ""
         errorAlertMessage = message
-        AppController.logger.log("\(errorAlertDescription)")
+        AppController.logger.log("[Todo] Users Error: \(errorAlertDescription)")
         presentErrorAlert = true
     }
 }

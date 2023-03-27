@@ -18,9 +18,10 @@
 
 import SwiftUI
 
-public enum DBError: Error {
+public enum AppLogicError: Error {
     case notFound
     case invalidImage
+    case sgError(Int)
 }
 
 public protocol QueryResultProtocol : Identifiable {
@@ -52,7 +53,7 @@ public protocol AppLogicProtocol {
     
     func startReplicator() throws
     
-    func createTaskList(name: String) throws
+    func createTaskList(name: String) async throws
     
     func updateTaskList(_ taskList: TaskList) throws
     
@@ -125,8 +126,8 @@ public class AppLogic : AppLogicProtocol {
     
     // MARK: Task Lists
     
-    public func createTaskList(name: String) throws {
-        try logic.createTaskList(name: name)
+    public func createTaskList(name: String) async throws {
+        try await logic.createTaskList(name: name)
     }
     
     public func updateTaskList(_ taskList: TaskList) throws {

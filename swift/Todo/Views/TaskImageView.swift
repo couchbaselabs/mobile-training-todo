@@ -93,7 +93,7 @@ struct TaskImageView: View, TodoControllerDelegate {
     
     public func presentError(message: String, _ error: Error?) {
         let errDesc = error != nil ? error!.localizedDescription : ""
-        AppController.logger.log("\(message), \(errDesc)")
+        AppController.logger.log("[Todo] Task Image Error: \(message), \(errDesc)")
         self.dismiss()
     }
 }

@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		1A99370B260DAF1200D5E911 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A99370A260DAF1200D5E911 /* Config.swift */; };
+		400FFB0F29CBECDD007D5CD5 /* SGAdmin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 400FFB0E29CBECDD007D5CD5 /* SGAdmin.swift */; };
+		400FFB1229CFE0B5007D5CD5 /* SGAdmin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 400FFB0E29CBECDD007D5CD5 /* SGAdmin.swift */; };
 		40350DD629B92EBB00D53464 /* AppLogic-C.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40D1853329B441F70061AA85 /* AppLogic-C.swift */; };
 		40350DD729B92EBE00D53464 /* AppLogic-C-Support.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40350DD029B92DE000D53464 /* AppLogic-C-Support.swift */; };
 		40D1850829B3C8220061AA85 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A99370A260DAF1200D5E911 /* Config.swift */; };
@@ -100,6 +102,7 @@
 
 /* Begin PBXFileReference section */
 		1A99370A260DAF1200D5E911 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
+		400FFB0E29CBECDD007D5CD5 /* SGAdmin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SGAdmin.swift; sourceTree = "<group>"; };
 		40350DD029B92DE000D53464 /* AppLogic-C-Support.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppLogic-C-Support.swift"; sourceTree = "<group>"; };
 		40D1852E29B3C8220061AA85 /* Todo-C.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Todo-C.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		40D1853329B441F70061AA85 /* AppLogic-C.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppLogic-C.swift"; sourceTree = "<group>"; };
@@ -237,6 +240,7 @@
 				40E1091B29B2F58700970ECB /* Model.swift */,
 				93D9D9AB1EDF8427001355EE /* Session.swift */,
 				EA0967BE29A3857900AC9914 /* TaskImage.swift */,
+				400FFB0E29CBECDD007D5CD5 /* SGAdmin.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -438,6 +442,7 @@
 				40D1851029B3C8220061AA85 /* SettingsView.swift in Sources */,
 				40D1851129B3C8220061AA85 /* Session.swift in Sources */,
 				40D1851229B3C8220061AA85 /* TaskImageView.swift in Sources */,
+				400FFB1229CFE0B5007D5CD5 /* SGAdmin.swift in Sources */,
 				40350DD729B92EBE00D53464 /* AppLogic-C-Support.swift in Sources */,
 				40D1851329B3C8220061AA85 /* TaskListsView.swift in Sources */,
 				40D1851429B3C8220061AA85 /* RootView.swift in Sources */,
@@ -470,6 +475,7 @@
 				EA7CE60F299AAF6100359396 /* TodoApp.swift in Sources */,
 				EA0967BF29A3857900AC9914 /* TaskImage.swift in Sources */,
 				40E1091C29B2F58700970ECB /* Model.swift in Sources */,
+				400FFB0F29CBECDD007D5CD5 /* SGAdmin.swift in Sources */,
 				EA456487299D0F830031F6FA /* AppController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -81,8 +81,12 @@ public class AppLogicDelegate : AppLogicDelegateProtocol {
         replicator!.start()
     }
     
-    public func createTaskList(name: String) throws {
+    public func createTaskList(name: String) async throws {
         let docID = username + "." + UUID().uuidString
+        
+        let role = "lists." + docID + ".contributor"
+        try await SGAdmin.shared.createRole(role)
+        
         let doc = MutableDocument(id: docID)
         doc.setValue(name, forKey: "name")
         doc.setValue(username, forKey: "owner")
@@ -91,7 +95,7 @@ public class AppLogicDelegate : AppLogicDelegateProtocol {
     
     public func updateTaskList(_ taskList: TaskList) throws {
         guard let doc = try taskListsColl.document(id: taskList.id)?.toMutable() else {
-            throw DBError.notFound
+            throw AppLogicError.notFound
         }
         doc.setValue(taskList.name, forKey: "name")
         try taskListsColl.save(document: doc);
@@ -131,7 +135,7 @@ public class AppLogicDelegate : AppLogicDelegateProtocol {
     
     public func updateTask(_ task: Task) throws {
         guard let doc = try tasksColl.document(id: task.id!)?.toMutable() else {
-            throw DBError.notFound
+            throw AppLogicError.notFound
         }
         doc.setValue(task.task, forKey: "task")
         doc.setValue(task.complete, forKey: "complete")
@@ -302,7 +306,7 @@ fileprivate class LiveQuery : LiveQueryObject {
         
         token = self.query.addChangeListener({ [weak self] change in
             if let err = change.error {
-                AppController.logger.log("Error during query \(query.description): \(err.localizedDescription)")
+                AppController.logger.log("[Todo] Query Error: \(query.description), \(err.localizedDescription)")
             }
             self?.change = QueryResultSet(change.results)
         })
