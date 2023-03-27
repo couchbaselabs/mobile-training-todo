@@ -67,7 +67,7 @@ struct LoginView: View {
         do {
             try AppController.login(username, password)
         } catch {
-            AppController.logger.log("\(error.localizedDescription)")
+            AppController.logger.log("[Todo] Login Error: \(error.localizedDescription)")
         }
     }
 }

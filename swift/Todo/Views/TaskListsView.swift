@@ -92,7 +92,9 @@ struct TaskListsView: View, TodoControllerDelegate {
                 TextField("List name", text: $newListName)
                 Button("Cancel", role: .cancel, action: {})
                 Button("Create") {
-                    TodoController.createTaskList(name: newListName, delegate: self)
+                    SwiftUI.Task {
+                        await TodoController.createTaskList(name: newListName, delegate: self)
+                    }
                 }
             }
             .alert("Error", isPresented: $presentErrorAlert) {
@@ -132,7 +134,8 @@ struct TaskListsView: View, TodoControllerDelegate {
     public func presentError(message: String, _ error: Error?) {
         errorAlertDescription = error != nil ? error!.localizedDescription : ""
         errorAlertMessage = message
-        AppController.logger.log("\(errorAlertDescription)")
+        AppController.logger.log("[Todo] Lists Error: \(errorAlertDescription)")
         presentErrorAlert = true
     }
+    
 }

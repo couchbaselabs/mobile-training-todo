@@ -38,6 +38,9 @@ public let HAS_SETTINGS_KEY = "settings.hasSettings"
 public let IS_LOGGING_KEY = "settings.isLoggingEnabled"
 public let IS_SYNC_KEY = "settings.isSyncEnabled"
 public let SYNC_URL_KEY = "settings.syncURL"
+public let SYNC_ADMIN_PORT_KEY = "settings.syncAdminPort"
+public let SYNC_ADMIN_USERNAME_KEY = "settings.syncAdminUserName"
+public let SYNC_ADMIN_PASSWORD_KEY = "settings.syncAdminPassword"
 public let IS_PUSH_NOTIFICATION_ENABLED_KEY = "settings.isPushNotificationEnabled"
 public let IS_CCR_ENABLED_KEY = "settings.isCCREnabled"
 public let CCR_TYPE_KEY = "settings.ccrType"
@@ -46,6 +49,11 @@ public let MAX_ATTEMPTS_WAIT_TIME_KEY = "setting.maxAttemptWaitTime"
 
 // Initial states
 fileprivate let kSyncURL = "ws://localhost:4984/todo"
+
+fileprivate let kSyncAdminPort = 4985
+fileprivate let kSyncAdminUsername = "Administrator"
+fileprivate let kSyncAdminPassword = "password"      // Do not do this in the actual production app
+
 fileprivate let kLoggingEnabled = true
 fileprivate let kSyncEnabled = true
 fileprivate let kSyncWithPushNotification = false
@@ -69,6 +77,10 @@ class Config {
     public var maxAttempts: UInt
     public var maxAttemptWaitTime: TimeInterval
     
+    public var syncAdminPort: Int
+    public var syncAdminUsername: String
+    public var syncAdminPassword: String
+    
     public static let shared = Config()
     
     // MARK: Lifecycle
@@ -80,6 +92,9 @@ class Config {
             defaults.set(kLoggingEnabled, forKey: IS_LOGGING_KEY)
             defaults.set(kSyncEnabled, forKey: IS_SYNC_KEY)
             defaults.set(kSyncURL, forKey: SYNC_URL_KEY)
+            defaults.set(kSyncAdminPort, forKey: SYNC_ADMIN_PORT_KEY)
+            defaults.set(kSyncAdminUsername, forKey: SYNC_ADMIN_USERNAME_KEY)
+            defaults.set(kSyncAdminPassword, forKey: SYNC_ADMIN_PASSWORD_KEY)
             defaults.set(kSyncWithPushNotification, forKey: IS_PUSH_NOTIFICATION_ENABLED_KEY)
             defaults.set(kCCREnabled, forKey: IS_CCR_ENABLED_KEY)
             defaults.set(kCCRType.rawValue, forKey: CCR_TYPE_KEY)
@@ -89,12 +104,17 @@ class Config {
         
         loggingEnabled = defaults.bool(forKey: IS_LOGGING_KEY)
         syncEnabled = defaults.bool(forKey: IS_SYNC_KEY)
-        syncURL = defaults.string(forKey: SYNC_URL_KEY) ?? kSyncURL
+        syncURL = defaults.string(forKey: SYNC_URL_KEY)!
         pushNotificationEnabled = defaults.bool(forKey: IS_PUSH_NOTIFICATION_ENABLED_KEY)
         ccrEnabled = defaults.bool(forKey: IS_CCR_ENABLED_KEY)
         ccrType = CCRType(rawValue: defaults.integer(forKey: CCR_TYPE_KEY))!
         maxAttempts = UInt(defaults.integer(forKey: MAX_ATTEMPTS_KEY))
         maxAttemptWaitTime = defaults.double(forKey: MAX_ATTEMPTS_WAIT_TIME_KEY)
+        
+        // SG Admin info:
+        syncAdminPort = defaults.integer(forKey: SYNC_ADMIN_PORT_KEY)
+        syncAdminUsername = defaults.string(forKey: SYNC_ADMIN_USERNAME_KEY)!
+        syncAdminPassword = defaults.string(forKey: SYNC_ADMIN_PASSWORD_KEY)!
     }
     
     public func save() {
@@ -103,6 +123,9 @@ class Config {
         defaults.set(loggingEnabled, forKey: IS_LOGGING_KEY)
         defaults.set(syncEnabled, forKey: IS_SYNC_KEY)
         defaults.set(syncURL, forKey: SYNC_URL_KEY)
+        defaults.set(syncAdminPort, forKey: SYNC_ADMIN_PORT_KEY)
+        defaults.set(syncAdminUsername, forKey: SYNC_ADMIN_USERNAME_KEY)
+        defaults.set(syncAdminPassword, forKey: SYNC_ADMIN_PASSWORD_KEY)
         defaults.set(pushNotificationEnabled, forKey: IS_PUSH_NOTIFICATION_ENABLED_KEY)
         defaults.set(ccrEnabled, forKey: IS_CCR_ENABLED_KEY)
         defaults.set(ccrType.rawValue, forKey: CCR_TYPE_KEY)

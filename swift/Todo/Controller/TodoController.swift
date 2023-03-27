@@ -100,7 +100,7 @@ class TodoController {
             var updated = task
             if let image = image {
                 guard let imageData = UIImageJPEGRepresentation(image, 0.5) else {
-                    throw DBError.invalidImage
+                    throw AppLogicError.invalidImage
                 }
                 updated.updatedImage = imageData
             } else {
@@ -115,9 +115,9 @@ class TodoController {
     
     // - MARK: Common Task List functions
     
-    public static func createTaskList(name: String, delegate: TodoControllerDelegate) {
+    public static func createTaskList(name: String, delegate: TodoControllerDelegate) async {
         do {
-            try AppLogic.shared.createTaskList(name: name)
+            try await AppLogic.shared.createTaskList(name: name)
         } catch {
             delegate.presentError(message: "Couldn't create task list", error)
         }
