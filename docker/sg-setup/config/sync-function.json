@@ -1,0 +1,61 @@
+{
+    "scopes": {
+       "_default": {
+          "collections": {
+             "lists": {
+                "sync": `
+function(doc, oldDoc, meta) { 
+    var owner = doc._deleted ? oldDoc.owner : doc.owner;
+    requireUser(owner);
+
+    var listChannel = 'lists.' + doc._id;
+    var contributorRole = 'role:' + listChannel + '.contributor';
+    role(owner, contributorRole);
+    access(contributorRole, listChannel);
+    
+    channel(listChannel);
+}
+`
+             },
+             "tasks": {
+                "sync": `
+function(doc, oldDoc, meta) {
+    var listId = doc._deleted ? oldDoc.taskList.id : doc.taskList.id;
+
+    var listChannel = 'lists.' + listId;
+    var contributorRoleName = listChannel + '.contributor';
+    var contributorRole = 'role:' + contributorRoleName;
+    
+    requireRole(contributorRoleName);
+
+    var tasksChannel = listChannel + '.tasks';
+    access(contributorRole, tasksChannel);
+    channel(tasksChannel);
+} 
+`
+             },
+             "users": {
+                "sync": `
+function(doc, oldDoc, meta) {
+    var owner = doc._deleted ? oldDoc.taskList.owner : doc.taskList.owner;
+    requireUser(owner);
+
+    var listId = doc._deleted ? oldDoc.taskList.id : doc.taskList.id;
+    var listChannel = 'lists.' + listId;
+    var contributorRole = 'role:' + listChannel + '.contributor';
+
+    if (!doc._deleted) {
+        var username = doc._deleted ? oldDoc.username : doc.username;
+        role(username, contributorRole);
+    }
+    
+    var usersChannel = listChannel + '.users';
+    access(owner, usersChannel);
+    channel(usersChannel);
+} 
+`
+             }
+          }
+       }
+    }
+ }

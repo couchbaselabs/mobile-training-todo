@@ -1,0 +1,16 @@
+{
+    "num_index_replicas": 0,
+    "bucket": "todo",
+    "scopes": {
+       "_default": {
+          "collections": {
+             "lists": { },
+             "tasks": { },
+             "users": { }
+          }
+       }
+    },
+    "delta_sync": {
+        "enabled": true
+    }
+ }

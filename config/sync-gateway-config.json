@@ -57,9 +57,10 @@ function(doc, oldDoc, meta) {
     var listId = doc._deleted ? oldDoc.taskList.id : doc.taskList.id;
 
     var listChannel = 'lists.' + listId;
-    var contributorRole = 'role:' + listChannel + '.contributor';
-
-    /* CBG-2795 : requireRole(contributorRole); */
+    var contributorRoleName = listChannel + '.contributor';
+    var contributorRole = 'role:' + contributorRoleName;
+    
+    requireRole(contributorRoleName);
     
     var tasksChannel = listChannel + '.tasks';
     access(contributorRole, tasksChannel);
