@@ -64,7 +64,7 @@
     CBLConfig.shared.maxAttemptWaitTime = self.maxAttemptWaitTime.text.doubleValue;
     CBLConfig.shared.syncEndpoint = self.syncEndpoint.text;
     
-    [CBLConfig.shared persist];
+    [CBLConfig.shared save];
     
     [self dismissViewControllerAnimated: true completion:^{
         [(AppDelegate *)[UIApplication sharedApplication].delegate logout: CBLLogoutModeCloseDatabase];

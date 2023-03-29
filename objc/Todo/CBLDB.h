@@ -44,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // MARK: Lists
 
-- (BOOL) createTaskListWithName: (NSString*)name error: (NSError**)error;
+- (void) createTaskListWithName: (NSString*)name completion: (void (^)(bool success, NSError* _Nullable error))completion;
 
 - (BOOL) updateTaskListWithID: (NSString*)listID name: (NSString*)name error: (NSError**)error;
 

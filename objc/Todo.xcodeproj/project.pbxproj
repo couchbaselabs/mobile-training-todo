@@ -11,6 +11,7 @@
 		1A793FFC2612AA62001B577C /* CouchbaseLite.xcframework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1A793FF92612AA5F001B577C /* CouchbaseLite.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1A7940022612CD7B001B577C /* CBLSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A7940012612CD7B001B577C /* CBLSettingsViewController.m */; };
 		1A7940052612F883001B577C /* CBLConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = 1A7940042612F883001B577C /* CBLConfig.m */; };
+		400FFB1D29D4B6CB007D5CD5 /* CBLSGAdmin.m in Sources */ = {isa = PBXBuildFile; fileRef = 400FFB1C29D4B6CB007D5CD5 /* CBLSGAdmin.m */; };
 		4041465129947F5C00D14966 /* CBLDB.m in Sources */ = {isa = PBXBuildFile; fileRef = 4041465029947F5C00D14966 /* CBLDB.m */; };
 		9336350C1EDE1DA500349E9A /* CBLLoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 9336350B1EDE1DA500349E9A /* CBLLoginViewController.m */; };
 		933635121EDE2A7C00349E9A /* CBLSession.m in Sources */ = {isa = PBXBuildFile; fileRef = 933635111EDE2A7C00349E9A /* CBLSession.m */; };
@@ -49,6 +50,8 @@
 		1A7940012612CD7B001B577C /* CBLSettingsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CBLSettingsViewController.m; sourceTree = "<group>"; };
 		1A7940032612F883001B577C /* CBLConfig.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CBLConfig.h; sourceTree = "<group>"; };
 		1A7940042612F883001B577C /* CBLConfig.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CBLConfig.m; sourceTree = "<group>"; };
+		400FFB1B29D4B6CB007D5CD5 /* CBLSGAdmin.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CBLSGAdmin.h; sourceTree = "<group>"; };
+		400FFB1C29D4B6CB007D5CD5 /* CBLSGAdmin.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CBLSGAdmin.m; sourceTree = "<group>"; };
 		4041464F29947F5C00D14966 /* CBLDB.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CBLDB.h; sourceTree = "<group>"; };
 		4041465029947F5C00D14966 /* CBLDB.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CBLDB.m; sourceTree = "<group>"; };
 		9336350A1EDE1DA500349E9A /* CBLLoginViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CBLLoginViewController.h; sourceTree = "<group>"; };
@@ -128,6 +131,8 @@
 				1A7940042612F883001B577C /* CBLConfig.m */,
 				4041464F29947F5C00D14966 /* CBLDB.h */,
 				4041465029947F5C00D14966 /* CBLDB.m */,
+				400FFB1B29D4B6CB007D5CD5 /* CBLSGAdmin.h */,
+				400FFB1C29D4B6CB007D5CD5 /* CBLSGAdmin.m */,
 			);
 			name = Database;
 			sourceTree = "<group>";
@@ -279,6 +284,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				933635121EDE2A7C00349E9A /* CBLSession.m in Sources */,
+				400FFB1D29D4B6CB007D5CD5 /* CBLSGAdmin.m in Sources */,
 				937EAC0E1E3AB72200133693 /* AppDelegate.m in Sources */,
 				1A7940022612CD7B001B577C /* CBLSettingsViewController.m in Sources */,
 				93A843371E3B307D00B4AF2D /* CBLImage.m in Sources */,

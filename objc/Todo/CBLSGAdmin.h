@@ -1,5 +1,5 @@
 //
-// CBLConfig.h
+// CBLSGAdmin.h
 //
 // Copyright (c) 2023 Couchbase, Inc All rights reserved.
 //
@@ -20,31 +20,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSInteger, CCRType) {
-    CCRTypeLocal = 0,
-    CCRTypeRemote,
-    CCRTypeDelete
-};
+extern NSErrorDomain const CBLSGErrorDomain;
 
-@interface CBLConfig : NSObject
+@interface CBLSGAdmin : NSObject
 
-@property(nonatomic) NSString* syncEndpoint;
-@property(nonatomic) NSInteger syncAdminPort;
-@property(nonatomic) NSString* syncAdminUsername;
-@property(nonatomic) NSString* syncAdminPassword;
-@property(nonatomic) BOOL loggingEnabled;
-@property(nonatomic) BOOL syncEnabled;
-@property(nonatomic) BOOL pushNotificationEnabled;
-@property(nonatomic) BOOL ccrEnabled;
-@property(nonatomic) CCRType ccrType;
-@property(nonatomic) NSInteger maxAttempts;
-@property(nonatomic) NSInteger maxAttemptWaitTime;
-
-+ (CBLConfig*) shared;
++ (instancetype) shared;
 
 - (instancetype) init NS_UNAVAILABLE;
 
-- (void) save;
+- (void) createRole: (NSString*)role completion: (void (^)(bool success, NSError* _Nullable error))completion;
 
 @end
 

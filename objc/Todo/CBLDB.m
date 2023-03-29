@@ -19,6 +19,7 @@
 #import "CBLDB.h"
 #import "CBLConfig.h"
 #import "CBLSession.h"
+#import "CBLSGAdmin.h"
 
 #define $S(FORMAT, ARGS... )  [NSString stringWithFormat: (FORMAT), ARGS]
 
@@ -235,12 +236,26 @@
 
 // MARK: Lists
 
-- (BOOL) createTaskListWithName: (NSString*)name error: (NSError**)error {
+- (void) createTaskListWithName: (NSString*)name completion: (void (^)(bool success, NSError* e))completion {
     NSString* docID = $S(@"%@.%@", self.currentUser, [NSUUID UUID].UUIDString);
-    CBLMutableDocument* doc = [[CBLMutableDocument alloc] initWithID: docID];
-    [doc setValue: name forKey: @"name"];
-    [doc setValue: self.currentUser forKey: @"owner"];
-    return [self.taskLists saveDocument: doc error: error];
+    NSString* role = $S(@"lists.%@.contributor", docID);
+    
+    [CBLSGAdmin.shared createRole: role completion: ^(bool success, NSError* err) {
+        // Currently the other database oparations are done in main queue:
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (!success) {
+                completion(success, err);
+                return;
+            }
+            
+            NSError* error = nil;
+            CBLMutableDocument* doc = [[CBLMutableDocument alloc] initWithID: docID];
+            [doc setValue: name forKey: @"name"];
+            [doc setValue: self.currentUser forKey: @"owner"];
+            BOOL result = [self.taskLists saveDocument: doc error: &error];
+            completion(result, error);
+        });
+    }];
 }
 
 - (BOOL) updateTaskListWithID: (NSString*)listID name: (NSString*)name error: (NSError**)error {

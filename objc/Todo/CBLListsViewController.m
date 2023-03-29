@@ -142,10 +142,12 @@
 }
 
 - (void) createTaskList: (NSString*)name {
-    NSError* error;
-    if (![CBLDB.shared createTaskListWithName: name error: &error]) {
-        [CBLUi showErrorOn: self message: @"Couldn't save task list" error: error];
-    }
+    [CBLDB.shared createTaskListWithName: name completion:^(bool success, NSError* error) {
+        if (!success) {
+            NSString* message = [NSString stringWithFormat: @"Couldn't save task list : %@", name];
+            [CBLUi showErrorOn: self message: message error: error];
+        }
+    }];
 }
 
 - (void) updateTaskList: (NSString*)listID name: (NSString *)name {
