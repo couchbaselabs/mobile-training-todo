@@ -307,23 +307,68 @@ public class AppLogicDelegate : AppLogicDelegateProtocol {
             let dict = CBLResultSet_ResultDict(rs)
             tasks.append(Task.init(result: QueryResult(dict)))
         }
+        CBLQuery_Release(query);
         return tasks
     }
     
     public func addUser(_ username: String, for taskList: TaskList) throws {
-        
+        try withCollection(usersColl, block: { coll, err in
+            let doc = CBLDocument_CreateWithID(FLS(taskList.id + "." + username).sl())
+            let props = CBLDocument_MutableProperties(doc)
+           
+            let dict = FLMutableDict_New()!
+            FLMutableDict_SetString(doc, FLS("id").sl(), FLS(taskList.id).sl())
+            FLMutableDict_SetString(doc, FLS("owner").sl(), FLS(taskList.owner).sl())
+            
+            FLMutableDict_SetString(props, FLS("username").sl(), FLS(username).sl())
+            FLMutableDict_SetDict(props, FLS("taskList").sl(), dict)
+            
+            defer {
+                FLMutableDict_Release(dict);
+                CBLDocument_Release(doc)
+            }
+            
+            return CBLCollection_SaveDocument(coll, doc, err)
+        })
     }
     
     public func deleteUser(_ user: User) throws {
-        
+        try withCollection(usersColl, block: { coll, err in
+            if let doc = CBLCollection_GetDocument(coll, FLS(user.id).sl(), err){
+                return CBLCollection_DeleteDocument(coll, doc, err)
+            }
+            return true
+        })
+    }
+    
+    private func usersQuery(for taskList: TaskList) throws -> OpaquePointer {
+        let queryStr = "SELECT meta().id, username, taskList.id as taskListID, taskList.owner " +
+                    "FROM \(collectionName(usersColl)) " +
+                    "WHERE taskList.id == '\(taskList.id)' " +
+                    "ORDER BY username"
+        return try withDatabase { db, err in
+            return CBLDatabase_CreateQuery(db, .cbln1QLLanguage, FLS(queryStr).sl(), nil, err)
+         }
     }
     
     public func getUsersQuery(for taskList: TaskList) throws -> LiveQueryObject {
-        return LiveQueryObject(change: QueryResultSet())
+        return LiveQuery(adopt: try usersQuery(for: taskList))
     }
     
     public func getUsers(for taskList: TaskList) throws -> [User] {
-        return []
+        let query = try usersQuery(for: taskList)
+        var err = CBLError()
+        guard let rs = CBLQuery_Execute(query, &err) else {
+            throw err.throwable()
+        }
+        
+        var users: [User] = []
+        while (CBLResultSet_Next(rs)) {
+            let dict = CBLResultSet_ResultDict(rs)
+            users.append(User.init(result: QueryResult(dict)))
+        }
+        CBLQuery_Release(query);
+        return users
     }
     
     // MARK : Database Function Helpers
