@@ -316,11 +316,11 @@ public class AppLogicDelegate : AppLogicDelegateProtocol {
             let doc = CBLDocument_CreateWithID(FLS(taskList.id + "." + username).sl())
             let props = CBLDocument_MutableProperties(doc)
            
-            let dict = FLMutableDict_New()!
-            FLMutableDict_SetString(doc, FLS("id").sl(), FLS(taskList.id).sl())
-            FLMutableDict_SetString(doc, FLS("owner").sl(), FLS(taskList.owner).sl())
-            
             FLMutableDict_SetString(props, FLS("username").sl(), FLS(username).sl())
+            
+            let dict = FLMutableDict_New()!
+            FLMutableDict_SetString(dict, FLS("id").sl(), FLS(taskList.id).sl())
+            FLMutableDict_SetString(dict, FLS("owner").sl(), FLS(taskList.owner).sl())
             FLMutableDict_SetDict(props, FLS("taskList").sl(), dict)
             
             defer {
@@ -572,4 +572,3 @@ fileprivate class LiveQuery : LiveQueryObject {
         CBLQuery_Release(query);
     }
 }
-
