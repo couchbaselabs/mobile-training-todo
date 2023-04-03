@@ -1,8 +1,18 @@
 package com.couchbase.lite.todo.model;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import okhttp3.Credentials;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 import com.couchbase.lite.Collection;
 import com.couchbase.lite.CouchbaseLiteException;
@@ -16,6 +26,7 @@ import com.couchbase.lite.QueryBuilder;
 import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
+import com.couchbase.lite.todo.Application;
 import com.couchbase.lite.todo.support.ResponseException;
 import com.couchbase.lite.todo.support.UserContext;
 import com.couchbase.lite.todo.util.Preconditions;
@@ -37,7 +48,9 @@ public class TaskList {
         doc.setValue(KEY_OWNER, username);
 
         Collection collection = context.getDataSource(COLLECTION_LISTS);
-        collection.save(doc);
+
+        createList(collection, doc);
+
         System.out.println("LIST: Created list: " + collection.getDocument(docId).toJSON());
 
         return doc.getId();
@@ -89,6 +102,41 @@ public class TaskList {
         }
 
         return lists;
+    }
+
+    private static void createList(Collection collection, MutableDocument doc) throws CouchbaseLiteException {
+        final URL sgUri;
+        try { sgUri = new URL(Application.getSyncGatewayUrl()); }
+        catch (MalformedURLException e) { return; }
+
+        final String adminUri = "http://" + sgUri.getHost() + ":4985/todo/_role/";
+        final URL sgAdminUrl;
+        try { sgAdminUrl = new URL(adminUri); }
+        catch (MalformedURLException e) { return; }
+
+        final String reqBody = "{"
+            + "\"name\": \"lists." + doc.getId() + ".contributor\","
+            + "\"collection_access\": {"
+            + "     \"_default\": {"
+            + "         \"lists\": {\"admin_channels\": []},"
+            + "         \"tasks\": {\"admin_channels\": []},"
+            + "         \"users\": {\"admin_channels\": []}"
+            + "      }"
+            + "  }";
+
+        final Request request = new Request.Builder()
+            .url(sgAdminUrl)
+            .addHeader("Authorization", Credentials.basic("admin", "password"))
+            .post(RequestBody.create(MediaType.parse("application/json"), reqBody))
+            .build();
+
+
+        try (Response response = new OkHttpClient.Builder().build().newCall(request).execute()) {
+            if (!response.isSuccessful()) { return; }
+        }
+        catch (IOException e) { return; }
+
+        collection.save(doc);
     }
 
 
