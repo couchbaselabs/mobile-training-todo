@@ -111,11 +111,24 @@ public class AppLogicDelegate : AppLogicDelegateProtocol {
     }
     
     private func replicatorConfiguration(endpoint: OpaquePointer, auth: OpaquePointer) -> CBLReplicatorConfiguration {
+        var conflictR: CBLConflictResolver?
+        if Config.shared.ccrEnabled {
+            conflictR = { context, docID, localDoc, remoteDoc in
+                switch Config.shared.ccrType {
+                case .local:
+                    return localDoc
+                case .remote:
+                    return remoteDoc
+                case .delete:
+                    return nil;
+                }
+            }
+        }
         // TODO : Setup conflict resolver based on the Config.shared.ccrEnabled and Config.shared.ccrType
         var collections = [
-            CBLReplicationCollection(collection: taskListsColl, conflictResolver: nil, pushFilter: nil, pullFilter: nil, channels: nil, documentIDs: nil),
-            CBLReplicationCollection(collection: tasksColl, conflictResolver: nil, pushFilter: nil, pullFilter: nil, channels: nil, documentIDs: nil),
-            CBLReplicationCollection(collection: usersColl, conflictResolver: nil, pushFilter: nil, pullFilter: nil, channels: nil, documentIDs: nil)
+            CBLReplicationCollection(collection: taskListsColl, conflictResolver: conflictR, pushFilter: nil, pullFilter: nil, channels: nil, documentIDs: nil),
+            CBLReplicationCollection(collection: tasksColl, conflictResolver: conflictR, pushFilter: nil, pullFilter: nil, channels: nil, documentIDs: nil),
+            CBLReplicationCollection(collection: usersColl, conflictResolver: conflictR, pushFilter: nil, pullFilter: nil, channels: nil, documentIDs: nil)
         ]
         let collectionsPtr = UnsafeMutablePointer<CBLReplicationCollection>.allocate(capacity: collections.count)
         collectionsPtr.initialize(from: &collections, count: collections.count)
