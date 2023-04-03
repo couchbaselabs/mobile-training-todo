@@ -71,7 +71,9 @@ public class ReplicatorService {
     public static ReplicatorService get() {
         final ReplicatorService instance = INSTANCE.get();
         if (instance != null) { return instance; }
-        INSTANCE.compareAndSet(null, new ReplicatorService(ToDo.get(), ConfigurationService.get(), DatabaseService.get()));
+        INSTANCE.compareAndSet(
+            null,
+            new ReplicatorService(ToDo.get(), ConfigurationService.get(), DatabaseService.get()));
         return INSTANCE.get();
     }
 
@@ -92,9 +94,24 @@ public class ReplicatorService {
         this.dao = dao;
     }
 
+    @Nullable
+    public URI getReplicationUri() {
+        final String uri = config.getSgUri();
+        try { return URI.create(uri).normalize(); }
+        catch (IllegalArgumentException e) { Log.d(TAG, "Cannot create SGW URI: " + uri, e); }
+        return null;
+    }
+
     public void startReplication(@NonNull String username, @NonNull char[] password) {
         final URI sgUri = getReplicationUri();
-        if (sgUri == null) { return; }
+        if (sgUri == null) {
+            app.reportError(new CouchbaseLiteException(
+                "Invalid SG URI",
+                CBLError.Domain.CBLITE,
+                CBLError.Code.INVALID_URL));
+
+            return;
+        }
 
         final ReplicatorConfiguration config = new ReplicatorConfiguration(new URLEndpoint(sgUri))
             .setContinuous(true)
@@ -111,7 +128,9 @@ public class ReplicatorService {
         @Nullable ReplicatorChangeListener listener) {
         final CollectionConfiguration collConfig = new CollectionConfiguration();
         final ConfigurationService.CcrState ccrState = config.getCcrState();
-        if (ccrState != ConfigurationService.CcrState.OFF) { collConfig.setConflictResolver(new ConfigurableConflictResolver()); }
+        if (ccrState != ConfigurationService.CcrState.OFF) {
+            collConfig.setConflictResolver(new ConfigurableConflictResolver());
+        }
 
         replConfig.addCollections(dao.getCollections(), collConfig)
             .setType(ReplicatorType.PUSH_AND_PULL)
@@ -142,18 +161,5 @@ public class ReplicatorService {
         if (error.getCode() == CBLError.Code.HTTP_AUTH_REQUIRED) { dao.logout(); }
 
         app.reportError(error);
-    }
-
-    @Nullable
-    private URI getReplicationUri() {
-        try { return URI.create(config.getSgUri()).normalize(); }
-        catch (IllegalArgumentException e) { Log.d(TAG, "Login failed", e); }
-
-        app.reportError(new CouchbaseLiteException(
-            "Invalid SG URI",
-            CBLError.Domain.CBLITE,
-            CBLError.Code.INVALID_URL));
-
-        return null;
     }
 }

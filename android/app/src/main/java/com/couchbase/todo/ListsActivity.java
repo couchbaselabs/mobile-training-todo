@@ -36,6 +36,7 @@ import java.util.UUID;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.todo.service.DatabaseService;
+import com.couchbase.todo.tasks.CreateListTask;
 import com.couchbase.todo.tasks.DeleteDocsByIdTask;
 import com.couchbase.todo.tasks.FetchDocByIdTask;
 import com.couchbase.todo.tasks.ListDumper;
@@ -148,7 +149,7 @@ public class ListsActivity extends ToDoActivity {
         final MutableDocument mDoc = new MutableDocument(docId);
         mDoc.setString("name", title);
         mDoc.setString("owner", username);
-        new SaveDocTask(DatabaseService.COLLECTION_LISTS).execute(mDoc);
+        new CreateListTask().execute(mDoc);
     }
 
     // update list

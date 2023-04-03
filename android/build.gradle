@@ -3,7 +3,7 @@
 buildscript {
     ext {
         // couchbase version
-        CBL_VERSION = "3.1.0-SNAPSHOT"
+        CBL_VERSION = "3.2.0-SNAPSHOT"
 
         // application parameters
         LOGGING_ENABLED = true
@@ -20,7 +20,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.3.1'
+        classpath 'com.android.tools.build:gradle:7.4.2'
     }
 }
 

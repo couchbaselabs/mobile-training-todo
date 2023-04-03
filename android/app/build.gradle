@@ -8,14 +8,14 @@ android {
     namespace "com.couchbase.todo"
     compileSdk 33
 
-    buildToolsVersion '33.0.1'
+    buildToolsVersion '33.0.2'
 
     defaultConfig {
         applicationId "com.couchbase.todo"
         minSdk 26
         targetSdk 33
-        versionName "3.1"
-        versionCode 30100
+        versionName "3.2"
+        versionCode 30200
     }
 
     buildTypes {
@@ -70,7 +70,7 @@ repositories {
 dependencies {
     // Android & Defaults
     implementation "androidx.appcompat:appcompat:1.6.1"
-    implementation "androidx.recyclerview:recyclerview:1.2.1"
+    implementation "androidx.recyclerview:recyclerview:1.3.0"
     implementation "androidx.constraintlayout:constraintlayout:2.1.4"
 
     implementation "com.google.android.material:material:1.8.0"
