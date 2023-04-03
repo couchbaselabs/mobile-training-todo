@@ -50,6 +50,7 @@ import com.couchbase.todo.TodoApp;
 import com.couchbase.todo.model.DB;
 import com.couchbase.todo.model.Task;
 import com.couchbase.todo.model.TaskList;
+import com.couchbase.todo.model.service.CreateListService;
 import com.couchbase.todo.model.service.DeleteDocService;
 import com.couchbase.todo.model.service.SaveDocService;
 import com.couchbase.todo.view.TaskCell;
@@ -200,7 +201,7 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
         taskListInfo.setValue(DB.KEY_TASK_LIST_ID, taskList.getId());
         taskListInfo.setValue(DB.KEY_TASK_LIST_OWNER, taskList.getOwner());
         doc.setValue(DB.KEY_TASK_LIST, taskListInfo);
-       new SaveDocService(DB.COLLECTION_TASKS, doc).start();
+       new CreateListService(doc).start();
     }
 
     private void updateTaskName(@NotNull String id, @NotNull String name) {
