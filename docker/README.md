@@ -1,8 +1,8 @@
 # Todo Docker Compose
 
-This `docker` folder contains the `docker-compose.yml` file for starting and configuring Couchbase Server and Sync Gateway for the Todo app. 
+This `docker` folder contains the `docker-compose.yml` file for starting and configuring Couchbase Server and Sync Gateway for the Todo app.
 
-The Couchbase Server instance is configured with the `todo` bucket and 3 collections in the default scope : `lists`, `tasks`, and `users`. 
+The Couchbase Server instance is configured with the `todo` bucket and 3 collections in the default scope : `lists`, `tasks`, and `users`.
 
 The admin credentials of the Couchbase Server instance and the `todo` bucket for Sync Gateway are as follows.
 
@@ -11,7 +11,7 @@ The admin credentials of the Couchbase Server instance and the `todo` bucket for
 | Couchbase Server | Administrator:password |
 | todo bucket | admin:password |
 
-The users for the Todo app are blake, callum, dan, jens, jianmin, jim, pasin, vlad, user1, user2, user3. All have the same password, which is 'pass'. 
+The users for the Todo app are blake, callum, dan, jens, jianmin, jim, pasin, vlad, user1, user2, user3. All have the same password, which is 'pass'.
 
 ## Requirements
 
@@ -31,51 +31,51 @@ To set the environment variables, create `.env` file with the variables in key=v
 **Sample .env file**
 ```
 COUCHBASE_VERSION=7.1.4
-SG_DEB=SG_DEB=deb/couchbase-sync-gateway-enterprise_3.1.0-578_x86_64.deb
+SG_DEB=deb/couchbase-sync-gateway-enterprise_3.1.0-578_x86_64.deb
 ```
 
 ## Steps
 
-1. Download Sync-Gateway deb file and save the file under the `sg` folder. 
+1. Download Sync-Gateway deb file and save the file under the `sg` folder.
 
    You can use `download-sg-build.sh` in the `scripts` folder to download (Required Couchbase VPN). The `download-sg-build.sh` has 3 arugments : `version`, `build-number`, and `architecture`. The `architecture` argument is optional, and its value can be `arm64` or `x86_64`. Without specified, the script will try to detect the architecture based on the machine that runs the script. When using the script, the downloaded Sync-Gateway deb file will be saved in the `sg/deb` folder.
-   
+
    **Sample:**
    ```
    ./scripts/download-sg-build.sh 3.1.0 578 x86_64
    ```
 
    **NOTE:** When using `download-sg-build.sh` script, the script will output the SG_DEB variable that you can use the set in .env file (Step 2).
-  
+
 2. Create .env file for setting the location of the Sync-Gatewy deb file and the optional Couchbase Server version.
 
    **Sample:**
 
    ```
-   echo "SG_DEB=deb/couchbase-sync-gateway-enterprise_3.1.0-578_x86_64.deb" > .env 
+   echo "SG_DEB=deb/couchbase-sync-gateway-enterprise_3.1.0-578_x86_64.deb" > .env
    ```
-   
+
 3. Run docker-compose up
- 
+
    ```
    docker compose up
    ```
-   
-   **NOTE:** 
-   
+
+   **NOTE:**
+
    * You can also run docker-compose in the detach mode by using `-d` option.
    * Use `Ctrl-C` to stop the containers and use `docker compose down` to remove the containers.
-   
+
 4. Tests
 
    ```
    curl -L -u "admin:password" http://localhost:4985/todo
    curl -L -u "admin:password" http://localhost:4985/todo/_config
    ```
-    
+
 ## Sync Gateway Log
 
-You can check Sync-Gateway console log at `sg/logs/sg.log`. 
+You can check Sync-Gateway console log at `sg/logs/sg.log`.
 
 ---
 
@@ -87,16 +87,18 @@ This section provides some instruction about how to run the Todo docker compose 
 
 1. Use your AWS account and setup a new EC2 Instance. The recommendation is to use Ubuntu, 22.04 LTS, x84_64 image with t2.medium instance type.
 
-2. Add port 4984, 4984, and 8091 to the Security Inbound rules of the instance.
+2. Add port 4984, 4985, and 8091 to the Security Inbound rules of the instance.  There is a Security Group named "todo" that contains these rules.  You *will* have to create an additional Security Group that allows SSH (port 22) to the instance from wherever you are.  Do no allow it from everywhere
 
-3. Install Docker by following the instruction at https://docs.docker.com/engine/install/ubuntu.
+3. Create your own key pair and download the .pem file.  Once the instance is running, connect to it using the instructions here: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AccessingInstancesLinux.html
+
+4. Install Docker by following the instruction at https://docs.docker.com/engine/install/ubuntu.
 
    **Sample**
    ```
-   # Install docker using the convenience script 
+   # Install docker using the convenience script
    curl -fsSL https://get.docker.com -o get-docker.sh
    sudo sh get-docker.sh
-   
+
    # Allow to run docker as a non-privileged user
    sudo apt-get install -y uidmap
    dockerd-rootless-setuptool.sh install
@@ -126,20 +128,27 @@ This section provides some instruction about how to run the Todo docker compose 
    ```
 
 4. Copy Sync-Gateway deb file from your local machine to the `deb` folder created in Step 3.
-   
+
    **Sample**
    ```
    scp -i MY_EC2_PRIVATE_KEY.pem ./couchbase-sync-gateway-enterprise_3.1.0-578_x86_64.deb ubuntu@<EC2-ADDRESS>:/home/ubuntu/mobile-training-todo/docker/sg/deb/couchbase-sync-gateway-enterprise_3.1.0-578_x86_64.deb
    ```
-   
+
 5. Run docker compose up
 
    ```
    docker compose up
    ```
 6. Test
-   
+
    ```
    curl -L -u "admin:password" http://<EC2-ADDRESS>:4985/todo
    curl -L -u "admin:password" http://<EC2-ADDRESS>:4985/todo/_config
    ```
+
+7. The instance of todo that you just got running, will terminate when you log out.  If this is not what you intend, you can use this linux command:
+
+   ```
+   sudo loginctl enable-linger `whoami`
+   ```
+Restart docker and it should stay running even after you end your ssh session.
