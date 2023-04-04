@@ -36,6 +36,22 @@ import com.couchbase.todo.model.DB;
 
 
 public class CreateListService extends Service<Document> {
+    private static final String REQ_BODY_BEGIN = "{"
+        + "\"name\": \"lists."
+        .replaceAll("\\s", "");
+
+    private static final String REQ_BODY_END = ".contributor\","
+        + "\"collection_access\": {"
+        + "     \"_default\": {"
+        + "         \"lists\": {\"admin_channels\": []},"
+        + "         \"tasks\": {\"admin_channels\": []},"
+        + "         \"users\": {\"admin_channels\": []}"
+        + "      }"
+        + "  }"
+        + "}"
+        .replaceAll("\\s", "");
+
+
     private final MutableDocument document;
 
     public CreateListService(MutableDocument document) {
@@ -59,25 +75,16 @@ public class CreateListService extends Service<Document> {
                 try { sgAdminUrl = new URL(adminUri); }
                 catch (MalformedURLException e) { return null; }
 
-                final String reqBody = "{"
-                    + "\"name\": \"lists." + document.getId() + ".contributor\","
-                    + "\"collection_access\": {"
-                    + "     \"_default\": {"
-                    + "         \"lists\": {\"admin_channels\": []},"
-                    + "         \"tasks\": {\"admin_channels\": []},"
-                    + "         \"users\": {\"admin_channels\": []}"
-                    + "      }"
-                    + "  }";
-
                 final Request request = new Request.Builder()
                     .url(sgAdminUrl)
                     .addHeader("Authorization", Credentials.basic("admin", "password"))
-                    .post(RequestBody.create(MediaType.parse("application/json"), reqBody))
+                    .post(RequestBody.create(
+                        MediaType.parse("application/json"), REQ_BODY_BEGIN + document.getId() + REQ_BODY_END))
                     .build();
 
-
                 try (Response response = new OkHttpClient.Builder().build().newCall(request).execute()) {
-                    if (!response.isSuccessful()) { return null; }
+                    // 409 is CONFLICT, which means the role already exists
+                    if (!response.isSuccessful() && (409 != response.code())) { return null; }
                 }
                 catch (IOException e) { return null; }
 

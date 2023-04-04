@@ -40,6 +40,21 @@ import com.couchbase.todo.service.ReplicatorService;
 public class CreateListTask extends SaveDocTask {
     private static final String TAG = "CREATE_LIST";
 
+    private static final String REQ_BODY_BEGIN = "{"
+        + "\"name\": \"lists."
+        .replaceAll("\\s", "");
+
+    private static final String REQ_BODY_END = ".contributor\","
+        + "\"collection_access\": {"
+        + "     \"_default\": {"
+        + "         \"lists\": {\"admin_channels\": []},"
+        + "         \"tasks\": {\"admin_channels\": []},"
+        + "         \"users\": {\"admin_channels\": []}"
+        + "      }"
+        + "  }"
+        + "}"
+        .replaceAll("\\s", "");
+
     public CreateListTask() { super(DatabaseService.COLLECTION_LISTS); }
 
     @Nullable
@@ -57,29 +72,21 @@ public class CreateListTask extends SaveDocTask {
         final URL sgAdminUrl;
         try { sgAdminUrl = new URL(adminUri); }
         catch (MalformedURLException e) {
-            Log.d(TAG, "Cannot create SGW Admin URI: " + adminUri, e);
+            Log.e(TAG, "Cannot create SGW Admin URI: " + adminUri, e);
             return null;
         }
-
-        final String reqBody = "{"
-            + "\"name\": \"lists." + doc.getId() + ".contributor\","
-            + "\"collection_access\": {"
-            + "     \"_default\": {"
-            + "         \"lists\": {\"admin_channels\": []},"
-            + "         \"tasks\": {\"admin_channels\": []},"
-            + "         \"users\": {\"admin_channels\": []}"
-            + "      }"
-            + "  }";
 
         final Request request = new Request.Builder()
             .url(sgAdminUrl)
             .addHeader("Authorization", Credentials.basic("admin", "password"))
-            .post(RequestBody.create(MediaType.parse("application/json"), reqBody))
+            .post(RequestBody.create(MediaType.parse("application/json"), REQ_BODY_BEGIN + doc.getId() + REQ_BODY_END))
             .build();
 
+        Log.v(TAG, "Creating role for list " + doc.getString("name") + "@" + doc.getString("owner") + ": " + request);
         try (Response response = new OkHttpClient.Builder().build().newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                Log.d(TAG, "List creation admin request failed: " + response);
+            // 409 is CONFLICT, which means the role already exists
+            if (!response.isSuccessful() && (409 != response.code())) {
+                Log.w(TAG, "List creation admin request failed: " + response);
                 return null;
             }
         }
