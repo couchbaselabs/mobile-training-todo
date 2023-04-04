@@ -124,7 +124,6 @@ public class AppLogicDelegate : AppLogicDelegateProtocol {
                 }
             }
         }
-        // TODO : Setup conflict resolver based on the Config.shared.ccrEnabled and Config.shared.ccrType
         var collections = [
             CBLReplicationCollection(collection: taskListsColl, conflictResolver: conflictR, pushFilter: nil, pullFilter: nil, channels: nil, documentIDs: nil),
             CBLReplicationCollection(collection: tasksColl, conflictResolver: conflictR, pushFilter: nil, pullFilter: nil, channels: nil, documentIDs: nil),
