@@ -38,20 +38,18 @@ public class TaskList {
     private static final String KEY_NAME = "name";
     private static final String KEY_OWNER = "owner";
 
-    private static final String REQ_BODY_BEGIN = "{"
-        + "\"name\": \"lists."
-        .replaceAll("\\s", "");
-
-    private static final String REQ_BODY_END = ".contributor\","
-        + "\"collection_access\": {"
-        + "     \"_default\": {"
-        + "         \"lists\": {\"admin_channels\": []},"
-        + "         \"tasks\": {\"admin_channels\": []},"
-        + "         \"users\": {\"admin_channels\": []}"
-        + "      }"
-        + "  }"
-        + "}"
-        .replaceAll("\\s", "");
+    private static final String REQ_BODY_BEGIN = "{\"name\":\"lists.";
+    private static final String REQ_BODY_END = (
+        ".contributor\","
+            + "\"collection_access\": {"
+            + "     \"_default\": {"
+            + "         \"lists\": {\"admin_channels\": []},"
+            + "         \"tasks\": {\"admin_channels\": []},"
+            + "         \"users\": {\"admin_channels\": []}"
+            + "      }"
+            + "  }"
+            + "}")
+        .replace(" ", "");
 
     public static String create(UserContext context, TaskList list) throws CouchbaseLiteException {
         Preconditions.checkArgNotNull(list.getName(), "name");

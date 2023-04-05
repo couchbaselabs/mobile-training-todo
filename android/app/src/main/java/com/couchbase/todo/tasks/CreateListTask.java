@@ -40,20 +40,19 @@ import com.couchbase.todo.service.ReplicatorService;
 public class CreateListTask extends SaveDocTask {
     private static final String TAG = "CREATE_LIST";
 
-    private static final String REQ_BODY_BEGIN = "{"
-        + "\"name\": \"lists."
-        .replaceAll("\\s", "");
+    private static final String REQ_BODY_BEGIN = "{\"name\":\"lists.";
+    private static final String REQ_BODY_END = (
+        ".contributor\","
+            + "\"collection_access\": {"
+            + "     \"_default\": {"
+            + "         \"lists\": {\"admin_channels\": []},"
+            + "         \"tasks\": {\"admin_channels\": []},"
+            + "         \"users\": {\"admin_channels\": []}"
+            + "      }"
+            + "  }"
+            + "}")
+        .replace(" ", "");
 
-    private static final String REQ_BODY_END = ".contributor\","
-        + "\"collection_access\": {"
-        + "     \"_default\": {"
-        + "         \"lists\": {\"admin_channels\": []},"
-        + "         \"tasks\": {\"admin_channels\": []},"
-        + "         \"users\": {\"admin_channels\": []}"
-        + "      }"
-        + "  }"
-        + "}"
-        .replaceAll("\\s", "");
 
     public CreateListTask() { super(DatabaseService.COLLECTION_LISTS); }
 

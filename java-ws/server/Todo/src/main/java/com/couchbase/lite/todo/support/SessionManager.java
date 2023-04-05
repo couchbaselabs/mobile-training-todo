@@ -151,9 +151,14 @@ public class SessionManager {
                 Document local = conflict.getLocalDocument();
                 Document remote = conflict.getRemoteDocument();
                 if (local == null || remote == null) { return null; }
-                if (mode.equals("local")) { return local; }
-                else if (mode.equals("remote")) { return remote; }
-                return null;
+                switch (mode) {
+                    case "local":
+                        return local;
+                    case "remote":
+                        return remote;
+                    default:
+                        return null;
+                }
             });
         }
 

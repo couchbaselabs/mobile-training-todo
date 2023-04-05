@@ -2,9 +2,12 @@ package com.couchbase.todo.model;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -16,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 import com.couchbase.lite.BasicAuthenticator;
 import com.couchbase.lite.CBLError;
 import com.couchbase.lite.Collection;
+import com.couchbase.lite.CollectionConfiguration;
 import com.couchbase.lite.ConsoleLogger;
 import com.couchbase.lite.CouchbaseLite;
 import com.couchbase.lite.CouchbaseLiteException;
@@ -44,7 +48,6 @@ public class DB {
     public static final String COLLECTION_TASKS = "tasks";
     public static final String COLLECTION_USERS = "users";
 
-
     public static final String KEY_USERNAME = "username";
     public static final String KEY_TASK_LIST = "taskList";
     public static final String KEY_ID = "id";
@@ -60,6 +63,8 @@ public class DB {
     public static final String KEY_TASK_LIST_OWNER = "owner";
 
     private static final AtomicReference<DB> INSTANCE = new AtomicReference<>();
+
+    private static final List<String> COLLECTIONS = List.of(COLLECTION_LISTS, COLLECTION_TASKS, COLLECTION_USERS);
 
     public static DB get() {
         final DB instance = INSTANCE.get();
@@ -194,7 +199,7 @@ public class DB {
         final List<ListenerToken> listeners = changeListeners.get(query);
         if (listeners == null) { return; }
 
-        for (ListenerToken token: listeners) { query.removeChangeListener(token); }
+        for (ListenerToken token: listeners) { token.remove(); }
 
         changeListeners.remove(query);
     }
@@ -225,27 +230,33 @@ public class DB {
 
         final Config appConfig = TodoApp.getTodoApp().getConfig();
 
-        final ReplicatorConfiguration config = new ReplicatorConfiguration(db, endpoint)
+        final ReplicatorConfiguration config = new ReplicatorConfiguration(endpoint)
             .setType(ReplicatorType.PUSH_AND_PULL)
             .setContinuous(true)
             .setMaxAttempts(appConfig.getAttempts())
             .setMaxAttemptWaitTime(appConfig.getAttemptsWaitTime());
 
-        TodoApp.CR_MODE crmode = TodoApp.SYNC_CR_MODE;
-        if (crmode == TodoApp.CR_MODE.DEFAULT) { config.setConflictResolver(null); }
-        else {
-            config.setConflictResolver(conflict -> {
+        // authentication
+        config.setAuthenticator(new BasicAuthenticator(username, password.toCharArray()));
+
+        CollectionConfiguration collConfig = null;
+        TodoApp.CR_MODE crmode = appConfig.getCrMode();
+        if ((crmode != null) && (crmode != TodoApp.CR_MODE.DEFAULT)) {
+            collConfig =  new CollectionConfiguration();
+            collConfig.setConflictResolver(conflict -> {
                 Document local = conflict.getLocalDocument();
                 Document remote = conflict.getRemoteDocument();
                 if (local == null || remote == null) { return null; }
-                if (crmode == TodoApp.CR_MODE.LOCAL) { return local; }
-                else if (crmode == TodoApp.CR_MODE.REMOTE) { return remote; }
-                return null;
+                return (crmode == TodoApp.CR_MODE.LOCAL) ? local : remote;
             });
         }
 
-        // authentication
-        config.setAuthenticator(new BasicAuthenticator(username, password.toCharArray()));
+        final Set<Collection> collections = new HashSet<>();
+        for (String collectionName: COLLECTIONS) {
+            collections.add(getAndVerifyCollection(collectionName));
+        }
+
+        config.addCollections(collections, collConfig);
 
         final Replicator replicator = new Replicator(config);
 

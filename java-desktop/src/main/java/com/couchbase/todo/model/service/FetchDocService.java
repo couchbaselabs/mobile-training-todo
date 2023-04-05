@@ -4,7 +4,6 @@ import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import org.jetbrains.annotations.NotNull;
 
-import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Document;
 import com.couchbase.todo.model.DB;
 
@@ -26,9 +25,7 @@ public class FetchDocService extends Service<Document> {
     protected Task<Document> createTask() {
         return new Task<>() {
             @Override
-            protected Document call() throws CouchbaseLiteException {
-                return DB.get().getDocument(collectionName, docId);
-            }
+            protected Document call() { return DB.get().getDocument(collectionName, docId); }
         };
     }
 }

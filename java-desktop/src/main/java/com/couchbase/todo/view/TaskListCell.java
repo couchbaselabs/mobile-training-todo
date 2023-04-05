@@ -13,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.couchbase.todo.TodoApp;
-import com.couchbase.todo.model.Task;
 import com.couchbase.todo.model.TaskList;
 
 

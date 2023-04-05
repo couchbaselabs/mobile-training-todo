@@ -3,7 +3,6 @@ package com.couchbase.todo.model.service;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 
-import com.couchbase.lite.Collection;
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;

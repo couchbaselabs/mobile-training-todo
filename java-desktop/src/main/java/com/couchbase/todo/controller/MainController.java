@@ -4,8 +4,6 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.MenuItem;
@@ -40,7 +38,7 @@ public class MainController implements Initializable {
     @FXML
     private Toggle onToggle;
 
-    public static AtomicBoolean jsonBoolean = new AtomicBoolean(true);
+    public static final AtomicBoolean JSON_BOOLEAN = new AtomicBoolean(true);
 
     public MainController(@NotNull Stage stage) { this.stage = stage; }
 
@@ -57,13 +55,7 @@ public class MainController implements Initializable {
         //default select enable JSONResults
         group.selectToggle(onToggle);
 
-        group.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
-            @Override
-            public void changed(
-                ObservableValue<? extends Toggle> observable, Toggle oldValue, Toggle newValue) {
-                if (group.getSelectedToggle() == onToggle) { jsonBoolean.set(true); }
-                else { jsonBoolean.set(false); }
-            }
-        });
+        group.selectedToggleProperty().addListener((ign1, ign2, ign3) ->
+            JSON_BOOLEAN.set(group.getSelectedToggle() == onToggle));
     }
 }

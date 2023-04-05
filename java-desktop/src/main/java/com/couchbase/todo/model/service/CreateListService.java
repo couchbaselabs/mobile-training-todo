@@ -36,20 +36,18 @@ import com.couchbase.todo.model.DB;
 
 
 public class CreateListService extends Service<Document> {
-    private static final String REQ_BODY_BEGIN = "{"
-        + "\"name\": \"lists."
-        .replaceAll("\\s", "");
-
-    private static final String REQ_BODY_END = ".contributor\","
-        + "\"collection_access\": {"
-        + "     \"_default\": {"
-        + "         \"lists\": {\"admin_channels\": []},"
-        + "         \"tasks\": {\"admin_channels\": []},"
-        + "         \"users\": {\"admin_channels\": []}"
-        + "      }"
-        + "  }"
-        + "}"
-        .replaceAll("\\s", "");
+    private static final String REQ_BODY_BEGIN = "{\"name\":\"lists.";
+    private static final String REQ_BODY_END = (
+        ".contributor\","
+            + "\"collection_access\": {"
+            + "     \"_default\": {"
+            + "         \"lists\": {\"admin_channels\": []},"
+            + "         \"tasks\": {\"admin_channels\": []},"
+            + "         \"users\": {\"admin_channels\": []}"
+            + "      }"
+            + "  }"
+            + "}")
+        .replace(" ", "");
 
 
     private final MutableDocument document;

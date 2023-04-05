@@ -132,7 +132,7 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
         ObservableList<TaskList> taskLists = FXCollections.observableArrayList();
         for (Result r: results) {
             taskLists.add(new TaskList(r.getString(0), r.getString(1), r.getString(2)));
-            if (MainController.jsonBoolean.get()) {
+            if (MainController.JSON_BOOLEAN.get()) {
                 System.out.println("Update list to JSON: " + r.toJSON());
             }
         }
@@ -172,7 +172,7 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
         Map<String, Integer> toDoCounts = new HashMap<>();
         for (Result result: results) {
             toDoCounts.put(result.getString(0), result.getInt(1));
-            if (MainController.jsonBoolean.get()) {
+            if (MainController.JSON_BOOLEAN.get()) {
                 System.out.println("Updated count of list toJson: " + result.toJSON());
             }
         }
