@@ -21,8 +21,6 @@ import SwiftUI
 struct UsersView: View, TodoControllerDelegate {
     @ObservedObject private var usersQuery: LiveQueryObject
     
-    @State private var searchText: String = ""
-    
     @State private var presentAddUserAlert: Bool = false
     @State private var newUsername: String = ""
     
@@ -33,11 +31,7 @@ struct UsersView: View, TodoControllerDelegate {
     private let taskList: TaskList
     
     private var filteredResults: [any QueryResultProtocol] {
-        if !searchText.isEmpty {
-            return usersQuery.change.results.filter { $0.string(forKey: "username")!.contains(searchText) }
-        } else {
             return usersQuery.change.results
-        }
     }
     
     init(taskList: TaskList) {
@@ -56,7 +50,6 @@ struct UsersView: View, TodoControllerDelegate {
                         }
                     }
             }
-            .searchable(text: $searchText)
         }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {

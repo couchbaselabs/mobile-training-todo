@@ -33,8 +33,6 @@ struct TasksView: View, TodoControllerDelegate {
     @State private var errorAlertMessage: String = ""
     @State private var errorAlertDescription: String = ""
     
-    @State private var searchText: String = ""
-    
     @State private var presentEditPhotoDialog: Bool = false
     @State private var presentPhotoLibraryPicker: Bool = false
     @State private var presentPhotoCameraPicker: Bool = false
@@ -46,11 +44,7 @@ struct TasksView: View, TodoControllerDelegate {
     private let taskList: TaskList
     
     private var filteredResults: [any QueryResultProtocol] {
-        if !searchText.isEmpty {
-            return tasksQuery.change.results.filter { $0.string(forKey: "task")!.contains(searchText) }
-        } else {
             return tasksQuery.change.results
-        }
     }
     
     init(taskList: TaskList) {
@@ -80,7 +74,6 @@ struct TasksView: View, TodoControllerDelegate {
                     }
                 }
             }
-            .searchable(text: $searchText)
             .onChange(of: selectedImage) { image in
                 if let image = image, let editingTask = editingTask {
                     TodoController.updateTask(editingTask, image: image, delegate: self)
