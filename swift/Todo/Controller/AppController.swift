@@ -32,7 +32,9 @@ class AppController {
     public static func login(_ username: String, _ password: String) throws {
         Session.shared.start(username, password)
         try AppLogic.shared.open()
-        try AppLogic.shared.startReplicator()
+        if Config.shared.syncEnabled {
+            try AppLogic.shared.startReplicator()
+        }
     }
     
     public static func logout(method: LogoutMethod) {
