@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <PackageReference Include="Couchbase.Lite.Enterprise" Version="3.1.0-b0173" />
+    <PackageReference Include="System.Net.Http.Json" Version="6.0.1" />
     <PackageReference Include="Xamarin.Forms" Version="5.0.0.2083" />  
     <PackageReference Include="Xamarin.Essentials" Version="1.7.5" />
   </ItemGroup>

@@ -73,6 +73,7 @@ namespace Training.Data
                 return await Task.FromResult($"{e.Message}/Inner Exception {e.InnerException?.Message}");
             }
 
+            item.DocumentID = docId;
             return await Task.FromResult<string>(null);
         }
 
