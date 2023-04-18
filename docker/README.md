@@ -146,9 +146,17 @@ This section provides some instruction about how to run the Todo docker compose 
    curl -L -u "admin:password" http://<EC2-ADDRESS>:4985/todo/_config
    ```
 
-7. The instance of todo that you just got running, will terminate when you log out.  If this is not what you intend, you can use this linux command:
+7. The instance of todo that you just got running, will terminate when you log out.  To run docker compose as a service, create a soft link from
+  /etc/systemd/system/todo.service to the todo.service file in this directory:
 
    ```
-   sudo loginctl enable-linger `whoami`
+   cd /etc/systemd/system
+   sudo ln -s /home/ubuntu/mobile-training-todo/docker/todo.service .
+   systemctl enable todo
    ```
-Restart docker and it should stay running even after you end your ssh session.
+To start the service, type:
+
+   ```
+   systemctl start todo
+   ```
+

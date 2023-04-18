@@ -1,0 +1,17 @@
+[Unit]
+Description=Service for TODO
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/ubuntu/mobile-training-todo/docker
+Environment=COUCHBASE_VERSION=7.1.4
+Environment=SG_DEB=deb/couchbase-sync-gateway-enterprise_3.1.0-578_x86_64.deb
+ExecStart=/usr/bin/env /usr/bin/docker compose -f /home/ubuntu/mobile-training-todo/docker/docker-compose.yml up -d
+ExecStop=/usr/bin/env /usr/bin/docker compose -f /home/ubuntu/mobile-training-todo/docker/docker-compose.yml stop
+StandardOutput=syslog
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
