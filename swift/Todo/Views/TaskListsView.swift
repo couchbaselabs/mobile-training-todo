@@ -28,14 +28,9 @@ struct TaskListsView: View, TodoControllerDelegate {
     @State private var errorAlertDescription: String = ""
     @State private var presentEditListAlert: Bool = false
     @State var editingTaskList: TaskList? = nil
-    @State var searchText: String = ""
     
     private var filteredResults: [any QueryResultProtocol] {
-        if !searchText.isEmpty {
-            return taskListsQuery.change.results.filter { $0.string(forKey: "name")!.contains(searchText) }
-        } else {
             return taskListsQuery.change.results
-        }
     }
     
     var body: some View {
@@ -66,7 +61,6 @@ struct TaskListsView: View, TodoControllerDelegate {
             .onDisappear {
                 print("")
             }
-            .searchable(text: $searchText)
             .navigationBarBackButtonHidden()
             .navigationTitle("Task Lists")
             .navigationBarTitleDisplayMode(.inline)
