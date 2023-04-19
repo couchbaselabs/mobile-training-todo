@@ -4,10 +4,11 @@ plugins {
     id "org.openjfx.javafxplugin" version "0.0.13"
 }
 
-ext { CBL_VERSION = "3.1.0-SNAPSHOT" }
+ext { CBL_VERSION = "3.1.0-413" }
 
 // Set true to use mavenLocal instead of Proget
 def USE_LOCAL_MAVEN = project.hasProperty("useLocalMaven")
+def CBL_LIB_EXT = (!USE_LOCAL_MAVEN) ? "" : "-macos"
 
 group 'com.couchbase'
 version '1.0'
@@ -34,7 +35,7 @@ repositories {
 dependencies {
     implementation 'org.jetbrains:annotations:22.0.0'
 
-    implementation "com.couchbase.lite:couchbase-lite-java-ee-macos:${CBL_VERSION}"
+    implementation "com.couchbase.lite:couchbase-lite-java-ee${CBL_LIB_EXT}:${CBL_VERSION}"
 }
 
 javafx {

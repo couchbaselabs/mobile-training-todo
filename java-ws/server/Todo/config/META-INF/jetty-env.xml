@@ -23,8 +23,7 @@
     <New class="org.eclipse.jetty.plus.jndi.EnvEntry">
         <Arg/>
         <Arg>syncGatewayUrl</Arg>
-        <!-- Arg type="java.lang.String">ws://localhost:4984/todo</Arg -->
-        <Arg type="java.lang.String"/>
+        <Arg type="java.lang.String">ws://ec2-3-135-230-240.us-east-2.compute.amazonaws.com:4984/todo</Arg>
         <Arg type="boolean">false</Arg>
     </New>
     <New class="org.eclipse.jetty.plus.jndi.EnvEntry">

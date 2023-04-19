@@ -25,7 +25,7 @@ public class TodoApp extends Application {
     public static final CR_MODE SYNC_CR_MODE = CR_MODE.DEFAULT;
 
     public static final String DB_DIR = "db";
-    public static final String SYNC_URL = "ws://127.0.0.1:4984/todo";
+    public static final String SYNC_URL = "ws://ec2-3-135-230-240.us-east-2.compute.amazonaws.com:4984/todo";
     public static final String LOGIN_FXML = "/scene/Login.fxml";
     public static final String MAIN_FXML = "/scene/Main.fxml";
     public static final String CONFIG_FXML = "/scene/Config.fxml";

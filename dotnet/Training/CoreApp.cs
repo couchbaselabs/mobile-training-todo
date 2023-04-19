@@ -28,8 +28,8 @@ namespace Training
     {
         #region Constants
 
-        internal static readonly Uri SyncGatewayUrl = new Uri("ws://ec2-3-137-194-161.us-east-2.compute.amazonaws.com:4984/todo");
-        internal static readonly Uri SyncGatewayAdminUrl = new Uri("http://ec2-3-137-194-161.us-east-2.compute.amazonaws.com:4985/todo");
+        internal static readonly Uri SyncGatewayUrl = new Uri("ws://ec2-3-135-230-240.us-east-2.compute.amazonaws.com:4984/todo");
+        internal static readonly Uri SyncGatewayAdminUrl = new Uri("http://ec2-3-135-230-240.us-east-2.compute.amazonaws.com:4985/todo");
 
         #endregion
 
