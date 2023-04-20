@@ -61,7 +61,9 @@ struct UsersView: View, TodoControllerDelegate {
             }
         }
         .alert("Add User", isPresented: $presentAddUserAlert) {
-            TextField("Username", text: $newUsername).textInputAutocapitalization(.never)
+            TextField("Username", text: $newUsername)
+                .autocorrectionDisabled(true)
+                .textInputAutocapitalization(.never)
             Button("Cancel", role: .cancel, action: {})
             Button("Add") {
                 if !newUsername.isEmpty {
