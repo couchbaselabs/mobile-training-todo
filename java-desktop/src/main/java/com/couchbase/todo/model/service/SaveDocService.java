@@ -21,7 +21,7 @@ public class SaveDocService extends Service<Document> {
 
     @Override
     protected Task<Document> createTask() {
-        return new Task<>() {
+        return new Task<Document>() {
             @Override
             protected Document call() throws CouchbaseLiteException {
                 return DB.get().saveDocument(collectionName, document);

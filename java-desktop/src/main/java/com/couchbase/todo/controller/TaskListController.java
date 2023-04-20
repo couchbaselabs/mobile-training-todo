@@ -201,7 +201,8 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
         taskListInfo.setValue(DB.KEY_TASK_LIST_ID, taskList.getId());
         taskListInfo.setValue(DB.KEY_TASK_LIST_OWNER, taskList.getOwner());
         doc.setValue(DB.KEY_TASK_LIST, taskListInfo);
-       new CreateListService(doc).start();
+
+        new SaveDocService(DB.COLLECTION_TASKS, doc).start();
     }
 
     private void updateTaskName(@NotNull String id, @NotNull String name) {

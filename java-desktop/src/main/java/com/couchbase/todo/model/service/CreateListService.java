@@ -29,6 +29,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 import com.couchbase.lite.CouchbaseLiteException;
+import com.couchbase.lite.Database;
 import com.couchbase.lite.Document;
 import com.couchbase.lite.MutableDocument;
 import com.couchbase.todo.TodoApp;
@@ -59,7 +60,7 @@ public class CreateListService extends Service<Document> {
 
     @Override
     protected Task<Document> createTask() {
-        return new Task<>() {
+        return new Task<Document>() {
             @Override
             protected Document call() throws CouchbaseLiteException {
                 if (document == null) { return null; }

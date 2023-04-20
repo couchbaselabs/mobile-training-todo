@@ -40,6 +40,7 @@ import com.couchbase.lite.ReplicatorConfiguration;
 import com.couchbase.lite.ReplicatorStatus;
 import com.couchbase.lite.ReplicatorType;
 import com.couchbase.lite.URLEndpoint;
+import com.couchbase.todo.Logger;
 import com.couchbase.todo.TodoApp;
 
 
@@ -64,8 +65,14 @@ public class DB {
 
     private static final AtomicReference<DB> INSTANCE = new AtomicReference<>();
 
-    private static final List<String> COLLECTIONS = List.of(COLLECTION_LISTS, COLLECTION_TASKS, COLLECTION_USERS);
-
+    private static final List<String> COLLECTIONS;
+    static {
+        final List<String> l = new ArrayList<>();
+        l.add(COLLECTION_LISTS);
+        l.add(COLLECTION_TASKS);
+        l.add(COLLECTION_USERS);
+        COLLECTIONS = Collections.unmodifiableList(l);
+    }
     public static DB get() {
         final DB instance = INSTANCE.get();
         if (instance != null) { return instance; }
@@ -92,6 +99,7 @@ public class DB {
         ConsoleLogger log = Database.log.getConsole();
         log.setLevel(LogLevel.DEBUG);
         log.setDomains(LogDomain.ALL_DOMAINS);
+        Logger.setLogger(log);
     }
 
     public ExecutorService getExecutor() { return executor; }
@@ -242,7 +250,7 @@ public class DB {
         CollectionConfiguration collConfig = null;
         TodoApp.CR_MODE crmode = appConfig.getCrMode();
         if ((crmode != null) && (crmode != TodoApp.CR_MODE.DEFAULT)) {
-            collConfig =  new CollectionConfiguration();
+            collConfig = new CollectionConfiguration();
             collConfig.setConflictResolver(conflict -> {
                 Document local = conflict.getLocalDocument();
                 Document remote = conflict.getRemoteDocument();

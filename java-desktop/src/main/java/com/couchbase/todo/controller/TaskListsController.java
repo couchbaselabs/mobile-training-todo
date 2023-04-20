@@ -1,7 +1,13 @@
 package com.couchbase.todo.controller;
 
 import java.net.URL;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.ResourceBundle;
+import java.util.UUID;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -13,7 +19,18 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextInputDialog;
 import org.jetbrains.annotations.NotNull;
 
-import com.couchbase.lite.*;
+import com.couchbase.lite.Document;
+import com.couchbase.lite.Expression;
+import com.couchbase.lite.Function;
+import com.couchbase.lite.Join;
+import com.couchbase.lite.Meta;
+import com.couchbase.lite.MutableDocument;
+import com.couchbase.lite.Ordering;
+import com.couchbase.lite.Query;
+import com.couchbase.lite.QueryBuilder;
+import com.couchbase.lite.Result;
+import com.couchbase.lite.ResultSet;
+import com.couchbase.lite.SelectResult;
 import com.couchbase.todo.model.DB;
 import com.couchbase.todo.model.TaskList;
 import com.couchbase.todo.model.service.DeleteDocService;
@@ -22,6 +39,11 @@ import com.couchbase.todo.view.TaskListCell;
 
 
 public final class TaskListsController implements Initializable, TaskListCell.TaskListCellListener {
+    private static final String COL_ID = "id";
+    private static final String COL_UNFINISHED = "unfinished";
+    private static final String COL_NAME = "name";
+    private static final String COL_OWNER = "owner";
+
     @FXML
     private ListView<TaskList> listView;
 
@@ -46,7 +68,7 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
 
         Query query = QueryBuilder
             .select(
-                SelectResult.expression(Meta.id),
+                SelectResult.expression(Meta.id).as(COL_ID),
                 SelectResult.property(DB.KEY_NAME),
                 SelectResult.property(DB.KEY_OWNER))
             .from(db.getDataSource(DB.COLLECTION_LISTS))
@@ -129,9 +151,10 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
     }
 
     private void updateTaskList(List<Result> results) {
-        ObservableList<TaskList> taskLists = FXCollections.observableArrayList();
+        ObservableList<TaskList> taskLists = listView.getItems();
         for (Result r: results) {
-            taskLists.add(new TaskList(r.getString(0), r.getString(1), r.getString(2)));
+            TaskList list = new TaskList(r.getString(COL_ID), r.getString(COL_NAME), r.getString(COL_OWNER));
+            taskLists.add(list);
             if (MainController.JSON_BOOLEAN.get()) {
                 System.out.println("Update list to JSON: " + r.toJSON());
             }
@@ -148,17 +171,16 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
             return;
         }
 
-        if (todoQuery != null) { return; }
-
         todoQuery = QueryBuilder
             .select(
-                SelectResult.expression(Meta.id.from("lists")),
-                SelectResult.expression(Function.count(Meta.id.from("tasks"))).as("unfinished"))
+                SelectResult.expression(Meta.id.from("lists")).as(COL_ID),
+                SelectResult.expression(Function.count(Meta.id.from("tasks"))).as(COL_UNFINISHED))
             .from(db.getDataSource(DB.COLLECTION_LISTS).as("lists"))
             .join(Join.innerJoin(db.getDataSource(DB.COLLECTION_TASKS).as("tasks"))
                 .on(Expression.property(DB.KEY_PARENT_LIST_ID).from("tasks").equalTo(Meta.id.from("lists"))))
             .where(Expression.property(DB.KEY_COMPLETE).from("tasks").equalTo(Expression.booleanValue(false)))
             .groupBy(Meta.id.from("lists"));
+
 
         db.addChangeListener(
             todoQuery,
@@ -171,7 +193,7 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
     private void updateToDoCount(List<Result> results) {
         Map<String, Integer> toDoCounts = new HashMap<>();
         for (Result result: results) {
-            toDoCounts.put(result.getString(0), result.getInt(1));
+            toDoCounts.put(result.getString(COL_ID), result.getInt(COL_UNFINISHED));
             if (MainController.JSON_BOOLEAN.get()) {
                 System.out.println("Updated count of list toJson: " + result.toJSON());
             }

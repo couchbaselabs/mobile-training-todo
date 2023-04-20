@@ -23,7 +23,7 @@ public class FetchDocService extends Service<Document> {
 
     @Override
     protected Task<Document> createTask() {
-        return new Task<>() {
+        return new Task<Document>() {
             @Override
             protected Document call() { return DB.get().getDocument(collectionName, docId); }
         };

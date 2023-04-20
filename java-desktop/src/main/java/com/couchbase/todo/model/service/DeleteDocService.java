@@ -23,7 +23,7 @@ public class DeleteDocService extends Service<Void> {
 
     @Override
     protected Task<Void> createTask() {
-        return new Task<>() {
+        return new Task<Void>() {
             @Override
             protected Void call() throws CouchbaseLiteException {
                 DB.get().deleteDocument(collectionName, docId);
