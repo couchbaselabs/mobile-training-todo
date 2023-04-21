@@ -48,7 +48,7 @@ public let MAX_ATTEMPTS_KEY = "setting.maxAttempt"
 public let MAX_ATTEMPTS_WAIT_TIME_KEY = "setting.maxAttemptWaitTime"
 
 // Initial states
-fileprivate let kSyncURL = "ws://localhost:4984/todo"
+fileprivate let kSyncURL = "ws://ec2-13-58-155-223.us-east-2.compute.amazonaws.com/todo"
 
 fileprivate let kSyncAdminPort = 4985
 fileprivate let kSyncAdminUsername = "Administrator"
@@ -101,6 +101,12 @@ class Config {
             defaults.set(kMaxAttempt, forKey: MAX_ATTEMPTS_KEY)
             defaults.set(kMaxAttemptWaitTime, forKey: MAX_ATTEMPTS_WAIT_TIME_KEY)
         }
+        if (defaults.string(forKey: SYNC_ADMIN_USERNAME_KEY) == nil) {
+            defaults.set(kSyncAdminUsername, forKey: SYNC_ADMIN_USERNAME_KEY)
+        }
+        if (defaults.string(forKey: SYNC_ADMIN_PASSWORD_KEY) == nil) {
+            defaults.set(kSyncAdminPassword, forKey: SYNC_ADMIN_PASSWORD_KEY)
+        }
         
         loggingEnabled = defaults.bool(forKey: IS_LOGGING_KEY)
         syncEnabled = defaults.bool(forKey: IS_SYNC_KEY)
@@ -115,6 +121,7 @@ class Config {
         syncAdminPort = defaults.integer(forKey: SYNC_ADMIN_PORT_KEY)
         syncAdminUsername = defaults.string(forKey: SYNC_ADMIN_USERNAME_KEY)!
         syncAdminPassword = defaults.string(forKey: SYNC_ADMIN_PASSWORD_KEY)!
+        
     }
     
     public func save() {
