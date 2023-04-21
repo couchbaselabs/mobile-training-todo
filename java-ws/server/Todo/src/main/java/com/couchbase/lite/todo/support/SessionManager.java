@@ -21,6 +21,7 @@ import com.couchbase.lite.ReplicatorStatus;
 import com.couchbase.lite.SessionAuthenticator;
 import com.couchbase.lite.URLEndpoint;
 import com.couchbase.lite.todo.Application;
+import com.couchbase.lite.todo.Logger;
 import com.couchbase.lite.todo.model.User;
 
 
@@ -129,8 +130,7 @@ public class SessionManager {
         config.setDirectory(Application.getDatabaseDirectory());
         try { return new Database(username, config); }
         catch (CouchbaseLiteException e) {
-            System.out.println("Failed opening database: " + username);
-            e.printStackTrace();
+            Logger.log("Failed opening database: " + username, e);
         }
         return null;
     }
@@ -140,8 +140,7 @@ public class SessionManager {
         URI sgwUri;
         try { sgwUri = new URI(url); }
         catch (URISyntaxException e) {
-            System.out.println("Failed parsing URL: " + url);
-            e.printStackTrace();
+            Logger.log("Failed parsing URL: " + url, e);
             return null;
         }
         final CollectionConfiguration collConfig = new CollectionConfiguration();

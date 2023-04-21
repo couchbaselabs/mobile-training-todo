@@ -67,7 +67,7 @@ public class TaskList {
         createList(collection, mDoc);
 
         Document doc = collection.getDocument(mDoc.getId());
-        System.out.println("LIST: Created list: " + doc.toJSON());
+        Logger.log("LIST: Created list: " + doc.toJSON());
 
         return docId;
     }
@@ -83,7 +83,7 @@ public class TaskList {
 
         collection.save(doc.toMutable().setValue("name", list.getName()));
 
-        System.out.println("LIST: Updated list: " + collection.getDocument(id).toJSON());
+        Logger.log("LIST: Updated list: " + collection.getDocument(id).toJSON());
     }
 
     public static void delete(UserContext context, String id) throws CouchbaseLiteException {
@@ -92,7 +92,7 @@ public class TaskList {
         Collection collection = context.getDataSource(COLLECTION_LISTS);
         Document doc = collection.getDocument(id);
         if (doc != null) { collection.delete(doc); }
-        System.out.println("LIST: Deleted list: " + doc.toJSON());
+        Logger.log("LIST: Deleted list: " + doc.toJSON());
     }
 
     public static List<TaskList> getTaskLists(UserContext context) throws CouchbaseLiteException {
@@ -113,7 +113,7 @@ public class TaskList {
                 taskList.setOwner(r.getString(2));
                 lists.add(taskList);
 
-                System.out.println("LIST: found: " + taskList);
+                Logger.log("LIST: found: " + taskList);
             }
         }
 

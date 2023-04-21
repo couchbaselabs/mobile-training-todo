@@ -65,7 +65,7 @@ public class Application extends ResourceConfig {
 
     private static Object getEnv(String name) {
         try { return new InitialContext().lookup("java:/comp/env/" + name); }
-        catch (NamingException e) { System.out.println("No such name: " + name); }
+        catch (NamingException e) { Logger.log("No such name: " + name); }
         return null;
     }
 
@@ -91,14 +91,15 @@ public class Application extends ResourceConfig {
             ConsoleLogger logger = Database.log.getConsole();
             logger.setDomains(LogDomain.ALL_DOMAINS);
             logger.setLevel(LogLevel.DEBUG);
+            Logger.setLogger(logger);
         }
 
-        System.out.println("> Database Directory: " + getDatabaseDirectory());
-        System.out.println("> Sync Gateway URL: " + getSyncGatewayUrl());
-        System.out.println("> Verbose Logging: " + getLoggingEnabled());
-        System.out.println("> Login Required: " + getLoginRequired());
-        System.out.println("> Custom Conflict Resolution: " + getCustomConflictResolution());
-        System.out.println("> Max retries: " + getMaxRetries());
-        System.out.println("> Wait time: " + getWaitTime());
+        Logger.log("> Database Directory: " + getDatabaseDirectory());
+        Logger.log("> Sync Gateway URL: " + getSyncGatewayUrl());
+        Logger.log("> Verbose Logging: " + getLoggingEnabled());
+        Logger.log("> Login Required: " + getLoginRequired());
+        Logger.log("> Custom Conflict Resolution: " + getCustomConflictResolution());
+        Logger.log("> Max retries: " + getMaxRetries());
+        Logger.log("> Wait time: " + getWaitTime());
     }
 }

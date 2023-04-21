@@ -22,6 +22,7 @@ import com.couchbase.lite.QueryBuilder;
 import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
+import com.couchbase.lite.todo.Logger;
 import com.couchbase.lite.todo.support.ResponseException;
 import com.couchbase.lite.todo.support.UserContext;
 import com.couchbase.lite.todo.util.Preconditions;
@@ -61,7 +62,7 @@ public class Task {
 
         Collection collection = context.getDataSource(COLLECTION_TASKS);
         collection.save(doc);
-        System.out.println("TASK: New task: " + collection.getDocument(doc.getId()).toJSON());
+        Logger.log("TASK: New task: " + collection.getDocument(doc.getId()).toJSON());
 
         return doc.getId();
     }
@@ -87,7 +88,7 @@ public class Task {
         mdoc.setValue(KEY_COMPLETE, task.isComplete());
 
         collection.save(mdoc);
-        System.out.println("TASK: New task: " + collection.getDocument(mdoc.getId()).toJSON());
+        Logger.log("TASK: New task: " + collection.getDocument(mdoc.getId()).toJSON());
     }
 
     public static void delete(UserContext context, String taskId) throws CouchbaseLiteException {
@@ -97,7 +98,7 @@ public class Task {
         Document doc = collection.getDocument(taskId);
         if (doc != null) { collection.delete(doc); }
 
-        System.out.println("TASK: Deleted task: " + doc.toJSON());
+        Logger.log("TASK: Deleted task: " + doc.toJSON());
     }
 
     public static void updateImage(
@@ -193,7 +194,7 @@ public class Task {
 
                 tasks.add(task);
 
-                System.out.println("TASK: found: " + task);
+                Logger.log("TASK: found: " + task);
             }
         }
 

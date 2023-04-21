@@ -51,6 +51,11 @@
               {{ list.name }}
             </v-list-item-title>
           </v-list-item-content>
+          <v-list-item-action>
+            <v-btn icon @click="deleteTaskList(list)">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </v-list-item-action>
         </v-list-item>
       </v-list-item-group>
     </v-list>
@@ -92,6 +97,18 @@ export default {
         });
       this.dialog = false;
       this.newListName = "";
+    },
+
+    deleteTaskList: function(list) {
+      let taskListId = list.id;
+      TodoService.deleteTaskList(taskListId)
+        .then(() => {
+          var i = this.lists.indexOf(list)
+          if (i >= 0) { this.lists.splice(i, 1) }
+        })
+        .catch(error => {
+          event.$emit("ws-error", { error, when: "Delete Task" });
+        });
     }
   }
 };

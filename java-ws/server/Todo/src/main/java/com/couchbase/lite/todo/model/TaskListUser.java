@@ -17,6 +17,7 @@ import com.couchbase.lite.QueryBuilder;
 import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
+import com.couchbase.lite.todo.Logger;
 import com.couchbase.lite.todo.support.ResponseException;
 import com.couchbase.lite.todo.support.UserContext;
 import com.couchbase.lite.todo.util.Preconditions;
@@ -59,7 +60,7 @@ public class TaskListUser {
 
         collection = context.getDataSource(COLLECTION_USERS);
         collection.save(doc);
-        System.out.println("USER: Added user for list " + taskListId + ": " + collection.getDocument(docId).toJSON());
+        Logger.log("USER: Added user for list " + taskListId + ": " + collection.getDocument(docId).toJSON());
 
         return doc.getId();
     }
@@ -70,7 +71,7 @@ public class TaskListUser {
         Collection collection = context.getDataSource(COLLECTION_USERS);
         Document doc = collection.getDocument(userId);
         if (doc != null) { collection.delete(doc); }
-        System.out.println("USER: Deleted user: " + doc.toJSON());
+        Logger.log("USER: Deleted user: " + doc.toJSON());
     }
 
     public static List<TaskListUser> getUsers(UserContext context, String taskListId) throws CouchbaseLiteException {
@@ -88,7 +89,7 @@ public class TaskListUser {
         List<TaskListUser> users = new ArrayList<>();
         try (ResultSet rs = query.execute()) {
             List<Result> results = rs.allResults();
-            System.out.println("###### GET USERS: " + results.size());
+            Logger.log("###### GET USERS: " + results.size());
             for (Result r: results) {
                 TaskListUser user = new TaskListUser();
                 user.setId(r.getString(0));
@@ -101,7 +102,7 @@ public class TaskListUser {
 
                 users.add(user);
 
-                System.out.println("USER: found: " + user);
+                Logger.log("USER: found: " + user);
             }
         }
 
