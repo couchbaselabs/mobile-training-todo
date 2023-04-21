@@ -50,7 +50,8 @@ public class TaskListCell extends ListCell<TaskList> {
         setTaskList(taskList);
 
         if (empty || taskList == null) {
-            setText(null);
+            if (nameLabel != null) { nameLabel.setText(""); }
+            if (todoLabel != null) { todoLabel.setText(""); }
             setContextMenu(null);
             return;
         }

@@ -151,6 +151,7 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
     }
 
     private void updateTaskList(List<Result> results) {
+        listView.setItems(FXCollections.observableArrayList());
         ObservableList<TaskList> taskLists = listView.getItems();
         for (Result r: results) {
             TaskList list = new TaskList(r.getString(COL_ID), r.getString(COL_NAME), r.getString(COL_OWNER));
@@ -159,7 +160,6 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
                 System.out.println("Update list to JSON: " + r.toJSON());
             }
         }
-        listView.setItems(taskLists);
 
         DB db = DB.get();
 
@@ -180,7 +180,6 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
                 .on(Expression.property(DB.KEY_PARENT_LIST_ID).from("tasks").equalTo(Meta.id.from("lists"))))
             .where(Expression.property(DB.KEY_COMPLETE).from("tasks").equalTo(Expression.booleanValue(false)))
             .groupBy(Meta.id.from("lists"));
-
 
         db.addChangeListener(
             todoQuery,
@@ -204,6 +203,7 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
             Integer todo = toDoCounts.get(taskList.getId());
             taskLists.add(new TaskList(taskList, (todo == null) ? 0 : todo));
         }
+
         listView.setItems(taskLists);
     }
 }
