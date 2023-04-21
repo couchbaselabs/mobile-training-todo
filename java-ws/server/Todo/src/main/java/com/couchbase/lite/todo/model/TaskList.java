@@ -2,6 +2,7 @@ package com.couchbase.lite.todo.model;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,7 @@ import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
 import com.couchbase.lite.todo.Application;
+import com.couchbase.lite.todo.Logger;
 import com.couchbase.lite.todo.support.ResponseException;
 import com.couchbase.lite.todo.support.UserContext;
 import com.couchbase.lite.todo.util.Preconditions;
@@ -56,17 +58,18 @@ public class TaskList {
 
         String username = context.getUsername();
         String docId = username + "." + UUID.randomUUID();
-        MutableDocument doc = new MutableDocument(docId);
-        doc.setValue(KEY_NAME, list.getName());
-        doc.setValue(KEY_OWNER, username);
+        MutableDocument mDoc = new MutableDocument(docId);
+        mDoc.setValue(KEY_NAME, list.getName());
+        mDoc.setValue(KEY_OWNER, username);
 
         Collection collection = context.getDataSource(COLLECTION_LISTS);
 
-        createList(collection, doc);
+        createList(collection, mDoc);
 
-        System.out.println("LIST: Created list: " + collection.getDocument(docId).toJSON());
+        Document doc = collection.getDocument(mDoc.getId());
+        System.out.println("LIST: Created list: " + doc.toJSON());
 
-        return doc.getId();
+        return docId;
     }
 
     public static void update(UserContext context, String id, TaskList list) throws CouchbaseLiteException {
@@ -118,26 +121,43 @@ public class TaskList {
     }
 
     private static void createList(Collection collection, MutableDocument doc) throws CouchbaseLiteException {
-        final URL sgUri;
-        try { sgUri = new URL(Application.getSyncGatewayUrl()); }
-        catch (MalformedURLException e) { return; }
+        final String sgwURL = Application.getSyncGatewayUrl();
+        final URI sgUri;
+        try { sgUri = URI.create(sgwURL).normalize(); }
+        catch (IllegalArgumentException err) {
+            Logger.log("Invalid SG URI: " + sgwURL, err);
+            return;
+        }
 
         final String adminUri = "http://" + sgUri.getHost() + ":4985/todo/_role/";
         final URL sgAdminUrl;
         try { sgAdminUrl = new URL(adminUri); }
-        catch (MalformedURLException e) { return; }
+        catch (MalformedURLException e) {
+            Logger.log("Bad admin URL: " + adminUri, e);
+            return;
+        }
+
+        final String body = REQ_BODY_BEGIN + doc.getId() + REQ_BODY_END;
+        Logger.log("Creating role: " + adminUri + "\n" + body);
 
         final Request request = new Request.Builder()
             .url(sgAdminUrl)
             .addHeader("Authorization", Credentials.basic("admin", "password"))
-            .post(RequestBody.create(MediaType.parse("application/json"), REQ_BODY_BEGIN + doc.getId() + REQ_BODY_END))
+            .post(RequestBody.create(
+                MediaType.parse("application/json"), body))
             .build();
 
         try (Response response = new OkHttpClient.Builder().build().newCall(request).execute()) {
             // 409 is CONFLICT, which means the role already exists
-            if (!response.isSuccessful() && (409 != response.code())) { return; }
+            if (!response.isSuccessful() && (409 != response.code())) {
+                Logger.log("Create role request failed: " + response);
+                return;
+            }
         }
-        catch (IOException e) { return; }
+        catch (IOException e) {
+            Logger.log("Create role request error", e);
+            return;
+        }
 
         collection.save(doc);
     }

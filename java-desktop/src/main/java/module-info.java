@@ -5,9 +5,9 @@ module com.couchbase.todo {
     requires javafx.controls;
 
     requires org.jetbrains.annotations;
+    requires okhttp3;
 
     requires couchbase.lite.java.ee;
-    requires okhttp3;
 
     opens com.couchbase.todo to javafx.fxml;
     opens com.couchbase.todo.view to javafx.fxml;

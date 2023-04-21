@@ -12,7 +12,7 @@ The application can be configured via static variables defined in the TodoApp cl
 * JavaFX
 
 ## Requirement
-* Java 11
+* Java 11 <= V <= 18
 
 ## How to run
 
@@ -23,4 +23,5 @@ The application can be configured via static variables defined in the TodoApp cl
  ```
 2. Using IntelliJ
 
- * Right click on TodoApp.class and select Run
+ * IntelliJ won't run this because it can't handle the missing module info for the com.couchbase.mobile.ee package
+

@@ -11,7 +11,9 @@ The admin credentials of the Couchbase Server instance and the `todo` bucket for
 | Couchbase Server | Administrator:password |
 | todo bucket | admin:password |
 
-The users for the Todo app are blake, callum, dan, jens, jianmin, jim, pasin, vlad, user1, user2, user3. All have the same password, which is 'pass'.
+The users for the Todo app are: abhay, blake, callum, dan, dragos, gilad, henry, jens, jianmin, jim, kev, monty, pasin, thuan, vlad
+Extra users are:  user1, user2, user3, user4
+Password for all users is: pass
 
 ## Requirements
 

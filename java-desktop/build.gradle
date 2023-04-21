@@ -7,7 +7,7 @@ plugins {
 ext { CBL_VERSION = "3.1.0-413" }
 
 // Set true to use mavenLocal instead of Proget
-def USE_LOCAL_MAVEN = false // project.hasProperty("useLocalMaven")
+def USE_LOCAL_MAVEN = project.hasProperty("useLocalMaven")
 def CBL_LIB_EXT = (!USE_LOCAL_MAVEN) ? "" : "-macos"
 
 group 'com.couchbase'
