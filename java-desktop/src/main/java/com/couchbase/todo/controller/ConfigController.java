@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 import com.couchbase.lite.internal.core.CBLVersion;
 import com.couchbase.todo.TodoApp;
-import com.couchbase.todo.model.Config;
+import com.couchbase.todo.Config;
 import com.couchbase.todo.model.DB;
 
 
@@ -85,8 +85,15 @@ public class ConfigController implements Initializable {
         boolean logging = loggingCheckbox.isSelected();
         boolean login = loginCheckbox.isSelected();
 
-        Config newConfig = Config.builder().logging(logging).login(login).dbName(eDbName).sgwUri(eSgUri)
-            .attempts(Integer.parseInt(eAttempts)).waitTime(Integer.parseInt(eWaitTime)).mode(mode).build();
+        Config newConfig = Config.builder()
+            .logging(logging)
+            .login(login)
+            .dbName(eDbName)
+            .sgwUri(eSgUri)
+            .attempts(Integer.parseInt(eAttempts))
+            .waitTime(Integer.parseInt(eWaitTime))
+            .mode(mode)
+            .build();
 
         TodoApp.getTodoApp().setConfig(newConfig);
         DB.get().logout();

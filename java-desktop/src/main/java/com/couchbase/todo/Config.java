@@ -1,6 +1,4 @@
-package com.couchbase.todo.model;
-
-import com.couchbase.todo.TodoApp;
+package com.couchbase.todo;
 
 
 public final class Config {

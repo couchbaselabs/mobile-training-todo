@@ -18,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.couchbase.lite.Blob;
+import com.couchbase.todo.Logger;
 import com.couchbase.todo.TodoApp;
 import com.couchbase.todo.model.Task;
 
@@ -63,18 +64,22 @@ public class TaskCell extends ListCell<Task> {
 
         setTask(task);
 
+        if (loader == null) {
+            FXMLLoader sceneLoader = new FXMLLoader(TodoApp.class.getResource(TodoApp.TASK_FXML));
+            sceneLoader.setController(this);
+            try { sceneLoader.load(); }
+            catch (IOException e) {
+                Logger.log("Failed loading Task Cell scene", e);
+                return;
+            }
+            loader = sceneLoader;
+            registerEventHandlers();
+        }
+
         if (empty || task == null) {
             setGraphic(null);
             setContextMenu(null);
             return;
-        }
-
-        if (loader == null) {
-            loader = new FXMLLoader(TodoApp.class.getResource("/scene/TaskCell.fxml"));
-            loader.setController(this);
-            try { loader.load(); }
-            catch (IOException e) { e.printStackTrace(); }
-            registerEventHandlers();
         }
 
         setupContextMenu();

@@ -12,6 +12,7 @@ import javafx.scene.layout.AnchorPane;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.couchbase.todo.Logger;
 import com.couchbase.todo.TodoApp;
 import com.couchbase.todo.model.TaskList;
 
@@ -49,18 +50,22 @@ public class TaskListCell extends ListCell<TaskList> {
 
         setTaskList(taskList);
 
-        if (empty || taskList == null) {
-            if (nameLabel != null) { nameLabel.setText(""); }
-            if (todoLabel != null) { todoLabel.setText(""); }
-            setContextMenu(null);
-            return;
+        if (loader == null) {
+            FXMLLoader sceneLoader = new FXMLLoader(TodoApp.class.getResource(TodoApp.TASKS_FXML));
+            sceneLoader.setController(this);
+            try { sceneLoader.load(); }
+            catch (IOException e) {
+                Logger.log("Failed loading Task List Cell scene", e);
+                return;
+            }
+            loader = sceneLoader;
         }
 
-        if (loader == null) {
-            loader = new FXMLLoader(TodoApp.class.getResource("/scene/TasksCell.fxml"));
-            loader.setController(this);
-            try { loader.load(); }
-            catch (IOException e) { e.printStackTrace(); }
+        if (empty || taskList == null) {
+            nameLabel.setText("");
+            todoLabel.setText("");
+            setContextMenu(null);
+            return;
         }
 
         setupContextMenu();

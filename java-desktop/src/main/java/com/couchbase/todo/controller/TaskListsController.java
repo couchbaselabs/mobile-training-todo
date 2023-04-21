@@ -31,8 +31,10 @@ import com.couchbase.lite.QueryBuilder;
 import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
+import com.couchbase.todo.Logger;
 import com.couchbase.todo.model.DB;
 import com.couchbase.todo.model.TaskList;
+import com.couchbase.todo.model.service.CreateListService;
 import com.couchbase.todo.model.service.DeleteDocService;
 import com.couchbase.todo.model.service.SaveDocService;
 import com.couchbase.todo.view.TaskListCell;
@@ -111,7 +113,8 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
             MutableDocument doc = new MutableDocument(docId);
             doc.setValue(DB.KEY_NAME, name);
             doc.setValue(DB.KEY_OWNER, username);
-            new SaveDocService(DB.COLLECTION_LISTS, doc).start();
+            Logger.log("Create List: " + doc);
+            new CreateListService(doc).start();
         });
     }
 
@@ -154,10 +157,10 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
         listView.setItems(FXCollections.observableArrayList());
         ObservableList<TaskList> taskLists = listView.getItems();
         for (Result r: results) {
-            TaskList list = new TaskList(r.getString(COL_ID), r.getString(COL_NAME), r.getString(COL_OWNER));
-            taskLists.add(list);
-            if (MainController.JSON_BOOLEAN.get()) {
-                System.out.println("Update list to JSON: " + r.toJSON());
+            TaskList list = TaskList.create(r.getString(COL_ID), r.getString(COL_NAME), r.getString(COL_OWNER));
+            if (list != null) {
+                taskLists.add(list);
+                if (MainController.JSON_BOOLEAN.get()) { Logger.log("Update list to JSON: " + r.toJSON()); }
             }
         }
 
@@ -194,7 +197,7 @@ public final class TaskListsController implements Initializable, TaskListCell.Ta
         for (Result result: results) {
             toDoCounts.put(result.getString(COL_ID), result.getInt(COL_UNFINISHED));
             if (MainController.JSON_BOOLEAN.get()) {
-                System.out.println("Updated count of list toJson: " + result.toJSON());
+                Logger.log("Updated count of list toJson: " + result.toJSON());
             }
         }
 

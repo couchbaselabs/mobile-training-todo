@@ -1,9 +1,18 @@
 package com.couchbase.todo.model;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 
 public class TaskList {
+    @Nullable
+    public static TaskList create(@Nullable String id, @Nullable String name, @Nullable String owner) {
+        return ((id == null) || (name == null) || (owner == null))
+            ? null
+            : new TaskList(id, name, owner);
+    }
+
+
     @NotNull
     private final String id;
     @NotNull
@@ -38,5 +47,5 @@ public class TaskList {
     public int getTodo() { return todo; }
 
     @Override
-    public String toString() { return "TaskList{" + id + ", " + name  + ", " + owner + ", " + todo + "}"; }
+    public String toString() { return "TaskList{" + id + ", " + name + ", " + owner + ", " + todo + "}"; }
 }

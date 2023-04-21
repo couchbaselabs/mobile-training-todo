@@ -2,7 +2,6 @@ package com.couchbase.todo.model;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -17,7 +16,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.couchbase.lite.BasicAuthenticator;
-import com.couchbase.lite.CBLError;
 import com.couchbase.lite.Collection;
 import com.couchbase.lite.CollectionConfiguration;
 import com.couchbase.lite.ConsoleLogger;
@@ -27,7 +25,6 @@ import com.couchbase.lite.DataSource;
 import com.couchbase.lite.Database;
 import com.couchbase.lite.DatabaseConfiguration;
 import com.couchbase.lite.Document;
-import com.couchbase.lite.Endpoint;
 import com.couchbase.lite.ListenerToken;
 import com.couchbase.lite.LogDomain;
 import com.couchbase.lite.LogLevel;
@@ -40,6 +37,7 @@ import com.couchbase.lite.ReplicatorConfiguration;
 import com.couchbase.lite.ReplicatorStatus;
 import com.couchbase.lite.ReplicatorType;
 import com.couchbase.lite.URLEndpoint;
+import com.couchbase.todo.Config;
 import com.couchbase.todo.Logger;
 import com.couchbase.todo.TodoApp;
 
@@ -65,19 +63,24 @@ public class DB {
 
     private static final AtomicReference<DB> INSTANCE = new AtomicReference<>();
 
-    private static final List<String> COLLECTIONS;
-    static {
-        final List<String> l = new ArrayList<>();
-        l.add(COLLECTION_LISTS);
-        l.add(COLLECTION_TASKS);
-        l.add(COLLECTION_USERS);
-        COLLECTIONS = Collections.unmodifiableList(l);
-    }
+    private static final List<String> COLLECTIONS = List.of(COLLECTION_LISTS, COLLECTION_TASKS, COLLECTION_USERS);
+
     public static DB get() {
         final DB instance = INSTANCE.get();
         if (instance != null) { return instance; }
         INSTANCE.compareAndSet(null, new DB());
         return INSTANCE.get();
+    }
+
+    @Nullable
+    public static URI getReplicationUri() {
+        final String sgwURL = TodoApp.getTodoApp().getConfig().getSgwUri();
+        try { return URI.create(sgwURL).normalize(); }
+        catch (IllegalArgumentException err) {
+            Logger.log("Invalid SG URI: " + sgwURL, err);
+        }
+
+        return null;
     }
 
 
@@ -153,7 +156,7 @@ public class DB {
     public Document getDocument(@NotNull String collectionName, @NotNull String id) {
         try { return getAndVerifyCollection(collectionName).getDocument(id); }
         catch (CouchbaseLiteException e) {
-            reportError(e);
+            Logger.log("Failed fetching document: " + id, e);
             throw new RuntimeException(e);
         }
     }
@@ -167,7 +170,7 @@ public class DB {
             return collection.getDocument(doc.getId());
         }
         catch (CouchbaseLiteException e) {
-            reportError(e);
+            Logger.log("Failed saving document: " + doc, e);
             throw e;
         }
     }
@@ -181,7 +184,7 @@ public class DB {
             collection.delete(doc);
         }
         catch (CouchbaseLiteException e) {
-            reportError(e);
+            Logger.log("Failed deleting document: " + docId, e);
             throw e;
         }
     }
@@ -223,22 +226,16 @@ public class DB {
 
     void changed(ReplicatorChange change) {
         final ReplicatorStatus status = change.getStatus();
-        final CouchbaseLiteException error = status.getError();
-        if (error == null) { return; }
-        reportError(error);
+        final CouchbaseLiteException err = status.getError();
+        if (err != null) { Logger.log("Replication error: ", err); }
     }
 
     private void startReplication(@NotNull String username, @NotNull String password) {
-        final Database db = getAndVerifyDb();
-
         final URI sgUri = getReplicationUri();
         if (sgUri == null) { return; }
 
-        final Endpoint endpoint = new URLEndpoint(sgUri);
-
         final Config appConfig = TodoApp.getTodoApp().getConfig();
-
-        final ReplicatorConfiguration config = new ReplicatorConfiguration(endpoint)
+        final ReplicatorConfiguration config = new ReplicatorConfiguration(new URLEndpoint(sgUri))
             .setType(ReplicatorType.PUSH_AND_PULL)
             .setContinuous(true)
             .setMaxAttempts(appConfig.getAttempts())
@@ -275,19 +272,6 @@ public class DB {
         this.replicator = replicator;
     }
 
-    @Nullable
-    private URI getReplicationUri() {
-        try { return URI.create(TodoApp.SYNC_URL).normalize(); }
-        catch (IllegalArgumentException ignore) { }
-
-        reportError(new CouchbaseLiteException(
-            "Invalid SG URI",
-            CBLError.Domain.CBLITE,
-            CBLError.Code.INVALID_URL));
-
-        return null;
-    }
-
     private void stopReplication() {
         final Replicator repl = replicator;
         if (repl != null) { repl.stop(); }
@@ -309,22 +293,12 @@ public class DB {
     }
 
     private void closeDatabase(Database db) {
-        for (int i = 0; i < 5; i++) {
-            try {
-                db.close();
-                return;
-            }
-            catch (CouchbaseLiteException e) {
-                if (e.getCode() == CBLError.Code.BUSY) {
-                    try { Thread.sleep(200); }
-                    catch (InterruptedException ignore) { }
-                    continue;
-                }
-                reportError(e);
-                break;
-            }
+        try { db.close(); }
+        catch (CouchbaseLiteException e) {
+            Logger.log("Failed closing database", e);
         }
     }
+
 
     @NotNull
     private Database getAndVerifyDb() {
@@ -346,9 +320,5 @@ public class DB {
         catch (CouchbaseLiteException e) {
             throw new IllegalStateException("Cannot create collection: " + collectionName);
         }
-    }
-
-    private void reportError(@NotNull CouchbaseLiteException err) {
-        System.err.println("DB error: " + err);
     }
 }

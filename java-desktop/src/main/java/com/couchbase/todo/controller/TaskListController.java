@@ -46,11 +46,11 @@ import com.couchbase.lite.QueryBuilder;
 import com.couchbase.lite.Result;
 import com.couchbase.lite.ResultSet;
 import com.couchbase.lite.SelectResult;
+import com.couchbase.todo.Logger;
 import com.couchbase.todo.TodoApp;
 import com.couchbase.todo.model.DB;
 import com.couchbase.todo.model.Task;
 import com.couchbase.todo.model.TaskList;
-import com.couchbase.todo.model.service.CreateListService;
 import com.couchbase.todo.model.service.DeleteDocService;
 import com.couchbase.todo.model.service.SaveDocService;
 import com.couchbase.todo.view.TaskCell;
@@ -107,7 +107,7 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
 
         shareButton.setOnAction(event -> {
             try {
-                FXMLLoader loader = new FXMLLoader(TodoApp.class.getResource("/scene/Share.fxml"));
+                FXMLLoader loader = new FXMLLoader(TodoApp.class.getResource(TodoApp.SHARE_FXML));
                 ShareController controller = new ShareController(this.taskList);
                 loader.setController(controller);
                 Parent root = loader.load();
@@ -118,7 +118,9 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
                 stage.setOnCloseRequest(event1 -> controller.close());
                 stage.showAndWait();
             }
-            catch (IOException e) { e.printStackTrace(); }
+            catch (IOException e) {
+                Logger.log("Failed loading Share scene", e);
+            }
         });
     }
 
@@ -185,7 +187,7 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
                 r.getBlob(3)));
 
             if (MainController.JSON_BOOLEAN.get()) {
-                System.out.println("Update Task List to JSON: " + r.toJSON());
+                Logger.log("Update Task List to JSON: " + r.toJSON());
             }
         }
         listView.setItems(tasks);
@@ -218,7 +220,7 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
         Document doc = DB.get().getDocument(DB.COLLECTION_TASKS, id);
         if (doc == null) { return; }
         if (MainController.JSON_BOOLEAN.get()) {
-            System.out.println("Task doc after update complete check box: " + doc.toJSON());
+            Logger.log("Task doc after update complete check box: " + doc.toJSON());
         }
         MutableDocument mDoc = doc.toMutable();
         mDoc.setValue(DB.KEY_COMPLETE, completion);
@@ -234,8 +236,7 @@ public class TaskListController implements Initializable, TaskCell.TaskCellListe
         if (image != null) {
             try { blob = new Blob(getContentType(image), new FileInputStream(image)); }
             catch (FileNotFoundException e) {
-                // TODO: Report Error
-                e.printStackTrace();
+                Logger.log("Failed loading image", e);
             }
         }
         mDoc.setValue(DB.KEY_IMAGE, blob);

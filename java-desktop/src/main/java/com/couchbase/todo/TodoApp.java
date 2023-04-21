@@ -11,7 +11,6 @@ import javafx.stage.Stage;
 import com.couchbase.todo.controller.ConfigController;
 import com.couchbase.todo.controller.LoginController;
 import com.couchbase.todo.controller.MainController;
-import com.couchbase.todo.model.Config;
 import com.couchbase.todo.model.DB;
 
 
@@ -29,6 +28,9 @@ public class TodoApp extends Application {
     public static final String LOGIN_FXML = "/scene/Login.fxml";
     public static final String MAIN_FXML = "/scene/Main.fxml";
     public static final String CONFIG_FXML = "/scene/Config.fxml";
+    public static final String SHARE_FXML = "/scene/Share.fxml";
+    public static final String TASKS_FXML = "/scene/TasksCell.fxml";
+    public static final String TASK_FXML = "/scene/TaskCell.fxml";
 
     public static volatile TodoApp todoApp;
 
