@@ -22,7 +22,6 @@ struct TasksView: View, TodoControllerDelegate {
     @ObservedObject private var tasksQuery: LiveQueryObject
     
     @State private var presentQEActions: Bool = false
-    @State private var newTaskDeltaSync: Bool = false
     
     @State private var presentNewTaskAlert: Bool = false
     @State private var newTaskName: String = ""
@@ -120,9 +119,6 @@ struct TasksView: View, TodoControllerDelegate {
             Button("New Task") {
                 popupAddTask()
             }
-            Button("New Task (DeltaSync)") {
-                popupAddTask(withDeltaSync: true)
-            }
             Button("Generate Tasks") {
                 TodoController.generateTasks(for: taskList, withPhoto: true, numbers: 50, delegate: self)
             }
@@ -192,9 +188,8 @@ struct TasksView: View, TodoControllerDelegate {
         }
     }
     
-    private func popupAddTask(withDeltaSync: Bool = false) {
+    private func popupAddTask() {
         newTaskName = ""
-        newTaskDeltaSync = withDeltaSync
         presentNewTaskAlert = true
     }
     
