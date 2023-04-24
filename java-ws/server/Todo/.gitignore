@@ -1,0 +1,5 @@
+
+# Ignore Couchbase stuff
+/CouchbaseLiteDb
+/CouchbaseLiteTemp
+
