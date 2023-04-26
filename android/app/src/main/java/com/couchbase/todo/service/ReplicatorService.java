@@ -127,10 +127,11 @@ public class ReplicatorService {
         @NonNull ReplicatorConfiguration replConfig,
         @Nullable ReplicatorChangeListener listener) {
         final CollectionConfiguration collConfig = new CollectionConfiguration();
-        final ConfigurationService.CcrState ccrState = config.getCcrState();
-        if (ccrState != ConfigurationService.CcrState.OFF) {
-            collConfig.setConflictResolver(new ConfigurableConflictResolver());
-        }
+        Log.i(TAG, "Create Replicator {"
+            + config.getCcrState() + ", "
+            + config.getRetries() + ", "
+            + config.getWaitTime()  + "}");
+        collConfig.setConflictResolver(new ConfigurableConflictResolver());
 
         replConfig.addCollections(dao.getCollections(), collConfig)
             .setType(ReplicatorType.PUSH_AND_PULL)

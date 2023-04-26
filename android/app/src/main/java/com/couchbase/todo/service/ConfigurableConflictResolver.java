@@ -45,8 +45,10 @@ public class ConfigurableConflictResolver implements ConflictResolver {
         final Document remoteDoc = conflict.getRemoteDocument();
         if ((localDoc == null) || (remoteDoc == null)) { return null; }
 
-        final Document winner;
         final ConfigurationService.CcrState ccrState = ConfigurationService.get().getCcrState();
+        Log.i(TAG, "CCR state: " + ccrState);
+
+        final Document winner;
         switch (ccrState) {
             case LOCAL:
                 winner = localDoc;
@@ -55,8 +57,6 @@ public class ConfigurableConflictResolver implements ConflictResolver {
                 winner = remoteDoc;
                 break;
             default:
-                // shouldn't happen: use default strategy
-                Log.w(TAG, "Unrecognized CCR state: " + ccrState + ".  Using default strategy");
                 final String localRevId = localDoc.getRevisionID();
                 final String remoteRevId = remoteDoc.getRevisionID();
                 winner = ((remoteRevId == null) || ((localRevId != null) && (localRevId.compareTo(remoteRevId) > 0)))

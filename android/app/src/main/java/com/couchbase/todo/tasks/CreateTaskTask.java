@@ -38,20 +38,19 @@ public class CreateTaskTask extends Scheduler.BackgroundTask<String, Void> {
 
     @Override
     protected Void doInBackground(@Nullable String title) {
-        final Document taskList = DatabaseService.get().fetchDoc(DatabaseService.COLLECTION_TASKS, listId);
+        final MutableDocument mDoc = new MutableDocument()
+            .setDate("createdAt", new Date())
+            .setString("task", title)
+            .setValue("owner", DatabaseService.get().getUsername())
+            .setBoolean("complete", false);
 
         String owner = null;
+        final Document taskList = DatabaseService.get().fetchDoc(DatabaseService.COLLECTION_LISTS, listId);
         if (taskList != null) { owner = taskList.getString("owner"); }
         if (owner == null) {
             Log.w(TAG, "Creating orphan task: " + title + " in " + listId);
             owner = "?";
         }
-
-        final MutableDocument mDoc = new MutableDocument();
-        mDoc.setDate("createdAt", new Date());
-        mDoc.setString("task", title);
-        mDoc.setValue("owner", DatabaseService.get().getUsername());
-        mDoc.setBoolean("complete", false);
 
         final Map<String, Object> taskListInfo = new HashMap<>();
         taskListInfo.put("id", listId);
