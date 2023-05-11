@@ -1,14 +1,8 @@
 ﻿using Couchbase.Lite;
 using Couchbase.Lite.Query;
 using Couchbase.Lite.Sync;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
-using System.Threading;
 using Training.Data;
-using Training.Models;
-using Xamarin.Forms;
 
 namespace Training
 {

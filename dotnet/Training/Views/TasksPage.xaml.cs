@@ -1,6 +1,4 @@
-﻿using Xamarin.Forms;
-using Training.ViewModels;
-using Xamarin.Forms.Xaml;
+﻿using Training.ViewModels;
 
 namespace Training.Views
 {

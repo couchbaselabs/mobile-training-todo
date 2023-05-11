@@ -1,9 +1,6 @@
 ﻿using Couchbase.Lite;
 using Couchbase.Lite.Query;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Training.Models;
 using Training.Services;
 using Training.Utils;

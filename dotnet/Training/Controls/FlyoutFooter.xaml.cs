@@ -1,6 +1,4 @@
-﻿using Xamarin.Forms;
-
-namespace Training.Controls
+﻿namespace Training.Controls
 {
     public partial class FlyoutFooter : ContentView
     {

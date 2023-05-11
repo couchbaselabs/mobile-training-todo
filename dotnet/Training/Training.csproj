@@ -1,58 +1,55 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
-      <LangVersion>latest</LangVersion>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>net6.0-android;net6.0-ios;net6.0-maccatalyst</TargetFrameworks>
+		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net6.0-windows10.0.19041.0</TargetFrameworks>
+		<!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
+		<!-- <TargetFrameworks>$(TargetFrameworks);net6.0-tizen</TargetFrameworks> -->
+		<OutputType>Exe</OutputType>
+		<RootNamespace>Training</RootNamespace>
+		<UseMaui>true</UseMaui>
+		<SingleProject>true</SingleProject>
+		<ImplicitUsings>enable</ImplicitUsings>
 
-  <ItemGroup>
-    <Compile Remove="ViewModels\TaskListItemViewModel.cs" />
-    <Compile Remove="Views\TaskListItemPage.xaml.cs" />
-  </ItemGroup>
+		<!-- Display name -->
+		<ApplicationTitle>Training</ApplicationTitle>
 
-  <ItemGroup>
-    <EmbeddedResource Remove="Views\TaskListItemPage.xaml" />
-  </ItemGroup>
+		<!-- App Identifier -->
+		<ApplicationId>com.companyname.training</ApplicationId>
+		<ApplicationIdGuid>06d35947-3c5f-40fc-88cb-7532a75484ec</ApplicationIdGuid>
 
-  <ItemGroup>
-    <PackageReference Include="Couchbase.Lite.Enterprise" Version="3.1.0-b0173" />
-    <PackageReference Include="System.Net.Http.Json" Version="6.0.1" />
-    <PackageReference Include="Xamarin.Forms" Version="5.0.0.2083" />  
-    <PackageReference Include="Xamarin.Essentials" Version="1.7.5" />
-  </ItemGroup>
+		<!-- Versions -->
+		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+		<ApplicationVersion>1</ApplicationVersion>
 
-  <ItemGroup>
-    <PackageReference Include="SimpleInjector" Version="5.0.1" />
-  </ItemGroup>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">14.2</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">14.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Update="Views\UserDetailPage.xaml.cs">
-      <DependentUpon>UserDetailPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\UsersPage.xaml.cs">
-      <DependentUpon>UsersPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\TaskDetailPage.xaml.cs">
-      <DependentUpon>TaskDetailPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\TasksPage.xaml.cs">
-      <DependentUpon>TasksPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\TaskListDetailPage.xaml.cs">
-      <DependentUpon>TaskListDetailPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\TaskListItemsPage.xaml.cs">
-      <DependentUpon>TaskListItemsPage.xaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
+	<ItemGroup>
+		<!-- App Icon -->
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
 
-  <ItemGroup>
-    <EmbeddedResource Update="Controls\FlyoutFooter.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="Views\ToJSONPage.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-  </ItemGroup>
+		<!-- Splash Screen -->
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
+
+		<!-- Images -->
+		<MauiImage Include="Resources\Images\*" />
+		<MauiImage Update="Resources\Images\dotnet_bot.svg" BaseSize="168,208" />
+
+		<!-- Custom Fonts -->
+		<MauiFont Include="Resources\Fonts\*" />
+
+		<!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
+		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="Couchbase.Lite.Enterprise" Version="3.1.0" />
+	</ItemGroup>
+
 </Project>

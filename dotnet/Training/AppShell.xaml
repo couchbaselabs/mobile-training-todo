@@ -1,18 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Shell xmlns="http://xamarin.com/schemas/2014/forms" 
-       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-       xmlns:controls="clr-namespace:Training.Controls"
-       xmlns:sys="clr-namespace:System;assembly=netstandard"
-       xmlns:local="clr-namespace:Training.Views"
-       Title="Training"
-       x:Class="Training.AppShell"
-       FlyoutHeaderBehavior="CollapseOnScroll">
-
-    <!--
-        The overall app visual hierarchy is defined here, along with navigation.
-    
-        https://docs.microsoft.com/xamarin/xamarin-forms/app-fundamentals/shell/
-    -->
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="Training.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:controls="clr-namespace:Training.Controls"
+    xmlns:sys="clr-namespace:System;assembly=netstandard"
+    xmlns:local="clr-namespace:Training.Views"
+    Title="Training"
+    FlyoutHeaderBehavior="CollapseOnScroll">
 
     <Shell.Resources>
         <ResourceDictionary>
@@ -109,11 +104,11 @@
                           ContentTemplate="{DataTemplate local:UsersPage}" />
         </Tab>
     </FlyoutItem>
-    
-    
+
+
 
     <!-- When the Flyout is visible this will be a menu item you can tie a click behavior to  -->
-    
+
     <MenuItem Text="Logout" StyleClass="MenuItemLayoutStyle" Clicked="OnMenuItemClicked" />
 
     <!--

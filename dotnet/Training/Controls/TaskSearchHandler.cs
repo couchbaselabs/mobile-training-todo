@@ -1,8 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Xamarin.Forms;
-using Training.Models;
+﻿using Training.Models;
 using Training.Services;
 using Training.ViewModels;
 using Training.Views;

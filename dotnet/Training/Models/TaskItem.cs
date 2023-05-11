@@ -43,7 +43,7 @@ namespace Training.Models
                 if (_isChecked != value)
                 {
                     SetProperty(ref _isChecked, value);
-                    using var collection = CoreApp.Database.GetCollection(TasksData.TaskCollection);
+                    var collection = CoreApp.Database.GetCollection(TasksData.TaskCollection);
                     using (var doc = collection.GetDocument(DocumentID))
                     {
                         if (doc.GetBoolean("complete") != _isChecked)

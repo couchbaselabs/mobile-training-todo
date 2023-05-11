@@ -1,10 +1,6 @@
 ﻿using Couchbase.Lite;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Training.Models;
 using Training.Data;
-using Xamarin.Forms;
+using Training.Models;
 
 namespace Training.ViewModels
 {

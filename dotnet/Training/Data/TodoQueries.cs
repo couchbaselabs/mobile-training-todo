@@ -1,8 +1,5 @@
 ﻿using Couchbase.Lite;
 using Couchbase.Lite.Query;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Training.Data
 {

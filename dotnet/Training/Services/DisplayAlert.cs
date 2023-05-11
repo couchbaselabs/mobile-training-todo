@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-using Training.Services;
-using Xamarin.Forms;
+﻿using Training.Services;
 
 [assembly: Dependency(typeof(DisplayAlert))]
 namespace Training.Services

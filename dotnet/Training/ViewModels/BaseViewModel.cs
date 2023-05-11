@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Training.Models;
 using Training.Services;
-using Xamarin.Forms;
 
 namespace Training.ViewModels
 {

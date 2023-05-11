@@ -1,11 +1,7 @@
 ﻿using Couchbase.Lite;
-using System;
-using System.IO;
-using System.Threading.Tasks;
+using Training.Data;
 using Training.Models;
 using Training.Services;
-using Training.Data;
-using Xamarin.Forms;
 
 namespace Training.ViewModels
 {

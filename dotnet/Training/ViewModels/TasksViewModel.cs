@@ -1,9 +1,6 @@
-﻿using System.IO;
-using System.Threading.Tasks;
-using Training.Models;
+﻿using Training.Models;
 using Training.Services;
 using Training.Views;
-using Xamarin.Forms;
 
 namespace Training.ViewModels
 {
