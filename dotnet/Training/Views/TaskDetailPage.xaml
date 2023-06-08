@@ -3,13 +3,16 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Training.Views.TaskDetailPage"
              xmlns:local="clr-namespace:Training.Utils"
-             Shell.PresentationMode="ModalAnimated"
              Title="{Binding Title}">
     <ContentPage.Resources>
         <ResourceDictionary>
             <local:ByteArrayToImageConverter x:Key="ImageSourceConverter" />
         </ResourceDictionary>
     </ContentPage.Resources>
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="ToJSON" 
+                     Command="{Binding ToJSONCommand}" />
+    </ContentPage.ToolbarItems>
     <ScrollView>
         <StackLayout Margin="20">
             <Label Text="{Binding Title}" FontSize="Large" HorizontalOptions="StartAndExpand" />

@@ -169,9 +169,13 @@ namespace Training.Data
             return await Task.FromResult(task);
         }
 
-        public Task<IEnumerable<string>> ReturnJsonsAsync(bool forceRefresh = false)
+        public IEnumerable<string> GetJson(string parameter)
         {
-            throw new NotImplementedException();
+            var query = parameter == null ? _tasksCollection.CreateQuery($"SELECT * FROM {TaskCollection} WHERE meta().id = '{parameter}'")
+                : _tasksCollection.CreateQuery($"SELECT * FROM {TaskCollection} as result WHERE taskList.id = '{_taskListId}' ORDER BY createdAt");
+            foreach (var r in query.Execute()) {
+                yield return r.GetDictionary("result").ToJSON();
+            }
         }
 
         /// <summary>

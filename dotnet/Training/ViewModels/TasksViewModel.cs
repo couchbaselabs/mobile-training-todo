@@ -1,4 +1,5 @@
-﻿using Training.Models;
+﻿using System.Windows.Input;
+using Training.Models;
 using Training.Services;
 using Training.Views;
 
@@ -11,6 +12,10 @@ namespace Training.ViewModels
         public Command<TaskItem> ItemTapped { get; }
         public Command<TaskItem> ItemSwiped { get; }
         public Command<TaskItem> ItemImageTapped { get; }
+
+
+
+        public ICommand ToJSONCommand => new Command(OnToJSON);
 
         public TasksViewModel()
         {
@@ -103,6 +108,17 @@ namespace Training.ViewModels
                 item.Thumbnail = memoryStream.ToArray();
                 await TasksDataStore.UpdateItemAsync(item);
             }
+        }
+
+        private async void OnToJSON()
+        {
+            string jsonStr = "";
+            var jsons = TasksDataStore.GetJson();
+            foreach (var json in jsons) {
+                jsonStr += json + "\n";
+            }
+
+            await Shell.Current.GoToAsync($"{nameof(ToJSONPage)}?{nameof(ToJSONViewModel.JSONString)}={jsonStr}");
         }
     }
 }

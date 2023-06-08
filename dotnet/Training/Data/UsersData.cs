@@ -124,7 +124,7 @@ namespace Training.Data
             return await Task.FromResult(user);
         }
 
-        public Task<IEnumerable<string>> ReturnJsonsAsync(bool forceRefresh = false)
+        public IEnumerable<string> GetJson(string parameter)
         {
             throw new NotImplementedException();
         }

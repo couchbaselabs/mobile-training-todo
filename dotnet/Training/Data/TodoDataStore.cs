@@ -20,7 +20,6 @@ namespace Training.Data
         private IQuery _fullQuery;
         private IQuery _incompleteQuery;
         private readonly ConcurrentDictionary<string, int> _incompleteCount = new ConcurrentDictionary<string, int>();
-        private readonly IList<string> _jsons = new List<string>();
 
         /// <summary>
         /// Gets the username of the user using the app
@@ -138,11 +137,6 @@ namespace Training.Data
             return await Task.FromResult(Data);
         }
 
-        public async Task<IEnumerable<string>> ReturnJsonsAsync(bool forceRefresh = false)
-        {
-            return await Task.FromResult(_jsons);
-        }
-
         public void Filter(string searchText)
         {
             var query = default(IQuery);
@@ -153,6 +147,14 @@ namespace Training.Data
 
                 var results = query.Execute();
                 var _ = ProcessQueryResults(results.AllResults());
+            }
+        }
+
+        public IEnumerable<string> GetJson(string parameter = null)
+        {
+            var query = _collection.CreateQuery($"SELECT * FROM {TaskListCollection} as result");
+            foreach(var r in query.Execute()) {
+                yield return r.GetDictionary("result").ToJSON();
             }
         }
 

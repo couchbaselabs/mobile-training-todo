@@ -4,8 +4,10 @@
              x:Class="Training.Views.ToJSONPage">
     <ContentPage.Content>
         <StackLayout Padding="5">
-            <Label Text="ToJSON String" FontSize="Large" HorizontalOptions="StartAndExpand" />
-            <Editor Text="{Binding JSONString, Mode=OneWay}" AutoSize="TextChanges" />
+            <ScrollView>
+                <Label Text="{Binding JSONString, Mode=OneWay}" />
+            </ScrollView>
+            <Button Command="{Binding BackCommand}" Text="Back" />
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>

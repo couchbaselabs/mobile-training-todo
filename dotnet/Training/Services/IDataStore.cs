@@ -11,6 +11,6 @@ namespace Training.Services
         Task<string> DeleteItemAsync(string id);
         Task<T> GetItemAsync(string id);
         //Task<ConcurrentDictionary<string, T>> GetItemsAsync(bool forceRefresh = false);
-        Task<IEnumerable<string>> ReturnJsonsAsync(bool forceRefresh = false);
+        IEnumerable<string> GetJson(string parameter = null);
     }
 }

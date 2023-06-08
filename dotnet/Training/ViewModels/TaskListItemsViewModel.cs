@@ -58,7 +58,7 @@ namespace Training.ViewModels
         private async void OnToJSON()
         {
             string jsonStr = "";
-            var jsons = await DataStore.ReturnJsonsAsync(true);
+            var jsons = DataStore.GetJson();
             foreach (var json in jsons)
             {
                 jsonStr += json + "\n";

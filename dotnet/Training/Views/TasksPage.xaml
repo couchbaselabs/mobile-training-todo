@@ -10,6 +10,7 @@
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Add" 
                      Command="{Binding AddItemCommand}" />
+        <ToolbarItem Text="ToJSON" Command="{Binding ToJSONCommand}" />
     </ContentPage.ToolbarItems>
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -31,11 +32,6 @@
             </Setter>
         </Style>
     </ContentPage.Resources>
-    <Shell.SearchHandler>
-        <controls:TaskSearchHandler Placeholder="Enter search term"
-                                      ShowsResults="true"
-                                      ItemTemplate="{StaticResource TaskSearchTemplate}" />
-    </Shell.SearchHandler>
     <!--RefreshView Command="{Binding LoadItemsCommand}" IsRefreshing="{Binding IsBusy, Mode=TwoWay}"-->
         <CollectionView Margin="20"
                         RemainingItemsThreshold="20"

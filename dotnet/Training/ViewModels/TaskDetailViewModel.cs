@@ -1,7 +1,9 @@
 ﻿using Couchbase.Lite;
+using System.Windows.Input;
 using Training.Data;
 using Training.Models;
 using Training.Services;
+using Training.Views;
 
 namespace Training.ViewModels
 {
@@ -14,6 +16,8 @@ namespace Training.ViewModels
         private string _id;
         private string _taskItemName;
         private TaskItem _taskItem = new TaskItem();
+
+        public ICommand ToJSONCommand => new Command(OnToJSON);
 
         public TaskItem TaskItem
         {
@@ -141,6 +145,17 @@ namespace Training.ViewModels
                 stream.CopyTo(memoryStream);
                 TaskItem.Thumbnail = memoryStream.ToArray();
             }
+        }
+
+        private async void OnToJSON()
+        {
+            string jsonStr = "";
+            var jsons = TasksDataStore.GetJson(_id);
+            foreach (var json in jsons) {
+                jsonStr += json + "\n";
+            }
+
+            await Shell.Current.GoToAsync($"{nameof(ToJSONPage)}?{nameof(ToJSONViewModel.JSONString)}={jsonStr}");
         }
     }
 }
